@@ -41,14 +41,12 @@ function detectDelimiter(firstLine) {
     ";": (firstLine.match(/;/g) || []).length,
     "\t": (firstLine.match(/\t/g) || []).length,
   };
-  // Prioriza el que más aparece
   return Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0] || ",";
 }
 
 // Parser robusto (comillas, separador auto)
 function parseCSV(text) {
   if (!text) return [];
-  // Quitar BOM
   if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
 
   const firstNL = text.indexOf("\n");
@@ -76,7 +74,6 @@ function parseCSV(text) {
     }
   }
   if (cur.length > 0 || row.length > 0) { row.push(cur); rows.push(row); }
-  // filtrar filas completamente vacías
   return rows.filter(r => r.some(x => String(x).trim() !== ""));
 }
 
@@ -85,9 +82,7 @@ function toNumber(s) {
   if (s == null) return 0;
   let x = String(s).trim();
   if (!x) return 0;
-  // eliminar espacios finos / separadores de miles
   x = x.replace(/\u00A0/g," ").replace(/\s+/g," ");
-  // heurística: si hay . y , asumir . miles y , decimal
   if (x.includes(".") && x.includes(",")) x = x.replace(/\./g,"").replace(",",".");
   else if (x.includes(",")) x = x.replace(/\./g,"").replace(",",".");
   else x = x.replace(/,/g,"");
@@ -149,13 +144,22 @@ function toNumber(s) {
       setTimeout(()=>{ status.style.display="none"; }, 800);
     }
 
-    // Debug en consola (útil si algo falla)
     console.log("[Dashboard] RoadMap filas:", ROADMAP_ROWS.length, "Catálogo claves:", CATALOGO_MAP.size);
   } catch (err) {
     console.error("Error cargando datos:", err);
     if (status) status.innerHTML = `<span>⚠️ ${String(err.message || err)}</span>`;
   }
 })();
+
+// ===============================
+// Escape HTML (FIX)
+// ===============================
+
+const HTML_ESC_MAP = { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" };
+
+function escapeHTML(s) {
+  return String(s ?? "").replace(/[&<>"']/g, ch => HTML_ESC_MAP[ch]);
+}
 
 // ===============================
 // Render tabla y gráficos
@@ -204,10 +208,6 @@ function render(centroValue) {
   renderCharts(data);
 }
 
-function escapeHTML(s) {
-  return String(s ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;'}[m]));
-}
-
 // ===============================
 // Charts
 // ===============================
@@ -216,10 +216,7 @@ function renderCharts(rows) {
   const valores = rows.map(r => r.val);
   const kilos   = rows.map(r => r.kg);
 
-  // destruir instancias previas
   [chartValor, chartKg, chartDonut].forEach(c => c && c.destroy());
-
-  // paleta dinámica
   const colors = labels.map((_,i)=> `hsl(${(i*47)%360} 85% 55%)`);
 
   const ctxVal = document.getElementById("chartValor");
