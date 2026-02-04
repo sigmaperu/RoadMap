@@ -6,62 +6,87 @@
   <meta name="theme-color" content="#0b0b0b" />
   <title>RoadMap | Dashboard</title>
 
-  <!-- Tipografía y estilos -->
-  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <!-- Tipografía y estilos globales -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 
-  -->
-  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
+  <!-- Favicons a partir del logo -->
+  <link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
   <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
   <link rel="manifest" href="site.webmanifest">
+  <meta name="msapplication-TileColor" content="#0b0b0b">
+  <meta name="color-scheme" content="dark only">
 
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Chart.js (debe cargarse antes de dashboard.js) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
 
-  <!-- Estilos locales -->
+  <!-- Estilos locales (filtros/tabla/charts) -->
   <style>
-    .filters { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:16px; }
+    .filters { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:14px; }
     .filters .control {
-      display:flex; gap:10px; align-items:center;
-      background:#0f0f0f; border:1px solid #242424; border-radius:10px;
-      padding:10px 12px;
+      display:inline-flex; gap:10px; align-items:center;
+      background:#0f0f0f; border:1px solid #242424; border-radius:10px; padding:10px 12px;
     }
-    .filters select, .filters option {
-      background:#0f0f0f; color:#fff; border:0; font:inherit; outline:none;
+    .filters label { color: var(--muted); font-weight: 700; letter-spacing:.2px; }
+    .filters select {
+      background: transparent; border: 0; color: #fff; font: inherit; outline: none; min-width: 200px;
+      -webkit-appearance:none; -moz-appearance:none; appearance:none;
     }
-    .chart-card { padding:16px; }
-    .charts { display:grid; gap:18px; margin-top:22px; }
-    .charts.two { grid-template-columns:repeat(2,1fr); }
-    @media(max-width:900px){ .charts.two { grid-template-columns:1fr; } }
-    .num { text-align:right; }
+    /* Forzar opciones visibles en modo oscuro */
+    .filters option { color:#fff; background:#0f0f0f; }
+
+    .table-wrap { overflow: auto; border-radius: 12px; border: 1px solid var(--stroke); background: var(--card); }
+    table { width: 100%; border-collapse: collapse; min-width: 680px; }
+    thead th {
+      text-align: left; font-weight: 800; color: #fff; background: #0e0e0e;
+      padding: 12px; border-bottom: 1px solid var(--stroke); position: sticky; top: 0; z-index: 1;
+    }
+    tbody td { padding: 12px; border-bottom: 1px solid #1a1a1a; color: var(--muted); }
+    tbody tr:hover { background: #0f0f0f; }
+    tfoot td { padding: 12px; border-top: 1px solid var(--stroke); font-weight: 800; color: #fff; background: #0e0e0e; }
+    .num { text-align: right; white-space: nowrap; }
+    .muted { color: var(--muted); }
+    .loading { display:flex; align-items:center; gap:10px; color: var(--muted); }
+    .dotloader { width: 10px; height: 10px; border-radius: 50%; background: var(--brand); animation: pulse .9s infinite alternate ease-in-out; }
+    @keyframes pulse { from { transform: scale(.9); opacity:.7 } to { transform: scale(1.15); opacity:1 } }
+
+    .charts { display: grid; gap: 16px; margin-top: 16px; }
+    .charts.two { grid-template-columns: repeat(2, 1fr); }
+    @media (max-width: 900px){ .charts.two { grid-template-columns: 1fr; } }
+    .card.chart-card { padding: 16px; }
+    .card.chart-card h3 { margin: 0 0 8px; }
   </style>
 </head>
-
 <body>
 
-  <!-- Header dinámico -->
+  <!-- ✅ Placeholder correcto para inyectar el header (lo usa app.js) -->
   <div id="header-placeholder" data-src="header.html"></div>
 
   <main class="section">
     <div class="container">
       <h1>Dashboard</h1>
-      <p class="muted">Resumen por <b>Canal</b> filtrado por <b>Centro</b>.</p>
+      <p class="muted">Resumen por <strong>Canal</strong> filtrado por <strong>Centro</strong>.</p>
 
-      <!-- FILTRO -->
-      <div class="filters card">
+      <!-- Filtros -->
+      <div class="filters card" role="region" aria-label="Filtros de Dashboard">
         <div class="control">
-          <label>Centro</label>
-          <select id="filtroCentro">
+          <label for="locationFilter">Centro</label>
+          <select id="locationFilter">
             <option value="__all__">Todos los centros</option>
           </select>
         </div>
-        <div id="estadoCarga" class="muted">Cargando datos…</div>
+        <div id="status" class="loading" aria-live="polite">
+          <span class="dotloader" aria-hidden="true"></span>
+          <span>Cargando datos…</span>
+        </div>
       </div>
 
-      <!-- TABLA -->
+      <!-- Tabla resumen por Canal -->
       <div class="table-wrap card">
-        <table>
+        <table aria-describedby="status">
           <thead>
             <tr>
               <th>Canal</th>
@@ -70,43 +95,45 @@
               <th class="num">Valor (S/.)</th>
             </tr>
           </thead>
-          <tbody id="tbodyResumen">
-            <tr><td colspan="4" class="muted">Sin datos.</td></tr>
+          <tbody id="summaryBody">
+            <tr><td colspan="4" class="muted" style="padding:18px">Sin datos.</td></tr>
           </tbody>
           <tfoot>
             <tr>
               <td>Total</td>
-              <td id="tClientes" class="num">0</td>
-              <td id="tKg" class="num">0</td>
-              <td id="tValor" class="num">0</td>
+              <td class="num" id="totClientes">0</td>
+              <td class="num" id="totKg">0</td>
+              <td class="num" id="totVal">0</td>
             </tr>
           </tfoot>
         </table>
       </div>
 
-      <!-- GRÁFICOS -->
+      <!-- Gráficos -->
       <div class="charts two">
         <div class="card chart-card">
-          <h3>Valor por Canal</h3>
-          <canvas id="chartValor"></canvas>
+          <h3>Valor (S/.) por Canal</h3>
+          <canvas id="chartValor" height="180"></canvas>
         </div>
         <div class="card chart-card">
-          <h3>Kg por Canal</h3>
-          <canvas id="chartKg"></canvas>
+          <h3>Kg Plan. por Canal</h3>
+          <canvas id="chartKg" height="180"></canvas>
         </div>
       </div>
 
       <div class="charts">
         <div class="card chart-card">
-          <h3>Participación (%) Valor</h3>
-          <canvas id="chartDonut"></canvas>
+          <h3>Participación por Valor</h3>
+          <canvas id="chartDonut" height="220"></canvas>
         </div>
       </div>
 
     </div>
   </main>
 
-  <script src="app.js"></script>
-  <script src="dashboard.js"></script>
+  <!-- Scripts (orden importante) -->
+  <script src="app.js" defer></script>
+  <script src="dashboard.js" defer></script>
 </body>
 </html>
+``
