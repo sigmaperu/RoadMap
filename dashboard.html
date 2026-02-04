@@ -6,32 +6,118 @@
   <meta name="theme-color" content="#0b0b0b" />
   <title>RoadMap | Dashboard</title>
 
+  <!-- Tipografía y estilos globales -->
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css">
 
-  <!-- Favicons -->
+  <!-- Favicons a partir del logo -->
   <link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
   <link rel="icon" type="image/png" sizes="16x16" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
   <link rel="apple-touch-icon" sizes="180x180" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
   <link rel="manifest" href="site.webmanifest">
   <meta name="msapplication-TileColor" content="#0b0b0b">
   <meta name="color-scheme" content="dark only">
+
+  <!-- Estilos locales para tabla y filtros -->
+  <style>
+    .filters {
+      display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 14px;
+    }
+    .filters .control {
+      display: inline-flex; gap: 8px; align-items: center;
+      background: #0f0f0f; border: 1px solid #242424; border-radius: 10px; padding: 10px 12px;
+    }
+    .filters label { color: var(--muted); font-weight: 600; }
+    .filters select {
+      background: transparent; border: 0; color: #fff; font: inherit; outline: none; min-width: 180px;
+    }
+
+    .table-wrap { overflow: auto; border-radius: 12px; border: 1px solid var(--stroke); background: var(--card); }
+    table {
+      width: 100%; border-collapse: collapse; min-width: 680px;
+    }
+    thead th {
+      text-align: left; font-weight: 700; color: #fff; background: #0e0e0e;
+      padding: 12px; border-bottom: 1px solid var(--stroke);
+      position: sticky; top: 0; z-index: 1;
+    }
+    tbody td {
+      padding: 12px; border-bottom: 1px solid #1a1a1a; color: var(--muted);
+    }
+    tbody tr:hover { background: #0f0f0f; }
+    tfoot td {
+      padding: 12px; border-top: 1px solid var(--stroke); font-weight: 800; color: #fff; background: #0e0e0e;
+    }
+    .num { text-align: right; white-space: nowrap; }
+    .loading {
+      display:flex; align-items:center; gap:10px; color: var(--muted);
+    }
+    .dotloader {
+      width: 10px; height: 10px; border-radius: 50%; background: var(--brand);
+      animation: pulse .9s infinite alternate ease-in-out;
+    }
+    @keyframes pulse {
+      from { transform: scale(0.9); opacity: .7; }
+      to   { transform: scale(1.15); opacity: 1; }
+    }
+    .muted { color: var(--muted); }
+  </style>
 </head>
 <body>
+
+  <!-- Inyección del header reutilizable -->
   <div id="header-placeholder" data-src="header.html"></div>
 
   <main class="section">
     <div class="container">
       <h1>Dashboard</h1>
-      <div class="grid-3">
-        <div class="card"><h3>OTIF</h3><p class="muted">On-Time In-Full (Próximamente)</p></div>
-        <div class="card"><h3>Fill-rate</h3><p class="muted">Tasa de llenado (Próximamente)</p></div>
-        <div class="card"><h3>Desvíos</h3><p class="muted">Alertas y causas (Próximamente)</p></div>
+      <p class="muted">Resumen por <strong>Canal</strong> con filtro por <strong>Location</strong>.</p>
+
+      <!-- Filtros -->
+      <div class="filters card">
+        <div class="control">
+          <label for="locationFilter">Location:</label>
+          <select id="locationFilter">
+            <option value="__all__">Todas las locations</option>
+          </select>
+        </div>
+        <div id="status" class="loading" aria-live="polite">
+          <span class="dotloader" aria-hidden="true"></span>
+          <span>Cargando datos…</span>
+        </div>
       </div>
+
+      <!-- Tabla resumen por Canal -->
+      <div class="table-wrap card">
+        <table aria-describedby="status">
+          <thead>
+            <tr>
+              <th>Canal</th>
+              <th class="num"># Clientes</th>
+              <th class="num">Kg Plan.</th>
+              <th class="num">Valor (S/.)</th>
+            </tr>
+          </thead>
+          <tbody id="summaryBody">
+            <tr><td colspan="4" class="muted" style="padding:18px">Sin datos.</td></tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td>Total</td>
+              <td class="num" id="totClientes">0</td>
+              <td class="num" id="totKg">0</td>
+              <td class="num" id="totVal">0</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
     </div>
   </main>
 
+  <!-- Scripts -->
   <script src="app.js"></script>
+  <script src="dashboard.js"></script>
 </body>
 </html>
