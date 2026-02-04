@@ -19,49 +19,50 @@
   <meta name="msapplication-TileColor" content="#0b0b0b">
   <meta name="color-scheme" content="dark only">
 
-  <!-- Estilos locales para tabla y filtros -->
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- Estilos locales para filtros, tabla y charts -->
   <style>
     .filters {
       display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 14px;
     }
     .filters .control {
-      display: inline-flex; gap: 8px; align-items: center;
+      display: inline-flex; gap: 10px; align-items: center;
       background: #0f0f0f; border: 1px solid #242424; border-radius: 10px; padding: 10px 12px;
     }
-    .filters label { color: var(--muted); font-weight: 600; }
+    .filters label { color: var(--muted); font-weight: 700; letter-spacing:.2px; }
     .filters select {
-      background: transparent; border: 0; color: #fff; font: inherit; outline: none; min-width: 180px;
+      background: transparent; border: 0; color: #fff; font: inherit; outline: none; min-width: 200px;
+      -webkit-appearance: none; -moz-appearance: none; appearance: none;
+    }
+    /* Forzar visibilidad de opciones en modo oscuro */
+    .filters select, .filters option {
+      color: #fff; background-color: #0f0f0f;
     }
 
     .table-wrap { overflow: auto; border-radius: 12px; border: 1px solid var(--stroke); background: var(--card); }
-    table {
-      width: 100%; border-collapse: collapse; min-width: 680px;
-    }
+    table { width: 100%; border-collapse: collapse; min-width: 680px; }
     thead th {
-      text-align: left; font-weight: 700; color: #fff; background: #0e0e0e;
-      padding: 12px; border-bottom: 1px solid var(--stroke);
-      position: sticky; top: 0; z-index: 1;
+      text-align: left; font-weight: 800; color: #fff; background: #0e0e0e;
+      padding: 12px; border-bottom: 1px solid var(--stroke); position: sticky; top: 0; z-index: 1;
     }
-    tbody td {
-      padding: 12px; border-bottom: 1px solid #1a1a1a; color: var(--muted);
-    }
+    tbody td { padding: 12px; border-bottom: 1px solid #1a1a1a; color: var(--muted); }
     tbody tr:hover { background: #0f0f0f; }
-    tfoot td {
-      padding: 12px; border-top: 1px solid var(--stroke); font-weight: 800; color: #fff; background: #0e0e0e;
-    }
+    tfoot td { padding: 12px; border-top: 1px solid var(--stroke); font-weight: 800; color: #fff; background: #0e0e0e; }
     .num { text-align: right; white-space: nowrap; }
-    .loading {
-      display:flex; align-items:center; gap:10px; color: var(--muted);
-    }
-    .dotloader {
-      width: 10px; height: 10px; border-radius: 50%; background: var(--brand);
-      animation: pulse .9s infinite alternate ease-in-out;
-    }
-    @keyframes pulse {
-      from { transform: scale(0.9); opacity: .7; }
-      to   { transform: scale(1.15); opacity: 1; }
-    }
     .muted { color: var(--muted); }
+
+    .loading { display:flex; align-items:center; gap:10px; color: var(--muted); }
+    .dotloader { width: 10px; height: 10px; border-radius: 50%; background: var(--brand); animation: pulse .9s infinite alternate ease-in-out; }
+    @keyframes pulse { from { transform: scale(.9); opacity:.7 } to { transform: scale(1.15); opacity:1 } }
+
+    /* Charts layout */
+    .charts { display: grid; gap: 16px; margin-top: 16px; }
+    .charts.two { grid-template-columns: repeat(2, 1fr); }
+    @media (max-width: 900px){ .charts.two { grid-template-columns: 1fr; } }
+    .card.chart-card { padding: 16px; }
+    .card.chart-card h3 { margin: 0 0 8px; }
   </style>
 </head>
 <body>
@@ -72,14 +73,14 @@
   <main class="section">
     <div class="container">
       <h1>Dashboard</h1>
-      <p class="muted">Resumen por <strong>Canal</strong> con filtro por <strong>Location</strong>.</p>
+      <p class="muted">Resumen por <strong>Canal</strong> con filtro por <strong>Centro</strong>.</p>
 
       <!-- Filtros -->
-      <div class="filters card">
+      <div class="filters card" role="region" aria-label="Filtros de Dashboard">
         <div class="control">
-          <label for="locationFilter">Location:</label>
+          <label for="locationFilter">Centro</label>
           <select id="locationFilter">
-            <option value="__all__">Todas las locations</option>
+            <option value="__all__">Todos los centros</option>
           </select>
         </div>
         <div id="status" class="loading" aria-live="polite">
@@ -100,24 +101,3 @@
             </tr>
           </thead>
           <tbody id="summaryBody">
-            <tr><td colspan="4" class="muted" style="padding:18px">Sin datos.</td></tr>
-          </tbody>
-          <tfoot>
-            <tr>
-              <td>Total</td>
-              <td class="num" id="totClientes">0</td>
-              <td class="num" id="totKg">0</td>
-              <td class="num" id="totVal">0</td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-
-    </div>
-  </main>
-
-  <!-- Scripts -->
-  <script src="app.js"></script>
-  <script src="dashboard.js"></script>
-</body>
-</html>
