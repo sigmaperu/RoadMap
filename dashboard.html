@@ -6,21 +6,21 @@
   <meta name="theme-color" content="#0b0b0b" />
   <title>RoadMap | Dashboard</title>
 
-  <!-- Tipografía + estilos globales -->
-  https://fonts.googleapis.com
-  https://fonts.gstatic.com
-  https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap
-  styles.css
+  <!-- Tipografías y CSS global -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 
-  <!-- Favicons desde tu logo -->
-  https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png
-  https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png
-  https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png
-  site.webmanifest
+  <!-- Favicons desde tu logo (luego podemos migrar a pack local) -->
+  <link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
+  <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
+  <link rel="manifest" href="site.webmanifest">
   <meta name="msapplication-TileColor" content="#0b0b0b">
   <meta name="color-scheme" content="dark only">
 
-  <!-- Estilos locales (más amarillo + tablas + barras de progreso) -->
+  <!-- Estilos locales (amarillo + tablas + barra de progreso “píldora”) -->
   <style>
     .section-title { margin: 0 0 6px; }
     .fine { color: var(--muted); margin: 0 0 14px; }
@@ -67,19 +67,17 @@
     .cell-top { display:flex; gap:8px; align-items:baseline; }
     .cell-top .pct { color:#d8b100; font-weight:700; font-size:.92rem; }
 
-    /* Contenedor píldora con borde amarillo y esquinas redondas */
     .progress {
-      width: 240px;                  /* puedes ajustar a 200–260px */
-      height: 14px;                  /* más alto para imitar el estilo de la imagen */
+      width: 240px;                  /* 200–260px funciona bien */
+      height: 14px;                  /* alto tipo imagen de referencia */
       border: 2px solid var(--brand);
       border-radius: 9999px;
-      background: #0b0b0b;          /* track oscuro interno */
+      background: #0b0b0b;          /* track interno oscuro */
       position: relative;
       overflow: hidden;
     }
-    /* Barra interna con margen para que se vea el borde */
     .progress .bar {
-      height: calc(100% - 6px);     /* deja margen para el borde */
+      height: calc(100% - 6px);     /* margen para el borde */
       margin: 3px;
       width: 0%;
       background: linear-gradient(90deg, #f1c40f, #ffd94a);
@@ -91,13 +89,16 @@
 </head>
 <body>
 
-  <!-- ✅ Placeholder para inyectar el header (tu app.js lo usa) -->
-  header.html</div>
+  <!-- ✅ Placeholder correcto para inyectar el header -->
+  <div id="header-placeholder" data-src="header.html"></div>
 
   <main class="section">
     <div class="container">
       <h1 class="section-title">Dashboard</h1>
-      <p class="fine">Resumen general y por <strong>Canal</strong> con filtro por <strong>Centro</strong>. Se excluyen filas con <strong>Placa = FRT-001</strong>.</p>
+      <p class="fine">
+        Resumen general y por <strong>Canal</strong> con filtro por <strong>Centro</strong>.
+        Se excluyen filas con <strong>Placa = FRT-001</strong>.
+      </p>
 
       <!-- ====== TABLA GLOBAL POR CENTRO (NO FILTRADA) ====== -->
       <h2 class="section-title">Resumen Global por Centro (no filtrado)</h2>
@@ -170,8 +171,8 @@
     </div>
   </main>
 
-  <!-- Scripts (orden correcto) -->
-  app.js</script>
-  dashboard.js</script>
+  <!-- Scripts: usa 'defer' para cargar tras el HTML -->
+  <script src="app.js" defer></script>
+  <script src="dashboard.js" defer></script>
 </body>
 </html>
