@@ -20,7 +20,7 @@
   <meta name="msapplication-TileColor" content="#0b0b0b" />
   <meta name="color-scheme" content="dark only" />
 
-  <!-- Estilos locales (tablas + barra “carretera”) -->
+  <!-- Estilos locales (filtros + tablas; la "carretera" está en styles.css) -->
   <style>
     .section-title { margin: 0 0 6px; }
     .fine { color: var(--muted); margin: 0 0 14px; }
@@ -37,17 +37,16 @@
       -webkit-appearance:none; -moz-appearance:none; appearance:none;
     }
     .filters option { color:#fff; background:#0f0f0f; }
-
     .loading { display:flex; align-items:center; gap:10px; color: var(--muted); }
     .dotloader { width:10px; height:10px; border-radius:50%; background: var(--brand); animation:pulse .9s infinite alternate ease-in-out; }
     @keyframes pulse { from { transform:scale(.9); opacity:.7 } to { transform:scale(1.15); opacity:1 } }
 
     /* TABLAS */
     .table-wrap { overflow:auto; border-radius:12px; border:1px solid var(--stroke); background:var(--card); }
-    table { width:100%; border-collapse:collapse; min-width:760px; }
+    table { width:100%; border-collapse:collapse; min-width:980px; }
     thead th {
       text-align:left; font-weight:800;
-      /* color viene desde styles.css -> table thead th { color: var(--brand) } */
+      /* color viene de styles.css: table thead th { color: var(--brand) } */
       background:#0e0e0e;
       padding:12px;
       border-bottom:2px solid var(--brand);
@@ -59,65 +58,6 @@
     tfoot td { padding:12px; border-top:2px solid var(--brand); font-weight:800; color:#fff; background:#0e0e0e; }
     .num { text-align:right; white-space:nowrap; }
     .muted { color:var(--muted); }
-
-    /* ===== Barra “carretera con camioncito” ===== */
-    .cell-stat { display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
-    .cell-top { display:flex; gap:8px; align-items:baseline; }
-    .cell-top .pct { color:#fff; font-weight:700; font-size:.92rem; }
-
-    .road-progress {
-      width: 260px;
-      height: 18px;
-      border-radius: 9999px;
-      background: #ECECEC;
-      box-shadow:
-        inset 0 0 0 2px rgba(255,255,255,.9),
-        0 1px 2px rgba(0,0,0,.25);
-      position: relative;
-      overflow: hidden;
-    }
-    .road-progress .road-bar {
-      position: relative;
-      height: 100%;
-      margin: 0;
-      width: 0%;
-      /* degradado usa la paleta global */
-      background: linear-gradient(90deg, var(--brand), var(--brand-2));
-      border-radius: inherit;
-      filter: saturate(.92) brightness(.98);
-      box-shadow:
-        inset 0 1px 1px rgba(255,255,255,.35),
-        inset 0 -1px 1px rgba(0,0,0,.15);
-      transition: width .45s ease;
-    }
-    .road-progress .road-bar::before {
-      content:"";
-      position:absolute;
-      left:12px; right:28px; top:50%;
-      height:2px;
-      transform:translateY(-50%);
-      background:
-        repeating-linear-gradient(
-          90deg,
-          rgba(255,255,255,.95) 0 16px,
-          rgba(255,255,255,0) 16px 32px
-        );
-      border-radius:2px;
-      pointer-events:none;
-    }
-    .road-progress .road-bar::after {
-      content:"";
-      position:absolute;
-      right:6px; top:50%; transform:translateY(-50%);
-      width:20px; height:20px;
-      background-repeat:no-repeat; background-size:contain;
-      filter: drop-shadow(0 1px 1px rgba(0,0,0,.35));
-      background-image: url("data:image/svg+xml;utf8,\
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'>\
-<path d='M3 7c0-1.1.9-2 2-2h8v8H3V7zM15 7h3.8c.3 0 .6.1.8.4l2.3 3.1c.1.2.2.4.2.7V13h-7V7zM7 18.5A1.5 1.5 0 1 1 7 15.5a1.5 1.5 0 0 1 0 3zM18 18.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM2 14h20v1.5c0 .3-.2.5-.5.5H21a3 3 0 0 1-6 0H9a3 3 0 0 1-6 0H2.5c-.3 0-.5-.2-.5-.5V14z'/>\
-</svg>");
-    }
-    .road-progress .road-bar[data-small="1"]::after{ display:none; }
   </style>
 </head>
 <body>
@@ -129,31 +69,39 @@
       <h1 class="section-title">Dashboard</h1>
       <p class="fine">
         Resumen general y por <strong>Canal</strong> con filtro por <strong>Centro</strong>.
-        Se excluyen filas con <strong>Placa = FRT-001</strong>.
+        Se excluyen filas con <strong>Placa = FRT-001</strong>. Para <strong># Vehículos</strong> no se consideran placas <strong>RES-CLI</strong>.
       </p>
 
       <!-- ====== TABLA GLOBAL POR CENTRO (NO FILTRADA) ====== -->
       <h2 class="section-title">Resumen Global por Centro (no filtrado)</h2>
-      <p class="fine">No se ve afectado por el filtro. Totales calculados excluyendo <strong>FRT-001</strong>.</p>
+      <p class="fine">No se ve afectado por el filtro. Totales calculados excluyendo <strong>FRT-001</strong>. <em># Vehículos excluye RES-CLI</em>.</p>
       <div class="table-wrap card" style="margin-bottom:18px">
         <table>
           <thead>
             <tr>
               <th>Centro</th>
               <th class="num"># Clientes</th>
+              <th class="num"># Vehículos</th>
               <th class="num">Kg Plan.</th>
               <th class="num">Valor (S/.)</th>
+              <th class="num">Kg/Vehículo</th>
+              <th class="num">Kg/Cliente</th>
+              <th class="num">Clientes/Vehículo</th>
             </tr>
           </thead>
           <tbody id="tbodyCentro">
-            <tr><td colspan="4" class="muted" style="padding:18px">Sin datos.</td></tr>
+            <tr><td colspan="8" class="muted" style="padding:18px">Sin datos.</td></tr>
           </tbody>
           <tfoot>
             <tr>
               <td>Total</td>
               <td class="num" id="totClientesCen">0</td>
+              <td class="num" id="totVehCen">0</td>
               <td class="num" id="totKgCen">0</td>
               <td class="num" id="totValCen">0</td>
+              <td class="num" id="totKgVehCen">0</td>
+              <td class="num" id="totKgCliCen">0</td>
+              <td class="num" id="totCliVehCen">0</td>
             </tr>
           </tfoot>
         </table>
@@ -161,7 +109,7 @@
 
       <!-- ====== FILTROS ====== -->
       <h2 class="section-title">Resumen por Canal (filtrado)</h2>
-      <p class="fine">Filtrado por <strong>Centro</strong>. Excluye <strong>FRT-001</strong>.</p>
+      <p class="fine">Filtrado por <strong>Centro</strong>. Excluye <strong>FRT-001</strong>. <em># Vehículos excluye RES-CLI</em>.</p>
       <div class="filters card" role="region" aria-label="Filtros de Dashboard">
         <div class="control">
           <label for="locationFilter">Centro</label>
@@ -182,29 +130,38 @@
             <tr>
               <th>Canal</th>
               <th class="num"># Clientes</th>
+              <th class="num"># Vehículos</th>
               <th class="num">Kg Plan.</th>
               <th class="num">Valor (S/.)</th>
+              <th class="num">Kg/Vehículo</th>
+              <th class="num">Kg/Cliente</th>
+              <th class="num">Clientes/Vehículo</th>
             </tr>
           </thead>
           <tbody id="summaryBody">
-            <tr><td colspan="4" class="muted" style="padding:18px">Sin datos.</td></tr>
+            <tr><td colspan="8" class="muted" style="padding:18px">Sin datos.</td></tr>
           </tbody>
           <tfoot>
             <tr>
               <td>Total</td>
               <td class="num" id="totClientes">0</td>
+              <td class="num" id="totVeh">0</td>
               <td class="num" id="totKg">0</td>
               <td class="num" id="totVal">0</td>
+              <td class="num" id="totKgVeh">0</td>
+              <td class="num" id="totKgCli">0</td>
+              <td class="num" id="totCliVeh">0</td>
             </tr>
           </tfoot>
         </table>
       </div>
 
-      <!-- ====== TABLA: POR RANGO DE KG PLAN (FILTRADA) ====== -->
+      <!-- ====== TABLA POR RANGO DE KG PLAN (FILTRADA) ====== -->
       <h2 class="section-title">Resumen por Rango de Kg Plan (filtrado)</h2>
       <p class="fine">
         Se ve afectada por el filtro de <strong>Centro</strong>. Excluye <strong>FRT-001</strong>.
         <strong>Cada cliente se cuenta una sola vez</strong>, según el <strong>Kg Plan total del día</strong>.
+        <em># Vehículos excluye RES-CLI</em>.
       </p>
       <div class="table-wrap card">
         <table>
@@ -212,19 +169,27 @@
             <tr>
               <th>Rango Kg Plan</th>
               <th class="num"># Clientes</th>
+              <th class="num"># Vehículos</th>
               <th class="num">Kg Plan.</th>
               <th class="num">Valor (S/.)</th>
+              <th class="num">Kg/Vehículo</th>
+              <th class="num">Kg/Cliente</th>
+              <th class="num">Clientes/Vehículo</th>
             </tr>
           </thead>
           <tbody id="tbodyRangos">
-            <tr><td colspan="4" class="muted" style="padding:18px">Sin datos.</td></tr>
+            <tr><td colspan="8" class="muted" style="padding:18px">Sin datos.</td></tr>
           </tbody>
           <tfoot>
             <tr>
               <td>Total</td>
               <td class="num" id="totClientesRng">0</td>
+              <td class="num" id="totVehRng">0</td>
               <td class="num" id="totKgRng">0</td>
               <td class="num" id="totValRng">0</td>
+              <td class="num" id="totKgVehRng">0</td>
+              <td class="num" id="totKgCliRng">0</td>
+              <td class="num" id="totCliVehRng">0</td>
             </tr>
           </tfoot>
         </table>
@@ -237,4 +202,3 @@
   <script src="dashboard.js" defer></script>
 </body>
 </html>
-
