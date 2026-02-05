@@ -37,7 +37,7 @@ let ROADMAP_ROWS = [];
 let CATALOGO_MAP = new Map();
 let GLOBAL_AGG   = null;
 
-// ==== CSV utils
+/* ==== CSV utils ==== */
 function detectDelimiter(firstLine = "") {
   const candidates = [",", ";", "\t"];
   const counts = candidates.map(d => firstLine.split(d).length - 1);
@@ -83,7 +83,7 @@ const HTML_ESC_MAP = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'
 const escapeHTML = s => String(s ?? "").replace(/[&<>"']/g, ch => HTML_ESC_MAP[ch]);
 const toKey = s => String(s ?? "").trim().replace(/\s+/g," ").toUpperCase();
 
-// ==== Init
+/* ==== Init ==== */
 (function init(){
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
   else start();
@@ -150,7 +150,7 @@ function renderAll(centroValue){
   renderByRangos(rows);
 }
 
-/* ============== Helpers de agregación / visual ============== */
+/* ==== Helpers de agregación / visual ==== */
 function placaCuentaVehiculo(placaRaw){ const p = toKey(placaRaw); return p && p !== PLACA_NO_VEHICULO; }
 function ratio(a,b){ return b>0 ? (a/b) : 0; }
 const pct = (v,t) => t>0 ? (v/t*100) : 0;
@@ -181,7 +181,7 @@ function aggregateTotals(rows){
   return { clientes: clients.size, vehiculos: plates.size, kg, val };
 }
 
-/* ==================== Card de Indicadores ==================== */
+/* ==== Card de Indicadores ==== */
 function renderKpiCard(rows){
   const el = document.getElementById("kpiCard");
   if (!el) return;
@@ -209,7 +209,7 @@ function renderKpiCard(rows){
   ].join("");
 }
 
-/* ==================== Tabla por Canal ==================== */
+/* ==== Tabla por Canal ==== */
 function renderByCanal(rows){
   const agg = new Map(); // canal -> {clients:Set, veh:Set, kg, val}
   for (const r of rows){
@@ -264,7 +264,7 @@ function renderByCanal(rows){
   document.getElementById("totCliVeh").textContent   = fmtNum.format(ratio(tCli, tVeh));
 }
 
-/* ==================== Tabla por Rangos (POR CLIENTE) ==================== */
+/* ==== Tabla por Rangos (POR CLIENTE) ==== */
 function renderByRangos(rows){
   try{
     const tbody = document.getElementById("tbodyRangos");
