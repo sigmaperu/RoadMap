@@ -1,3 +1,6 @@
+/* dashboard.js – RoadMap Dashboard (tabla + % + barras de progreso) */
+"use strict";
+
 // ===============================
 // CONFIG: URLs correctas (raw.githubusercontent.com)
 // ===============================
@@ -9,10 +12,12 @@ const RM = { Centro: 1, Cliente: 3, KgPlan: 10, Valor: 11 };
 const CT = { Clave: 0, Canal: 21 };
 
 // Formatters
-const fmtInt    = new Intl.NumberFormat("es-PE", { maximumFractionDigits: 0 });
-const fmtNum    = new Intl.NumberFormat("es-PE", { maximumFractionDigits: 2 });
-const fmtSoles  = new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN", maximumFractionDigits: 2 });
-const toKey     = s => String(s ?? "").trim().replace(/\s+/g," ").toUpperCase();
+const fmtInt   = new Intl.NumberFormat("es-PE", { maximumFractionDigits: 0 });
+const fmtNum   = new Intl.NumberFormat("es-PE", { maximumFractionDigits: 2 });
+const fmtSoles = new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN", maximumFractionDigits: 2 });
+
+// Normaliza claves (cliente)
+const toKey = s => String(s ?? "").trim().replace(/\s+/g, " ").toUpperCase();
 
 // Estado
 let ROADMAP_ROWS = [];
@@ -27,12 +32,15 @@ function detectDelimiter(firstLine) {
     ";": (firstLine.match(/;/g) || []).length,
     "\t": (firstLine.match(/\t/g) || []).length,
   };
+  // toma el separador más frecuente
   return Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0] || ",";
 }
 
 function parseCSV(text) {
   if (!text) return [];
+  // quitar BOM
   if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+
   const firstNL = text.indexOf("\n");
   const headerLine = firstNL >= 0 ? text.slice(0, firstNL) : text;
   const delim = detectDelimiter(headerLine);
@@ -57,6 +65,7 @@ function parseCSV(text) {
     }
   }
   if (cur.length > 0 || row.length > 0) { row.push(cur); rows.push(row); }
+  // filtrar filas vacías
   return rows.filter(r => r.some(x => String(x).trim() !== ""));
 }
 
@@ -80,14 +89,29 @@ function escapeHTML(s) { return String(s ?? "").replace(/[&<>"']/g, ch => HTML_E
 // ===============================
 // Init
 // ===============================
-(async function init() {
+(function init() {
+  // Esperar a que el DOM esté listo (por si no se usa defer)
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", start);
+  } else {
+    start();
+  }
+})();
+
+async function start() {
   const status = document.getElementById("status");
   try {
     if (status) status.querySelector("span:last-child").textContent = "Descargando CSV…";
 
     const [roadmapText, catalogText] = await Promise.all([
-      fetch(ROADMAP_CSV_URL, { cache:"no-store" }).then(r => { if(!r.ok) throw new Error("RoadMap.csv HTTP "+r.status); return r.text(); }),
-      fetch(CATALOGO_CSV_URL, { cache:"no-store" }).then(r => { if(!r.ok) throw new Error("Catalogo.csv HTTP "+r.status); return r.text(); }),
+      fetch(ROADMAP_CSV_URL, { cache:"no-store" }).then(r => {
+        if(!r.ok) throw new Error("RoadMap.csv HTTP "+r.status);
+        return r.text();
+      }),
+      fetch(CATALOGO_CSV_URL, { cache:"no-store" }).then(r => {
+        if(!r.ok) throw new Error("Catalogo.csv HTTP "+r.status);
+        return r.text();
+      }),
     ]);
 
     let roadmap = parseCSV(roadmapText);
@@ -135,7 +159,7 @@ function escapeHTML(s) { return String(s ?? "").replace(/[&<>"']/g, ch => HTML_E
     console.error("Error cargando datos:", err);
     if (status) status.innerHTML = `<span>⚠️ ${String(err.message || err)}</span>`;
   }
-})();
+}
 
 // ===============================
 // Render tabla con % y barra de progreso
@@ -207,3 +231,4 @@ function render(centroValue) {
   document.getElementById("totKg").textContent       = fmtNum.format(totKg);
   document.getElementById("totVal").textContent      = fmtSoles.format(totVal).replace("S/.", "S/.");
 }
+``
