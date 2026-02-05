@@ -20,6 +20,7 @@ const fmtSoles = new Intl.NumberFormat("es-PE", { style: "currency", currency: "
 let ROADMAP_ROWS = [];
 let CATALOGO_MAP = new Map();
 
+// ========= CSV utils =========
 function detectDelimiter(firstLine) {
   const counts = { ",":(firstLine.match(/,/g)||[]).length, ";":(firstLine.match(/;/g)||[]).length, "\t":(firstLine.match(/\t/g)||[]).length };
   return Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0] || ",";
@@ -53,6 +54,7 @@ const HTML_ESC_MAP = { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&
 const escapeHTML = (s) => String(s ?? "").replace(/[&<>"']/g, ch => HTML_ESC_MAP[ch]);
 const toKey = (s) => String(s ?? "").trim().replace(/\s+/g," ").toUpperCase();
 
+// ========= Init =========
 (function init(){
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
   else start();
@@ -104,7 +106,7 @@ async function start(){
   }
 }
 
-/* ===== Helpers de presentación ===== */
+// ========= Presentación =========
 const pct    = (v,t) => t>0 ? (v/t*100) : 0;
 const pctTxt = (p)   => `${p.toFixed(1)}%`;
 
@@ -125,7 +127,7 @@ function cellRoadHTML(valFmt, part){
   `;
 }
 
-/* ===== Tabla GLOBAL por Centro (NO filtrada) ===== */
+// ========= Tabla GLOBAL por Centro =========
 function renderGlobalByCentro(){
   const agg = new Map(); // centro -> {clients:Set, kg, val}
   for (const r of ROADMAP_ROWS){
@@ -168,7 +170,7 @@ function renderGlobalByCentro(){
   document.getElementById("totValCen").textContent      = fmtSoles.format(tVal).replace("S/.", "S/.");
 }
 
-/* ===== Tabla por Canal (FILTRADA por Centro) ===== */
+// ========= Tabla por Canal (filtrada por Centro) =========
 function renderByCanal(centroValue){
   const rows = (centroValue && centroValue!=="__all__")
     ? ROADMAP_ROWS.filter(r=>String(r[RM.Centro]??"").trim()===centroValue)
