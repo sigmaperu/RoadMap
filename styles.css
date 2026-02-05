@@ -26,14 +26,51 @@ body{
 }
 .container{width:92%;max-width:1200px;margin-inline:auto}
 
-/* ===== SECTIONS / CARDS ===== */
+/* ====== HEADER (si usas header.html) ====== */
+.main-header{
+  position:sticky;top:0;z-index:1000;
+  background:#000;
+  border-bottom:1px solid var(--stroke);
+  box-shadow:0 2px 12px rgba(0,0,0,.4);
+}
+.header-content{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  min-height:64px;
+}
+
+/* ✅ FIX de logo (funciona con <img class="logo"> o <a class="logo"><img></a>) */
+.logo{
+  display:inline-flex; align-items:center; justify-content:center;
+  max-height:48px; /* ajusta aquí la altura del logo */
+}
+.logo img, img.logo{
+  display:block;
+  max-height:48px; /* mantiene consistente con el contenedor */
+  height:auto;
+  max-width:200px;  /* evita ensanchar el header si el PNG es grande */
+  width:auto;
+  object-fit:contain;
+}
+
+.nav-menu{ display:flex;align-items:center;gap:28px; }
+.nav-link{
+  color:var(--muted);text-decoration:none;font-weight:600;letter-spacing:.2px;
+  padding:10px 4px;position:relative;transition:.25s color ease;
+}
+.nav-link:hover{color:#fff}
+.nav-link.active{color:var(--brand)}
+.nav-link.active::after{
+  content:"";position:absolute;left:0;bottom:-12px;height:3px;width:100%;background:var(--brand);border-radius:2px;
+}
+
+/* ====== SECTIONS / CARDS ====== */
 .section{padding:60px 0}
 .card{
   background:var(--card);padding:18px;border-radius:var(--radius);
   border:1px solid var(--stroke);box-shadow:var(--shadow);
 }
 
-/* ===== FILTRO ARRIBA ===== */
+/* ====== FILTRO ARRIBA ====== */
 .filters{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin: 0 0 14px; }
 .filters .control{
   display:inline-flex; gap:10px; align-items:center;
@@ -49,7 +86,7 @@ body{
 .dotloader{ width:10px; height:10px; border-radius:50%; background: var(--brand); animation:pulse .9s infinite alternate ease-in-out; }
 @keyframes pulse{ from { transform:scale(.9); opacity:.7 } to { transform:scale(1.15); opacity:1 } }
 
-/* ===== CARD DE INDICADORES ===== */
+/* ====== CARD DE INDICADORES ====== */
 .kpi-card{
   display:grid; gap:14px;
   grid-template-columns:repeat(4,minmax(160px,1fr));
@@ -62,7 +99,7 @@ body{
 .kpi .kpi-value{ font-size:1.15rem; font-weight:800; color:#fff; display:flex; align-items:baseline; gap:8px; }
 .kpi .kpi-value .pct{ color:var(--brand); font-weight:800; font-size:.95rem; }
 
-/* ===== TABLAS (compactas) ===== */
+/* ====== TABLAS (compactas) ====== */
 .table-wrap{ overflow:auto; border-radius:12px; border:1px solid var(--stroke); background:var(--card); }
 table{ width:100%; border-collapse:collapse; min-width:960px; font-size:.95rem; }
 thead th{
@@ -79,7 +116,7 @@ tfoot td{ padding:10px; border-top:2px solid var(--brand); font-weight:800; colo
 .num{ text-align:right; white-space:nowrap; }
 .muted{ color:var(--muted); }
 
-/* ===== Carretera GLOBAL (compacta) ===== */
+/* ====== Carretera GLOBAL (compacta) ====== */
 .cell-stat{ display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
 .cell-top{ display:flex; gap:8px; align-items:baseline; }
 .cell-top .pct{ color:#fff; font-weight:700; font-size:.85rem; }
@@ -125,14 +162,16 @@ tfoot td{ padding:10px; border-top:2px solid var(--brand); font-weight:800; colo
 }
 .road-progress .road-bar[data-small="1"]::after{ display:none; }
 
-/* ===== Responsive ===== */
+/* ====== Responsive ====== */
 @media (max-width: 1024px){
+  .header-content{min-height:60px}
+  .logo, .logo img, img.logo{max-height:44px}
   .kpi-card{ grid-template-columns:repeat(2,minmax(150px,1fr)); }
   table{ min-width:880px; }
 }
 @media (max-width: 768px){
   .container{width:94%}
+  .logo, .logo img, img.logo{max-height:40px}
   .kpi-card{ grid-template-columns:1fr; }
   table{ min-width:820px; font-size:.92rem; }
 }
-``
