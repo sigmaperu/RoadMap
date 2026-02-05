@@ -37,34 +37,22 @@ body{
   display:flex;align-items:center;justify-content:space-between;gap:16px;
   min-height:64px;
 }
-
-/* ✅ FIX de logo (funciona con <img class="logo"> o <a class="logo"><img></a>) */
+/* FIX de logo, funciona con <img class="logo"> o <a class="logo"><img></a> */
 .logo{
   display:inline-flex; align-items:center; justify-content:center;
-  max-height:48px; /* ajusta aquí la altura del logo */
+  max-height:48px;
 }
 .logo img, img.logo{
   display:block;
-  max-height:48px; /* mantiene consistente con el contenedor */
+  max-height:48px;
   height:auto;
-  max-width:200px;  /* evita ensanchar el header si el PNG es grande */
+  max-width:200px;
   width:auto;
   object-fit:contain;
 }
 
-.nav-menu{ display:flex;align-items:center;gap:28px; }
-.nav-link{
-  color:var(--muted);text-decoration:none;font-weight:600;letter-spacing:.2px;
-  padding:10px 4px;position:relative;transition:.25s color ease;
-}
-.nav-link:hover{color:#fff}
-.nav-link.active{color:var(--brand)}
-.nav-link.active::after{
-  content:"";position:absolute;left:0;bottom:-12px;height:3px;width:100%;background:var(--brand);border-radius:2px;
-}
-
 /* ====== SECTIONS / CARDS ====== */
-.section{padding:60px 0}
+.section{padding:56px 0}
 .card{
   background:var(--card);padding:18px;border-radius:var(--radius);
   border:1px solid var(--stroke);box-shadow:var(--shadow);
@@ -86,44 +74,97 @@ body{
 .dotloader{ width:10px; height:10px; border-radius:50%; background: var(--brand); animation:pulse .9s infinite alternate ease-in-out; }
 @keyframes pulse{ from { transform:scale(.9); opacity:.7 } to { transform:scale(1.15); opacity:1 } }
 
-/* ====== CARD DE INDICADORES ====== */
+/* ====== KPI CARDS (mejor estilo + iconos) ====== */
 .kpi-card{
   display:grid; gap:14px;
-  grid-template-columns:repeat(4,minmax(160px,1fr));
+  grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); /* se autoajusta a 7 cards */
 }
 .kpi{
-  background:#0f0f0f; border:1px solid #222; border-radius:12px; padding:12px 14px;
-  display:flex; flex-direction:column; gap:8px;
+  position:relative;
+  background:linear-gradient(180deg,#101010, #0c0c0c);
+  border-radius:14px;
+  border:1px solid #222;
+  padding:14px 14px 12px 14px;
+  display:flex; flex-direction:column; gap:10px;
+  box-shadow:0 6px 18px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.02);
+  transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
-.kpi .kpi-label{ color:var(--muted); font-weight:700; font-size:.9rem; letter-spacing:.2px; }
-.kpi .kpi-value{ font-size:1.15rem; font-weight:800; color:#fff; display:flex; align-items:baseline; gap:8px; }
-.kpi .kpi-value .pct{ color:var(--brand); font-weight:800; font-size:.95rem; }
+.kpi:hover{
+  transform:translateY(-2px);
+  border-color:#2a2a2a;
+  box-shadow:0 10px 26px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.04);
+}
+.kpi-head{
+  display:flex; align-items:center; gap:10px;
+}
+.kpi-icon{
+  width:28px; height:28px; flex:0 0 28px; border-radius:8px;
+  background:linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%);
+  display:inline-flex; align-items:center; justify-content:center;
+  box-shadow:0 2px 10px rgba(241,196,15,.35);
+}
+.kpi-icon::before{
+  content:""; width:18px; height:18px; display:block;
+  background-size:contain; background-repeat:no-repeat; background-position:center;
+  filter:drop-shadow(0 1px 1px rgba(0,0,0,.35));
+}
+.kpi-label{ color:#eaeaea; font-weight:800; letter-spacing:.2px; font-size:.95rem; }
 
-/* ====== TABLAS (compactas) ====== */
+.kpi-value{ font-size:1.15rem; font-weight:800; color:#fff; display:flex; align-items:baseline; gap:8px; }
+.kpi-value .pct{ color:var(--brand); font-weight:800; font-size:.95rem; }
+
+/* Iconografía por tipo (SVG inline en CSS) */
+.kpi--clientes .kpi-icon::before{
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'><path d='M16 11c1.66 0 3-1.34 3-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.96 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z'/></svg>");
+}
+.kpi--vehiculos .kpi-icon::before{
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'><path d='M3 7c0-1.1.9-2 2-2h8v8H3V7zM15 7h3.8c.3 0 .6.1.8.4l2.3 3.1c.1.2.2.4.2.7V13h-7V7zM7 18.5A1.5 1.5 0 1 1 7 15.5a1.5 1.5 0 0 1 0 3zM18 18.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM2 14h20v1.5c0 .3-.2.5-.5.5H21a3 3 0 0 1-6 0H9a3 3 0 0 1-6 0H2.5c-.3 0-.5-.2-.5-.5V14z'/></svg>");
+}
+.kpi--kg .kpi-icon::before{
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'><path d='M5 20h14l-3-12H8L5 20zm7-14a3 3 0 00-3 3h6a3 3 0 00-3-3z'/></svg>");
+}
+.kpi--valor .kpi-icon::before{
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'><path d='M12 3C7.03 3 3 7.03 3 12h2a7 7 0 1114 0h2c0-4.97-4.03-9-9-9zm1 5h-2v3H8v2h3v3h2v-3h3v-2h-3V8z'/></svg>");
+}
+.kpi--kgveh .kpi-icon::before{
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'><path d='M12 3a9 9 0 100 18 9 9 0 000-18zm1 4h-2v6h6v-2h-4V7z'/></svg>");
+}
+.kpi--kgcli .kpi-icon::before{
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4a4 4 0 100 8zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>");
+}
+.kpi--cliveh .kpi-icon::before{
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'><path d='M5 16h14v2H5zM5 8h14v2H5zM5 12h14v2H5z'/></svg>");
+}
+
+/* ====== TABLAS (más compactas para evitar scroll) ====== */
 .table-wrap{ overflow:auto; border-radius:12px; border:1px solid var(--stroke); background:var(--card); }
-table{ width:100%; border-collapse:collapse; min-width:960px; font-size:.95rem; }
+table{
+  width:100%; border-collapse:collapse;
+  min-width:860px;             /* <- antes 960px */
+  font-size:.9rem;             /* <- más compacto */
+}
 thead th{
   text-align:left; font-weight:800; color:var(--brand);
   background:#0e0e0e;
-  padding:10px 10px;
+  padding:8px 8px;             /* <- antes 10px */
   border-bottom:2px solid var(--brand);
   position:sticky; top:0; z-index:1;
   letter-spacing:.2px;
 }
-tbody td{ padding:10px; border-bottom:1px solid #1a1a1a; color:var(--muted); vertical-align:middle; }
+tbody td{ padding:8px; border-bottom:1px solid #1a1a1a; color:var(--muted); vertical-align:middle; }
 tbody tr:hover{ background:#0f0f0f; }
-tfoot td{ padding:10px; border-top:2px solid var(--brand); font-weight:800; color:#fff; background:#0e0e0e; }
+tfoot td{ padding:8px; border-top:2px solid var(--brand); font-weight:800; color:#fff; background:#0e0e0e; }
 .num{ text-align:right; white-space:nowrap; }
 .muted{ color:var(--muted); }
 
 /* ====== Carretera GLOBAL (compacta) ====== */
 .cell-stat{ display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
 .cell-top{ display:flex; gap:8px; align-items:baseline; }
-.cell-top .pct{ color:#fff; font-weight:700; font-size:.85rem; }
+.cell-top .pct{ color:#fff; font-weight:700; font-size:.82rem; }
 
 .road-progress{
-  width: 180px;
-  height: 14px;
+  width: 140px; /* <- antes 180px para caber sin scroll */
+  height: 12px;
   border-radius: 9999px;
   background: #ECECEC;
   box-shadow: inset 0 0 0 2px rgba(255,255,255,.9), 0 1px 2px rgba(0,0,0,.25);
@@ -143,22 +184,17 @@ tfoot td{ padding:10px; border-top:2px solid var(--brand); font-weight:800; colo
 }
 .road-progress .road-bar::before{
   content:"";
-  position:absolute;
-  left:10px; right:24px; top:50%;
+  position:absolute; left:9px; right:22px; top:50%;
   height:2px; transform:translateY(-50%);
   background: repeating-linear-gradient(90deg, rgba(255,255,255,.95) 0 16px, rgba(255,255,255,0) 16px 32px);
   border-radius:2px; pointer-events:none;
 }
 .road-progress .road-bar::after{
   content:"";
-  position:absolute;
-  right:5px; top:50%; transform:translateY(-50%);
-  width:16px; height:16px; background-repeat:no-repeat; background-size:contain;
+  position:absolute; right:5px; top:50%; transform:translateY(-50%);
+  width:14px; height:14px; background-repeat:no-repeat; background-size:contain;
   filter: drop-shadow(0 1px 1px rgba(0,0,0,.35));
-  background-image: url("data:image/svg+xml;utf8,\
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'>\
-<path d='M3 7c0-1.1.9-2 2-2h8v8H3V7zM15 7h3.8c.3 0 .6.1 .8.4l2.3 3.1c.1.2 .2.4 .2.7V13h-7V7zM7 18.5A1.5 1.5 0 1 1 7 15.5a1.5 1.5 0 0 1 0 3zM18 18.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM2 14h20v1.5c0 .3-.2 .5-.5 .5H21a3 3 0 0 1-6 0H9a3 3 0 0 1-6 0H2.5c-.3 0-.5-.2-.5-.5V14z'/>\
-</svg>");
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'><path d='M3 7c0-1.1.9-2 2-2h8v8H3V7zM15 7h3.8c.3 0 .6.1.8.4l2.3 3.1c.1.2.2.4.2.7V13h-7V7zM7 18.5A1.5 1.5 0 1 1 7 15.5a1.5 1.5 0 0 1 0 3zM18 18.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM2 14h20v1.5c0 .3-.2.5-.5.5H21a3 3 0 0 1-6 0H9a3 3 0 0 1-6 0H2.5c-.3 0-.5-.2-.5-.5V14z'/></svg>");
 }
 .road-progress .road-bar[data-small="1"]::after{ display:none; }
 
@@ -166,12 +202,13 @@ tfoot td{ padding:10px; border-top:2px solid var(--brand); font-weight:800; colo
 @media (max-width: 1024px){
   .header-content{min-height:60px}
   .logo, .logo img, img.logo{max-height:44px}
-  .kpi-card{ grid-template-columns:repeat(2,minmax(150px,1fr)); }
-  table{ min-width:880px; }
+  .kpi-card{ grid-template-columns:repeat(2,minmax(190px,1fr)); }
+  table{ min-width:820px; }
 }
 @media (max-width: 768px){
   .container{width:94%}
   .logo, .logo img, img.logo{max-height:40px}
   .kpi-card{ grid-template-columns:1fr; }
-  table{ min-width:820px; font-size:.92rem; }
+  table{ min-width:760px; font-size:.88rem; }
+  .road-progress{ width: 128px; }
 }
