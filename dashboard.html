@@ -16,11 +16,11 @@
   <link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
   <link rel="icon" type="image/png" sizes="16x16" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
   <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
-  <link rel="manifest" href="site.webmanifest">
+  <link rel="manifest" href="site.webmanifest" />
   <meta name="color-scheme" content="dark only" />
 </head>
 <body>
-  <!-- (Opcional) Header si lo cargas con app.js -->
+  <!-- Si usas header inyectado -->
   <div id="header-placeholder" data-src="header.html"></div>
 
   <main class="section">
@@ -42,9 +42,7 @@
 
       <!-- ====== CARD DE INDICADORES (afectada por el filtro) ====== -->
       <section class="card" aria-label="Indicadores">
-        <div class="kpi-card" id="kpiCard">
-          <!-- Se llena desde dashboard.js -->
-        </div>
+        <div class="kpi-card" id="kpiCard"></div>
       </section>
 
       <!-- ====== TABLA POR CANAL (FILTRADA) ====== -->
@@ -120,7 +118,7 @@
     </div>
   </main>
 
-  <!-- Scripts -->
+  <!-- Scripts (bien formados) -->
   <script src="app.js" defer></script>
   <script src="dashboard.js" defer></script>
 </body>
