@@ -130,6 +130,65 @@ table thead th{
   color: var(--brand);
 }
 
+/* ===== Carretera (global, reutilizable) ===== */
+.cell-stat{ display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
+.cell-top{ display:flex; gap:8px; align-items:baseline; }
+.cell-top .pct{ color:#fff; font-weight:700; font-size:.92rem; }
+
+.road-progress{
+  width: 260px;
+  height: 18px;
+  border-radius: 9999px;
+  background: #ECECEC; /* tramo no recorrido */
+  box-shadow:
+    inset 0 0 0 2px rgba(255,255,255,.9),
+    0 1px 2px rgba(0,0,0,.25);
+  position: relative;
+  overflow: hidden;
+}
+.road-progress .road-bar{
+  position: relative;
+  height: 100%;
+  margin: 0;
+  width: 0%;
+  background: linear-gradient(90deg, var(--brand), var(--brand-2));
+  border-radius: inherit;
+  filter: saturate(.92) brightness(.98);
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,.35),
+    inset 0 -1px 1px rgba(0,0,0,.15);
+  transition: width .45s ease;
+}
+.road-progress .road-bar::before{
+  content:"";
+  position:absolute;
+  left:12px; right:28px; top:50%;
+  height:2px;
+  transform:translateY(-50%);
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255,255,255,.95) 0 16px,
+      rgba(255,255,255,0) 16px 32px
+    );
+  border-radius:2px;
+  pointer-events:none;
+}
+.road-progress .road-bar::after{
+  content:"";
+  position:absolute;
+  right:6px; top:50%; transform:translateY(-50%);
+  width:20px; height:20px;
+  background-repeat:no-repeat; background-size:contain;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,.35));
+  background-image: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'>\
+<path d='M3 7c0-1.1.9-2 2-2h8v8H3V7zM15 7h3.8c.3 0 .6.1.8.4l2.3 3.1c.1.2.2.4.2.7V13h-7V7zM7 18.5A1.5 1.5 0 1 1 7 15.5a1.5 1.5 0 0 1 0 3zM18 18.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM2 14h20v1.5c0 .3-.2.5-.5.5H21a3 3 0 0 1-6 0H9a3 3 0 0 1-6 0H2.5c-.3 0-.5-.2-.5-.5V14z'/>\
+</svg>");
+}
+/* Oculta camión en porcentajes muy bajos para no deformar puntas */
+.road-progress .road-bar[data-small="1"]::after{ display:none; }
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 1024px){
   .grid-3{grid-template-columns:repeat(2,1fr)}
@@ -151,3 +210,4 @@ table thead th{
   .grid-3{grid-template-columns:1fr}
   .form-row{grid-template-columns:1fr}
 }
+``
