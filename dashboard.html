@@ -7,27 +7,27 @@
   <title>RoadMap | Dashboard</title>
 
   <!-- Tipografías y CSS global -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="styles.css"/>
 
   <!-- Favicons desde tu logo -->
-  <link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
-  <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
-  <link rel="manifest" href="site.webmanifest">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png"/>
+  <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png"/>
+  <link rel="manifest" href="site.webmanifest"/>
   <meta name="msapplication-TileColor" content="#0b0b0b">
   <meta name="color-scheme" content="dark only">
 
-  <!-- ⚙️ Override de paleta a morado/lila -->
+  <!-- ⚙️ Override de paleta a morado/lila (más suave) -->
   <style>
     :root{
-      --brand: #a855f7;      /* Morado principal */
-      --brand-2:#c084fc;     /* Lila claro */
+      --brand:  #9B76F2;   /* morado suave */
+      --brand-2:#CDBBFF;   /* lila claro */
     }
   </style>
 
-  <!-- Estilos locales (tablas + barra “carretera” mejorada) -->
+  <!-- Estilos locales (tablas + barra “carretera” refinada) -->
   <style>
     .section-title { margin: 0 0 6px; }
     .fine { color: var(--muted); margin: 0 0 14px; }
@@ -53,70 +53,77 @@
     table { width:100%; border-collapse:collapse; min-width:760px; }
     thead th {
       text-align:left; font-weight:800;
-      color:#d6b3ff;                  /* Título con tinte lila (legible) */
+      color:#E6DAFF;                  /* lila bien legible */
       background:#0e0e0e;
       padding:12px;
-      border-bottom:2px solid var(--brand); /* Línea inferior morada */
+      border-bottom:2px solid var(--brand); /* subrayado morado */
       position:sticky; top:0; z-index:1;
       letter-spacing:.2px;
     }
     tbody td { padding:12px; border-bottom:1px solid #1a1a1a; color:var(--muted); vertical-align:middle; }
     tbody tr:hover { background:#0f0f0f; }
     tfoot td {
-      padding:12px; border-top:2px solid var(--brand);  /* Línea superior morada */
+      padding:12px; border-top:2px solid var(--brand);
       font-weight:800; color:#fff; background:#0e0e0e;
     }
     .num { text-align:right; white-space:nowrap; }
     .muted { color:var(--muted); }
 
-    /* ===== Barra “carretera con camioncito” — versión cuidada ===== */
+    /* ===== Barra “carretera con camioncito” (suavizada y a altura completa) ===== */
     .cell-stat { display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
     .cell-top { display:flex; gap:8px; align-items:baseline; }
-    .cell-top .pct { color:#d6b3ff; font-weight:700; font-size:.92rem; } /* % lila suave */
+    .cell-top .pct { color:#E6DAFF; font-weight:700; font-size:.92rem; }
 
-    /* Contenedor externo (píldora con borde claro y pista clara, como en tu referencia) */
+    /* Cápsula exterior (fondo claro + borde blanco suave, sombra sutil) */
     .road-progress {
-      width: 260px;                 /* puedes ajustar 220–280 px */
-      height: 18px;                 /* proporción similar a la referencia */
+      width: 260px;                 /* ajustable: 220–280 */
+      height: 18px;                 /* altura de tu referencia */
       border-radius: 9999px;
-      background: #f1f1f1;          /* tramo no recorrido (claro) */
+      background: #ECECEC;          /* tramo no recorrido */
       box-shadow:
-        inset 0 0 0 2px rgba(255,255,255,.95),  /* borde blanco */
-        0 1px 2px rgba(0,0,0,.25);              /* leve relieve */
+        inset 0 0 0 2px rgba(255,255,255,.9),
+        0 1px 2px rgba(0,0,0,.25);
       position: relative;
       overflow: hidden;
     }
-    /* Barra interior (relleno morado → lila, redondeada y con margen para ver el borde) */
+    /* Barra interior: cubre (casi) todo el alto para que “toque” arriba y abajo.
+       Usamos un margen pequeño para mantener el bisel del borde externo visible,
+       pero si la quieres 100% alto, cambia margin:0; height:100%; */
     .road-progress .road-bar {
       position: relative;
-      height: calc(100% - 10px);    /* deja margen interior para el “bisel” */
-      margin: 5px;
+      height: calc(100% - 4px);     /* casi todo el alto */
+      margin: 2px;                  /* deja 2px para el bisel blanco */
       width: 0%;
-      background: linear-gradient(90deg, #7c3aed, #c084fc);
+      background: linear-gradient(90deg, rgba(155,118,242,.95), rgba(205,187,255,.95));
       border-radius: 9999px;
-      box-shadow: inset 0 -1px 0 rgba(0,0,0,.25);
+      /* suavizado general del color */
+      filter: saturate(.92) brightness(.98);
+      box-shadow:
+        inset 0 1px 1px rgba(255,255,255,.35),
+        inset 0 -1px 1px rgba(0,0,0,.15);
       transition: width .45s ease;
     }
-    /* Línea discontinua (ancha y bien marcada) solo dentro del tramo recorrido */
+    /* Carretera: líneas discontinuas que cubren TODO el alto de la barra morada */
     .road-progress .road-bar::before {
       content:"";
       position:absolute;
-      left:16px; right:34px; top:50%;
-      height:4px; transform:translateY(-50%);
+      inset: 0 28px 0 12px;         /* deja espacio para el camión al final */
       background:
         repeating-linear-gradient(
           90deg,
-          rgba(255,255,255,.95) 0 22px,  /* tramo pintado */
-          rgba(255,255,255,0)   22px 40px /* hueco */
+          rgba(255,255,255,.95) 0 26px,  /* tramo pintado (más ancho) */
+          rgba(255,255,255,0)   26px 46px/* hueco (proporción agradable) */
         );
-      border-radius:2px;
+      /* la carretera ocupa todo el alto de la barra */
+      border-radius: inherit;
+      mix-blend-mode: screen;       /* se integra mejor al gradiente */
       pointer-events:none;
     }
     /* Camioncito al extremo derecho del tramo morado (SVG blanco) */
     .road-progress .road-bar::after {
       content:"";
       position:absolute;
-      right:8px; top:50%; transform:translateY(-50%);
+      right:6px; top:50%; transform:translateY(-50%);
       width:20px; height:20px;
       background-repeat:no-repeat; background-size:contain;
       filter: drop-shadow(0 1px 1px rgba(0,0,0,.35));
@@ -125,7 +132,7 @@
         <path d='M3 7c0-1.1.9-2 2-2h8v8H3V7zM15 7h3.8c.3 0 .6.1.8.4l2.3 3.1c.1.2.2.4.2.7V13h-7V7zM7 18.5A1.5 1.5 0 1 1 7 15.5a1.5 1.5 0 0 1 0 3zM18 18.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM2 14h20v1.5c0 .3-.2.5-.5.5H21a3 3 0 0 1-6 0H9a3 3 0 0 1-6 0H2.5c-.3 0-.5-.2-.5-.5V14z'/>\
       </svg>");
     }
-    /* Si el porcentaje es muy chico, ocultamos el camioncito para evitar solaparlo con el borde redondo */
+    /* En tramos muy pequeños, oculta el camión para no romper el pill redondeado */
     .road-progress .road-bar[data-small="1"]::after{ display:none; }
   </style>
 </head>
@@ -213,8 +220,8 @@
     </div>
   </main>
 
-  <!-- Scripts (defer asegura ejecución tras parsear el DOM) -->
-  <script defer src="app.js"></script>
-  <script defer src="dashboard.js"></script>
+  <!-- Scripts -->
+  <script src="app.js" defer></script>
+  <script src="dashboard.js" defer></script>
 </body>
 </html>
