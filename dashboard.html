@@ -1,224 +1,24 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#0b0b0b" />
-  <title>RoadMap | Dashboard</title>
+// ... (resto igual que te dejé: carga CSV, exclusión FRT-001, join por canal, render de tablas)
 
-  <!-- Tipografías y CSS global -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+const pct    = (v,t) => t>0 ? (v/t*100) : 0;
+const pctTxt = (p)   => `${p.toFixed(1)}%`;
 
-  <!-- Favicons desde tu logo -->
-  <link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
-  <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
-  <link rel="manifest" href="site.webmanifest">
-  <meta name="msapplication-TileColor" content="#0b0b0b">
-  <meta name="color-scheme" content="dark only">
-
-  <!-- ⚙️ Override de paleta a morado/lila (más suave) -->
-  <style>
-    :root{
-      --brand:  #9B76F2;     /* morado suave */
-      --brand-2:#CDBBFF;     /* lila claro */
-    }
-  </style>
-
-  <!-- Estilos locales (tablas + barra “carretera”) -->
-  <style>
-    .section-title { margin: 0 0 6px; }
-    .fine { color: var(--muted); margin: 0 0 14px; }
-
-    /* FILTROS */
-    .filters { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:14px; }
-    .filters .control {
-      display:inline-flex; gap:10px; align-items:center;
-      background:#0f0f0f; border:1px solid #242424; border-radius:10px; padding:10px 12px;
-    }
-    .filters label { color: var(--muted); font-weight: 700; letter-spacing:.2px; }
-    .filters select {
-      background: transparent; border: 0; color: #fff; font: inherit; outline: none; min-width: 200px;
-      -webkit-appearance:none; -moz-appearance:none; appearance:none;
-    }
-    .filters option { color:#fff; background:#0f0f0f; }
-    .loading { display:flex; align-items:center; gap:10px; color: var(--muted); }
-    .dotloader { width:10px; height:10px; border-radius:50%; background: var(--brand); animation:pulse .9s infinite alternate ease-in-out; }
-    @keyframes pulse { from { transform:scale(.9); opacity:.7 } to { transform:scale(1.15); opacity:1 } }
-
-    /* TABLAS */
-    .table-wrap { overflow:auto; border-radius:12px; border:1px solid var(--stroke); background:var(--card); }
-    table { width:100%; border-collapse:collapse; min-width:760px; }
-    thead th {
-      text-align:left; font-weight:800;
-      color:#E6DAFF;                  /* lila legible */
-      background:#0e0e0e;
-      padding:12px;
-      border-bottom:2px solid var(--brand); /* subrayado morado */
-      position:sticky; top:0; z-index:1;
-      letter-spacing:.2px;
-    }
-    tbody td { padding:12px; border-bottom:1px solid #1a1a1a; color:var(--muted); vertical-align:middle; }
-    tbody tr:hover { background:#0f0f0f; }
-    tfoot td {
-      padding:12px; border-top:2px solid var(--brand);
-      font-weight:800; color:#fff; background:#0e0e0e;
-    }
-    .num { text-align:right; white-space:nowrap; }
-    .muted { color:var(--muted); }
-
-    /* ===== Barra “carretera con camioncito” (suave, carretera a altura completa) ===== */
-    .cell-stat { display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
-    .cell-top { display:flex; gap:8px; align-items:baseline; }
-    .cell-top .pct { color:#E6DAFF; font-weight:700; font-size:.92rem; }
-
-    /* Cápsula exterior (fondo claro + borde blanco suave) */
-    .road-progress {
-      width: 260px;                   /* 220–280 */
-      height: 18px;                   /* altura de referencia */
-      border-radius: 9999px;
-      background: #ECECEC;            /* tramo no recorrido */
-      box-shadow:
-        inset 0 0 0 2px rgba(255,255,255,.9),
-        0 1px 2px rgba(0,0,0,.25);
-      position: relative;
-      overflow: hidden;
-    }
-    /* Tramo lila: AHORA ocupa TODO el alto de la cápsula (sin márgenes) */
-    .road-progress .road-bar {
-      position: relative;
-      height: 100%;
-      margin: 0;
-      width: 0%;
-      background: linear-gradient(90deg, rgba(155,118,242,.95), rgba(205,187,255,.95));
-      border-radius: inherit;
-      filter: saturate(.92) brightness(.98);
-      box-shadow:
-        inset 0 1px 1px rgba(255,255,255,.35),
-        inset 0 -1px 1px rgba(0,0,0,.15);
-      transition: width .45s ease;
-    }
-    /* Carretera: línea discontinua DELGADA centrada, a lo largo de todo el tramo lila */
-    .road-progress .road-bar::before {
-      content:"";
-      position:absolute;
-      left:12px; right:28px; top:50%;
-      height:2px;                     /* más delgada (look señalización) */
-      transform:translateY(-50%);
-      background:
-        repeating-linear-gradient(
-          90deg,
-          rgba(255,255,255,.95) 0 16px,   /* dash fino */
-          rgba(255,255,255,0)   16px 32px /* gap */
-        );
-      border-radius:2px;
-      pointer-events:none;
-    }
-    /* Camioncito blanco al extremo derecho del tramo lila */
-    .road-progress .road-bar::after {
-      content:"";
-      position:absolute;
-      right:6px; top:50%; transform:translateY(-50%);
-      width:20px; height:20px;
-      background-repeat:no-repeat; background-size:contain;
-      filter: drop-shadow(0 1px 1px rgba(0,0,0,.35));
-      background-image: url("data:image/svg+xml;utf8,\
-      <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'>\
-        <path d='M3 7c0-1.1.9-2 2-2h8v8H3V7zM15 7h3.8c.3 0 .6.1.8.4l2.3 3.1c.1.2.2.4.2.7V13h-7V7zM7 18.5A1.5 1.5 0 1 1 7 15.5a1.5 1.5 0 0 1 0 3zM18 18.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM2 14h20v1.5c0 .3-.2.5-.5.5H21a3 3 0 0 1-6 0H9a3 3 0 0 1-6 0H2.5c-.3 0-.5-.2-.5-.5V14z'/>\
-      </svg>");
-    }
-    /* Oculta camión en porcentajes muy bajos (para no deformar puntas) */
-    .road-progress .road-bar[data-small="1"]::after{ display:none; }
-  </style>
-</head>
-<body>
-
-  <!-- ✅ Placeholder correcto para inyectar el header -->
-  <div id="header-placeholder" data-src="header.html"></div>
-
-  <main class="section">
-    <div class="container">
-      <h1 class="section-title">Dashboard</h1>
-      <p class="fine">
-        Resumen general y por <strong>Canal</strong> con filtro por <strong>Centro</strong>.
-        Se excluyen filas con <strong>Placa = FRT-001</strong>.
-      </p>
-
-      <!-- ====== TABLA GLOBAL POR CENTRO (NO FILTRADA) ====== -->
-      <h2 class="section-title">Resumen Global por Centro (no filtrado)</h2>
-      <p class="fine">No se ve afectado por el filtro. Totales calculados excluyendo <strong>FRT-001</strong>.</p>
-      <div class="table-wrap card" style="margin-bottom:18px">
-        <table>
-          <thead>
-            <tr>
-              <th>Centro</th>
-              <th class="num"># Clientes</th>
-              <th class="num">Kg Plan.</th>
-              <th class="num">Valor (S/.)</th>
-            </tr>
-          </thead>
-          <tbody id="tbodyCentro">
-            <tr><td colspan="4" class="muted" style="padding:18px">Sin datos.</td></tr>
-          </tbody>
-          <tfoot>
-            <tr>
-              <td>Total</td>
-              <td class="num" id="totClientesCen">0</td>
-              <td class="num" id="totKgCen">0</td>
-              <td class="num" id="totValCen">0</td>
-            </tr>
-          </tfoot>
-        </table>
+/** Celda con valor + % + barra carretera;
+ *  AHORA la barra lila ocupa TODO el alto de la cápsula (sin márgenes) y
+ *  las líneas blancas son delgadas (2px) para lucir como señalización.
+ */
+function cellRoadHTML(valFmt, part){
+  const p = Math.max(0, Math.min(100, part));
+  const small = p < 10 ? ` data-small="1"` : "";
+  return `
+    <div class="cell-stat">
+      <div class="cell-top">
+        <span>${valFmt}</span>
+        <span class="pct">(${pctTxt(p)})</span>
       </div>
-
-      <!-- ====== FILTROS DEL DASHBOARD ====== -->
-      <h2 class="section-title">Resumen por Canal (filtrado)</h2>
-      <p class="fine">Filtrado por <strong>Centro</strong>. Excluye <strong>FRT-001</strong>.</p>
-      <div class="filters card" role="region" aria-label="Filtros de Dashboard">
-        <div class="control">
-          <label for="locationFilter">Centro</label>
-          <select id="locationFilter">
-            <option value="__all__">Todos los centros</option>
-          </select>
-        </div>
-        <div id="status" class="loading" aria-live="polite">
-          <span class="dotloader" aria-hidden="true"></span>
-          <span>Cargando datos…</span>
-        </div>
+      <div class="road-progress" aria-hidden="true">
+        <div class="road-bar"${small} style="width:${p}%"></div>
       </div>
-
-      <!-- ====== TABLA POR CANAL (FILTRADA) ====== -->
-      <div class="table-wrap card">
-        <table aria-describedby="status">
-          <thead>
-            <tr>
-              <th>Canal</th>
-              <th class="num"># Clientes</th>
-              <th class="num">Kg Plan.</th>
-              <th class="num">Valor (S/.)</th>
-            </tr>
-          </thead>
-          <tbody id="summaryBody">
-            <tr><td colspan="4" class="muted" style="padding:18px">Sin datos.</td></tr>
-          </tbody>
-          <tfoot>
-            <tr>
-              <td>Total</td>
-              <td class="num" id="totClientes">0</td>
-              <td class="num" id="totKg">0</td>
-              <td class="num" id="totVal">0</td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-
     </div>
-  </main>
-
-  <!-- Scripts -->
-  <script defer src="app.js"></script>
-  <script defer src="dashboard.js"></script>
-</body>
-</html>
+  `;
+}
