@@ -1,4 +1,4 @@
-/* dashboard.js – RoadMap Dashboard (dos tablas: Global por Centro + Canal filtrado) */
+/* dashboard.js – RoadMap Dashboard (dos tablas: Global por Centro + Canal filtrado, con barra “carretera”) */
 "use strict";
 
 // ===============================
@@ -92,7 +92,6 @@ function escapeHTML(s) { return String(s ?? "").replace(/[&<>"']/g, ch => HTML_E
 // Init
 // ===============================
 (function init() {
-  // usar 'defer' en los scripts + este guard por si acaso
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", start);
   } else {
@@ -106,14 +105,8 @@ async function start() {
     if (status) status.querySelector("span:last-child").textContent = "Descargando CSV…";
 
     const [roadmapText, catalogText] = await Promise.all([
-      fetch(ROADMAP_CSV_URL, { cache:"no-store" }).then(r => {
-        if(!r.ok) throw new Error("RoadMap.csv HTTP "+r.status);
-        return r.text();
-      }),
-      fetch(CATALOGO_CSV_URL, { cache:"no-store" }).then(r => {
-        if(!r.ok) throw new Error("Catalogo.csv HTTP "+r.status);
-        return r.text();
-      }),
+      fetch(ROADMAP_CSV_URL, { cache:"no-store" }).then(r => { if(!r.ok) throw new Error("RoadMap.csv HTTP "+r.status); return r.text(); }),
+      fetch(CATALOGO_CSV_URL, { cache:"no-store" }).then(r => { if(!r.ok) throw new Error("Catalogo.csv HTTP "+r.status); return r.text(); }),
     ]);
 
     let roadmap = parseCSV(roadmapText);
@@ -166,6 +159,28 @@ async function start() {
 }
 
 // ===============================
+// Helpers de presentación (porcentaje + barra “carretera”)
+// ===============================
+const pct = (value,total) => total>0 ? (value/total*100) : 0;
+const pctTxt = p => `${p.toFixed(1)}%`;
+
+/** Genera la celda con valor + % + barra carretera */
+function cellRoadHTML(valorFormateado, porcentaje) {
+  const p = Math.max(0, Math.min(100, porcentaje)); // 0–100
+  return `
+    <div class="cell-stat">
+      <div class="cell-top">
+        <span>${valorFormateado}</span>
+        <span class="pct">(${pctTxt(p)})</span>
+      </div>
+      <div class="road-progress" aria-hidden="true">
+        <div class="road-bar" style="width:${p}%"></div>
+      </div>
+    </div>
+  `;
+}
+
+// ===============================
 // Tabla GLOBAL por Centro (NO filtrada)
 // ===============================
 function renderGlobalByCentro() {
@@ -193,19 +208,6 @@ function renderGlobalByCentro() {
   const totKg       = data.reduce((s,x)=>s+x.kg,0);
   const totVal      = data.reduce((s,x)=>s+x.val,0);
 
-  // Helpers porcentaje
-  const pct = (value,total) => total>0 ? (value/total*100) : 0;
-  const pctTxt = p => `${p.toFixed(1)}%`;
-  const cellStatHTML = (valFmt, part) => `
-    <div class="cell-stat">
-      <div class="cell-top">
-        <span>${valFmt}</span>
-        <span class="pct">(${pctTxt(part)})</span>
-      </div>
-      <div class="progress"><div class="bar" style="width:${Math.min(100,part)}%"></div></div>
-    </div>
-  `;
-
   // Render
   const tbody = document.getElementById("tbodyCentro");
   tbody.innerHTML = data.length
@@ -216,9 +218,9 @@ function renderGlobalByCentro() {
         return `
           <tr>
             <td>${escapeHTML(r.centro)}</td>
-            <td class="num">${cellStatHTML(fmtInt.format(r.clientes), pCli)}</td>
-            <td class="num">${cellStatHTML(fmtNum.format(r.kg), pKg)}</td>
-            <td class="num">${cellStatHTML(fmtSoles.format(r.val).replace("S/.", "S/."), pVal)}</td>
+            <td class="num">${cellRoadHTML(fmtInt.format(r.clientes), pCli)}</td>
+            <td class="num">${cellRoadHTML(fmtNum.format(r.kg), pKg)}</td>
+            <td class="num">${cellRoadHTML(fmtSoles.format(r.val).replace("S/.", "S/."), pVal)}</td>
           </tr>
         `;
       }).join("")
@@ -261,19 +263,6 @@ function renderByCanal(centroValue) {
   const totKg       = data.reduce((s,x)=>s+x.kg,0);
   const totVal      = data.reduce((s,x)=>s+x.val,0);
 
-  // Helpers porcentaje
-  const pct = (value,total) => total>0 ? (value/total*100) : 0;
-  const pctTxt = p => `${p.toFixed(1)}%`;
-  const cellStatHTML = (valFmt, part) => `
-    <div class="cell-stat">
-      <div class="cell-top">
-        <span>${valFmt}</span>
-        <span class="pct">(${pctTxt(part)})</span>
-      </div>
-      <div class="progress"><div class="bar" style="width:${Math.min(100,part)}%"></div></div>
-    </div>
-  `;
-
   // Render
   const tbody = document.getElementById("summaryBody");
   tbody.innerHTML = data.length
@@ -284,9 +273,9 @@ function renderByCanal(centroValue) {
         return `
           <tr>
             <td>${escapeHTML(r.canal)}</td>
-            <td class="num">${cellStatHTML(fmtInt.format(r.clientes), pCli)}</td>
-            <td class="num">${cellStatHTML(fmtNum.format(r.kg), pKg)}</td>
-            <td class="num">${cellStatHTML(fmtSoles.format(r.val).replace("S/.", "S/."), pVal)}</td>
+            <td class="num">${cellRoadHTML(fmtInt.format(r.clientes), pCli)}</td>
+            <td class="num">${cellRoadHTML(fmtNum.format(r.kg), pKg)}</td>
+            <td class="num">${cellRoadHTML(fmtSoles.format(r.val).replace("S/.", "S/."), pVal)}</td>
           </tr>
         `;
       }).join("")
