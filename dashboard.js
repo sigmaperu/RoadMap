@@ -2,7 +2,7 @@
 "use strict";
 
 // URLs CSV
-const ROADMAP_CSV_URL  = "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
+const ROADMAP_CSV_URL = "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
 const CATALOGO_CSV_URL = "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/Catalogo%20Sigma.csv";
 
 // Índices (0-based)
@@ -14,15 +14,15 @@ const PLACA_EXCLUIR = "FRT-001";
 
 // Rangos de Kg Plan
 const KG_RANGES = [
-  { label: "0–1",          test: kg => kg >= 0   && kg < 1   },
-  { label: "1–3",          test: kg => kg >= 1   && kg < 3   },
-  { label: "3–5",          test: kg => kg >= 3   && kg < 5   },
-  { label: "5–10",         test: kg => kg >= 5   && kg < 10  },
-  { label: "10–20",        test: kg => kg >= 10  && kg < 20  },
-  { label: "20–50",        test: kg => kg >= 20  && kg < 50  },
-  { label: "50–100",       test: kg => kg >= 50  && kg < 100 },
-  { label: "100–200",      test: kg => kg >= 100 && kg < 200 },
-  { label: "200–500",      test: kg => kg >= 200 && kg <= 500 }, // incluye 500
+  { label: "0–1",     test: kg => kg >= 0   && kg < 1   },
+  { label: "1–3",     test: kg => kg >= 1   && kg < 3   },
+  { label: "3–5",     test: kg => kg >= 3   && kg < 5   },
+  { label: "5–10",    test: kg => kg >= 5   && kg < 10  },
+  { label: "10–20",   test: kg => kg >= 10  && kg < 20  },
+  { label: "20–50",   test: kg => kg >= 20  && kg < 50  },
+  { label: "50–100",  test: kg => kg >= 50  && kg < 100 },
+  { label: "100–200", test: kg => kg >= 100 && kg < 200 },
+  { label: "200–500", test: kg => kg >= 200 && kg <= 500 }, // incluye 500
   { label: "Pedidos >500", test: kg => kg > 500 }
 ];
 
@@ -35,38 +35,80 @@ let ROADMAP_ROWS = [];
 let CATALOGO_MAP = new Map();
 
 // ========= CSV utils =========
-function detectDelimiter(firstLine) {
-  const counts = { ",":(firstLine.match(/,/g)||[]).length, ";":(firstLine.match(/;/g)||[]).length, "\t":(firstLine.match(/\t/g)||[]).length };
-  return Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0] || ",";
+function detectDelimiter(firstLine = "") {
+  const candidates = [",", ";", "\t"];
+  const counts = candidates.map(d => firstLine.split(d).length - 1);
+  const max = Math.max(...counts);
+  const idx = counts.indexOf(max);
+  return candidates[idx] || ",";
 }
+
 function parseCSV(text) {
   if (!text) return [];
+  // Quitar BOM si existiera
   if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+
   const firstNL = text.indexOf("\n");
   const delim = detectDelimiter(firstNL >= 0 ? text.slice(0, firstNL) : text);
-  const rows = []; let row=[]; let cur=""; let inQ=false;
-  for (let i=0;i<text.length;i++){
-    const c=text[i], n=text[i+1];
-    if(inQ){ if(c==='\"'&&n==='\"'){cur+='\"';i++;} else if(c==='\"'){inQ=false;} else {cur+=c;} }
-    else { if(c==='\"') inQ=true; else if(c===delim){ row.push(cur); cur=""; } else if(c==='\n'){ row.push(cur); rows.push(row); row=[]; cur=""; } else if(c!=='\r'){ cur+=c; } }
+
+  const rows = [];
+  let row = [];
+  let cur = "";
+  let inQ = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    const n = text[i + 1];
+
+    if (inQ) {
+      if (c === '"' && n === '"') { cur += '"'; i++; }
+      else if (c === '"') { inQ = false; }
+      else { cur += c; }
+    } else {
+      if (c === '"') inQ = true;
+      else if (c === delim) { row.push(cur); cur = ""; }
+      else if (c === "\n") { row.push(cur); rows.push(row); row = []; cur = ""; }
+      else if (c !== "\r") { cur += c; }
+    }
   }
-  if (cur.length>0 || row.length>0){ row.push(cur); rows.push(row); }
+  // Última celda/row si quedó pendiente
+  if (cur.length > 0 || row.length > 0) { row.push(cur); rows.push(row); }
+
+  // Limpia filas totalmente vacías
   return rows.filter(r => r.some(x => String(x).trim() !== ""));
 }
+
 function toNumber(s) {
   if (s == null) return 0;
   let x = String(s).trim();
   if (!x) return 0;
-  x = x.replace(/\u00A0/g," ").replace(/\s+/g," ");
-  if (x.includes(".") && x.includes(",")) x = x.replace(/\./g,"").replace(",",".");
-  else if (x.includes(",")) x = x.replace(/\./g,"").replace(",",".");
-  else x = x.replace(/,/g,"");
+
+  // Manejo de miles y decimales locales
+  // Casos: "1.234,56" -> 1234.56 ; "1,234.56" -> 1234.56 ; "1.234" -> 1234 ; "1,234" -> 1234
+  const hasComma = x.includes(",");
+  const hasDot = x.includes(".");
+
+  if (hasComma && hasDot) {
+    // asume punto como miles y coma como decimal
+    x = x.replace(/\./g, "").replace(",", ".");
+  } else if (hasComma && !hasDot) {
+    // asume coma como decimal o miles: "1,23" (decimal) o "1,234" (miles); probaremos decimal
+    // Si hay exactamente una coma y después 3 dígitos, interpretamos como miles
+    if (/,\d{3}$/.test(x)) x = x.replace(/,/g, "");
+    else x = x.replace(",", ".");
+  } else {
+    // solo puntos posibles de miles
+    x = x.replace(/,/g, "");
+  }
+
   const n = parseFloat(x);
   return Number.isFinite(n) ? n : 0;
 }
-const HTML_ESC_MAP = { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" };
+
+const HTML_ESC_MAP = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
 const escapeHTML = (s) => String(s ?? "").replace(/[&<>"']/g, ch => HTML_ESC_MAP[ch]);
-const toKey = (s) => String(s ?? "").trim().replace(/\s+/g," ").toUpperCase();
+
+const toKey = (s) => String(s ?? "").trim().replace(/\s+/g, " ").toUpperCase();
 
 // ========= Init =========
 (function init(){
@@ -74,7 +116,7 @@ const toKey = (s) => String(s ?? "").trim().replace(/\s+/g," ").toUpperCase();
   else start();
 })();
 
-async function start(){
+async function start() {
   const status = document.getElementById("status");
   try{
     if (status) status.querySelector("span:last-child").textContent = "Descargando CSV…";
@@ -88,7 +130,8 @@ async function start(){
     let catalog = parseCSV(tCat);
 
     if (roadmap.length) roadmap.shift(); // quita encabezado
-    if (catalog.length && /canal/i.test(String(catalog[0][CT.Canal]||""))) catalog.shift();
+    // si catálogo tiene encabezado (detecta "canal" en su columna), quitarlo
+    if (catalog.length && /canal/i.test(String(catalog[0][CT.Canal] ?? ""))) catalog.shift();
 
     // Excluir FRT-001
     ROADMAP_ROWS = roadmap.filter(r => String(r[RM.Placa] ?? "").trim().toUpperCase() !== PLACA_EXCLUIR);
@@ -103,26 +146,33 @@ async function start(){
 
     // Filtro centro
     const sel = document.getElementById("locationFilter");
-    const locs = Array.from(new Set(ROADMAP_ROWS.map(r=>String(r[RM.Centro]??"").trim()).filter(Boolean))).sort((a,b)=>a.localeCompare(b,"es"));
+    const locs = Array.from(
+      new Set(ROADMAP_ROWS.map(r => String(r[RM.Centro] ?? "").trim()).filter(Boolean))
+    ).sort((a,b)=>a.localeCompare(b,"es"));
+
     for (const loc of locs){
-      const o = document.createElement("option"); o.value=loc; o.textContent=loc; sel.appendChild(o);
+      const o = document.createElement("option"); o.value = loc; o.textContent = loc; sel.appendChild(o);
     }
     sel.addEventListener("change", ()=>{
       const v = sel.value;
       renderByCanal(v);
-      renderByRangos(v);  // ✅ rangos también reacciona al filtro
+      renderByRangos(v); // ✅ rangos también reacciona al filtro
     });
 
     // Primer render
-    renderGlobalByCentro();     // no filtrada
-    renderByCanal("__all__");   // filtrada
-    renderByRangos("__all__");  // filtrada
+    renderGlobalByCentro();        // no filtrada
+    renderByCanal("__all__");      // filtrada
+    renderByRangos("__all__");     // filtrada
 
-    if (status){ status.innerHTML = `<span class="dotloader" aria-hidden="true"></span><span>Listo</span>`; setTimeout(()=>status.style.display="none", 800); }
+    if (status){
+      status.innerHTML = `<span class="dotloader" aria-hidden="true"></span><span>Listo</span>`;
+      setTimeout(()=>status.style.display="none", 800);
+    }
+
     console.log("[Dashboard] RoadMap filas (sin FRT-001):", ROADMAP_ROWS.length, "Catálogo claves:", CATALOGO_MAP.size);
   }catch(e){
     console.error(e);
-    if (status) status.innerHTML = `<span>⚠️ ${String(e.message||e)}</span>`;
+    if (status) status.innerHTML = `<span>⚠️ ${String(e.message ?? e)}</span>`;
   }
 }
 
@@ -178,7 +228,7 @@ function renderGlobalByCentro(){
           <tr>
             <td>${escapeHTML(r.centro)}</td>
             <td class="num">${cellRoadHTML(fmtInt.format(r.clientes), pCli)}</td>
-            <td class="num">${cellRoadHTML(fmtNum.format(r.kg), pKg)}</td>
+            <td class="num">${cellRoadHTML(fmtNum.format(r.kg),       pKg )}</td>
             <td class="num">${cellRoadHTML(fmtSoles.format(r.val).replace("S/.", "S/."), pVal)}</td>
           </tr>
         `;
@@ -225,7 +275,7 @@ function renderByCanal(centroValue){
           <tr>
             <td>${escapeHTML(r.canal)}</td>
             <td class="num">${cellRoadHTML(fmtInt.format(r.clientes), pCli)}</td>
-            <td class="num">${cellRoadHTML(fmtNum.format(r.kg), pKg)}</td>
+            <td class="num">${cellRoadHTML(fmtNum.format(r.kg),       pKg )}</td>
             <td class="num">${cellRoadHTML(fmtSoles.format(r.val).replace("S/.", "S/."), pVal)}</td>
           </tr>
         `;
@@ -237,53 +287,67 @@ function renderByCanal(centroValue){
   document.getElementById("totVal").textContent      = fmtSoles.format(tVal).replace("S/.", "S/.");
 }
 
-// ========= Tabla por Rangos de Kg Plan (FILTRADA por Centro) =========
-function renderByRangos(centroValue){
+// ========= Tabla por Rangos de Kg Plan (FILTRADA por Centro) - MODO POR CLIENTE =========
+function renderByRangos(centroValue) {
   try {
     const tbody = document.getElementById("tbodyRangos");
     const tCliE = document.getElementById("totClientesRng");
     const tKgE  = document.getElementById("totKgRng");
     const tValE = document.getElementById("totValRng");
-
     if (!tbody || !tCliE || !tKgE || !tValE) {
       console.warn("[Dashboard] No se encontraron elementos de la tabla de Rangos en el DOM.");
       return;
     }
 
+    // 1) Filtrar por centro
     const rows = (centroValue && centroValue !== "__all__")
       ? ROADMAP_ROWS.filter(r => String(r[RM.Centro] ?? "").trim() === centroValue)
       : ROADMAP_ROWS;
 
-    const agg = new Map(KG_RANGES.map(r => [r.label, { clients:new Set(), kg:0, val:0 }]));
-
-    for (const r of rows){
+    // 2) Agregar POR CLIENTE (kg y valor totales del día)
+    const perClient = new Map(); // cliente -> {kg: number, val: number}
+    for (const r of rows) {
       const cliente = toKey(r[RM.Cliente]);
+      if (!cliente) continue;
       const kg  = toNumber(r[RM.KgPlan]);
       const val = toNumber(r[RM.Valor]);
       if (!Number.isFinite(kg) || kg < 0) continue;
 
-      const found = KG_RANGES.find(R => R.test(kg));
-      if (!found) continue;
-
-      const o = agg.get(found.label);
-      if (cliente) o.clients.add(cliente);
+      const o = perClient.get(cliente) || { kg: 0, val: 0 };
       o.kg  += kg;
       o.val += val;
+      perClient.set(cliente, o);
     }
 
+    // 3) Inicializar agregación por rango (clientes únicos por rango)
+    const agg = new Map(KG_RANGES.map(r => [r.label, { clients: new Set(), kg: 0, val: 0 }]));
+
+    // 4) Clasificar cada CLIENTE en un único rango según su Kg total
+    for (const [cliente, o] of perClient) {
+      const found = KG_RANGES.find(R => R.test(o.kg));
+      if (!found) continue;
+      const a = agg.get(found.label);
+      a.clients.add(cliente);
+      a.kg  += o.kg;   // sumamos el total del cliente al rango
+      a.val += o.val;
+    }
+
+    // 5) Preparar filas en el orden de KG_RANGES
     const data = KG_RANGES.map(R => {
       const o = agg.get(R.label);
-      return { rango:R.label, clientes:o.clients.size, kg:o.kg, val:o.val };
+      return { rango: R.label, clientes: o.clients.size, kg: o.kg, val: o.val };
     });
 
-    const tCli = data.reduce((s,x)=>s+x.clientes,0);
-    const tKg  = data.reduce((s,x)=>s+x.kg,0);
-    const tVal = data.reduce((s,x)=>s+x.val,0);
+    // 6) Totales coherentes (clientes únicos reales + totales numéricos)
+    const uniqueClients = perClient.size; // ya es la unión (cada cliente una vez)
+    const totalKg  = Array.from(perClient.values()).reduce((s, x) => s + x.kg, 0);
+    const totalVal = Array.from(perClient.values()).reduce((s, x) => s + x.val, 0);
 
-    tbody.innerHTML = data.map(r=>{
-      const pCli = pct(r.clientes, tCli);
-      const pKg  = pct(r.kg,        tKg);
-      const pVal = pct(r.val,       tVal);
+    // 7) Render: porcentajes vs los totales "reales"
+    tbody.innerHTML = data.map(r => {
+      const pCli = pct(r.clientes, uniqueClients);
+      const pKg  = pct(r.kg, totalKg);
+      const pVal = pct(r.val, totalVal);
       return `
         <tr>
           <td>${escapeHTML(r.rango)}</td>
@@ -294,10 +358,11 @@ function renderByRangos(centroValue){
       `;
     }).join("");
 
-    tCliE.textContent = fmtInt.format(tCli);
-    tKgE.textContent  = fmtNum.format(tKg);
-    tValE.textContent = fmtSoles.format(tVal).replace("S/.", "S/.");
-  } catch(err) {
+    // 8) Footers
+    tCliE.textContent = fmtInt.format(uniqueClients);
+    tKgE.textContent  = fmtNum.format(totalKg);
+    tValE.textContent = fmtSoles.format(totalVal).replace("S/.", "S/.");
+  } catch (err) {
     console.error("[Dashboard] Error en renderByRangos:", err);
     const tbody = document.getElementById("tbodyRangos");
     if (tbody) tbody.innerHTML = `<tr><td colspan="4" class="muted" style="padding:18px">⚠️ Error al construir la tabla de rangos.</td></tr>`;
