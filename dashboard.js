@@ -83,21 +83,17 @@ function toNumber(s) {
   let x = String(s).trim();
   if (!x) return 0;
 
-  // Manejo de miles y decimales locales
-  // Casos: "1.234,56" -> 1234.56 ; "1,234.56" -> 1234.56 ; "1.234" -> 1234 ; "1,234" -> 1234
   const hasComma = x.includes(",");
   const hasDot = x.includes(".");
 
   if (hasComma && hasDot) {
-    // asume punto como miles y coma como decimal
+    // "1.234,56" -> 1234.56
     x = x.replace(/\./g, "").replace(",", ".");
   } else if (hasComma && !hasDot) {
-    // asume coma como decimal o miles: "1,23" (decimal) o "1,234" (miles); probaremos decimal
-    // Si hay exactamente una coma y después 3 dígitos, interpretamos como miles
+    // "1,234" (miles) o "1,2" (decimal)
     if (/,\d{3}$/.test(x)) x = x.replace(/,/g, "");
     else x = x.replace(",", ".");
   } else {
-    // solo puntos posibles de miles
     x = x.replace(/,/g, "");
   }
 
@@ -287,7 +283,7 @@ function renderByCanal(centroValue){
   document.getElementById("totVal").textContent      = fmtSoles.format(tVal).replace("S/.", "S/.");
 }
 
-// ========= Tabla por Rangos de Kg Plan (FILTRADA por Centro) - MODO POR CLIENTE =========
+// ========= Tabla por Rangos de Kg Plan (FILTRADA por Centro) - POR CLIENTE (SUMA DEL DÍA) =========
 function renderByRangos(centroValue) {
   try {
     const tbody = document.getElementById("tbodyRangos");
@@ -305,27 +301,31 @@ function renderByRangos(centroValue) {
       : ROADMAP_ROWS;
 
     // 2) Agregar POR CLIENTE (kg y valor totales del día)
+    //    ⚠️ Siempre creamos la entrada del cliente, incluso si el kg no es válido (se asume 0). Así la # de clientes cuadra.
     const perClient = new Map(); // cliente -> {kg: number, val: number}
     for (const r of rows) {
       const cliente = toKey(r[RM.Cliente]);
       if (!cliente) continue;
-      const kg  = toNumber(r[RM.KgPlan]);
-      const val = toNumber(r[RM.Valor]);
-      if (!Number.isFinite(kg) || kg < 0) continue;
+
+      const kgRaw  = toNumber(r[RM.KgPlan]); // devuelve 0 si no es parseable
+      const valRaw = toNumber(r[RM.Valor]);  // idem
 
       const o = perClient.get(cliente) || { kg: 0, val: 0 };
-      o.kg  += kg;
-      o.val += val;
+      // Sumar solo si es finito y >= 0; si no, queda como 0
+      if (Number.isFinite(kgRaw) && kgRaw >= 0) {
+        o.kg  += kgRaw;
+        if (Number.isFinite(valRaw) && valRaw >= 0) o.val += valRaw;
+      }
       perClient.set(cliente, o);
     }
 
     // 3) Inicializar agregación por rango (clientes únicos por rango)
     const agg = new Map(KG_RANGES.map(r => [r.label, { clients: new Set(), kg: 0, val: 0 }]));
 
-    // 4) Clasificar cada CLIENTE en un único rango según su Kg total
+    // 4) Clasificar cada CLIENTE en un único rango según su Kg total (siempre existe, al menos 0)
     for (const [cliente, o] of perClient) {
       const found = KG_RANGES.find(R => R.test(o.kg));
-      if (!found) continue;
+      if (!found) continue; // solo por seguridad
       const a = agg.get(found.label);
       a.clients.add(cliente);
       a.kg  += o.kg;   // sumamos el total del cliente al rango
@@ -339,7 +339,7 @@ function renderByRangos(centroValue) {
     });
 
     // 6) Totales coherentes (clientes únicos reales + totales numéricos)
-    const uniqueClients = perClient.size; // ya es la unión (cada cliente una vez)
+    const uniqueClients = perClient.size; // cada cliente una sola vez
     const totalKg  = Array.from(perClient.values()).reduce((s, x) => s + x.kg, 0);
     const totalVal = Array.from(perClient.values()).reduce((s, x) => s + x.val, 0);
 
