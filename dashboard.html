@@ -6,24 +6,24 @@
   <meta name="theme-color" content="#0b0b0b" />
   <title>RoadMap | Dashboard</title>
 
-  <!-- Tipografía y estilos globales -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <!-- Tipografía + estilos globales -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
 
-  <!-- Favicons a partir del logo -->
-  <link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
-  <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
-  <link rel="manifest" href="site.webmanifest">
+  <!-- Favicons desde tu logo -->
+  <link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png" />
+  <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png" />
+  <link rel="manifest" href="site.webmanifest" />
   <meta name="msapplication-TileColor" content="#0b0b0b">
   <meta name="color-scheme" content="dark only">
 
-  <!-- Chart.js (debe cargarse antes de dashboard.js) -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+  <!-- Chart.js (antes de dashboard.js) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-  <!-- Estilos locales (filtros/tabla/charts) -->
+  <!-- Estilos locales (filtros/tabla/charts + barras de progreso) -->
   <style>
     .filters { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:14px; }
     .filters .control {
@@ -35,34 +35,49 @@
       background: transparent; border: 0; color: #fff; font: inherit; outline: none; min-width: 200px;
       -webkit-appearance:none; -moz-appearance:none; appearance:none;
     }
-    /* Forzar opciones visibles en modo oscuro */
     .filters option { color:#fff; background:#0f0f0f; }
-
-    .table-wrap { overflow: auto; border-radius: 12px; border: 1px solid var(--stroke); background: var(--card); }
-    table { width: 100%; border-collapse: collapse; min-width: 680px; }
-    thead th {
-      text-align: left; font-weight: 800; color: #fff; background: #0e0e0e;
-      padding: 12px; border-bottom: 1px solid var(--stroke); position: sticky; top: 0; z-index: 1;
-    }
-    tbody td { padding: 12px; border-bottom: 1px solid #1a1a1a; color: var(--muted); }
-    tbody tr:hover { background: #0f0f0f; }
-    tfoot td { padding: 12px; border-top: 1px solid var(--stroke); font-weight: 800; color: #fff; background: #0e0e0e; }
-    .num { text-align: right; white-space: nowrap; }
-    .muted { color: var(--muted); }
     .loading { display:flex; align-items:center; gap:10px; color: var(--muted); }
     .dotloader { width: 10px; height: 10px; border-radius: 50%; background: var(--brand); animation: pulse .9s infinite alternate ease-in-out; }
     @keyframes pulse { from { transform: scale(.9); opacity:.7 } to { transform: scale(1.15); opacity:1 } }
 
-    .charts { display: grid; gap: 16px; margin-top: 16px; }
+    .table-wrap { overflow:auto; border-radius:12px; border:1px solid var(--stroke); background:var(--card); }
+    table { width:100%; border-collapse:collapse; min-width: 760px; }
+    thead th {
+      text-align:left; font-weight:800; color:#fff; background:#0e0e0e;
+      padding:12px; border-bottom:1px solid var(--stroke); position:sticky; top:0; z-index:1;
+    }
+    tbody td { padding:12px; border-bottom:1px solid #1a1a1a; color:var(--muted); vertical-align:middle; }
+    tbody tr:hover { background:#0f0f0f; }
+    tfoot td { padding:12px; border-top:1px solid var(--stroke); font-weight:800; color:#fff; background:#0e0e0e; }
+    .num { text-align:right; white-space:nowrap; }
+    .muted { color:var(--muted); }
+
+    /* Celda con valor + porcentaje + barra de progreso */
+    .cell-stat { display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
+    .cell-top { display:flex; gap:6px; align-items:baseline; }
+    .cell-top .pct { color:#9e9e9e; font-weight:600; font-size:.92rem; }
+    .progress {
+      width: 180px; height: 6px; background:#161616; border:1px solid #232323; border-radius:999px;
+      box-shadow: inset 0 0 0 1px #0b0b0b;
+    }
+    .progress .bar {
+      height:100%; background: linear-gradient(90deg, #f1c40f, #ffd94a);
+      border-radius:999px; width:0%;
+      transition: width .35s ease;
+    }
+
+    .charts { display:grid; gap:16px; margin-top:16px; }
     .charts.two { grid-template-columns: repeat(2, 1fr); }
     @media (max-width: 900px){ .charts.two { grid-template-columns: 1fr; } }
-    .card.chart-card { padding: 16px; }
+    .card.chart-card { padding:16px; }
     .card.chart-card h3 { margin: 0 0 8px; }
+    /* Evitar canvas gigantes en vertical; altura dinámica la setea JS */
+    canvas { width:100%; }
   </style>
 </head>
 <body>
 
-  <!-- ✅ Placeholder correcto para inyectar el header (lo usa app.js) -->
+  <!-- Placeholder que inyecta el header (tu app.js lo usa) -->
   <div id="header-placeholder" data-src="header.html"></div>
 
   <main class="section">
@@ -109,15 +124,15 @@
         </table>
       </div>
 
-      <!-- Gráficos -->
+      <!-- Gráficos (barras horizontales) -->
       <div class="charts two">
         <div class="card chart-card">
           <h3>Valor (S/.) por Canal</h3>
-          <canvas id="chartValor" height="180"></canvas>
+          <canvas id="chartValor" height="160"></canvas>
         </div>
         <div class="card chart-card">
           <h3>Kg Plan. por Canal</h3>
-          <canvas id="chartKg" height="180"></canvas>
+          <canvas id="chartKg" height="160"></canvas>
         </div>
       </div>
 
@@ -132,8 +147,7 @@
   </main>
 
   <!-- Scripts (orden importante) -->
-  <script src="app.js" defer></script>
-  <script src="dashboard.js" defer></script>
+  <script src="app.js"></script>
+  <script src="dashboard.js"></script>
 </body>
 </html>
-``
