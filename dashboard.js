@@ -2,16 +2,16 @@
 "use strict";
 
 // ===============================
-// CONFIG: URLs correctas (raw.githubusercontent.com)
+// CONFIG: URLs
 // ===============================
 const ROADMAP_CSV_URL  = "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
 const CATALOGO_CSV_URL = "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/Catalogo%20Sigma.csv";
 
-// Índices (0-based) acordados
+// Índices (0-based)
 const RM = { Centro: 1, Placa: 2, Cliente: 3, KgPlan: 10, Valor: 11 };
 const CT = { Clave: 0, Canal: 21 };
 
-// Placa a excluir en todo el dashboard
+// Placa a excluir en todo
 const PLACA_EXCLUIR = "FRT-001";
 
 // Formatters
@@ -19,15 +19,12 @@ const fmtInt   = new Intl.NumberFormat("es-PE", { maximumFractionDigits: 0 });
 const fmtNum   = new Intl.NumberFormat("es-PE", { maximumFractionDigits: 2 });
 const fmtSoles = new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN", maximumFractionDigits: 2 });
 
-// Normaliza claves (cliente)
-const toKey = s => String(s ?? "").trim().replace(/\s+/g, " ").toUpperCase();
-
 // Estado
 let ROADMAP_ROWS = [];
 let CATALOGO_MAP = new Map(); // cliente -> canal
 
 // ===============================
-// CSV utils (detección de separador + comillas)
+// CSV utils
 // ===============================
 function detectDelimiter(firstLine) {
   const counts = {
@@ -40,7 +37,6 @@ function detectDelimiter(firstLine) {
 
 function parseCSV(text) {
   if (!text) return [];
-  // quitar BOM
   if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
 
   const firstNL = text.indexOf("\n");
@@ -67,11 +63,9 @@ function parseCSV(text) {
     }
   }
   if (cur.length > 0 || row.length > 0) { row.push(cur); rows.push(row); }
-  // filtrar filas vacías
   return rows.filter(r => r.some(x => String(x).trim() !== ""));
 }
 
-// Números: acepta 1.234,56 o 1,234.56
 function toNumber(s) {
   if (s == null) return 0;
   let x = String(s).trim();
@@ -84,9 +78,10 @@ function toNumber(s) {
   return Number.isFinite(n) ? n : 0;
 }
 
-// Escape HTML (seguro)
 const HTML_ESC_MAP = { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" };
 function escapeHTML(s) { return String(s ?? "").replace(/[&<>"']/g, ch => HTML_ESC_MAP[ch]); }
+
+const toKey = (s) => String(s ?? "").trim().replace(/\s+/g," ").toUpperCase();
 
 // ===============================
 // Init
@@ -100,16 +95,6 @@ function escapeHTML(s) { return String(s ?? "").replace(/[&<>"']/g, ch => HTML_E
 })();
 
 async function start() {
-  // Fallback: si el header no fue inyectado aún, intenta hacerlo
-  const headerHost = document.querySelector("#header-placeholder");
-  if (headerHost && !headerHost.innerHTML.trim()) {
-    const src = headerHost.getAttribute("data-src") || "header.html";
-    try {
-      const html = await fetch(src).then(r => r.text());
-      headerHost.innerHTML = html;
-    } catch(e) { console.warn("No se pudo inyectar header desde dashboard.js:", e); }
-  }
-
   const status = document.getElementById("status");
   try {
     if (status) status.querySelector("span:last-child").textContent = "Descargando CSV…";
@@ -122,12 +107,11 @@ async function start() {
     let roadmap = parseCSV(roadmapText);
     let catalog = parseCSV(catalogText);
 
-    // Omitir encabezado en RoadMap (siempre)
+    // Omitir encabezado
     if (roadmap.length) roadmap.shift();
-    // Omitir encabezado en Catálogo si detecta "Canal" en col 21
     if (catalog.length && /canal/i.test(String(catalog[0][CT.Canal]||""))) catalog.shift();
 
-    // === Filtrar FRT-001 y limpiar dataset base ===
+    // Excluir FRT-001
     ROADMAP_ROWS = roadmap.filter(r => String(r[RM.Placa] ?? "").trim().toUpperCase() !== "FRT-001");
 
     // Mapa cliente -> canal
@@ -138,24 +122,23 @@ async function start() {
       if (key) CATALOGO_MAP.set(key, canal);
     }
 
-    // Poblar filtro "Centro" (ya con FRT-001 excluido)
+    // Filtro "Centro"
     const sel = document.getElementById("locationFilter");
     const locSet = new Set();
     for (const r of ROADMAP_ROWS) {
       const c = String(r[RM.Centro] ?? "").trim();
       if (c) locSet.add(c);
     }
-    [...locSet].sort((a,b)=>a.localeCompare(b,"es")).forEach(loc => {
+    Array.from(locSet).sort((a,b)=>a.localeCompare(b,"es")).forEach(loc => {
       const opt = document.createElement("option");
       opt.value = loc; opt.textContent = loc; sel.appendChild(opt);
     });
     sel.addEventListener("change", () => renderByCanal(sel.value));
 
-    // Render global por Centro (NO filtrado) y por Canal (filtrado)
-    renderGlobalByCentro();      // no usa el selector
-    renderByCanal("__all__");    // selector en "Todos"
+    // Render
+    renderGlobalByCentro();
+    renderByCanal("__all__");
 
-    // Estado
     if (status) {
       status.innerHTML = `<span class="dotloader" aria-hidden="true"></span><span>Listo</span>`;
       setTimeout(()=>{ status.style.display="none"; }, 800);
@@ -169,14 +152,15 @@ async function start() {
 }
 
 // ===============================
-// Helpers de presentación
+// Helpers de presentación (porcentaje + barra “carretera”)
 // ===============================
-const pct = (value,total) => total>0 ? (value/total*100) : 0;
-const pctTxt = p => `${p.toFixed(1)}%`;
+const pct    = (value,total) => total>0 ? (value/total*100) : 0;
+const pctTxt = (p) => `${p.toFixed(1)}%`;
 
-/** Genera la celda con valor + % + barra carretera (morado/lila) */
+/** valor + % + barra carretera; oculta camioncito si el tramo es muy chico */
 function cellRoadHTML(valorFormateado, porcentaje) {
-  const p = Math.max(0, Math.min(100, porcentaje)); // 0–100
+  const p = Math.max(0, Math.min(100, porcentaje));
+  const small = p < 10 ? ` data-small="1"` : "";
   return `
     <div class="cell-stat">
       <div class="cell-top">
@@ -184,7 +168,7 @@ function cellRoadHTML(valorFormateado, porcentaje) {
         <span class="pct">(${pctTxt(p)})</span>
       </div>
       <div class="road-progress" aria-hidden="true">
-        <div class="road-bar" style="width:${p}%"></div>
+        <div class="road-bar"${small} style="width:${p}%"></div>
       </div>
     </div>
   `;
@@ -194,13 +178,12 @@ function cellRoadHTML(valorFormateado, porcentaje) {
 // Tabla GLOBAL por Centro (NO filtrada)
 // ===============================
 function renderGlobalByCentro() {
-  // Agregación por centro
   const agg = new Map(); // centro -> { clients:Set, kg:number, val:number }
   for (const r of ROADMAP_ROWS) {
-    const centro = String(r[RM.Centro] ?? "").trim() || "Sin Centro";
+    const centro  = String(r[RM.Centro] ?? "").trim() || "Sin Centro";
     const cliente = toKey(r[RM.Cliente]);
-    const kg  = toNumber(r[RM.KgPlan]);
-    const val = toNumber(r[RM.Valor]);
+    const kg      = toNumber(r[RM.KgPlan]);
+    const val     = toNumber(r[RM.Valor]);
 
     if (!agg.has(centro)) agg.set(centro, { clients: new Set(), kg: 0, val: 0 });
     const o = agg.get(centro);
@@ -213,12 +196,10 @@ function renderGlobalByCentro() {
     centro, clientes: o.clients.size, kg: o.kg, val: o.val
   })).sort((a,b)=> b.val - a.val);
 
-  // Totales (globales)
   const totClientes = data.reduce((s,x)=>s+x.clientes,0);
   const totKg       = data.reduce((s,x)=>s+x.kg,0);
   const totVal      = data.reduce((s,x)=>s+x.val,0);
 
-  // Render
   const tbody = document.getElementById("tbodyCentro");
   tbody.innerHTML = data.length
     ? data.map(r => {
@@ -249,17 +230,16 @@ function renderByCanal(centroValue) {
     ? ROADMAP_ROWS.filter(r => String(r[RM.Centro] ?? "").trim() === centroValue)
     : ROADMAP_ROWS;
 
-  // Agregación por canal
   const agg = new Map(); // canal -> { clients:Set, kg:number, val:number }
   for (const r of rows) {
-    const clienteKey = toKey(r[RM.Cliente]);
-    const canal = CATALOGO_MAP.get(clienteKey) || "Sin Canal";
-    const kg  = toNumber(r[RM.KgPlan]);
-    const val = toNumber(r[RM.Valor]);
+    const cliente = toKey(r[RM.Cliente]);
+    const canal   = CATALOGO_MAP.get(cliente) || "Sin Canal";
+    const kg      = toNumber(r[RM.KgPlan]);
+    const val     = toNumber(r[RM.Valor]);
 
     if (!agg.has(canal)) agg.set(canal, { clients: new Set(), kg: 0, val: 0 });
     const o = agg.get(canal);
-    if (clienteKey) o.clients.add(clienteKey);
+    if (cliente) o.clients.add(cliente);
     o.kg  += kg;
     o.val += val;
   }
@@ -268,12 +248,10 @@ function renderByCanal(centroValue) {
     canal, clientes: o.clients.size, kg: o.kg, val: o.val
   })).sort((a,b)=> b.val - a.val);
 
-  // Totales (del conjunto filtrado)
   const totClientes = data.reduce((s,x)=>s+x.clientes,0);
   const totKg       = data.reduce((s,x)=>s+x.kg,0);
   const totVal      = data.reduce((s,x)=>s+x.val,0);
 
-  // Render
   const tbody = document.getElementById("summaryBody");
   tbody.innerHTML = data.length
     ? data.map(r => {
