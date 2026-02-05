@@ -9,11 +9,11 @@ const CATALOGO_CSV_URL = "https://raw.githubusercontent.com/sigmaperu/RoadMap/ma
 const RM = { Centro: 1, Placa: 2, Cliente: 3, KgPlan: 10, Valor: 11 };
 const CT = { Clave: 0, Canal: 21 };
 
-// Reglas de exclusión
-const PLACA_EXCLUIR   = "FRT-001"; // se excluye de TODO el dataset
-const PLACA_NO_VEHICULO = "RES-CLI"; // excluir SOLO del conteo de vehículos
+// Reglas
+const PLACA_EXCLUIR     = "FRT-001"; // excluida de TODO
+const PLACA_NO_VEHICULO = "RES-CLI"; // excluida SOLO del conteo de vehículos
 
-// Rangos (para tabla por Rango)
+// Rangos (tabla por Rango)
 const KG_RANGES = [
   { label: "0–1",     test: kg => kg >= 0   && kg < 1   },
   { label: "1–3",     test: kg => kg >= 1   && kg < 3   },
@@ -35,7 +35,7 @@ const fmtSoles = new Intl.NumberFormat("es-PE", { style: "currency", currency: "
 // Estado
 let ROADMAP_ROWS = [];
 let CATALOGO_MAP = new Map();
-let GLOBAL_AGG   = null; // Totales globales (para % de la Card)
+let GLOBAL_AGG   = null;
 
 // ==== CSV utils
 function detectDelimiter(firstLine = "") {
@@ -72,12 +72,10 @@ function toNumber(s) {
   if (s == null) return 0;
   let x = String(s).trim();
   if (!x) return 0;
-  const hasComma = x.includes(",");
-  const hasDot   = x.includes(".");
+  const hasComma = x.includes(","), hasDot = x.includes(".");
   if (hasComma && hasDot)      x = x.replace(/\./g,"").replace(",",".");
-  else if (hasComma && !hasDot){
-    if(/,\d{3}$/.test(x)) x = x.replace(/,/g,""); else x = x.replace(",",".");
-  } else { x = x.replace(/,/g,""); }
+  else if (hasComma && !hasDot){ if(/,\d{3}$/.test(x)) x = x.replace(/,/g,""); else x = x.replace(",","."); }
+  else                          x = x.replace(/,/g,"");
   const n = parseFloat(x);
   return Number.isFinite(n) ? n : 0;
 }
@@ -147,17 +145,13 @@ function renderAll(centroValue){
     ? ROADMAP_ROWS.filter(r => String(r[RM.Centro] ?? "").trim() === centroValue)
     : ROADMAP_ROWS;
 
-  renderKpiCard(rows);     // Card de indicadores
-  renderByCanal(rows);     // Tabla Canal
-  renderByRangos(rows);    // Tabla Rangos
+  renderKpiCard(rows);
+  renderByCanal(rows);
+  renderByRangos(rows);
 }
 
-/* ==================== Helpers de agregación ==================== */
-
-function placaCuentaVehiculo(placaRaw){
-  const p = toKey(placaRaw);
-  return p && p !== PLACA_NO_VEHICULO;
-}
+/* ============== Helpers de agregación / visual ============== */
+function placaCuentaVehiculo(placaRaw){ const p = toKey(placaRaw); return p && p !== PLACA_NO_VEHICULO; }
 function ratio(a,b){ return b>0 ? (a/b) : 0; }
 const pct = (v,t) => t>0 ? (v/t*100) : 0;
 const pctTxt = p => `${p.toFixed(1)}%`;
@@ -176,12 +170,8 @@ function cellRoadHTML(valFmt, part){
     </div>
   `;
 }
-
-/** Totales simples sobre un conjunto de filas (clientes únicos, vehículos únicos, kg, val) */
 function aggregateTotals(rows){
-  const clients = new Set();
-  const plates  = new Set();
-  let kg = 0, val = 0;
+  const clients = new Set(); const plates = new Set(); let kg=0, val=0;
   for(const r of rows){
     const cli = toKey(r[RM.Cliente]); if (cli) clients.add(cli);
     const placa = toKey(r[RM.Placa]);  if (placaCuentaVehiculo(placa)) plates.add(placa);
@@ -191,13 +181,13 @@ function aggregateTotals(rows){
   return { clientes: clients.size, vehiculos: plates.size, kg, val };
 }
 
-/* ==================== Render: Card de Indicadores ==================== */
+/* ==================== Card de Indicadores ==================== */
 function renderKpiCard(rows){
   const el = document.getElementById("kpiCard");
   if (!el) return;
 
   const aggSel = aggregateTotals(rows);
-  const base   = GLOBAL_AGG || { clientes:0, vehiculos:0, kg:0, val:0 }; // para % vs global
+  const base   = GLOBAL_AGG || { clientes:0, vehiculos:0, kg:0, val:0 };
 
   const pCli = pct(aggSel.clientes, base.clientes);
   const pVeh = pct(aggSel.vehiculos, base.vehiculos);
@@ -219,7 +209,7 @@ function renderKpiCard(rows){
   ].join("");
 }
 
-/* ==================== Render: Tabla por Canal ==================== */
+/* ==================== Tabla por Canal ==================== */
 function renderByCanal(rows){
   const agg = new Map(); // canal -> {clients:Set, veh:Set, kg, val}
   for (const r of rows){
@@ -265,7 +255,6 @@ function renderByCanal(rows){
     `;
   }).join("") : `<tr><td colspan="8" class="muted" style="padding:14px">Sin datos.</td></tr>`;
 
-  // Totales (ratios desde totales)
   document.getElementById("totClientes").textContent = fmtInt.format(tCli);
   document.getElementById("totVeh").textContent      = fmtInt.format(tVeh);
   document.getElementById("totKg").textContent       = fmtNum.format(tKg);
@@ -275,7 +264,7 @@ function renderByCanal(rows){
   document.getElementById("totCliVeh").textContent   = fmtNum.format(ratio(tCli, tVeh));
 }
 
-/* ==================== Render: Tabla por Rangos (POR CLIENTE) ==================== */
+/* ==================== Tabla por Rangos (POR CLIENTE) ==================== */
 function renderByRangos(rows){
   try{
     const tbody = document.getElementById("tbodyRangos");
@@ -288,7 +277,7 @@ function renderByRangos(rows){
     const tCliVehE= document.getElementById("totCliVehRng");
     if (!tbody || !tCliE || !tVehE || !tKgE || !tValE || !tKgVehE || !tKgCliE || !tCliVehE) return;
 
-    // Agrego por CLIENTE (suma del día) + set de placas válidas
+    // Agrego por CLIENTE (suma del día) + placas válidas
     const perClient = new Map(); // cliente -> {kg, val, plates:Set}
     for (const r of rows){
       const cliente = toKey(r[RM.Cliente]); if (!cliente) continue;
@@ -341,7 +330,6 @@ function renderByRangos(rows){
       `;
     }).join("");
 
-    // Totales
     tCliE.textContent   = fmtInt.format(tCli);
     tVehE.textContent   = fmtInt.format(tVeh);
     tKgE.textContent    = fmtNum.format(tKg);
