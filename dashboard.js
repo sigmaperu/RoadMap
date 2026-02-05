@@ -195,20 +195,26 @@ function renderKpiCard(rows){
   const pKg  = pct(aggSel.kg,        base.kg);
   const pVal = pct(aggSel.val,       base.val);
 
-  // Ratios en base al filtro actual
+  // Ratios (filtro actual)
   const kgVeh = ratio(aggSel.kg, aggSel.vehiculos);
   const kgCli = ratio(aggSel.kg, aggSel.clientes);
   const cliVeh= ratio(aggSel.clientes, aggSel.vehiculos);
 
   const kpiBar = (cssClass, label, valFmt, partPct) => `
     <div class="kpi ${cssClass}">
-      <div class="kpi-head"><span class="kpi-icon" aria-hidden="true"></span><span class="kpi-label">${label}</span></div>
+      <div class="kpi-head">
+        <span class="kpi-icon" aria-hidden="true"></span>
+        <span class="kpi-label">${label}</span>
+      </div>
       ${cellRoadHTML(valFmt, partPct)}
     </div>
   `;
   const kpiPlain = (cssClass, label, valFmt) => `
     <div class="kpi ${cssClass}">
-      <div class="kpi-head"><span class="kpi-icon" aria-hidden="true"></span><span class="kpi-label">${label}</span></div>
+      <div class="kpi-head">
+        <span class="kpi-icon" aria-hidden="true"></span>
+        <span class="kpi-label">${label}</span>
+      </div>
       <div class="kpi-value"><span>${valFmt}</span></div>
     </div>
   `;
@@ -220,9 +226,9 @@ function renderKpiCard(rows){
     kpiBar("kpi--clientes",  "# Clientes",  fmtInt.format(aggSel.clientes), pCli),
     kpiBar("kpi--vehiculos", "# Vehículos", fmtInt.format(aggSel.vehiculos), pVeh),
 
-    // Ratios (sin barra)
-    kpiPlain("kpi--kgveh",   "Kg/Vehículo",     fmtNum.format(kgVeh)),
-    kpiPlain("kpi--kgcli",   "Kg/Cliente",      fmtNum.format(kgCli)),
+    // Ratios (sin barra) con iconos
+    kpiPlain("kpi--kgveh",   "Kg/Vehículo",       fmtNum.format(kgVeh)),
+    kpiPlain("kpi--kgcli",   "Kg/Cliente",        fmtNum.format(kgCli)),
     kpiPlain("kpi--cliveh",  "Clientes/Vehículo", fmtNum.format(cliVeh)),
   ].join("");
 }
