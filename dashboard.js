@@ -1,4 +1,4 @@
-/* dashboard.js – Global por Centro (NO filtrada) + Canal (FILTRADA) + Rangos Kg Plan (FILTRADA) con barra “carretera” */
+/* dashboard.js – Global por Centro (NO filtrada) + Canal (FILTRADA) + Rangos (FILTRADA) con nuevos indicadores */
 "use strict";
 
 // URLs CSV
@@ -9,10 +9,11 @@ const CATALOGO_CSV_URL = "https://raw.githubusercontent.com/sigmaperu/RoadMap/ma
 const RM = { Centro: 1, Placa: 2, Cliente: 3, KgPlan: 10, Valor: 11 };
 const CT = { Clave: 0, Canal: 21 };
 
-// Placa a excluir
-const PLACA_EXCLUIR = "FRT-001";
+// Placas a tratar
+const PLACA_EXCLUIR = "FRT-001";          // excluida del dataset general
+const PLACA_NO_VEHICULO = "RES-CLI";      // excluida SOLO del conteo de vehículos
 
-// Rangos de Kg Plan
+// Rangos de Kg Plan (para clasificación por cliente - suma del día)
 const KG_RANGES = [
   { label: "0–1",     test: kg => kg >= 0   && kg < 1   },
   { label: "1–3",     test: kg => kg >= 1   && kg < 3   },
@@ -22,8 +23,8 @@ const KG_RANGES = [
   { label: "20–50",   test: kg => kg >= 20  && kg < 50  },
   { label: "50–100",  test: kg => kg >= 50  && kg < 100 },
   { label: "100–200", test: kg => kg >= 100 && kg < 200 },
-  { label: "200–500", test: kg => kg >= 200 && kg <= 500 }, // incluye 500
-  { label: "Pedidos >500", test: kg => kg > 500 }
+  { label: "200–500", test: kg => kg >= 200 && kg < 500 }, // incluye 500
+  { label: "Pedidos >=500", test: kg => kg >= 500 }
 ];
 
 // Formatters
@@ -31,6 +32,7 @@ const fmtInt   = new Intl.NumberFormat("es-PE", { maximumFractionDigits: 0 });
 const fmtNum   = new Intl.NumberFormat("es-PE", { maximumFractionDigits: 2 });
 const fmtSoles = new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN", maximumFractionDigits: 2 });
 
+// Estado global
 let ROADMAP_ROWS = [];
 let CATALOGO_MAP = new Map();
 
@@ -45,7 +47,6 @@ function detectDelimiter(firstLine = "") {
 
 function parseCSV(text) {
   if (!text) return [];
-  // Quitar BOM si existiera
   if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
 
   const firstNL = text.indexOf("\n");
@@ -71,10 +72,7 @@ function parseCSV(text) {
       else if (c !== "\r") { cur += c; }
     }
   }
-  // Última celda/row si quedó pendiente
   if (cur.length > 0 || row.length > 0) { row.push(cur); rows.push(row); }
-
-  // Limpia filas totalmente vacías
   return rows.filter(r => r.some(x => String(x).trim() !== ""));
 }
 
@@ -84,13 +82,11 @@ function toNumber(s) {
   if (!x) return 0;
 
   const hasComma = x.includes(",");
-  const hasDot = x.includes(".");
+  the const hasDot = x.includes(".");
 
   if (hasComma && hasDot) {
-    // "1.234,56" -> 1234.56
     x = x.replace(/\./g, "").replace(",", ".");
   } else if (hasComma && !hasDot) {
-    // "1,234" (miles) o "1,2" (decimal)
     if (/,\d{3}$/.test(x)) x = x.replace(/,/g, "");
     else x = x.replace(",", ".");
   } else {
@@ -126,10 +122,9 @@ async function start() {
     let catalog = parseCSV(tCat);
 
     if (roadmap.length) roadmap.shift(); // quita encabezado
-    // si catálogo tiene encabezado (detecta "canal" en su columna), quitarlo
     if (catalog.length && /canal/i.test(String(catalog[0][CT.Canal] ?? ""))) catalog.shift();
 
-    // Excluir FRT-001
+    // Excluir FRT-001 del dataset
     ROADMAP_ROWS = roadmap.filter(r => String(r[RM.Placa] ?? "").trim().toUpperCase() !== PLACA_EXCLUIR);
 
     // Mapa cliente -> canal
@@ -152,7 +147,7 @@ async function start() {
     sel.addEventListener("change", ()=>{
       const v = sel.value;
       renderByCanal(v);
-      renderByRangos(v); // ✅ rangos también reacciona al filtro
+      renderByRangos(v);
     });
 
     // Primer render
@@ -164,7 +159,6 @@ async function start() {
       status.innerHTML = `<span class="dotloader" aria-hidden="true"></span><span>Listo</span>`;
       setTimeout(()=>status.style.display="none", 800);
     }
-
     console.log("[Dashboard] RoadMap filas (sin FRT-001):", ROADMAP_ROWS.length, "Catálogo claves:", CATALOGO_MAP.size);
   }catch(e){
     console.error(e);
@@ -193,47 +187,76 @@ function cellRoadHTML(valFmt, part){
   `;
 }
 
+function placaCuentaVehiculo(placaRaw){
+  const p = toKey(placaRaw);
+  return p && p !== PLACA_NO_VEHICULO;
+}
+function ratio(a,b){ return b>0 ? (a/b) : 0; }
+
 // ========= Tabla GLOBAL por Centro (NO filtrada) =========
 function renderGlobalByCentro(){
-  const agg = new Map(); // centro -> {clients:Set, kg, val}
+  const agg = new Map(); // centro -> {clients:Set, veh:Set, kg, val}
   for (const r of ROADMAP_ROWS){
     const centro  = String(r[RM.Centro] ?? "").trim() || "Sin Centro";
     const cliente = toKey(r[RM.Cliente]);
+    const placa   = toKey(r[RM.Placa]);
     const kg  = toNumber(r[RM.KgPlan]);
     const val = toNumber(r[RM.Valor]);
 
-    if(!agg.has(centro)) agg.set(centro, {clients:new Set(), kg:0, val:0});
+    if(!agg.has(centro)) agg.set(centro, {clients:new Set(), veh:new Set(), kg:0, val:0});
     const o = agg.get(centro);
     if (cliente) o.clients.add(cliente);
-    o.kg  += kg; o.val += val;
+    if (placaCuentaVehiculo(placa)) o.veh.add(placa);
+    o.kg  += kg; 
+    o.val += val;
   }
 
   const data = Array.from(agg.entries()).map(([centro, o])=>({
-    centro, clientes:o.clients.size, kg:o.kg, val:o.val
+    centro,
+    clientes: o.clients.size,
+    vehiculos: o.veh.size,
+    kg: o.kg,
+    val: o.val
   })).sort((a,b)=>b.val-a.val);
 
   const tCli = data.reduce((s,x)=>s+x.clientes,0);
+  const tVeh = data.reduce((s,x)=>s+x.vehiculos,0);
   const tKg  = data.reduce((s,x)=>s+x.kg,0);
   const tVal = data.reduce((s,x)=>s+x.val,0);
 
   const tbody = document.getElementById("tbodyCentro");
   tbody.innerHTML = data.length
     ? data.map(r=>{
-        const pCli=pct(r.clientes,tCli), pKg=pct(r.kg,tKg), pVal=pct(r.val,tVal);
+        const pCli=pct(r.clientes,tCli), pVeh=pct(r.vehiculos,tVeh), pKg=pct(r.kg,tKg), pVal=pct(r.val,tVal);
+        const kgVeh = ratio(r.kg, r.vehiculos);
+        const kgCli = ratio(r.kg, r.clientes);
+        const cliVeh = ratio(r.clientes, r.vehiculos);
         return `
           <tr>
             <td>${escapeHTML(r.centro)}</td>
-            <td class="num">${cellRoadHTML(fmtInt.format(r.clientes), pCli)}</td>
-            <td class="num">${cellRoadHTML(fmtNum.format(r.kg),       pKg )}</td>
+            <td class="num">${cellRoadHTML(fmtInt.format(r.clientes),   pCli)}</td>
+            <td class="num">${cellRoadHTML(fmtInt.format(r.vehiculos),  pVeh)}</td>
+            <td class="num">${cellRoadHTML(fmtNum.format(r.kg),         pKg )}</td>
             <td class="num">${cellRoadHTML(fmtSoles.format(r.val).replace("S/.", "S/."), pVal)}</td>
+            <td class="num">${fmtNum.format(kgVeh)}</td>
+            <td class="num">${fmtNum.format(kgCli)}</td>
+            <td class="num">${fmtNum.format(cliVeh)}</td>
           </tr>
         `;
       }).join("")
-    : `<tr><td colspan="4" class="muted" style="padding:18px">Sin datos.</td></tr>`;
+    : `<tr><td colspan="8" class="muted" style="padding:18px">Sin datos.</td></tr>`;
+
+  const totKgVeh = ratio(tKg, tVeh);
+  const totKgCli = ratio(tKg, tCli);
+  const totCliVeh = ratio(tCli, tVeh);
 
   document.getElementById("totClientesCen").textContent = fmtInt.format(tCli);
+  document.getElementById("totVehCen").textContent      = fmtInt.format(tVeh);
   document.getElementById("totKgCen").textContent       = fmtNum.format(tKg);
   document.getElementById("totValCen").textContent      = fmtSoles.format(tVal).replace("S/.", "S/.");
+  document.getElementById("totKgVehCen").textContent    = fmtNum.format(totKgVeh);
+  document.getElementById("totKgCliCen").textContent    = fmtNum.format(totKgCli);
+  document.getElementById("totCliVehCen").textContent   = fmtNum.format(totCliVeh);
 }
 
 // ========= Tabla por Canal (FILTRADA por Centro) =========
@@ -242,45 +265,68 @@ function renderByCanal(centroValue){
     ? ROADMAP_ROWS.filter(r=>String(r[RM.Centro]??"").trim()===centroValue)
     : ROADMAP_ROWS;
 
-  const agg = new Map(); // canal -> {clients:Set, kg, val}
+  const agg = new Map(); // canal -> {clients:Set, veh:Set, kg, val}
   for (const r of rows){
     const cliente = toKey(r[RM.Cliente]);
+    const placa   = toKey(r[RM.Placa]);
     const canal   = CATALOGO_MAP.get(cliente) || "Sin Canal";
     const kg  = toNumber(r[RM.KgPlan]);
     const val = toNumber(r[RM.Valor]);
 
-    if(!agg.has(canal)) agg.set(canal,{clients:new Set(),kg:0,val:0});
+    if(!agg.has(canal)) agg.set(canal,{clients:new Set(), veh:new Set(), kg:0, val:0});
     const o = agg.get(canal);
     if (cliente) o.clients.add(cliente);
-    o.kg += kg; o.val += val;
+    if (placaCuentaVehiculo(placa)) o.veh.add(placa);
+    o.kg += kg; 
+    o.val += val;
   }
 
   const data = Array.from(agg.entries()).map(([canal,o])=>({
-    canal, clientes:o.clients.size, kg:o.kg, val:o.val
+    canal,
+    clientes:o.clients.size,
+    vehiculos:o.veh.size,
+    kg:o.kg,
+    val:o.val
   })).sort((a,b)=>b.val-a.val);
 
   const tCli = data.reduce((s,x)=>s+x.clientes,0);
+  const tVeh = data.reduce((s,x)=>s+x.vehiculos,0);
   const tKg  = data.reduce((s,x)=>s+x.kg,0);
   const tVal = data.reduce((s,x)=>s+x.val,0);
 
   const tbody = document.getElementById("summaryBody");
   tbody.innerHTML = data.length
     ? data.map(r=>{
-        const pCli=pct(r.clientes,tCli), pKg=pct(r.kg,tKg), pVal=pct(r.val,tVal);
+        const pCli=pct(r.clientes,tCli), pVeh=pct(r.vehiculos,tVeh), pKg=pct(r.kg,tKg), pVal=pct(r.val,tVal);
+        const kgVeh = ratio(r.kg, r.vehiculos);
+        const kgCli = ratio(r.kg, r.clientes);
+        const cliVeh = ratio(r.clientes, r.vehiculos);
         return `
           <tr>
             <td>${escapeHTML(r.canal)}</td>
-            <td class="num">${cellRoadHTML(fmtInt.format(r.clientes), pCli)}</td>
-            <td class="num">${cellRoadHTML(fmtNum.format(r.kg),       pKg )}</td>
+            <td class="num">${cellRoadHTML(fmtInt.format(r.clientes),   pCli)}</td>
+            <td class="num">${cellRoadHTML(fmtInt.format(r.vehiculos),  pVeh)}</td>
+            <td class="num">${cellRoadHTML(fmtNum.format(r.kg),         pKg )}</td>
             <td class="num">${cellRoadHTML(fmtSoles.format(r.val).replace("S/.", "S/."), pVal)}</td>
+            <td class="num">${fmtNum.format(kgVeh)}</td>
+            <td class="num">${fmtNum.format(kgCli)}</td>
+            <td class="num">${fmtNum.format(cliVeh)}</td>
           </tr>
         `;
       }).join("")
-    : `<tr><td colspan="4" class="muted" style="padding:18px">Sin datos para el filtro.</td></tr>`;
+    : `<tr><td colspan="8" class="muted" style="padding:18px">Sin datos para el filtro.</td></tr>`;
+
+  const totKgVeh = ratio(tKg, tVeh);
+  const totKgCli = ratio(tKg, tCli);
+  const totCliVeh = ratio(tCli, tVeh);
 
   document.getElementById("totClientes").textContent = fmtInt.format(tCli);
+  document.getElementById("totVeh").textContent      = fmtInt.format(tVeh);
   document.getElementById("totKg").textContent       = fmtNum.format(tKg);
   document.getElementById("totVal").textContent      = fmtSoles.format(tVal).replace("S/.", "S/.");
+  document.getElementById("totKgVeh").textContent    = fmtNum.format(totKgVeh);
+  document.getElementById("totKgCli").textContent    = fmtNum.format(totKgCli);
+  document.getElementById("totCliVeh").textContent   = fmtNum.format(totCliVeh);
 }
 
 // ========= Tabla por Rangos de Kg Plan (FILTRADA por Centro) - POR CLIENTE (SUMA DEL DÍA) =========
@@ -288,83 +334,106 @@ function renderByRangos(centroValue) {
   try {
     const tbody = document.getElementById("tbodyRangos");
     const tCliE = document.getElementById("totClientesRng");
+    const tVehE = document.getElementById("totVehRng");
     const tKgE  = document.getElementById("totKgRng");
     const tValE = document.getElementById("totValRng");
-    if (!tbody || !tCliE || !tKgE || !tValE) {
+    const tKgVehE = document.getElementById("totKgVehRng");
+    const tKgCliE = document.getElementById("totKgCliRng");
+    const tCliVehE= document.getElementById("totCliVehRng");
+
+    if (!tbody || !tCliE || !tVehE || !tKgE || !tValE || !tKgVehE || !tKgCliE || !tCliVehE) {
       console.warn("[Dashboard] No se encontraron elementos de la tabla de Rangos en el DOM.");
       return;
     }
 
-    // 1) Filtrar por centro
     const rows = (centroValue && centroValue !== "__all__")
       ? ROADMAP_ROWS.filter(r => String(r[RM.Centro] ?? "").trim() === centroValue)
       : ROADMAP_ROWS;
 
-    // 2) Agregar POR CLIENTE (kg y valor totales del día)
-    //    ⚠️ Siempre creamos la entrada del cliente, incluso si el kg no es válido (se asume 0). Así la # de clientes cuadra.
-    const perClient = new Map(); // cliente -> {kg: number, val: number}
+    // 1) Agregar POR CLIENTE (kg/val totales + set de placas válidas para vehículo)
+    const perClient = new Map(); // cliente -> {kg: number, val: number, plates: Set}
     for (const r of rows) {
       const cliente = toKey(r[RM.Cliente]);
       if (!cliente) continue;
 
-      const kgRaw  = toNumber(r[RM.KgPlan]); // devuelve 0 si no es parseable
-      const valRaw = toNumber(r[RM.Valor]);  // idem
+      const kg  = toNumber(r[RM.KgPlan]);
+      const val = toNumber(r[RM.Valor]);
+      const placa = toKey(r[RM.Placa]);
 
-      const o = perClient.get(cliente) || { kg: 0, val: 0 };
-      // Sumar solo si es finito y >= 0; si no, queda como 0
-      if (Number.isFinite(kgRaw) && kgRaw >= 0) {
-        o.kg  += kgRaw;
-        if (Number.isFinite(valRaw) && valRaw >= 0) o.val += valRaw;
+      const o = perClient.get(cliente) || { kg: 0, val: 0, plates: new Set() };
+      if (Number.isFinite(kg) && kg >= 0) {
+        o.kg  += kg;
+        if (Number.isFinite(val) && val >= 0) o.val += val;
       }
+      if (placaCuentaVehiculo(placa)) o.plates.add(placa);
       perClient.set(cliente, o);
     }
 
-    // 3) Inicializar agregación por rango (clientes únicos por rango)
-    const agg = new Map(KG_RANGES.map(r => [r.label, { clients: new Set(), kg: 0, val: 0 }]));
+    // 2) Agregación por rango: clientes únicos + vehículos únicos + sumas numéricas
+    const agg = new Map(KG_RANGES.map(r => [r.label, { clients: new Set(), veh: new Set(), kg: 0, val: 0 }]));
 
-    // 4) Clasificar cada CLIENTE en un único rango según su Kg total (siempre existe, al menos 0)
+    // 3) Clasificar cada cliente a un único rango por su Kg total y agregar sus placas
     for (const [cliente, o] of perClient) {
       const found = KG_RANGES.find(R => R.test(o.kg));
-      if (!found) continue; // solo por seguridad
+      if (!found) continue;
       const a = agg.get(found.label);
       a.clients.add(cliente);
-      a.kg  += o.kg;   // sumamos el total del cliente al rango
+      o.plates.forEach(p => a.veh.add(p));
+      a.kg  += o.kg;
       a.val += o.val;
     }
 
-    // 5) Preparar filas en el orden de KG_RANGES
+    // 4) Data final en orden de KG_RANGES
     const data = KG_RANGES.map(R => {
       const o = agg.get(R.label);
-      return { rango: R.label, clientes: o.clients.size, kg: o.kg, val: o.val };
+      return { rango: R.label, clientes: o.clients.size, vehiculos: o.veh.size, kg: o.kg, val: o.val };
     });
 
-    // 6) Totales coherentes (clientes únicos reales + totales numéricos)
-    const uniqueClients = perClient.size; // cada cliente una sola vez
-    const totalKg  = Array.from(perClient.values()).reduce((s, x) => s + x.kg, 0);
-    const totalVal = Array.from(perClient.values()).reduce((s, x) => s + x.val, 0);
+    // 5) Totales coherentes
+    const tCli = data.reduce((s,x)=>s+x.clientes,0);
+    const tVeh = data.reduce((s,x)=>s+x.vehiculos,0);
+    const tKg  = data.reduce((s,x)=>s+x.kg,0);
+    const tVal = data.reduce((s,x)=>s+x.val,0);
 
-    // 7) Render: porcentajes vs los totales "reales"
+    // 6) Render filas
     tbody.innerHTML = data.map(r => {
-      const pCli = pct(r.clientes, uniqueClients);
-      const pKg  = pct(r.kg, totalKg);
-      const pVal = pct(r.val, totalVal);
+      const pCli = pct(r.clientes, tCli);
+      const pVeh = pct(r.vehiculos, tVeh);
+      const pKg  = pct(r.kg, tKg);
+      const pVal = pct(r.val, tVal);
+      const kgVeh = ratio(r.kg, r.vehiculos);
+      const kgCli = ratio(r.kg, r.clientes);
+      const cliVeh = ratio(r.clientes, r.vehiculos);
       return `
         <tr>
           <td>${escapeHTML(r.rango)}</td>
-          <td class="num">${cellRoadHTML(fmtInt.format(r.clientes), pCli)}</td>
-          <td class="num">${cellRoadHTML(fmtNum.format(r.kg),       pKg )}</td>
+          <td class="num">${cellRoadHTML(fmtInt.format(r.clientes),   pCli)}</td>
+          <td class="num">${cellRoadHTML(fmtInt.format(r.vehiculos),  pVeh)}</td>
+          <td class="num">${cellRoadHTML(fmtNum.format(r.kg),         pKg )}</td>
           <td class="num">${cellRoadHTML(fmtSoles.format(r.val).replace("S/.", "S/."), pVal)}</td>
+          <td class="num">${fmtNum.format(kgVeh)}</td>
+          <td class="num">${fmtNum.format(kgCli)}</td>
+          <td class="num">${fmtNum.format(cliVeh)}</td>
         </tr>
       `;
     }).join("");
 
-    // 8) Footers
-    tCliE.textContent = fmtInt.format(uniqueClients);
-    tKgE.textContent  = fmtNum.format(totalKg);
-    tValE.textContent = fmtSoles.format(totalVal).replace("S/.", "S/.");
+    // 7) Totales en el pie (ratios desde totales)
+    const totKgVeh = ratio(tKg, tVeh);
+    const totKgCli = ratio(tKg, tCli);
+    const totCliVeh = ratio(tCli, tVeh);
+
+    tCliE.textContent   = fmtInt.format(tCli);
+    tVehE.textContent   = fmtInt.format(tVeh);
+    tKgE.textContent    = fmtNum.format(tKg);
+    tValE.textContent   = fmtSoles.format(tVal).replace("S/.", "S/.");
+    tKgVehE.textContent = fmtNum.format(totKgVeh);
+    tKgCliE.textContent = fmtNum.format(totKgCli);
+    tCliVehE.textContent= fmtNum.format(totCliVeh);
+
   } catch (err) {
     console.error("[Dashboard] Error en renderByRangos:", err);
     const tbody = document.getElementById("tbodyRangos");
-    if (tbody) tbody.innerHTML = `<tr><td colspan="4" class="muted" style="padding:18px">⚠️ Error al construir la tabla de rangos.</td></tr>`;
+    if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="muted" style="padding:18px">⚠️ Error al construir la tabla de rangos.</td></tr>`;
   }
 }
