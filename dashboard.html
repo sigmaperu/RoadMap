@@ -9,10 +9,14 @@
   <!-- Tipografía + estilos globales -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700usercontent.com/sigmaperu/RoadMap/main/logotipo.png
-  https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png
-  https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png
-  site.webmanifest
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Favicons desde tu logo (puedes mejorar luego con pack local) -->
+  <link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
+  <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
+  <link rel="manifest" href="site.webmanifest">
   <meta name="msapplication-TileColor" content="#0b0b0b">
   <meta name="color-scheme" content="dark only">
 
@@ -62,8 +66,8 @@
 </head>
 <body>
 
-  <!-- Placeholder que tu app.js usa para inyectar el header -->
-  header.html</div>
+  <!-- ✅ Placeholder que tu app.js usa para inyectar el header -->
+  <div id="header-placeholder" data-src="header.html"></div>
 
   <main class="section">
     <div class="container">
@@ -113,7 +117,7 @@
   </main>
 
   <!-- Scripts (orden importante) -->
-  app.js</script>
-  dashboard.js</script>
+  <script src="app.js" defer></script>
+  <script src="dashboard.js" defer></script>
 </body>
 </html>
