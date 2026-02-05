@@ -7,23 +7,16 @@
   <title>RoadMap | Dashboard</title>
 
   <!-- Tipografía + estilos globales -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
-
-  <!-- Favicons desde tu logo -->
-  <link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png" />
-  <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png" />
-  <link rel="manifest" href="site.webmanifest" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700usercontent.com/sigmaperu/RoadMap/main/logotipo.png
+  https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png
+  https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png
+  site.webmanifest
   <meta name="msapplication-TileColor" content="#0b0b0b">
   <meta name="color-scheme" content="dark only">
 
-  <!-- Chart.js (antes de dashboard.js) -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-
-  <!-- Estilos locales (filtros/tabla/charts + barras de progreso) -->
+  <!-- Estilos locales (filtros/tabla + barras de progreso) -->
   <style>
     .filters { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:14px; }
     .filters .control {
@@ -37,11 +30,11 @@
     }
     .filters option { color:#fff; background:#0f0f0f; }
     .loading { display:flex; align-items:center; gap:10px; color: var(--muted); }
-    .dotloader { width: 10px; height: 10px; border-radius: 50%; background: var(--brand); animation: pulse .9s infinite alternate ease-in-out; }
-    @keyframes pulse { from { transform: scale(.9); opacity:.7 } to { transform: scale(1.15); opacity:1 } }
+    .dotloader { width:10px; height:10px; border-radius:50%; background:var(--brand); animation:pulse .9s infinite alternate ease-in-out; }
+    @keyframes pulse { from { transform:scale(.9); opacity:.7 } to { transform:scale(1.15); opacity:1 } }
 
     .table-wrap { overflow:auto; border-radius:12px; border:1px solid var(--stroke); background:var(--card); }
-    table { width:100%; border-collapse:collapse; min-width: 760px; }
+    table { width:100%; border-collapse:collapse; min-width:760px; }
     thead th {
       text-align:left; font-weight:800; color:#fff; background:#0e0e0e;
       padding:12px; border-bottom:1px solid var(--stroke); position:sticky; top:0; z-index:1;
@@ -65,20 +58,12 @@
       border-radius:999px; width:0%;
       transition: width .35s ease;
     }
-
-    .charts { display:grid; gap:16px; margin-top:16px; }
-    .charts.two { grid-template-columns: repeat(2, 1fr); }
-    @media (max-width: 900px){ .charts.two { grid-template-columns: 1fr; } }
-    .card.chart-card { padding:16px; }
-    .card.chart-card h3 { margin: 0 0 8px; }
-    /* Evitar canvas gigantes en vertical; altura dinámica la setea JS */
-    canvas { width:100%; }
   </style>
 </head>
 <body>
 
-  <!-- Placeholder que inyecta el header (tu app.js lo usa) -->
-  <div id="header-placeholder" data-src="header.html"></div>
+  <!-- Placeholder que tu app.js usa para inyectar el header -->
+  header.html</div>
 
   <main class="section">
     <div class="container">
@@ -124,30 +109,11 @@
         </table>
       </div>
 
-      <!-- Gráficos (barras horizontales) -->
-      <div class="charts two">
-        <div class="card chart-card">
-          <h3>Valor (S/.) por Canal</h3>
-          <canvas id="chartValor" height="160"></canvas>
-        </div>
-        <div class="card chart-card">
-          <h3>Kg Plan. por Canal</h3>
-          <canvas id="chartKg" height="160"></canvas>
-        </div>
-      </div>
-
-      <div class="charts">
-        <div class="card chart-card">
-          <h3>Participación por Valor</h3>
-          <canvas id="chartDonut" height="220"></canvas>
-        </div>
-      </div>
-
     </div>
   </main>
 
   <!-- Scripts (orden importante) -->
-  <script src="app.js"></script>
-  <script src="dashboard.js"></script>
+  app.js</script>
+  dashboard.js</script>
 </body>
 </html>
