@@ -1,4 +1,4 @@
-/* dashboard.js – Global por Centro (NO filtrada) + Canal (FILTRADA) + Rangos Kg Plan (FILTRADA) */
+/* dashboard.js – Global por Centro (NO filtrada) + Canal (FILTRADA) + Rangos Kg Plan (FILTRADA) con barra “carretera” */
 "use strict";
 
 // URLs CSV
@@ -12,17 +12,17 @@ const CT = { Clave: 0, Canal: 21 };
 // Placa a excluir
 const PLACA_EXCLUIR = "FRT-001";
 
-// Rangos de Kg Plan (tests explícitos para evitar ambigüedades)
+// Rangos de Kg Plan
 const KG_RANGES = [
-  { label: "0–1",        test: kg => kg >= 0   && kg < 1 },
-  { label: "1–3",        test: kg => kg >= 1   && kg < 3 },
-  { label: "3–5",        test: kg => kg >= 3   && kg < 5 },
-  { label: "5–10",       test: kg => kg >= 5   && kg < 10 },
-  { label: "10–20",      test: kg => kg >= 10  && kg < 20 },
-  { label: "20–50",      test: kg => kg >= 20  && kg < 50 },
-  { label: "50–100",     test: kg => kg >= 50  && kg < 100 },
-  { label: "100–200",    test: kg => kg >= 100 && kg < 200 },
-  { label: "200–500",    test: kg => kg >= 200 && kg <= 500 }, // incluye 500
+  { label: "0–1",          test: kg => kg >= 0   && kg < 1   },
+  { label: "1–3",          test: kg => kg >= 1   && kg < 3   },
+  { label: "3–5",          test: kg => kg >= 3   && kg < 5   },
+  { label: "5–10",         test: kg => kg >= 5   && kg < 10  },
+  { label: "10–20",        test: kg => kg >= 10  && kg < 20  },
+  { label: "20–50",        test: kg => kg >= 20  && kg < 50  },
+  { label: "50–100",       test: kg => kg >= 50  && kg < 100 },
+  { label: "100–200",      test: kg => kg >= 100 && kg < 200 },
+  { label: "200–500",      test: kg => kg >= 200 && kg <= 500 }, // incluye 500
   { label: "Pedidos >500", test: kg => kg > 500 }
 ];
 
@@ -110,13 +110,13 @@ async function start(){
     sel.addEventListener("change", ()=>{
       const v = sel.value;
       renderByCanal(v);
-      renderByRangos(v);
+      renderByRangos(v);  // ✅ rangos también reacciona al filtro
     });
 
     // Primer render
-    renderGlobalByCentro();      // no filtrada
-    renderByCanal("__all__");    // filtrada
-    renderByRangos("__all__");   // filtrada
+    renderGlobalByCentro();     // no filtrada
+    renderByCanal("__all__");   // filtrada
+    renderByRangos("__all__");  // filtrada
 
     if (status){ status.innerHTML = `<span class="dotloader" aria-hidden="true"></span><span>Listo</span>`; setTimeout(()=>status.style.display="none", 800); }
     console.log("[Dashboard] RoadMap filas (sin FRT-001):", ROADMAP_ROWS.length, "Catálogo claves:", CATALOGO_MAP.size);
@@ -237,62 +237,69 @@ function renderByCanal(centroValue){
   document.getElementById("totVal").textContent      = fmtSoles.format(tVal).replace("S/.", "S/.");
 }
 
-// ========= NUEVO: Tabla por Rangos de Kg Plan (FILTRADA por Centro) =========
+// ========= Tabla por Rangos de Kg Plan (FILTRADA por Centro) =========
 function renderByRangos(centroValue){
-  const rows = (centroValue && centroValue!=="__all__")
-    ? ROADMAP_ROWS.filter(r=>String(r[RM.Centro]??"").trim()===centroValue)
-    : ROADMAP_ROWS;
+  try {
+    const tbody = document.getElementById("tbodyRangos");
+    const tCliE = document.getElementById("totClientesRng");
+    const tKgE  = document.getElementById("totKgRng");
+    const tValE = document.getElementById("totValRng");
 
-  // Inicializa todos los rangos (aunque queden en cero)
-  const agg = new Map(KG_RANGES.map(r => [r.label, { clients:new Set(), kg:0, val:0 }]));
+    if (!tbody || !tCliE || !tKgE || !tValE) {
+      console.warn("[Dashboard] No se encontraron elementos de la tabla de Rangos en el DOM.");
+      return;
+    }
 
-  for (const r of rows){
-    const cliente = toKey(r[RM.Cliente]);
-    const kg  = toNumber(r[RM.KgPlan]);
-    const val = toNumber(r[RM.Valor]);
+    const rows = (centroValue && centroValue !== "__all__")
+      ? ROADMAP_ROWS.filter(r => String(r[RM.Centro] ?? "").trim() === centroValue)
+      : ROADMAP_ROWS;
 
-    // ignorar negativos o NaN
-    if (!Number.isFinite(kg) || kg < 0) continue;
+    const agg = new Map(KG_RANGES.map(r => [r.label, { clients:new Set(), kg:0, val:0 }]));
 
-    // encuentra el rango
-    const found = KG_RANGES.find(R => R.test(kg));
-    const label = found ? found.label : null;
-    if (!label) continue;
+    for (const r of rows){
+      const cliente = toKey(r[RM.Cliente]);
+      const kg  = toNumber(r[RM.KgPlan]);
+      const val = toNumber(r[RM.Valor]);
+      if (!Number.isFinite(kg) || kg < 0) continue;
 
-    const o = agg.get(label);
-    if (cliente) o.clients.add(cliente);
-    o.kg  += kg;
-    o.val += val;
+      const found = KG_RANGES.find(R => R.test(kg));
+      if (!found) continue;
+
+      const o = agg.get(found.label);
+      if (cliente) o.clients.add(cliente);
+      o.kg  += kg;
+      o.val += val;
+    }
+
+    const data = KG_RANGES.map(R => {
+      const o = agg.get(R.label);
+      return { rango:R.label, clientes:o.clients.size, kg:o.kg, val:o.val };
+    });
+
+    const tCli = data.reduce((s,x)=>s+x.clientes,0);
+    const tKg  = data.reduce((s,x)=>s+x.kg,0);
+    const tVal = data.reduce((s,x)=>s+x.val,0);
+
+    tbody.innerHTML = data.map(r=>{
+      const pCli = pct(r.clientes, tCli);
+      const pKg  = pct(r.kg,        tKg);
+      const pVal = pct(r.val,       tVal);
+      return `
+        <tr>
+          <td>${escapeHTML(r.rango)}</td>
+          <td class="num">${cellRoadHTML(fmtInt.format(r.clientes), pCli)}</td>
+          <td class="num">${cellRoadHTML(fmtNum.format(r.kg),       pKg )}</td>
+          <td class="num">${cellRoadHTML(fmtSoles.format(r.val).replace("S/.", "S/."), pVal)}</td>
+        </tr>
+      `;
+    }).join("");
+
+    tCliE.textContent = fmtInt.format(tCli);
+    tKgE.textContent  = fmtNum.format(tKg);
+    tValE.textContent = fmtSoles.format(tVal).replace("S/.", "S/.");
+  } catch(err) {
+    console.error("[Dashboard] Error en renderByRangos:", err);
+    const tbody = document.getElementById("tbodyRangos");
+    if (tbody) tbody.innerHTML = `<tr><td colspan="4" class="muted" style="padding:18px">⚠️ Error al construir la tabla de rangos.</td></tr>`;
   }
-
-  // Array en el orden de KG_RANGES
-  const data = KG_RANGES.map(R => {
-    const o = agg.get(R.label);
-    return { rango:R.label, clientes:o.clients.size, kg:o.kg, val:o.val };
-  });
-
-  // Totales (del conjunto filtrado)
-  const tCli = data.reduce((s,x)=>s+x.clientes,0);
-  const tKg  = data.reduce((s,x)=>s+x.kg,0);
-  const tVal = data.reduce((s,x)=>s+x.val,0);
-
-  // Render
-  const tbody = document.getElementById("tbodyRangos");
-  tbody.innerHTML = data.map(r=>{
-    const pCli=pct(r.clientes,tCli);
-    const pKg =pct(r.kg,tKg);
-    const pVal=pct(r.val,tVal);
-    return `
-      <tr>
-        <td>${escapeHTML(r.rango)}</td>
-        <td class="num">${cellRoadHTML(fmtInt.format(r.clientes), pCli)}</td>
-        <td class="num">${cellRoadHTML(fmtNum.format(r.kg), pKg)}</td>
-        <td class="num">${cellRoadHTML(fmtSoles.format(r.val).replace("S/.", "S/."), pVal)}</td>
-      </tr>
-    `;
-  }).join("");
-
-  document.getElementById("totClientesRng").textContent = fmtInt.format(tCli);
-  document.getElementById("totKgRng").textContent       = fmtNum.format(tKg);
-  document.getElementById("totValRng").textContent      = fmtSoles.format(tVal).replace("S/.", "S/.");
 }
