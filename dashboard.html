@@ -19,7 +19,15 @@
   <meta name="msapplication-TileColor" content="#0b0b0b">
   <meta name="color-scheme" content="dark only">
 
-  <!-- Estilos locales (amarillo + tablas + barra de progreso “carretera”) -->
+  <!-- ⚙️ Override de paleta: morado/lila -->
+  <style>
+    :root{
+      --brand: #a855f7;   /* Morado principal */
+      --brand-2:#c084fc;  /* Lila claro (hover/gradiente) */
+    }
+  </style>
+
+  <!-- Estilos locales (tablas + barra “carretera”) -->
   <style>
     .section-title { margin: 0 0 6px; }
     .fine { color: var(--muted); margin: 0 0 14px; }
@@ -37,7 +45,7 @@
     }
     .filters option { color:#fff; background:#0f0f0f; }
     .loading { display:flex; align-items:center; gap:10px; color: var(--muted); }
-    .dotloader { width:10px; height:10px; border-radius:50%; background:var(--brand); animation:pulse .9s infinite alternate ease-in-out; }
+    .dotloader { width:10px; height:10px; border-radius:50%; background: var(--brand); animation:pulse .9s infinite alternate ease-in-out; }
     @keyframes pulse { from { transform:scale(.9); opacity:.7 } to { transform:scale(1.15); opacity:1 } }
 
     /* TABLAS */
@@ -45,49 +53,47 @@
     table { width:100%; border-collapse:collapse; min-width:760px; }
     thead th {
       text-align:left; font-weight:800;
-      color:#ffd94a;                  /* Título en amarillo */
+      color:#d6b3ff;                 /* Título con tinte lila (amable a la vista) */
       background:#0e0e0e;
       padding:12px;
-      border-bottom:2px solid var(--brand); /* Línea inferior amarilla */
+      border-bottom:2px solid var(--brand); /* Línea inferior morada */
       position:sticky; top:0; z-index:1;
       letter-spacing:.2px;
     }
     tbody td { padding:12px; border-bottom:1px solid #1a1a1a; color:var(--muted); vertical-align:middle; }
     tbody tr:hover { background:#0f0f0f; }
     tfoot td {
-      padding:12px; border-top:2px solid var(--brand);  /* Línea superior amarilla */
+      padding:12px; border-top:2px solid var(--brand);  /* Línea superior morada */
       font-weight:800; color:#fff; background:#0e0e0e;
     }
     .num { text-align:right; white-space:nowrap; }
     .muted { color:var(--muted); }
 
-    /* ===== Barra de progreso “carretera con camioncito” ===== */
+    /* ===== Barra de progreso “carretera con camioncito” (morado/lila) ===== */
     .cell-stat { display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
     .cell-top { display:flex; gap:8px; align-items:baseline; }
-    .cell-top .pct { color:#d8b100; font-weight:700; font-size:.92rem; }
+    .cell-top .pct { color:#d6b3ff; font-weight:700; font-size:.92rem; } /* % lila suave */
 
-    /* Contenedor exterior (píldora con borde amarillo) */
     .road-progress {
       width: 240px;                 /* 200–260px funciona bien */
       height: 16px;
-      border: 2px solid var(--brand);
+      border: 2px solid rgba(255,255,255,.65);  /* borde claro como la referencia */
       border-radius: 9999px;
-      background: #0b0b0b;         /* pista oscura */
+      background: #0b0b0b;          /* pista oscura */
       position: relative;
       overflow: hidden;
     }
-    /* Barra interior (relleno), gradiente amarillo */
     .road-progress .road-bar {
       position: relative;
-      height: calc(100% - 8px);    /* deja margen interior para ver el borde */
+      height: calc(100% - 8px);     /* deja margen para ver el borde */
       margin: 4px;
       width: 0%;
-      background: linear-gradient(90deg, #f1c40f, #ffd94a);
+      background: linear-gradient(90deg, #b06efc, #7c3aed); /* lila -> morado */
       border-radius: 9999px;
       box-shadow: inset 0 -1px 0 rgba(0,0,0,.25);
       transition: width .45s ease;
     }
-    /* Línea discontinua central (la “carretera”) */
+    /* Línea discontinua central */
     .road-progress .road-bar::before {
       content:"";
       position:absolute;
@@ -102,7 +108,7 @@
       opacity:.95; border-radius:2px;
       pointer-events:none;
     }
-    /* Camioncito al final (SVG inline en data URI, color blanco) */
+    /* Camioncito SVG blanco al extremo derecho */
     .road-progress .road-bar::after {
       content:"";
       position:absolute;
@@ -110,7 +116,6 @@
       width:18px; height:18px;
       background-repeat:no-repeat; background-size:contain;
       filter: drop-shadow(0 1px 1px rgba(0,0,0,.35));
-      /* SVG camioncito (blanco) */
       background-image: url("data:image/svg+xml;utf8,\
       <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'>\
         <path d='M3 7c0-1.1.9-2 2-2h8v8H3V7zM15 7h3.8c.3 0 .6.1.8.4l2.3 3.1c.1.2.2.4.2.7V13h-7V7zM7 18.5A1.5 1.5 0 1 1 7 15.5a1.5 1.5 0 0 1 0 3zM18 18.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM2 14h20v1.5c0 .3-.2.5-.5.5H21a3 3 0 0 1-6 0H9a3 3 0 0 1-6 0H2.5c-.3 0-.5-.2-.5-.5V14z'/>\
@@ -120,7 +125,7 @@
 </head>
 <body>
 
-  <!-- ✅ Placeholder correcto para inyectar el header (app.js lo usa) -->
+  <!-- ✅ Placeholder correcto para inyectar el header (lo usa app.js) -->
   <div id="header-placeholder" data-src="header.html"></div>
 
   <main class="section">
@@ -202,8 +207,8 @@
     </div>
   </main>
 
-  <!-- Scripts (orden correcto) -->
-  <script defer src="app.js"></script>
-  <script defer src="dashboard.js"></script>
+  <!-- Scripts (defer asegura ejecución tras parsear el DOM) -->
+  <script src="app.js" defer></script>
+  <script src="dashboard.js" defer></script>
 </body>
 </html>
