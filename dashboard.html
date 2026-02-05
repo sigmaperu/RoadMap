@@ -4,29 +4,31 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#0b0b0b" />
+  <meta name="color-scheme" content="dark only" />
   <title>RoadMap · Dashboard</title>
 
-  <!-- Tipografías y CSS global (CORRECTO) -->
-  https://fonts.googleapis.com
-  https://fonts.gstatic.com
-  https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap
-  styles.css
+  <!-- Tipografías y CSS global -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 
-  <!-- Favicons (opcionales) -->
-  https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png
-  https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png
-  https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png
-  site.webmanifest
-  <meta name="color-scheme" content="dark only" />
+  <!-- Favicons (opcional) -->
+  <link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
+  <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
+  <link rel="manifest" href="site.webmanifest">
 </head>
 <body>
-  <!-- Header inyectado por app.js -->
-  header.html</div>
+  <!-- Si usas app.js para inyectar el header (deja este div tal cual) -->
+  <div id="header-placeholder" data-src="header.html"></div>
 
   <main class="section">
     <div class="container">
 
-      <!-- ====== FILTRO ARRIBA ====== -->
+      <!-- ===== Filtro (arriba) ===== -->
       <div class="filters card" role="region" aria-label="Filtro">
         <div class="control">
           <label for="locationFilter">Centro</label>
@@ -40,12 +42,12 @@
         </div>
       </div>
 
-      <!-- ====== CARD DE INDICADORES (afectada por el filtro) ====== -->
+      <!-- ===== Card de Indicadores (afectada por el filtro) ===== -->
       <section class="card" aria-label="Indicadores">
         <div class="kpi-card" id="kpiCard"></div>
       </section>
 
-      <!-- ====== TABLA POR CANAL (FILTRADA) ====== -->
+      <!-- ===== Tabla por Canal (filtrada) ===== -->
       <section class="card" aria-label="Resumen por Canal">
         <div class="table-wrap">
           <table aria-describedby="status">
@@ -80,7 +82,7 @@
         </div>
       </section>
 
-      <!-- ====== TABLA POR RANGO DE KG PLAN (FILTRADA) ====== -->
+      <!-- ===== Tabla por Rango de Kg Plan (filtrada) ===== -->
       <section class="card" aria-label="Resumen por Rango de Kg Plan">
         <div class="table-wrap">
           <table>
@@ -118,8 +120,8 @@
     </div>
   </main>
 
-  <!-- Scripts (CORRECTO) -->
-  app.js</script>
-  dashboard.js</script>
+  <!-- Scripts (correctos) -->
+  <script src="app.js" defer></script>
+  <script src="dashboard.js" defer></script>
 </body>
 </html>
