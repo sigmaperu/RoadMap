@@ -2,21 +2,21 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#0b0b0b" />
   <title>RoadMap | Dashboard</title>
 
   <!-- Tipografía + estilos globales -->
-  https://fonts.googleapis.com
-  https://fonts.gstatic.com
-  https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap
-  styles.css
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 
   <!-- Favicons desde tu logo -->
-  https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png
-  https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png
-  https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png
-  site.webmanifest
+  <link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
+  <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
+  <link rel="manifest" href="site.webmanifest">
   <meta name="msapplication-TileColor" content="#0b0b0b">
   <meta name="color-scheme" content="dark only">
 
@@ -46,7 +46,7 @@
     table { width:100%; border-collapse:collapse; min-width:760px; }
     thead th {
       text-align:left; font-weight:800;
-      color:#ffd94a;                 /* Título en amarillo */
+      color:#ffd94a;                  /* Título en amarillo */
       background:#0e0e0e;
       padding:12px;
       border-bottom:2px solid var(--brand); /* Línea inferior amarilla */
@@ -72,7 +72,7 @@
     }
     .progress .bar {
       height:100%;
-      background: linear-gradient(90deg, var(--brand), #ffd94a); /* Amarillo */
+      background: linear-gradient(90deg, var(--brand), #ffd94a);
       border-radius:999px; width:0%;
       transition: width .35s ease;
     }
@@ -80,8 +80,8 @@
 </head>
 <body>
 
-  <!-- Placeholder que tu app.js usa para inyectar el header -->
-  header.html</div>
+  <!-- ✅ Placeholder para inyectar el header (app.js lo usa) -->
+  <div id="header-placeholder" data-src="header.html"></div>
 
   <main class="section">
     <div class="container">
@@ -159,8 +159,8 @@
     </div>
   </main>
 
-  <!-- Scripts (orden importante) -->
-  app.js</script>
-  dashboard.js</script>
+  <!-- Scripts (orden correcto) -->
+  <script src="app.js" defer></script>
+  <script src="dashboard.js" defer></script>
 </body>
 </html>
