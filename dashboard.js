@@ -1,4 +1,4 @@
-/* Dashboard con Card de Indicadores + Tablas por Canal y Rangos */
+/* Dashboard con Card de Indicadores + Tablas por Canal y Rangos (barras solo en no‑ratio) */
 "use strict";
 
 // URLs CSV
@@ -124,7 +124,7 @@ async function start(){
     }
     sel.addEventListener("change", ()=>renderAll(sel.value));
 
-    // Totales globales (para % de la Card)
+    // Totales globales (para % de la Card no‑ratio)
     GLOBAL_AGG = aggregateTotals(ROADMAP_ROWS);
 
     // Primer render
@@ -145,9 +145,9 @@ function renderAll(centroValue){
     ? ROADMAP_ROWS.filter(r => String(r[RM.Centro] ?? "").trim() === centroValue)
     : ROADMAP_ROWS;
 
-  renderKpiCard(rows);
-  renderByCanal(rows);
-  renderByRangos(rows);
+  renderKpiCard(rows);   // KPIs (no‑ratio con barra + ratios sin barra)
+  renderByCanal(rows);   // Tabla por canal
+  renderByRangos(rows);  // Tabla por rangos
 }
 
 /* ==== Helpers de agregación / visual ==== */
@@ -189,23 +189,41 @@ function renderKpiCard(rows){
   const aggSel = aggregateTotals(rows);
   const base   = GLOBAL_AGG || { clientes:0, vehiculos:0, kg:0, val:0 };
 
+  // % vs base global para métricas no‑ratio
   const pCli = pct(aggSel.clientes, base.clientes);
   const pVeh = pct(aggSel.vehiculos, base.vehiculos);
   const pKg  = pct(aggSel.kg,        base.kg);
   const pVal = pct(aggSel.val,       base.val);
 
-  const kpi = (label, htmlValue) => `
-    <div class="kpi">
-      <div class="kpi-label">${label}</div>
-      ${htmlValue}
+  // Ratios en base al filtro actual
+  const kgVeh = ratio(aggSel.kg, aggSel.vehiculos);
+  const kgCli = ratio(aggSel.kg, aggSel.clientes);
+  const cliVeh= ratio(aggSel.clientes, aggSel.vehiculos);
+
+  const kpiBar = (cssClass, label, valFmt, partPct) => `
+    <div class="kpi ${cssClass}">
+      <div class="kpi-head"><span class="kpi-icon" aria-hidden="true"></span><span class="kpi-label">${label}</span></div>
+      ${cellRoadHTML(valFmt, partPct)}
+    </div>
+  `;
+  const kpiPlain = (cssClass, label, valFmt) => `
+    <div class="kpi ${cssClass}">
+      <div class="kpi-head"><span class="kpi-icon" aria-hidden="true"></span><span class="kpi-label">${label}</span></div>
+      <div class="kpi-value"><span>${valFmt}</span></div>
     </div>
   `;
 
   el.innerHTML = [
-    kpi("# Clientes",  cellRoadHTML(fmtInt.format(aggSel.clientes), pCli)),
-    kpi("# Vehículos", cellRoadHTML(fmtInt.format(aggSel.vehiculos), pVeh)),
-    kpi("Kg Plan.",    cellRoadHTML(fmtNum.format(aggSel.kg),       pKg )),
-    kpi("Valor (S/.)", cellRoadHTML(fmtSoles.format(aggSel.val).replace("S/.", "S/."), pVal)),
+    // No‑ratio con barra + %
+    kpiBar("kpi--valor",     "Valor (S/.)", fmtSoles.format(aggSel.val).replace("S/.", "S/."), pVal),
+    kpiBar("kpi--kg",        "Kg Plan.",    fmtNum.format(aggSel.kg), pKg),
+    kpiBar("kpi--clientes",  "# Clientes",  fmtInt.format(aggSel.clientes), pCli),
+    kpiBar("kpi--vehiculos", "# Vehículos", fmtInt.format(aggSel.vehiculos), pVeh),
+
+    // Ratios (sin barra)
+    kpiPlain("kpi--kgveh",   "Kg/Vehículo",     fmtNum.format(kgVeh)),
+    kpiPlain("kpi--kgcli",   "Kg/Cliente",      fmtNum.format(kgCli)),
+    kpiPlain("kpi--cliveh",  "Clientes/Vehículo", fmtNum.format(cliVeh)),
   ].join("");
 }
 
@@ -338,7 +356,7 @@ function renderByRangos(rows){
     tKgCliE.textContent = fmtNum.format(ratio(tKg,tCli));
     tCliVehE.textContent= fmtNum.format(ratio(tCli,tVeh));
   }catch(err){
-    console.error("[Dashboard] Error en renderByRangos:", err);
+    console.error("[Dashboard] Error en renderByRangos]:", err);
     const tbody = document.getElementById("tbodyRangos");
     if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="muted" style="padding:14px">⚠️ Error al construir la tabla de rangos.</td></tr>`;
   }
