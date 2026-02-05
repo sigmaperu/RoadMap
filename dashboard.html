@@ -7,16 +7,16 @@
   <title>RoadMap · Dashboard</title>
 
   <!-- Tipografías y CSS global -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
 
   <!-- Favicons -->
-  <link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
-  <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
-  <link rel="manifest" href="site.webmanifest">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png" />
+  <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png" />
+  <link rel="manifest" href="site.webmanifest" />
   <meta name="msapplication-TileColor" content="#0b0b0b" />
   <meta name="color-scheme" content="dark only" />
 
@@ -47,7 +47,7 @@
     table { width:100%; border-collapse:collapse; min-width:760px; }
     thead th {
       text-align:left; font-weight:800;
-      color:#fff; /* encabezado tabla */
+      /* color viene desde styles.css -> table thead th { color: var(--brand) } */
       background:#0e0e0e;
       padding:12px;
       border-bottom:2px solid var(--brand);
@@ -81,7 +81,7 @@
       height: 100%;
       margin: 0;
       width: 0%;
-      /* degradado usa la paleta global: amarillo principal y su variante clara */
+      /* degradado usa la paleta global */
       background: linear-gradient(90deg, var(--brand), var(--brand-2));
       border-radius: inherit;
       filter: saturate(.92) brightness(.98);
@@ -121,7 +121,7 @@
   </style>
 </head>
 <body>
-  <!-- Header -->
+  <!-- Header (inyectado por app.js) -->
   <div id="header-placeholder" data-src="header.html"></div>
 
   <main class="section">
@@ -132,7 +132,7 @@
         Se excluyen filas con <strong>Placa = FRT-001</strong>.
       </p>
 
-      <!-- ====== TABLA GLOBAL POR CENTRO ====== -->
+      <!-- ====== TABLA GLOBAL POR CENTRO (NO FILTRADA) ====== -->
       <h2 class="section-title">Resumen Global por Centro (no filtrado)</h2>
       <p class="fine">No se ve afectado por el filtro. Totales calculados excluyendo <strong>FRT-001</strong>.</p>
       <div class="table-wrap card" style="margin-bottom:18px">
@@ -175,7 +175,7 @@
         </div>
       </div>
 
-      <!-- ====== TABLA POR CANAL ====== -->
+      <!-- ====== TABLA POR CANAL (FILTRADA) ====== -->
       <div class="table-wrap card" style="margin-bottom:18px">
         <table aria-describedby="status">
           <thead>
@@ -200,7 +200,7 @@
         </table>
       </div>
 
-      <!-- ====== TABLA POR RANGOS ====== -->
+      <!-- ====== TABLA: POR RANGO DE KG PLAN (FILTRADA) ====== -->
       <h2 class="section-title">Resumen por Rango de Kg Plan (filtrado)</h2>
       <p class="fine">
         Se ve afectada por el filtro de <strong>Centro</strong>. Excluye <strong>FRT-001</strong>.
@@ -237,4 +237,4 @@
   <script src="dashboard.js" defer></script>
 </body>
 </html>
-``
+
