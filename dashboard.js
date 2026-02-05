@@ -92,6 +92,7 @@ function escapeHTML(s) { return String(s ?? "").replace(/[&<>"']/g, ch => HTML_E
 // Init
 // ===============================
 (function init() {
+  // usar 'defer' en los scripts + este guard por si acaso
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", start);
   } else {
