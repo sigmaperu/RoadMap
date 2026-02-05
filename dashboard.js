@@ -10,8 +10,8 @@ const RM = { Centro: 1, Placa: 2, Cliente: 3, KgPlan: 10, Valor: 11 };
 const CT = { Clave: 0, Canal: 21 };
 
 // Placas a tratar
-const PLACA_EXCLUIR = "FRT-001";          // excluida del dataset general
-const PLACA_NO_VEHICULO = "RES-CLI";      // excluida SOLO del conteo de vehículos
+const PLACA_EXCLUIR = "FRT-001";     // excluida del dataset general (no suma a nada)
+const PLACA_NO_VEHICULO = "RES-CLI"; // excluida SOLO del conteo de vehículos
 
 // Rangos de Kg Plan (para clasificación por cliente - suma del día)
 const KG_RANGES = [
@@ -23,8 +23,8 @@ const KG_RANGES = [
   { label: "20–50",   test: kg => kg >= 20  && kg < 50  },
   { label: "50–100",  test: kg => kg >= 50  && kg < 100 },
   { label: "100–200", test: kg => kg >= 100 && kg < 200 },
-  { label: "200–500", test: kg => kg >= 200 && kg < 500 }, // incluye 500
-  { label: "Pedidos >=500", test: kg => kg >= 500 }
+  { label: "200–500", test: kg => kg >= 200 && kg <= 500 }, // incluye 500
+  { label: "Pedidos >500", test: kg => kg > 500 }
 ];
 
 // Formatters
@@ -82,24 +82,24 @@ function toNumber(s) {
   if (!x) return 0;
 
   const hasComma = x.includes(",");
-  the const hasDot = x.includes(".");
+  const hasDot = x.includes(".");
 
   if (hasComma && hasDot) {
+    // "1.234,56" -> 1234.56
     x = x.replace(/\./g, "").replace(",", ".");
   } else if (hasComma && !hasDot) {
+    // "1,234" (miles) o "1,2" (decimal)
     if (/,\d{3}$/.test(x)) x = x.replace(/,/g, "");
     else x = x.replace(",", ".");
   } else {
     x = x.replace(/,/g, "");
   }
-
   const n = parseFloat(x);
   return Number.isFinite(n) ? n : 0;
 }
 
 const HTML_ESC_MAP = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
 const escapeHTML = (s) => String(s ?? "").replace(/[&<>"']/g, ch => HTML_ESC_MAP[ch]);
-
 const toKey = (s) => String(s ?? "").trim().replace(/\s+/g, " ").toUpperCase();
 
 // ========= Init =========
@@ -159,7 +159,6 @@ async function start() {
       status.innerHTML = `<span class="dotloader" aria-hidden="true"></span><span>Listo</span>`;
       setTimeout(()=>status.style.display="none", 800);
     }
-    console.log("[Dashboard] RoadMap filas (sin FRT-001):", ROADMAP_ROWS.length, "Catálogo claves:", CATALOGO_MAP.size);
   }catch(e){
     console.error(e);
     if (status) status.innerHTML = `<span>⚠️ ${String(e.message ?? e)}</span>`;
