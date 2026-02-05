@@ -7,19 +7,20 @@
   <title>RoadMap | Dashboard</title>
 
   <!-- Tipografías y CSS global -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 
   <!-- Favicons desde tu logo -->
-  <link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png" />
-  <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png" />
-  <link rel="manifest" href="site.webmanifest" />
+  <link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
+  <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
+  <link rel="manifest" href="site.webmanifest">
   <meta name="msapplication-TileColor" content="#0b0b0b">
   <meta name="color-scheme" content="dark only">
 
-  <!-- ⚙️ Paleta morado/lila suave -->
+  <!-- ⚙️ Override de paleta a morado/lila (suave) -->
   <style>
     :root{
       --brand:  #9B76F2;   /* morado suave */
@@ -71,17 +72,19 @@
     .cell-top { display:flex; gap:8px; align-items:baseline; }
     .cell-top .pct { color:#E6DAFF; font-weight:700; font-size:.92rem; }
 
+    /* Cápsula exterior (track claro + borde blanco suave) */
     .road-progress {
       width: 260px;
       height: 18px;
       border-radius: 9999px;
-      background: #ECECEC;
+      background: #ECECEC;     /* tramo no recorrido */
       box-shadow:
         inset 0 0 0 2px rgba(255,255,255,.9),
         0 1px 2px rgba(0,0,0,.25);
       position: relative;
       overflow: hidden;
     }
+    /* Tramo lila: ocupa TODO el alto de la cápsula */
     .road-progress .road-bar {
       position: relative;
       height: 100%;
@@ -95,6 +98,7 @@
         inset 0 -1px 1px rgba(0,0,0,.15);
       transition: width .45s ease;
     }
+    /* Carretera: línea discontinua delgada centrada, a lo largo de todo el tramo lila */
     .road-progress .road-bar::before {
       content:"";
       position:absolute;
@@ -110,6 +114,7 @@
       border-radius:2px;
       pointer-events:none;
     }
+    /* Camioncito blanco al extremo derecho del tramo lila */
     .road-progress .road-bar::after {
       content:"";
       position:absolute;
@@ -122,12 +127,13 @@
         <path d='M3 7c0-1.1.9-2 2-2h8v8H3V7zM15 7h3.8c.3 0 .6.1.8.4l2.3 3.1c.1.2.2.4.2.7V13h-7V7zM7 18.5A1.5 1.5 0 1 1 7 15.5a1.5 1.5 0 0 1 0 3zM18 18.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM2 14h20v1.5c0 .3-.2.5-.5.5H21a3 3 0 0 1-6 0H9a3 3 0 0 1-6 0H2.5c-.3 0-.5-.2-.5-.5V14z'/>\
       </svg>");
     }
+    /* Oculta camión en porcentajes muy bajos para no deformar puntas */
     .road-progress .road-bar[data-small="1"]::after{ display:none; }
   </style>
 </head>
 <body>
 
-  <!-- Header inyectable -->
+  <!-- ✅ Header reutilizable inyectado por app.js -->
   <div id="header-placeholder" data-src="header.html"></div>
 
   <main class="section">
@@ -237,8 +243,7 @@
   </main>
 
   <!-- Scripts -->
-  <script defer src="app.js"></script>
-  <script defer src="dashboard.js"></script>
+  <script src="app.js" defer></script>
+  <script src="dashboard.js" defer></script>
 </body>
 </html>
-``
