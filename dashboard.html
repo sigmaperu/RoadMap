@@ -7,27 +7,27 @@
   <title>RoadMap | Dashboard</title>
 
   <!-- Tipografías y CSS global -->
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="styles.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 
   <!-- Favicons desde tu logo -->
-  <link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png"/>
-  <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png"/>
-  <link rel="manifest" href="site.webmanifest"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
+  <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
+  <link rel="manifest" href="site.webmanifest">
   <meta name="msapplication-TileColor" content="#0b0b0b">
   <meta name="color-scheme" content="dark only">
 
   <!-- ⚙️ Override de paleta a morado/lila (más suave) -->
   <style>
     :root{
-      --brand:  #9B76F2;   /* morado suave */
-      --brand-2:#CDBBFF;   /* lila claro */
+      --brand:  #9B76F2;     /* morado suave */
+      --brand-2:#CDBBFF;     /* lila claro */
     }
   </style>
 
-  <!-- Estilos locales (tablas + barra “carretera” refinada) -->
+  <!-- Estilos locales (tablas + barra “carretera”) -->
   <style>
     .section-title { margin: 0 0 6px; }
     .fine { color: var(--muted); margin: 0 0 14px; }
@@ -53,7 +53,7 @@
     table { width:100%; border-collapse:collapse; min-width:760px; }
     thead th {
       text-align:left; font-weight:800;
-      color:#E6DAFF;                  /* lila bien legible */
+      color:#E6DAFF;                  /* lila legible */
       background:#0e0e0e;
       padding:12px;
       border-bottom:2px solid var(--brand); /* subrayado morado */
@@ -69,57 +69,54 @@
     .num { text-align:right; white-space:nowrap; }
     .muted { color:var(--muted); }
 
-    /* ===== Barra “carretera con camioncito” (suavizada y a altura completa) ===== */
+    /* ===== Barra “carretera con camioncito” (suave, carretera a altura completa) ===== */
     .cell-stat { display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
     .cell-top { display:flex; gap:8px; align-items:baseline; }
     .cell-top .pct { color:#E6DAFF; font-weight:700; font-size:.92rem; }
 
-    /* Cápsula exterior (fondo claro + borde blanco suave, sombra sutil) */
+    /* Cápsula exterior (fondo claro + borde blanco suave) */
     .road-progress {
-      width: 260px;                 /* ajustable: 220–280 */
-      height: 18px;                 /* altura de tu referencia */
+      width: 260px;                   /* 220–280 */
+      height: 18px;                   /* altura de referencia */
       border-radius: 9999px;
-      background: #ECECEC;          /* tramo no recorrido */
+      background: #ECECEC;            /* tramo no recorrido */
       box-shadow:
         inset 0 0 0 2px rgba(255,255,255,.9),
         0 1px 2px rgba(0,0,0,.25);
       position: relative;
       overflow: hidden;
     }
-    /* Barra interior: cubre (casi) todo el alto para que “toque” arriba y abajo.
-       Usamos un margen pequeño para mantener el bisel del borde externo visible,
-       pero si la quieres 100% alto, cambia margin:0; height:100%; */
+    /* Tramo lila: AHORA ocupa TODO el alto de la cápsula (sin márgenes) */
     .road-progress .road-bar {
       position: relative;
-      height: calc(100% - 4px);     /* casi todo el alto */
-      margin: 2px;                  /* deja 2px para el bisel blanco */
+      height: 100%;
+      margin: 0;
       width: 0%;
       background: linear-gradient(90deg, rgba(155,118,242,.95), rgba(205,187,255,.95));
-      border-radius: 9999px;
-      /* suavizado general del color */
+      border-radius: inherit;
       filter: saturate(.92) brightness(.98);
       box-shadow:
         inset 0 1px 1px rgba(255,255,255,.35),
         inset 0 -1px 1px rgba(0,0,0,.15);
       transition: width .45s ease;
     }
-    /* Carretera: líneas discontinuas que cubren TODO el alto de la barra morada */
+    /* Carretera: línea discontinua DELGADA centrada, a lo largo de todo el tramo lila */
     .road-progress .road-bar::before {
       content:"";
       position:absolute;
-      inset: 0 28px 0 12px;         /* deja espacio para el camión al final */
+      left:12px; right:28px; top:50%;
+      height:2px;                     /* más delgada (look señalización) */
+      transform:translateY(-50%);
       background:
         repeating-linear-gradient(
           90deg,
-          rgba(255,255,255,.95) 0 26px,  /* tramo pintado (más ancho) */
-          rgba(255,255,255,0)   26px 46px/* hueco (proporción agradable) */
+          rgba(255,255,255,.95) 0 16px,   /* dash fino */
+          rgba(255,255,255,0)   16px 32px /* gap */
         );
-      /* la carretera ocupa todo el alto de la barra */
-      border-radius: inherit;
-      mix-blend-mode: screen;       /* se integra mejor al gradiente */
+      border-radius:2px;
       pointer-events:none;
     }
-    /* Camioncito al extremo derecho del tramo morado (SVG blanco) */
+    /* Camioncito blanco al extremo derecho del tramo lila */
     .road-progress .road-bar::after {
       content:"";
       position:absolute;
@@ -132,13 +129,13 @@
         <path d='M3 7c0-1.1.9-2 2-2h8v8H3V7zM15 7h3.8c.3 0 .6.1.8.4l2.3 3.1c.1.2.2.4.2.7V13h-7V7zM7 18.5A1.5 1.5 0 1 1 7 15.5a1.5 1.5 0 0 1 0 3zM18 18.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM2 14h20v1.5c0 .3-.2.5-.5.5H21a3 3 0 0 1-6 0H9a3 3 0 0 1-6 0H2.5c-.3 0-.5-.2-.5-.5V14z'/>\
       </svg>");
     }
-    /* En tramos muy pequeños, oculta el camión para no romper el pill redondeado */
+    /* Oculta camión en porcentajes muy bajos (para no deformar puntas) */
     .road-progress .road-bar[data-small="1"]::after{ display:none; }
   </style>
 </head>
 <body>
 
-  <!-- ✅ Placeholder correcto para inyectar el header con app.js -->
+  <!-- ✅ Placeholder correcto para inyectar el header -->
   <div id="header-placeholder" data-src="header.html"></div>
 
   <main class="section">
@@ -221,7 +218,7 @@
   </main>
 
   <!-- Scripts -->
-  <script src="app.js" defer></script>
-  <script src="dashboard.js" defer></script>
+  <script defer src="app.js"></script>
+  <script defer src="dashboard.js"></script>
 </body>
 </html>
