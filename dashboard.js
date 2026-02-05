@@ -17,15 +17,6 @@ const toKey     = s => String(s ?? "").trim().replace(/\s+/g," ").toUpperCase();
 // Estado
 let ROADMAP_ROWS = [];
 let CATALOGO_MAP = new Map(); // cliente -> canal
-let chartValor = null, chartKg = null, chartDonut = null;
-
-// Chart.js en modo oscuro
-if (window.Chart) {
-  Chart.defaults.color = "#cfcfcf";
-  Chart.defaults.borderColor = "#333";
-  Chart.defaults.plugins.legend.labels = { color:"#cfcfcf", usePointStyle:true, pointStyle:"circle" };
-  Chart.defaults.datasets.bar.borderRadius = 6;
-}
 
 // ===============================
 // CSV utils (detección de separador + comillas)
@@ -92,7 +83,7 @@ function escapeHTML(s) { return String(s ?? "").replace(/[&<>"']/g, ch => HTML_E
 (async function init() {
   const status = document.getElementById("status");
   try {
-    status && (status.querySelector("span:last-child").textContent = "Descargando CSV…");
+    if (status) status.querySelector("span:last-child").textContent = "Descargando CSV…";
 
     const [roadmapText, catalogText] = await Promise.all([
       fetch(ROADMAP_CSV_URL, { cache:"no-store" }).then(r => { if(!r.ok) throw new Error("RoadMap.csv HTTP "+r.status); return r.text(); }),
@@ -147,7 +138,7 @@ function escapeHTML(s) { return String(s ?? "").replace(/[&<>"']/g, ch => HTML_E
 })();
 
 // ===============================
-// Render tabla y gráficos
+// Render tabla con % y barra de progreso
 // ===============================
 function render(centroValue) {
   const rows = (centroValue && centroValue !== "__all__")
@@ -178,12 +169,12 @@ function render(centroValue) {
   const totKg       = data.reduce((s,x)=>s+x.kg,0);
   const totVal      = data.reduce((s,x)=>s+x.val,0);
 
-  // Tabla con % y barra de progreso en cada métrica
-  const tbody = document.getElementById("summaryBody");
+  // Helpers porcentaje
   const pct = (value,total) => total>0 ? (value/total*100) : 0;
   const pctTxt = p => `${p.toFixed(1)}%`;
 
-  const cellStatHTML = (valFmt, part, colorClass="brand") => `
+  // Celda compuesta (valor + % + barra)
+  const cellStatHTML = (valFmt, part) => `
     <div class="cell-stat">
       <div class="cell-top">
         <span>${valFmt}</span>
@@ -193,6 +184,8 @@ function render(centroValue) {
     </div>
   `;
 
+  // Tabla
+  const tbody = document.getElementById("summaryBody");
   tbody.innerHTML = data.length
     ? data.map(r => {
         const pCli = pct(r.clientes, totClientes);
@@ -209,87 +202,8 @@ function render(centroValue) {
       }).join("")
     : `<tr><td colspan="4" class="muted" style="padding:18px">Sin datos.</td></tr>`;
 
+  // Totales
   document.getElementById("totClientes").textContent = fmtInt.format(totClientes);
   document.getElementById("totKg").textContent       = fmtNum.format(totKg);
   document.getElementById("totVal").textContent      = fmtSoles.format(totVal).replace("S/.", "S/.");
-
-  // Gráficos (barras horizontales)
-  renderCharts(data);
-}
-
-// ===============================
-// Gráficos (horizontales + altura dinámica)
-// ===============================
-function renderCharts(rows) {
-  const labels  = rows.map(r => r.canal);
-  const valores = rows.map(r => r.val);
-  const kilos   = rows.map(r => r.kg);
-
-  // Destruir instancias previas
-  [chartValor, chartKg, chartDonut].forEach(c => c && c.destroy());
-
-  // Paleta simple pero suficiente
-  const colors = labels.map((_,i)=> `hsl(${(i*47)%360} 85% 55%)`);
-
-  // Altura dinámica de canvas según cantidad de categorías (para no “estirar” la página)
-  const setCanvasHeight = (canvas, n) => {
-    const h = Math.max(140, n * 32 + 60); // 32px por categoría + margen
-    canvas.height = h;
-  };
-
-  const ctxVal = document.getElementById("chartValor");
-  const ctxKg  = document.getElementById("chartKg");
-  const ctxDon = document.getElementById("chartDonut");
-
-  if (ctxVal) {
-    setCanvasHeight(ctxVal, labels.length);
-    chartValor = new Chart(ctxVal, {
-      type: "bar",
-      data: { labels, datasets: [{ label: "Valor (S/.)", data: valores, backgroundColor: colors, parsing:false }] },
-      options: {
-        indexAxis: "y",           // << horizontal
-        animation: { duration: 250 },
-        maintainAspectRatio: false,
-        scales: {
-          x: { ticks: { callback: v => fmtSoles.format(v).replace("S/.", "S/.") } },
-          y: { grid: { display: false } }
-        },
-        plugins: { legend: { display: false } }
-      }
-    });
-  }
-
-  if (ctxKg) {
-    setCanvasHeight(ctxKg, labels.length);
-    chartKg = new Chart(ctxKg, {
-      type: "bar",
-      data: { labels, datasets: [{ label: "Kg Plan.", data: kilos, backgroundColor: colors, parsing:false }] },
-      options: {
-        indexAxis: "y",           // << horizontal
-        animation: { duration: 250 },
-        maintainAspectRatio: false,
-        scales: {
-          x: { ticks: { callback: v => fmtNum.format(v) } },
-          y: { grid: { display: false } }
-        },
-        plugins: { legend: { display: false } }
-      }
-    });
-  }
-
-  if (ctxDon) {
-    chartDonut = new Chart(ctxDon, {
-      type: "doughnut",
-      data: { labels, datasets: [{ data: valores, backgroundColor: colors, borderColor: "#000", borderWidth: 1 }] },
-      options: {
-        maintainAspectRatio: false,
-        cutout: "58%",
-        animation: { duration: 250 },
-        plugins: {
-          legend: { position: "bottom" },
-          tooltip: { callbacks: { label: c => ` ${c.label}: ${fmtSoles.format(c.raw).replace("S/.", "S/.")}` } }
-        }
-      }
-    });
-  }
 }
