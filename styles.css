@@ -26,7 +26,7 @@ body{
 }
 .container{width:92%;max-width:1200px;margin-inline:auto}
 
-/* ===== HEADER ===== */
+/* ===== HEADER (si usas header.html) ===== */
 .main-header{
   position:sticky;top:0;z-index:1000;
   background:#000;
@@ -38,9 +38,7 @@ body{
   min-height:64px;
 }
 .logo{height:48px;display:block}
-.nav-menu{
-  display:flex;align-items:center;gap:28px;
-}
+.nav-menu{display:flex;align-items:center;gap:28px;}
 .nav-link{
   color:var(--muted);text-decoration:none;font-weight:600;letter-spacing:.2px;
   padding:10px 4px;position:relative;transition:.25s color ease;
@@ -50,99 +48,71 @@ body{
 .nav-link.active::after{
   content:"";position:absolute;left:0;bottom:-12px;height:3px;width:100%;background:var(--brand);border-radius:2px;
 }
-/* Hamburguesa */
-.menu-toggle{
-  display:none;background:transparent;border:0;cursor:pointer;padding:8px;border-radius:8px;
-}
-.menu-toggle:focus{outline:2px solid var(--brand)}
-.menu-toggle .bar{
-  display:block;width:24px;height:2px;background:#fff;margin:5px 0;border-radius:2px;transition:transform .25s ease,opacity .25s ease;
-}
-
-/* ===== HERO ===== */
-.hero{
-  position:relative;isolation:isolate;
-  background: radial-gradient(1200px 600px at 20% -10%, rgba(241,196,15,.18) 0%, transparent 55%),
-  linear-gradient(135deg,#000 0%, #121212 60%, #0a0a0a 100%);
-  min-height:76vh;display:flex;align-items:center;
-}
-.hero-overlay{
-  position:absolute;inset:0;
-  background: radial-gradient(500px 260px at 80% 110%, rgba(241,196,15,.1) 0%, transparent 70%);
-  pointer-events:none;
-}
-.hero-content{position:relative;z-index:1;text-align:center;max-width:900px}
-.hero h1{font-size:clamp(2.2rem,4.5vw,4rem);margin:0 0 12px;color:var(--brand);font-weight:800;letter-spacing:.2px}
-.hero p{color:var(--muted);font-size:clamp(1rem,1.6vw,1.25rem);margin:0 auto 28px;max-width:760px}
-.cta-group{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
-.btn{
-  display:inline-flex;align-items:center;gap:10px;justify-content:center;
-  border:0;border-radius:10px;padding:14px 20px;font-weight:700;cursor:pointer;text-decoration:none;
-  transition:transform .08s ease, box-shadow .2s ease, background .2s ease, color .2s ease;
-}
-.btn:active{transform:translateY(1px)}
-.btn-primary{background:var(--brand);color:#000;box-shadow:0 10px 24px rgba(241,196,15,.25)}
-.btn-primary:hover{background:var(--brand-2)}
-.btn-ghost{background:transparent;border:1px solid var(--stroke);color:#fff}
-.btn-ghost:hover{border-color:#333;background:#0f0f0f}
 
 /* ===== SECTIONS ===== */
-.section{padding:72px 0}
-.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.section{padding:60px 0}
 .card{
-  background:var(--card);padding:26px;border-radius:var(--radius);
+  background:var(--card);padding:18px;border-radius:var(--radius);
   border:1px solid var(--stroke);box-shadow:var(--shadow);
-  transition:transform .25s ease, border-color .25s ease;
-}
-.card:hover{transform:translateY(-4px);border-color:#2a2a2a}
-.card h3{margin-top:0;margin-bottom:6px}
-.card p{color:var(--muted);margin:0}
-/* Split section */
-.split{background:linear-gradient(180deg, var(--bg) 0%, #0e0e0e 100%)}
-.split-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:34px;align-items:center}
-.split-text h2{margin:0 0 8px}
-.split-text p{color:var(--muted)}
-.bullets{margin:16px 0 0; padding-left:18px}
-.bullets li{margin:6px 0}
-.split-media .mockup{
-  width:100%;height:260px;border-radius:16px;border:1px dashed #2c2c2c;background:
-  linear-gradient(135deg, rgba(241,196,15,.12), transparent 60%), #0a0a0a;
-  box-shadow:inset 0 0 0 1px #121212, 0 12px 30px rgba(0,0,0,.35);
 }
 
-/* Contacto */
-.contact{text-align:center}
-.contact h2{margin:0 0 8px}
-.contact p{color:var(--muted);margin:0 0 22px}
-.contact-form{
-  background:var(--card);border:1px solid var(--stroke);border-radius:16px;padding:18px;max-width:820px;margin:0 auto;box-shadow:var(--shadow)
+/* ===== FILTRO (arriba) ===== */
+.filters{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin: 0 0 14px; }
+.filters .control{
+  display:inline-flex; gap:10px; align-items:center;
+  background:#0f0f0f; border:1px solid #242424; border-radius:10px; padding:10px 12px;
 }
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
-input,textarea{
-  width:100%;background:#0f0f0f;border:1px solid #242424;color:#fff;
-  padding:12px 14px;border-radius:10px;font:inherit;transition:border-color .2s ease, background .2s ease;
+.filters label{ color: var(--muted); font-weight:700; letter-spacing:.2px; }
+.filters select{
+  background: transparent; border: 0; color: #fff; font: inherit; outline: none; min-width: 240px;
+  -webkit-appearance:none; -moz-appearance:none; appearance:none;
 }
-input::placeholder,textarea::placeholder{color:#8e8e8e}
-input:focus,textarea:focus{outline:none;border-color:#444;background:#111}
+.filters option{ color:#fff; background:#0f0f0f; }
+.loading{ display:flex; align-items:center; gap:10px; color: var(--muted); }
+.dotloader{ width:10px; height:10px; border-radius:50%; background: var(--brand); animation:pulse .9s infinite alternate ease-in-out; }
+@keyframes pulse{ from { transform:scale(.9); opacity:.7 } to { transform:scale(1.15); opacity:1 } }
 
-/* ===== Tablas: encabezados amarillos (global) ===== */
-table thead th{
-  color: var(--brand);
+/* ===== CARD DE INDICADORES ===== */
+.kpi-card{
+  display:grid; gap:14px;
+  grid-template-columns:repeat(4,minmax(160px,1fr));
 }
+.kpi{
+  background:#0f0f0f; border:1px solid #222; border-radius:12px; padding:12px 14px;
+  display:flex; flex-direction:column; gap:8px;
+}
+.kpi .kpi-label{ color:var(--muted); font-weight:700; font-size:.9rem; letter-spacing:.2px; }
+.kpi .kpi-value{ font-size:1.15rem; font-weight:800; color:#fff; display:flex; align-items:baseline; gap:8px; }
+.kpi .kpi-value .pct{ color:var(--brand); font-weight:800; font-size:.95rem; }
 
-/* ===== Carretera (global, reutilizable) ===== */
-.cell-stat{ display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
+/* ===== TABLAS (compactas) ===== */
+.table-wrap{ overflow:auto; border-radius:12px; border:1px solid var(--stroke); background:var(--card); }
+table{ width:100%; border-collapse:collapse; min-width:960px; font-size:.95rem; }
+thead th{
+  text-align:left; font-weight:800; color:var(--brand);
+  background:#0e0e0e;
+  padding:10px 10px;
+  border-bottom:2px solid var(--brand);
+  position:sticky; top:0; z-index:1;
+  letter-spacing:.2px;
+}
+tbody td{ padding:10px; border-bottom:1px solid #1a1a1a; color:var(--muted); vertical-align:middle; }
+tbody tr:hover{ background:#0f0f0f; }
+tfoot td{ padding:10px; border-top:2px solid var(--brand); font-weight:800; color:#fff; background:#0e0e0e; }
+.num{ text-align:right; white-space:nowrap; }
+.muted{ color:var(--muted); }
+
+/* ===== Carretera GLOBAL (compacta) ===== */
+.cell-stat{ display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
 .cell-top{ display:flex; gap:8px; align-items:baseline; }
-.cell-top .pct{ color:#fff; font-weight:700; font-size:.92rem; }
+.cell-top .pct{ color:#fff; font-weight:700; font-size:.85rem; }
 
 .road-progress{
-  width: 260px;
-  height: 18px;
+  width: 180px;
+  height: 14px;
   border-radius: 9999px;
-  background: #ECECEC; /* tramo no recorrido */
-  box-shadow:
-    inset 0 0 0 2px rgba(255,255,255,.9),
-    0 1px 2px rgba(0,0,0,.25);
+  background: #ECECEC;
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.9), 0 1px 2px rgba(0,0,0,.25);
   position: relative;
   overflow: hidden;
 }
@@ -154,59 +124,37 @@ table thead th{
   background: linear-gradient(90deg, var(--brand), var(--brand-2));
   border-radius: inherit;
   filter: saturate(.92) brightness(.98);
-  box-shadow:
-    inset 0 1px 1px rgba(255,255,255,.35),
-    inset 0 -1px 1px rgba(0,0,0,.15);
+  box-shadow: inset 0 1px 1px rgba(255,255,255,.35), inset 0 -1px 1px rgba(0,0,0,.15);
   transition: width .45s ease;
 }
 .road-progress .road-bar::before{
   content:"";
   position:absolute;
-  left:12px; right:28px; top:50%;
-  height:2px;
-  transform:translateY(-50%);
-  background:
-    repeating-linear-gradient(
-      90deg,
-      rgba(255,255,255,.95) 0 16px,
-      rgba(255,255,255,0) 16px 32px
-    );
-  border-radius:2px;
-  pointer-events:none;
+  left:10px; right:24px; top:50%;
+  height:2px; transform:translateY(-50%);
+  background: repeating-linear-gradient(90deg, rgba(255,255,255,.95) 0 16px, rgba(255,255,255,0) 16px 32px);
+  border-radius:2px; pointer-events:none;
 }
 .road-progress .road-bar::after{
   content:"";
   position:absolute;
-  right:6px; top:50%; transform:translateY(-50%);
-  width:20px; height:20px;
-  background-repeat:no-repeat; background-size:contain;
+  right:5px; top:50%; transform:translateY(-50%);
+  width:16px; height:16px; background-repeat:no-repeat; background-size:contain;
   filter: drop-shadow(0 1px 1px rgba(0,0,0,.35));
   background-image: url("data:image/svg+xml;utf8,\
 <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'>\
 <path d='M3 7c0-1.1.9-2 2-2h8v8H3V7zM15 7h3.8c.3 0 .6.1.8.4l2.3 3.1c.1.2.2.4.2.7V13h-7V7zM7 18.5A1.5 1.5 0 1 1 7 15.5a1.5 1.5 0 0 1 0 3zM18 18.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM2 14h20v1.5c0 .3-.2.5-.5.5H21a3 3 0 0 1-6 0H9a3 3 0 0 1-6 0H2.5c-.3 0-.5-.2-.5-.5V14z'/>\
 </svg>");
 }
-/* Oculta camión en porcentajes muy bajos para no deformar puntas */
 .road-progress .road-bar[data-small="1"]::after{ display:none; }
 
-/* ===== RESPONSIVE ===== */
+/* ===== Responsive ===== */
 @media (max-width: 1024px){
-  .grid-3{grid-template-columns:repeat(2,1fr)}
-  .split-grid{grid-template-columns:1fr}
+  .kpi-card{ grid-template-columns:repeat(2,minmax(150px,1fr)); }
+  table{ min-width:880px; }
 }
 @media (max-width: 768px){
-  .container{width:92%}
-  /* Header responsive */
-  .menu-toggle{display:block}
-  .nav-menu{
-    position:fixed;inset:64px 0 auto 0;
-    background:#000;border-top:1px solid var(--stroke);
-    display:flex;flex-direction:column;gap:0;padding:6px 12px;
-    transform:translateY(-120%);transition:transform .25s ease;
-  }
-  .nav-menu.open{transform:translateY(0)}
-  .nav-link{padding:14px 10px;border-radius:8px}
-  .nav-link.active::after{display:none}
-  .grid-3{grid-template-columns:1fr}
-  .form-row{grid-template-columns:1fr}
+  .container{width:94%}
+  .kpi-card{ grid-template-columns:1fr; }
+  table{ min-width:820px; font-size:.92rem; }
 }
