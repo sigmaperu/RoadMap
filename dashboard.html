@@ -12,21 +12,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 
-  <!-- Favicons desde tu logo -->
+  <!-- Favicons -->
   <link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
   <link rel="icon" type="image/png" sizes="16x16" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
   <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
   <link rel="manifest" href="site.webmanifest">
   <meta name="msapplication-TileColor" content="#0b0b0b" />
   <meta name="color-scheme" content="dark only" />
-
-  <!-- ⚙️ Override de paleta a morado/lila (suave) -->
-  <style>
-    :root{
-      --brand: #9B76F2; /* morado suave */
-      --brand-2:#CDBBFF; /* lila claro */
-    }
-  </style>
 
   <!-- Estilos locales (tablas + barra “carretera”) -->
   <style>
@@ -55,7 +47,7 @@
     table { width:100%; border-collapse:collapse; min-width:760px; }
     thead th {
       text-align:left; font-weight:800;
-      color:#E6DAFF;
+      color:#fff; /* encabezado tabla */
       background:#0e0e0e;
       padding:12px;
       border-bottom:2px solid var(--brand);
@@ -71,27 +63,26 @@
     /* ===== Barra “carretera con camioncito” ===== */
     .cell-stat { display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
     .cell-top { display:flex; gap:8px; align-items:baseline; }
-    .cell-top .pct { color:#E6DAFF; font-weight:700; font-size:.92rem; }
+    .cell-top .pct { color:#fff; font-weight:700; font-size:.92rem; }
 
-    /* Cápsula exterior (track claro + borde blanco suave) */
     .road-progress {
       width: 260px;
       height: 18px;
       border-radius: 9999px;
-      background: #ECECEC; /* tramo no recorrido */
+      background: #ECECEC;
       box-shadow:
         inset 0 0 0 2px rgba(255,255,255,.9),
         0 1px 2px rgba(0,0,0,.25);
       position: relative;
       overflow: hidden;
     }
-    /* Tramo lila: ocupa TODO el alto de la cápsula */
     .road-progress .road-bar {
       position: relative;
       height: 100%;
       margin: 0;
       width: 0%;
-      background: linear-gradient(90deg, rgba(155,118,242,.95), rgba(205,187,255,.95));
+      /* degradado usa la paleta global: amarillo principal y su variante clara */
+      background: linear-gradient(90deg, var(--brand), var(--brand-2));
       border-radius: inherit;
       filter: saturate(.92) brightness(.98);
       box-shadow:
@@ -99,7 +90,6 @@
         inset 0 -1px 1px rgba(0,0,0,.15);
       transition: width .45s ease;
     }
-    /* Carretera: línea discontinua delgada centrada */
     .road-progress .road-bar::before {
       content:"";
       position:absolute;
@@ -115,7 +105,6 @@
       border-radius:2px;
       pointer-events:none;
     }
-    /* Camioncito blanco al extremo derecho del tramo lila */
     .road-progress .road-bar::after {
       content:"";
       position:absolute;
@@ -128,12 +117,11 @@
 <path d='M3 7c0-1.1.9-2 2-2h8v8H3V7zM15 7h3.8c.3 0 .6.1.8.4l2.3 3.1c.1.2.2.4.2.7V13h-7V7zM7 18.5A1.5 1.5 0 1 1 7 15.5a1.5 1.5 0 0 1 0 3zM18 18.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM2 14h20v1.5c0 .3-.2.5-.5.5H21a3 3 0 0 1-6 0H9a3 3 0 0 1-6 0H2.5c-.3 0-.5-.2-.5-.5V14z'/>\
 </svg>");
     }
-    /* Oculta camión en porcentajes muy bajos para no deformar puntas */
     .road-progress .road-bar[data-small="1"]::after{ display:none; }
   </style>
 </head>
 <body>
-  <!-- ✅ Header reutilizable inyectado por app.js -->
+  <!-- Header -->
   <div id="header-placeholder" data-src="header.html"></div>
 
   <main class="section">
@@ -144,7 +132,7 @@
         Se excluyen filas con <strong>Placa = FRT-001</strong>.
       </p>
 
-      <!-- ====== TABLA GLOBAL POR CENTRO (NO FILTRADA) ====== -->
+      <!-- ====== TABLA GLOBAL POR CENTRO ====== -->
       <h2 class="section-title">Resumen Global por Centro (no filtrado)</h2>
       <p class="fine">No se ve afectado por el filtro. Totales calculados excluyendo <strong>FRT-001</strong>.</p>
       <div class="table-wrap card" style="margin-bottom:18px">
@@ -187,7 +175,7 @@
         </div>
       </div>
 
-      <!-- ====== TABLA POR CANAL (FILTRADA) ====== -->
+      <!-- ====== TABLA POR CANAL ====== -->
       <div class="table-wrap card" style="margin-bottom:18px">
         <table aria-describedby="status">
           <thead>
@@ -212,7 +200,7 @@
         </table>
       </div>
 
-      <!-- ====== TABLA: POR RANGO DE KG PLAN (FILTRADA) ====== -->
+      <!-- ====== TABLA POR RANGOS ====== -->
       <h2 class="section-title">Resumen por Rango de Kg Plan (filtrado)</h2>
       <p class="fine">
         Se ve afectada por el filtro de <strong>Centro</strong>. Excluye <strong>FRT-001</strong>.
@@ -249,3 +237,4 @@
   <script src="dashboard.js" defer></script>
 </body>
 </html>
+``
