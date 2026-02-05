@@ -1,4 +1,4 @@
-/* dashboard.js – RoadMap Dashboard (dos tablas: Global por Centro + Canal filtrado, con barra “carretera”) */
+/* dashboard.js – RoadMap Dashboard (Global por Centro + Canal filtrado; barra “carretera” morado/lila) */
 "use strict";
 
 // ===============================
@@ -100,6 +100,16 @@ function escapeHTML(s) { return String(s ?? "").replace(/[&<>"']/g, ch => HTML_E
 })();
 
 async function start() {
+  // Fallback: si el header no fue inyectado aún, intenta hacerlo
+  const headerHost = document.querySelector("#header-placeholder");
+  if (headerHost && !headerHost.innerHTML.trim()) {
+    const src = headerHost.getAttribute("data-src") || "header.html";
+    try {
+      const html = await fetch(src).then(r => r.text());
+      headerHost.innerHTML = html;
+    } catch(e) { console.warn("No se pudo inyectar header desde dashboard.js:", e); }
+  }
+
   const status = document.getElementById("status");
   try {
     if (status) status.querySelector("span:last-child").textContent = "Descargando CSV…";
@@ -118,7 +128,7 @@ async function start() {
     if (catalog.length && /canal/i.test(String(catalog[0][CT.Canal]||""))) catalog.shift();
 
     // === Filtrar FRT-001 y limpiar dataset base ===
-    ROADMAP_ROWS = roadmap.filter(r => String(r[RM.Placa] ?? "").trim().toUpperCase() !== PLACA_EXCLUIR);
+    ROADMAP_ROWS = roadmap.filter(r => String(r[RM.Placa] ?? "").trim().toUpperCase() !== "FRT-001");
 
     // Mapa cliente -> canal
     CATALOGO_MAP.clear();
@@ -159,12 +169,12 @@ async function start() {
 }
 
 // ===============================
-// Helpers de presentación (porcentaje + barra “carretera”)
+// Helpers de presentación
 // ===============================
 const pct = (value,total) => total>0 ? (value/total*100) : 0;
 const pctTxt = p => `${p.toFixed(1)}%`;
 
-/** Genera la celda con valor + % + barra carretera */
+/** Genera la celda con valor + % + barra carretera (morado/lila) */
 function cellRoadHTML(valorFormateado, porcentaje) {
   const p = Math.max(0, Math.min(100, porcentaje)); // 0–100
   return `
