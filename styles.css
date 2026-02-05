@@ -26,37 +26,14 @@ body{
 }
 .container{width:92%;max-width:1200px;margin-inline:auto}
 
-/* ===== HEADER (si usas header.html) ===== */
-.main-header{
-  position:sticky;top:0;z-index:1000;
-  background:#000;
-  border-bottom:1px solid var(--stroke);
-  box-shadow:0 2px 12px rgba(0,0,0,.4);
-}
-.header-content{
-  display:flex;align-items:center;justify-content:space-between;gap:16px;
-  min-height:64px;
-}
-.logo{height:48px;display:block}
-.nav-menu{display:flex;align-items:center;gap:28px;}
-.nav-link{
-  color:var(--muted);text-decoration:none;font-weight:600;letter-spacing:.2px;
-  padding:10px 4px;position:relative;transition:.25s color ease;
-}
-.nav-link:hover{color:#fff}
-.nav-link.active{color:var(--brand)}
-.nav-link.active::after{
-  content:"";position:absolute;left:0;bottom:-12px;height:3px;width:100%;background:var(--brand);border-radius:2px;
-}
-
-/* ===== SECTIONS ===== */
+/* ===== SECTIONS / CARDS ===== */
 .section{padding:60px 0}
 .card{
   background:var(--card);padding:18px;border-radius:var(--radius);
   border:1px solid var(--stroke);box-shadow:var(--shadow);
 }
 
-/* ===== FILTRO (arriba) ===== */
+/* ===== FILTRO ARRIBA ===== */
 .filters{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin: 0 0 14px; }
 .filters .control{
   display:inline-flex; gap:10px; align-items:center;
@@ -143,7 +120,7 @@ tfoot td{ padding:10px; border-top:2px solid var(--brand); font-weight:800; colo
   filter: drop-shadow(0 1px 1px rgba(0,0,0,.35));
   background-image: url("data:image/svg+xml;utf8,\
 <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'>\
-<path d='M3 7c0-1.1.9-2 2-2h8v8H3V7zM15 7h3.8c.3 0 .6.1.8.4l2.3 3.1c.1.2.2.4.2.7V13h-7V7zM7 18.5A1.5 1.5 0 1 1 7 15.5a1.5 1.5 0 0 1 0 3zM18 18.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM2 14h20v1.5c0 .3-.2.5-.5.5H21a3 3 0 0 1-6 0H9a3 3 0 0 1-6 0H2.5c-.3 0-.5-.2-.5-.5V14z'/>\
+<path d='M3 7c0-1.1.9-2 2-2h8v8H3V7zM15 7h3.8c.3 0 .6.1 .8.4l2.3 3.1c.1.2 .2.4 .2.7V13h-7V7zM7 18.5A1.5 1.5 0 1 1 7 15.5a1.5 1.5 0 0 1 0 3zM18 18.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM2 14h20v1.5c0 .3-.2 .5-.5 .5H21a3 3 0 0 1-6 0H9a3 3 0 0 1-6 0H2.5c-.3 0-.5-.2-.5-.5V14z'/>\
 </svg>");
 }
 .road-progress .road-bar[data-small="1"]::after{ display:none; }
