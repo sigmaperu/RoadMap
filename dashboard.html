@@ -7,21 +7,25 @@
   <title>RoadMap | Dashboard</title>
 
   <!-- Tipografía + estilos globales -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  https://fonts.googleapis.com
+  https://fonts.gstatic.com
+  https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap
+  styles.css
 
-  <!-- Favicons desde tu logo (puedes mejorar luego con pack local) -->
-  <link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
-  <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
-  <link rel="manifest" href="site.webmanifest">
+  <!-- Favicons desde tu logo -->
+  https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png
+  https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png
+  https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png
+  site.webmanifest
   <meta name="msapplication-TileColor" content="#0b0b0b">
   <meta name="color-scheme" content="dark only">
 
-  <!-- Estilos locales (filtros/tabla + barras de progreso) -->
+  <!-- Estilos locales (más amarillo + tablas + barras de progreso) -->
   <style>
+    .section-title { margin: 0 0 6px; }
+    .fine { color: var(--muted); margin: 0 0 14px; }
+
+    /* FILTROS */
     .filters { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:14px; }
     .filters .control {
       display:inline-flex; gap:10px; align-items:center;
@@ -37,28 +41,38 @@
     .dotloader { width:10px; height:10px; border-radius:50%; background:var(--brand); animation:pulse .9s infinite alternate ease-in-out; }
     @keyframes pulse { from { transform:scale(.9); opacity:.7 } to { transform:scale(1.15); opacity:1 } }
 
+    /* TABLAS */
     .table-wrap { overflow:auto; border-radius:12px; border:1px solid var(--stroke); background:var(--card); }
     table { width:100%; border-collapse:collapse; min-width:760px; }
     thead th {
-      text-align:left; font-weight:800; color:#fff; background:#0e0e0e;
-      padding:12px; border-bottom:1px solid var(--stroke); position:sticky; top:0; z-index:1;
+      text-align:left; font-weight:800;
+      color:#ffd94a;                 /* Título en amarillo */
+      background:#0e0e0e;
+      padding:12px;
+      border-bottom:2px solid var(--brand); /* Línea inferior amarilla */
+      position:sticky; top:0; z-index:1;
+      letter-spacing:.2px;
     }
     tbody td { padding:12px; border-bottom:1px solid #1a1a1a; color:var(--muted); vertical-align:middle; }
     tbody tr:hover { background:#0f0f0f; }
-    tfoot td { padding:12px; border-top:1px solid var(--stroke); font-weight:800; color:#fff; background:#0e0e0e; }
+    tfoot td {
+      padding:12px; border-top:2px solid var(--brand);  /* Línea superior amarilla */
+      font-weight:800; color:#fff; background:#0e0e0e;
+    }
     .num { text-align:right; white-space:nowrap; }
     .muted { color:var(--muted); }
 
     /* Celda con valor + porcentaje + barra de progreso */
     .cell-stat { display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
     .cell-top { display:flex; gap:6px; align-items:baseline; }
-    .cell-top .pct { color:#9e9e9e; font-weight:600; font-size:.92rem; }
+    .cell-top .pct { color:#d8b100; font-weight:700; font-size:.92rem; } /* % con tinte amarillo */
     .progress {
       width: 180px; height: 6px; background:#161616; border:1px solid #232323; border-radius:999px;
       box-shadow: inset 0 0 0 1px #0b0b0b;
     }
     .progress .bar {
-      height:100%; background: linear-gradient(90deg, #f1c40f, #ffd94a);
+      height:100%;
+      background: linear-gradient(90deg, var(--brand), #ffd94a); /* Amarillo */
       border-radius:999px; width:0%;
       transition: width .35s ease;
     }
@@ -66,15 +80,44 @@
 </head>
 <body>
 
-  <!-- ✅ Placeholder que tu app.js usa para inyectar el header -->
-  <div id="header-placeholder" data-src="header.html"></div>
+  <!-- Placeholder que tu app.js usa para inyectar el header -->
+  header.html</div>
 
   <main class="section">
     <div class="container">
-      <h1>Dashboard</h1>
-      <p class="muted">Resumen por <strong>Canal</strong> filtrado por <strong>Centro</strong>.</p>
+      <h1 class="section-title">Dashboard</h1>
+      <p class="fine">Resumen general y por <strong>Canal</strong> con filtro por <strong>Centro</strong>. Se excluyen filas con <strong>Placa = FRT-001</strong>.</p>
 
-      <!-- Filtros -->
+      <!-- ====== TABLA GLOBAL POR CENTRO (NO FILTRADA) ====== -->
+      <h2 class="section-title">Resumen Global por Centro (no filtrado)</h2>
+      <p class="fine">No se ve afectado por el filtro. Totales calculados excluyendo <strong>FRT-001</strong>.</p>
+      <div class="table-wrap card" style="margin-bottom:18px">
+        <table>
+          <thead>
+            <tr>
+              <th>Centro</th>
+              <th class="num"># Clientes</th>
+              <th class="num">Kg Plan.</th>
+              <th class="num">Valor (S/.)</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyCentro">
+            <tr><td colspan="4" class="muted" style="padding:18px">Sin datos.</td></tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td>Total</td>
+              <td class="num" id="totClientesCen">0</td>
+              <td class="num" id="totKgCen">0</td>
+              <td class="num" id="totValCen">0</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- ====== FILTROS DEL DASHBOARD ====== -->
+      <h2 class="section-title">Resumen por Canal (filtrado)</h2>
+      <p class="fine">Filtrado por <strong>Centro</strong>. Excluye <strong>FRT-001</strong>.</p>
       <div class="filters card" role="region" aria-label="Filtros de Dashboard">
         <div class="control">
           <label for="locationFilter">Centro</label>
@@ -88,7 +131,7 @@
         </div>
       </div>
 
-      <!-- Tabla resumen por Canal -->
+      <!-- ====== TABLA POR CANAL (FILTRADA) ====== -->
       <div class="table-wrap card">
         <table aria-describedby="status">
           <thead>
@@ -117,7 +160,7 @@
   </main>
 
   <!-- Scripts (orden importante) -->
-  <script src="app.js" defer></script>
-  <script src="dashboard.js" defer></script>
+  app.js</script>
+  dashboard.js</script>
 </body>
 </html>
