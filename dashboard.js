@@ -1,4 +1,4 @@
-/* Dashboard: KPIs con filtros Centro + Canal (multi), tablas filtradas solo por Centro */
+/* Dashboard: KPIs con filtros Centro + Canal (multi con checkboxes), tablas filtradas solo por Centro */
 "use strict";
 
 // URLs CSV
@@ -23,21 +23,22 @@ const KG_RANGES = [
   { label: "20–50",   test: kg => kg >= 20  && kg < 50  },
   { label: "50–100",  test: kg => kg >= 50  && kg < 100 },
   { label: "100–200", test: kg => kg >= 100 && kg < 200 },
-  { label: "200–500", test: kg => kg >= 200 && kg < 500 },
-  { label: "Pedidos >=500", test: kg => kg >= 500 }
+  { label: "200–500", test: kg => kg >= 200 && kg <= 500 },
+  { label: "Pedidos >500", test: kg => kg > 500 }
 ];
 
 // Formatters
 const fmtInt   = new Intl.NumberFormat("es-PE", { maximumFractionDigits: 0 });
 const fmtNum   = new Intl.NumberFormat("es-PE", { maximumFractionDigits: 2 });
+const fmt0     = new Intl.NumberFormat("es-PE", { maximumFractionDigits: 0 });
 const fmtSoles = new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN", maximumFractionDigits: 2 });
 
 // Estado
 let ROADMAP_ROWS = [];
 let CATALOGO_MAP = new Map();
-let GLOBAL_AGG   = null; // base para % de KPIs no-ratio
+let GLOBAL_AGG   = null; // base % KPIs no-ratio
 
-// ==== CSV utils ====
+// ===== CSV utils =====
 function detectDelimiter(firstLine = "") {
   const candidates = [",", ";", "\t"];
   const counts = candidates.map(d => firstLine.split(d).length - 1);
@@ -100,10 +101,10 @@ async function start(){
     let roadmap = parseCSV(tRoad);
     let catalog = parseCSV(tCat);
 
-    if (roadmap.length) roadmap.shift(); // header
+    if (roadmap.length) roadmap.shift();
     if (catalog.length && /canal/i.test(String(catalog[0][CT.Canal] ?? ""))) catalog.shift();
 
-    // Excluir FRT-001 del dataset
+    // Excluir FRT-001 de TODO
     ROADMAP_ROWS = roadmap.filter(r => String(r[RM.Placa] ?? "").trim().toUpperCase() !== PLACA_EXCLUIR);
 
     // Mapa cliente -> canal
@@ -122,24 +123,16 @@ async function start(){
       const o = document.createElement("option"); o.value = loc; o.textContent = loc; selCentro.appendChild(o);
     }
     selCentro.addEventListener("change", ()=>{
-      populateCanalOptions(selCentro.value);
-      renderAll(); // re-render con ambos filtros
+      buildCanalDropdown(selCentro.value);
+      renderAll();
     });
 
-    // Filtro CANAL (multiselección, solo KPIs)
-    const selCanal = document.getElementById("canalFilter");
-    selCanal.addEventListener("change", ()=>{
-      // Si selecciona "Todos", marcamos todo
-      const values = getSelectedCanales();
-      if (values.has("__all__")) selectAllCanales(true);
-      renderKpiOnly(); // solo tarjetas
-    });
+    // Dropdown CANAL
+    buildCanalDropdown("__all__");
+    wireDropdownEvents();
 
-    // Totales globales (base % para KPIs no-ratio)
+    // Base para % KPIs no-ratio
     GLOBAL_AGG = aggregateTotals(ROADMAP_ROWS);
-
-    // Inicializa opciones de Canal según el centro "__all__"
-    populateCanalOptions("__all__");
 
     // Primer render
     renderAll();
@@ -154,23 +147,122 @@ async function start(){
   }
 }
 
-/* ================= RENDER ================= */
+/* ================== Dropdown Canal (checkboxes) ================== */
+let CANAL_SELECTED = new Set(); // valores seleccionados (sin "__all__")
 
+function buildCanalDropdown(centroValue){
+  const panel = document.getElementById("canalOptions");
+  if (!panel) return;
+
+  // Filas por centro
+  const rows = (centroValue && centroValue !== "__all__")
+    ? ROADMAP_ROWS.filter(r => String(r[RM.Centro] ?? "").trim() === centroValue)
+    : ROADMAP_ROWS;
+
+  // Canales disponibles
+  const canales = Array.from(new Set(rows.map(r=>{
+    const cliente = toKey(r[RM.Cliente]); return CATALOGO_MAP.get(cliente) || "Sin Canal";
+  }))).sort((a,b)=>a.localeCompare(b,"es"));
+
+  // Si todavía no hay selección, seleccionar todos por defecto
+  if (CANAL_SELECTED.size === 0) canales.forEach(c => CANAL_SELECTED.add(c));
+  else {
+    // Asegura que selección pertenezca al conjunto actual
+    const cur = new Set(CANAL_SELECTED);
+    CANAL_SELECTED.clear();
+    canales.forEach(c => { if (cur.has(c)) CANAL_SELECTED.add(c); });
+    if (CANAL_SELECTED.size === 0) canales.forEach(c => CANAL_SELECTED.add(c));
+  }
+
+  // Render checkboxes
+  panel.innerHTML = canales.map(c=>{
+    const id = `can_${c.replace(/\W+/g,'_')}`;
+    const checked = CANAL_SELECTED.has(c) ? "checked" : "";
+    return `
+      <label class="dd-item" for="${id}">
+        <input id="${id}" type="checkbox" value="${escapeHTML(c)}" ${checked} />
+        <span>${escapeHTML(c)}</span>
+      </label>
+    `;
+  }).join("");
+
+  // Actualiza caption del botón
+  updateCanalToggleCaption();
+}
+
+function wireDropdownEvents(){
+  const toggle = document.getElementById("canalDropdownToggle");
+  const panel  = document.getElementById("canalDropdownPanel");
+  const list   = document.getElementById("canalOptions");
+  const btnAll = document.getElementById("canalSelectAllBtn");
+  const btnClr = document.getElementById("canalClearBtn");
+
+  if (!toggle || !panel) return;
+
+  toggle.addEventListener("click", ()=>{
+    const open = panel.hasAttribute("hidden") ? false : true;
+    if (open){ panel.setAttribute("hidden",""); toggle.setAttribute("aria-expanded","false"); }
+    else { panel.removeAttribute("hidden"); toggle.setAttribute("aria-expanded","true"); }
+  });
+
+  // Cerrar al click fuera
+  document.addEventListener("click", (e)=>{
+    if (!panel.contains(e.target) && !toggle.contains(e.target)){
+      if (!panel.hasAttribute("hidden")){
+        panel.setAttribute("hidden",""); toggle.setAttribute("aria-expanded","false");
+      }
+    }
+  });
+
+  // Cambios en checkboxes
+  panel.addEventListener("change", (e)=>{
+    if (e.target && e.target.type === "checkbox"){
+      const val = e.target.value;
+      if (e.target.checked) CANAL_SELECTED.add(val); else CANAL_SELECTED.delete(val);
+      if (CANAL_SELECTED.size === 0){ // evita selección vacía
+        CANAL_SELECTED.add(val);
+        e.target.checked = true;
+      }
+      updateCanalToggleCaption();
+      renderKpiOnly();
+    }
+  });
+
+  btnAll?.addEventListener("click", ()=>{
+    const inputs = panel.querySelectorAll("input[type=checkbox]");
+    CANAL_SELECTED.clear();
+    inputs.forEach(i=>{ i.checked = true; CANAL_SELECTED.add(i.value); });
+    updateCanalToggleCaption(); renderKpiOnly();
+  });
+
+  btnClr?.addEventListener("click", ()=>{
+    const inputs = panel.querySelectorAll("input[type=checkbox]");
+    inputs.forEach(i=> i.checked = false);
+    CANAL_SELECTED.clear();
+    updateCanalToggleCaption(); renderKpiOnly();
+  });
+}
+
+function updateCanalToggleCaption(){
+  const toggle = document.getElementById("canalDropdownToggle");
+  if (!toggle) return;
+  toggle.textContent = CANAL_SELECTED.size === 0 ? "Ninguno"
+                     : `Canal (${CANAL_SELECTED.size})`;
+}
+
+/* ================== Render ================== */
 function renderAll(){
-  // Tablas: SOLO Centro
   const rowsCentro = getRowsByCentro();
+  // Tablas: solo Centro
   renderByCanal(rowsCentro);
   renderByRangos(rowsCentro);
-
-  // KPIs: Centro + Canal (multi)
+  // KPIs: Centro + Canal (checkboxes)
   renderKpiCard(applyCanalFilter(rowsCentro));
 }
 function renderKpiOnly(){
   const rowsCentro = getRowsByCentro();
   renderKpiCard(applyCanalFilter(rowsCentro));
 }
-
-/* ========== Helpers filtros ========== */
 
 function getRowsByCentro(){
   const sel = document.getElementById("locationFilter");
@@ -179,67 +271,16 @@ function getRowsByCentro(){
     ? ROADMAP_ROWS.filter(r => String(r[RM.Centro] ?? "").trim() === centroValue)
     : ROADMAP_ROWS;
 }
-
-function populateCanalOptions(centroValue){
-  const sel = document.getElementById("canalFilter");
-  if (!sel) return;
-
-  // Obtiene filas según centro y extrae canales presentes
-  const rows = (centroValue && centroValue !== "__all__")
-    ? ROADMAP_ROWS.filter(r => String(r[RM.Centro] ?? "").trim() === centroValue)
-    : ROADMAP_ROWS;
-
-  const canales = new Set();
-  for (const r of rows){
-    const cliente = toKey(r[RM.Cliente]);
-    const canal   = CATALOGO_MAP.get(cliente) || "Sin Canal";
-    if (canal) canales.add(canal);
-  }
-
-  // Construye opciones (incluye "Todos" al inicio)
-  const ordered = Array.from(canales).sort((a,b)=>a.localeCompare(b,"es"));
-  sel.innerHTML = "";
-  const optAll = document.createElement("option");
-  optAll.value = "__all__"; optAll.textContent = "Todos"; optAll.selected = true;
-  sel.appendChild(optAll);
-  for (const c of ordered){
-    const o = document.createElement("option");
-    o.value = c; o.textContent = c; sel.appendChild(o);
-  }
-  // Selecciona todos por defecto (para UX de “Todos”)
-  selectAllCanales(true);
-}
-
-function selectAllCanales(mark=true){
-  const sel = document.getElementById("canalFilter");
-  if (!sel) return;
-  for (const o of sel.options){
-    if (o.value === "__all__") { o.selected = true; continue; }
-    o.selected = !!mark;
-  }
-}
-function getSelectedCanales(){
-  const sel = document.getElementById("canalFilter");
-  const s = new Set();
-  if (!sel) return s;
-  for (const o of sel.selectedOptions) s.add(o.value);
-  if (s.size === 0 || s.has("__all__")) {
-    // Si nada o "Todos", considera todos (los que no son "__all__")
-    s.clear();
-    for (const o of sel.options) if (o.value !== "__all__") s.add(o.value);
-  }
-  return s;
-}
 function applyCanalFilter(rowsCentro){
-  const selected = getSelectedCanales(); // canales permitidos
+  // Si por alguna razón no hay CANAL_SELECTED aún, considera todos
+  if (!CANAL_SELECTED || CANAL_SELECTED.size === 0) return rowsCentro;
   return rowsCentro.filter(r=>{
     const canal = CATALOGO_MAP.get(toKey(r[RM.Cliente])) || "Sin Canal";
-    return selected.has(canal);
+    return CANAL_SELECTED.has(canal);
   });
 }
 
-/* ========== Agregación y visual ========== */
-
+/* ===== Agregación / Visual ===== */
 function placaCuentaVehiculo(placaRaw){ const p = toKey(placaRaw); return p && p !== PLACA_NO_VEHICULO; }
 function ratio(a,b){ return b>0 ? (a/b) : 0; }
 const pct = (v,t) => t>0 ? (v/t*100) : 0;
@@ -270,7 +311,7 @@ function aggregateTotals(rows){
   return { clientes: clients.size, vehiculos: plates.size, kg, val };
 }
 
-/* ================== KPIs ================== */
+/* ===== KPIs ===== */
 function renderKpiCard(rowsKpi){
   const el = document.getElementById("kpiCard");
   if (!el) return;
@@ -284,10 +325,10 @@ function renderKpiCard(rowsKpi){
   const pKg  = pct(aggSel.kg,        base.kg);
   const pVal = pct(aggSel.val,       base.val);
 
-  // Ratios (según filtros activos Centro + Canal)
-  const kgVeh = ratio(aggSel.kg, aggSel.vehiculos);
-  const kgCli = ratio(aggSel.kg, aggSel.clientes);
-  const cliVeh= ratio(aggSel.clientes, aggSel.vehiculos);
+  // Ratios (según filtros activos). Clientes/Vehículo **entero**.
+  const kgVeh  = ratio(aggSel.kg, aggSel.vehiculos);
+  const kgCli  = ratio(aggSel.kg, aggSel.clientes);
+  const cliVeh = Math.round(ratio(aggSel.clientes, aggSel.vehiculos)); // entero
 
   const kpiBar = (cssClass, label, valFmt, partPct) => `
     <div class="kpi ${cssClass}">
@@ -302,21 +343,20 @@ function renderKpiCard(rowsKpi){
     </div>
   `;
 
+  // Orden requerido:
+  // # Clientes, # Vehículos, Kg Plan., Valor, Kg/Vehículo, Kg/Cliente, Clientes/Vehículo
   el.innerHTML = [
-    // No‑ratio con barra + %
-    kpiBar("kpi--valor",     "Valor (S/.)", fmtSoles.format(aggSel.val).replace("S/.", "S/."), pVal),
-    kpiBar("kpi--kg",        "Kg Plan.",    fmtNum.format(aggSel.kg), pKg),
-    kpiBar("kpi--clientes",  "# Clientes",  fmtInt.format(aggSel.clientes), pCli),
-    kpiBar("kpi--vehiculos", "# Vehículos", fmtInt.format(aggSel.vehiculos), pVeh),
-
-    // Ratios (sin barra)
-    kpiPlain("kpi--kgveh",   "Kg/Vehículo",       fmtNum.format(kgVeh)),
-    kpiPlain("kpi--kgcli",   "Kg/Cliente",        fmtNum.format(kgCli)),
-    kpiPlain("kpi--cliveh",  "Clientes/Vehículo", fmtNum.format(cliVeh)),
+    kpiBar  ("kpi--clientes",  "# Clientes",  fmtInt.format(aggSel.clientes), pCli),
+    kpiBar  ("kpi--vehiculos", "# Vehículos", fmtInt.format(aggSel.vehiculos), pVeh),
+    kpiBar  ("kpi--kg",        "Kg Plan.",    fmtNum.format(aggSel.kg),       pKg ),
+    kpiBar  ("kpi--valor",     "Valor (S/.)", fmtSoles.format(aggSel.val).replace("S/.", "S/."), pVal),
+    kpiPlain("kpi--kgveh",     "Kg/Vehículo", fmtNum.format(kgVeh)),
+    kpiPlain("kpi--kgcli",     "Kg/Cliente",  fmtNum.format(kgCli)),
+    kpiPlain("kpi--cliveh",    "Clientes/Vehículo", fmt0.format(cliVeh)),
   ].join("");
 }
 
-/* ============== Tabla por Canal (SOLO Centro) ============== */
+/* ===== Tablas (solo centro) ===== */
 function renderByCanal(rows){
   const agg = new Map(); // canal -> {clients:Set, veh:Set, kg, val}
   for (const r of rows){
@@ -351,13 +391,13 @@ function renderByCanal(rows){
     return `
       <tr>
         <td>${escapeHTML(r.canal)}</td>
-        <td class="num">${cellRoadHTML(fmtInt.format(r.clientes),   pct(r.clientes,tCli))}</td>
-        <td class="num">${cellRoadHTML(fmtInt.format(r.vehiculos),  pct(r.vehiculos,tVeh))}</td>
-        <td class="num">${cellRoadHTML(fmtNum.format(r.kg),         pct(r.kg,tKg))}</td>
-        <td class="num">${cellRoadHTML(fmtSoles.format(r.val).replace("S/.", "S/."), pct(r.val,tVal))}</td>
+        <td class="num">${cellRoadHTML(fmtInt.format(r.clientes),   (tCli>0? r.clientes/tCli*100:0))}</td>
+        <td class="num">${cellRoadHTML(fmtInt.format(r.vehiculos),  (tVeh>0? r.vehiculos/tVeh*100:0))}</td>
+        <td class="num">${cellRoadHTML(fmtNum.format(r.kg),         (tKg>0? r.kg/tKg*100:0))}</td>
+        <td class="num">${cellRoadHTML(fmtSoles.format(r.val).replace("S/.", "S/."), (tVal>0? r.val/tVal*100:0))}</td>
         <td class="num">${fmtNum.format(kgVeh)}</td>
         <td class="num">${fmtNum.format(kgCli)}</td>
-        <td class="num">${fmtNum.format(cliVeh)}</td>
+        <td class="num">${fmt0.format(Math.round(cliVeh))}</td>
       </tr>
     `;
   }).join("") : `<tr><td colspan="8" class="muted" style="padding:14px">Sin datos.</td></tr>`;
@@ -368,10 +408,9 @@ function renderByCanal(rows){
   document.getElementById("totVal").textContent      = fmtSoles.format(tVal).replace("S/.", "S/.");
   document.getElementById("totKgVeh").textContent    = fmtNum.format(ratio(tKg, tVeh));
   document.getElementById("totKgCli").textContent    = fmtNum.format(ratio(tKg, tCli));
-  document.getElementById("totCliVeh").textContent   = fmtNum.format(ratio(tCli, tVeh));
+  document.getElementById("totCliVeh").textContent   = fmt0.format(Math.round(ratio(tCli, tVeh)));
 }
 
-/* ============== Tabla por Rangos (SOLO Centro, por Cliente) ============== */
 function renderByRangos(rows){
   try{
     const tbody = document.getElementById("tbodyRangos");
@@ -426,13 +465,13 @@ function renderByRangos(rows){
       return `
         <tr>
           <td>${escapeHTML(r.rango)}</td>
-          <td class="num">${cellRoadHTML(fmtInt.format(r.clientes),   pct(r.clientes,tCli))}</td>
-          <td class="num">${cellRoadHTML(fmtInt.format(r.vehiculos),  pct(r.vehiculos,tVeh))}</td>
-          <td class="num">${cellRoadHTML(fmtNum.format(r.kg),         pct(r.kg,tKg))}</td>
-          <td class="num">${cellRoadHTML(fmtSoles.format(r.val).replace("S/.", "S/."), pct(r.val,tVal))}</td>
+          <td class="num">${cellRoadHTML(fmtInt.format(r.clientes), (tCli>0? r.clientes/tCli*100:0))}</td>
+          <td class="num">${cellRoadHTML(fmtInt.format(r.vehiculos), (tVeh>0? r.vehiculos/tVeh*100:0))}</td>
+          <td class="num">${cellRoadHTML(fmtNum.format(r.kg), (tKg>0? r.kg/tKg*100:0))}</td>
+          <td class="num">${cellRoadHTML(fmtSoles.format(r.val).replace("S/.", "S/."), (tVal>0? r.val/tVal*100:0))}</td>
           <td class="num">${fmtNum.format(kgVeh)}</td>
           <td class="num">${fmtNum.format(kgCli)}</td>
-          <td class="num">${fmtNum.format(cliVeh)}</td>
+          <td class="num">${fmt0.format(Math.round(cliVeh))}</td>
         </tr>
       `;
     }).join("");
@@ -443,7 +482,7 @@ function renderByRangos(rows){
     tValE.textContent   = fmtSoles.format(tVal).replace("S/.", "S/.");
     tKgVehE.textContent = fmtNum.format(ratio(tKg,tVeh));
     tKgCliE.textContent = fmtNum.format(ratio(tKg,tCli));
-    tCliVehE.textContent= fmtNum.format(ratio(tCli,tVeh));
+    tCliVehE.textContent= fmt0.format(Math.round(ratio(tCli,tVeh)));
   }catch(err){
     console.error("[Dashboard] Error en renderByRangos]:", err);
     const tbody = document.getElementById("tbodyRangos");
