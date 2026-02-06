@@ -4,14 +4,23 @@
   --card:#111;
   --ink:#fff;
   --muted:#cfcfcf;
-
   /* Paleta global */
-  --brand:#f1c40f;   /* amarillo */
+  --brand:#f1c40f; /* amarillo */
   --brand-2:#ffd94a; /* variante clara */
-
   --stroke:#1f1f1f;
   --radius:12px;
   --shadow:0 10px 30px rgba(0,0,0,.35);
+
+  /* Escalas responsivas suaves */
+  --fs-0: clamp(.78rem, .75rem + .1vw, .85rem);
+  --fs-1: clamp(.9rem, .86rem + .2vw, 1rem);
+  --fs-2: clamp(1rem, .95rem + .3vw, 1.15rem);
+  --fs-3: clamp(1.05rem, 1rem + .5vw, 1.3rem);
+
+  /* Alturas/espacios para KPIs */
+  --kpi-gap: 12px;
+  --kpi-pad: 14px;
+  --kpi-minw: 190px;  /* ancho mínimo para evitar scroll */
 }
 
 *{box-sizing:border-box}
@@ -23,6 +32,7 @@ body{
   color:var(--ink);
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
+  overflow-x:hidden; /* evita scroll horizontal global */
 }
 .container{width:92%;max-width:1200px;margin-inline:auto}
 
@@ -43,7 +53,13 @@ body{
 
 /* ====== SECTIONS / CARDS ====== */
 .section{padding:56px 0}
-.card{background:var(--card);padding:18px;border-radius:var(--radius);border:1px solid var(--stroke);box-shadow:var(--shadow)}
+.card{
+  background:var(--card);
+  padding:18px;
+  border-radius:var(--radius);
+  border:1px solid var(--stroke);
+  box-shadow:var(--shadow);
+}
 
 /* ====== FILTROS ====== */
 .filters{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:0 0 14px }
@@ -52,12 +68,12 @@ body{
   display:inline-flex; gap:10px; align-items:center; background:#0f0f0f;
   border:1px solid #242424; border-radius:10px; padding:10px 12px;
 }
-.filters label{ color: var(--muted); font-weight:700; letter-spacing:.2px }
+.filters label{ color: var(--muted); font-weight:700; letter-spacing:.2px; font-size:var(--fs-0) }
 .filters select{
   background: transparent; border: 0; color: #fff; font: inherit; outline: none;
-  min-width: 200px; -webkit-appearance:none; appearance:none
+  min-width: 200px; -webkit-appearance:none; appearance:none; font-size:var(--fs-1);
 }
-.loading{ display:flex; align-items:center; gap:10px; color: var(--muted) }
+.loading{ display:flex; align-items:center; gap:10px; color: var(--muted); font-size:var(--fs-0) }
 .dotloader{ width:10px; height:10px; border-radius:50%; background: var(--brand); animation:pulse .9s infinite alternate ease-in-out }
 @keyframes pulse{ from{transform:scale(.9);opacity:.7} to{transform:scale(1.15);opacity:1} }
 
@@ -65,7 +81,7 @@ body{
 .dd{ min-width: 280px }
 .dd-toggle{
   background:#141414; color:#fff; border:1px solid #242424; border-radius:8px; padding:8px 12px;
-  font:inherit; cursor:pointer; min-width:200px;
+  font:inherit; cursor:pointer; min-width:200px; font-size:var(--fs-1);
 }
 .dd-panel{
   position:absolute; top:calc(100% + 6px); left:0; background:#0f0f0f; border:1px solid #242424; border-radius:10px;
@@ -79,23 +95,35 @@ body{
 .dd-list{ display:grid; grid-template-columns:1fr 1fr; gap:6px }
 .dd-item{
   display:flex; align-items:center; gap:8px; padding:6px 8px; background:#111; border:1px solid #222; border-radius:8px;
+  font-size:var(--fs-0);
 }
 .dd-item input{ accent-color: var(--brand); width:16px; height:16px }
 
-/* ====== KPI CARDS (UNA SOLA LÍNEA – SIN SCROLL) ====== */
-/* Grid de 7 columnas fijas para evitar barra horizontal */
+/* ====== KPI CARDS (UNIFORMES, SIN SCROLL) ====== */
+/* Grid responsivo: rellena en 1 a N columnas sin scroll horizontal */
 .kpi-grid{
-  display:grid; grid-template-columns:repeat(7, minmax(0, 1fr)); gap:14px; align-items:stretch;
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--kpi-minw), 1fr));
+  gap:14px;
+  align-items:stretch;
+  width:100%;
 }
+
+/* Tarjeta KPI con layout fijo: header + valor/progreso */
 .kpi{
   background:linear-gradient(180deg,#101010,#0c0c0c);
-  border-radius:14px; border:1px solid #222;
-  padding:14px; display:flex; flex-direction:column; gap:10px;
+  border-radius:14px;
+  border:1px solid #222;
+  padding:var(--kpi-pad);
+  display:grid;
+  grid-template-rows: auto 1fr; /* header fijo + cuerpo flexible */
+  gap:var(--kpi-gap);
   box-shadow:0 6px 18px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.02);
-  transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease
+  transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  min-width:0; /* permite que el contenido se reduzca sin overflow */
 }
 .kpi:hover{ transform:translateY(-2px); border-color:#2a2a2a; box-shadow:0 10px 26px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.04) }
-.kpi-head{ display:flex; align-items:center; gap:10px }
+.kpi-head{ display:flex; align-items:center; gap:10px; min-width:0 }
 .kpi-icon{
   width:30px; height:30px; flex:0 0 30px; border-radius:8px;
   background:linear-gradient(135deg, #ffd86b 0%, #f1c40f 50%, #ffb300 100%); /* estilo flaticon a color */
@@ -105,22 +133,64 @@ body{
   content:""; width:18px; height:18px; display:block; background-size:contain; background-repeat:no-repeat; background-position:center;
   filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))
 }
-.kpi-label{ color:#eaeaea; font-weight:800; letter-spacing:.2px; font-size:.95rem }
-.kpi-value{ font-size:1.15rem; font-weight:800; color:#fff; display:flex; align-items:baseline; gap:8px }
-.kpi-value .pct{ color:var(--brand); font-weight:800; font-size:.95rem }
+.kpi-label{
+  color:#eaeaea; font-weight:800; letter-spacing:.2px; font-size:var(--fs-1);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; /* evita que títulos largos rompan la tarjeta */
+}
 
-/* Iconos (SVGs a color) */
-.kpi--clientes  .kpi-icon::before{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='white' d='M16 11c1.66 0 3-1.34 3-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3z'/><path fill='white' d='M8 11c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3z'/><path fill='white' d='M0 18v1h16v-1c0-2.33-4.67-3.5-8-3.5S0 15.67 0 18z'/></svg>")}
+/* Valores */
+.kpi-value{
+  font-size:var(--fs-2);
+  font-weight:800; color:#fff; display:flex; align-items:end; gap:8px;
+  min-height:2.1em; /* asegura altura similar al bloque con barra */
+  line-height:1.1;
+}
+
+/* Componente “carretera” compacto */
+.cell-stat{ display:flex; flex-direction:column; align-items:flex-end; gap:6px; justify-content:center; }
+.cell-top{ display:flex; gap:8px; align-items:baseline; width:100%; justify-content:space-between; }
+.cell-top .pct{ color:#fff; font-weight:700; font-size:var(--fs-0) }
+
+.road-progress{
+  width:100%;
+  height:12px;
+  border-radius:9999px;
+  background:#ECECEC;
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.9), 0 1px 2px rgba(0,0,0,.25);
+  position:relative; overflow:hidden;
+  /* nunca crece más allá del contenedor y mantiene uniformidad */
+}
+.road-progress .road-bar{
+  position:relative; height:100%; margin:0; width:0%;
+  background:linear-gradient(90deg, var(--brand), var(--brand-2));
+  border-radius:inherit; filter:saturate(.92) brightness(.98);
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.35), inset 0 -1px 1px rgba(0,0,0,.15);
+  transition:width .45s ease;
+}
+.road-progress .road-bar::before{
+  content:""; position:absolute; left:9px; right:22px; top:50%; height:2px; transform:translateY(-50%);
+  background:repeating-linear-gradient(90deg, rgba(255,255,255,.95) 0 16px, rgba(255,255,255,0) 16px 32px);
+  border-radius:2px; pointer-events:none;
+}
+.road-progress .road-bar::after{
+  content:""; position:absolute; right:5px; top:50%; transform:translateY(-50%); width:14px; height:14px;
+  background-repeat:no-repeat; background-size:contain; filter:drop-shadow(0 1px 1px rgba(0,0,0,.35));
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'><path d='M3 7c0-1.1.9-2 2-2h8v8H3V7zM15 7h3.8c.3 0 .6.1.8.4l2.3 3.1c.1.2.2.4.2.7V13h-7V7zM7 18.5A1.5 1.5 0 1 1 7 15.5a1.5 1.5 0 0 1 0 3zM18 18.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM2 14h20v1.5c0 .3-.2.5-.5.5H21a3 3 0 0 1-6 0H9a3 3 0 0 1-6 0H2.5c-.3 0-.5-.2-.5-.5V14z'/></svg>");
+}
+.road-progress .road-bar[data-small="1"]::after{ display:none }
+
+/* ====== Iconos (SVGs a color) ====== */
+.kpi--clientes .kpi-icon::before{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='white' d='M16 11c1.66 0 3-1.34 3-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3z'/><path fill='white' d='M8 11c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3z'/><path fill='white' d='M0 18v1h16v-1c0-2.33-4.67-3.5-8-3.5S0 15.67 0 18z'/></svg>")}
 .kpi--vehiculos .kpi-icon::before{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='white' d='M3 7c0-1.1.9-2 2-2h8v8H3V7zM15 7h3.8c.3 0 .6.1.8.4l2.3 3.1c.1.2.2.4.2.7V13h-7V7z'/><circle cx='7' cy='18.5' r='1.5' fill='white'/><circle cx='18' cy='18.5' r='1.5' fill='white'/></svg>")}
-.kpi--kg        .kpi-icon::before{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='white' d='M5 20h14l-3-12H8L5 20zm7-14a3 3 0 00-3 3h6a3 3 0 00-3-3z'/></svg>")}
-.kpi--valor     .kpi-icon::before{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='white' d='M12 3C7.03 3 3 7.03 3 12h2a7 7 0 1114 0h2c0-4.97-4.03-9-9-9z'/><path fill='white' d='M11 8h2v3h3v2h-3v3h-2v-3H8v-2h3z'/></svg>")}
-.kpi--kgveh     .kpi-icon::before{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='9' fill='white'/><path d='M13 7h-2v6h6v-2h-4z' fill='%230b0b0b'/></svg>")}
-.kpi--kgcli     .kpi-icon::before{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='white' d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4a4 4 0 100 8z'/><path fill='white' d='M4 18v2h16v-2c0-2.66-5.33-4-8-4s-8 1.34-8 4z'/></svg>")}
-.kpi--cliveh    .kpi-icon::before{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='white' d='M5 16h14v2H5zM5 8h14v2H5zM5 12h14v2H5z'/></svg>")}
+.kpi--kg .kpi-icon::before{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='white' d='M5 20h14l-3-12H8L5 20zm7-14a3 3 0 00-3 3h6a3 3 0 00-3-3z'/></svg>")}
+.kpi--valor .kpi-icon::before{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='white' d='M12 3C7.03 3 3 7.03 3 12h2a7 7 0 1114 0h2c0-4.97-4.03-9-9-9z'/><path fill='white' d='M11 8h2v3h3v2h-3v3h-2v-3H8v-2h3z'/></svg>")}
+.kpi--kgveh .kpi-icon::before{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='9' fill='white'/><path d='M13 7h-2v6h6v-2h-4z' fill='%230b0b0b'/></svg>")}
+.kpi--kgcli .kpi-icon::before{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='white' d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4a4 4 0 100 8z'/><path fill='white' d='M4 18v2h16v-2c0-2.66-5.33-4-8-4s-8 1.34-8 4z'/></svg>")}
+.kpi--cliveh .kpi-icon::before{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='white' d='M5 16h14v2H5zM5 8h14v2H5zM5 12h14v2H5z'/></svg>")}
 
-/* ====== TABLAS (compactas, sin scroll horizontal en la mayoría) ====== */
+/* ====== TABLAS ====== */
 .table-wrap{ overflow-x:auto; border-radius:12px; border:1px solid var(--stroke); background:var(--card) }
-table{ width:100%; border-collapse:collapse; min-width:820px; font-size:.9rem }
+table{ width:100%; border-collapse:collapse; min-width:820px; font-size:var(--fs-0) }
 thead th{
   text-align:left; font-weight:800; color:var(--brand); background:#0e0e0e;
   padding:8px 8px; border-bottom:2px solid var(--brand); position:sticky; top:0; z-index:1; letter-spacing:.2px
@@ -131,26 +201,19 @@ tfoot td{ padding:8px; border-top:2px solid var(--brand); font-weight:800; color
 .num{ text-align:right; white-space:nowrap }
 .muted{ color:var(--muted) }
 
-/* ====== Carretera (compacta) ====== */
-.cell-stat{ display:flex; flex-direction:column; align-items:flex-end; gap:6px }
-.cell-top{ display:flex; gap:8px; align-items:baseline }
-.cell-top .pct{ color:#fff; font-weight:700; font-size:.82rem }
-.road-progress{ width:140px; height:12px; border-radius:9999px; background:#ECECEC; box-shadow:inset 0 0 0 2px rgba(255,255,255,.9), 0 1px 2px rgba(0,0,0,.25); position:relative; overflow:hidden }
-.road-progress .road-bar{ position:relative; height:100%; margin:0; width:0%; background:linear-gradient(90deg, var(--brand), var(--brand-2)); border-radius:inherit; filter:saturate(.92) brightness(.98); box-shadow:inset 0 1px 1px rgba(255,255,255,.35), inset 0 -1px 1px rgba(0,0,0,.15); transition:width .45s ease }
-.road-progress .road-bar::before{ content:""; position:absolute; left:9px; right:22px; top:50%; height:2px; transform:translateY(-50%); background:repeating-linear-gradient(90deg, rgba(255,255,255,.95) 0 16px, rgba(255,255,255,0) 16px 32px); border-radius:2px; pointer-events:none }
-.road-progress .road-bar::after{ content:""; position:absolute; right:5px; top:50%; transform:translateY(-50%); width:14px; height:14px; background-repeat:no-repeat; background-size:contain; filter:drop-shadow(0 1px 1px rgba(0,0,0,.35)); background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'><path d='M3 7c0-1.1.9-2 2-2h8v8H3V7zM15 7h3.8c.3 0 .6.1.8.4l2.3 3.1c.1.2.2.4.2.7V13h-7V7zM7 18.5A1.5 1.5 0 1 1 7 15.5a1.5 1.5 0 0 1 0 3zM18 18.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM2 14h20v1.5c0 .3-.2.5-.5.5H21a3 3 0 0 1-6 0H9a3 3 0 0 1-6 0H2.5c-.3 0-.5-.2-.5-.5V14z'/></svg>") }
-.road-progress .road-bar[data-small="1"]::after{ display:none }
-
 /* ====== Responsive ====== */
 @media (max-width: 1200px){
-  .kpi-label{ font-size:.9rem } .kpi-value{ font-size:1.05rem }
+  .logo, .logo img, img.logo{max-height:44px}
 }
+
 @media (max-width: 992px){
-  .kpi-label{ font-size:.85rem } .kpi-value{ font-size:1rem }
-}
-@media (max-width: 768px){
   .container{width:94%}
-  .logo, .logo img, img.logo{max-height:40px}
-  table{ min-width:740px; font-size:.88rem }
-  .road-progress{ width:128px }
 }
+
+@media (max-width: 768px){
+  .logo, .logo img, img.logo{max-height:40px}
+  table{ min-width:740px; }
+}
+
+/* Seguridad: evita sobreflujo interno en KPI */
+.kpi *{ min-width:0 }
