@@ -7,20 +7,20 @@
   <meta name="color-scheme" content="dark only" />
   <title>RoadMap · Dashboard</title>
 
-  <!-- Tipografías y CSS global (correcto) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
+  <!-- Tipografías y CSS global (correctos) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 
   <!-- Favicons (opcional) -->
-  <link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png" />
-  <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png" />
-  <link rel="manifest" href="site.webmanifest" />
+  <link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
+  <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
+  <link rel="manifest" href="site.webmanifest">
 </head>
 <body>
-  <!-- Header (inyectado por app.js). Usa un placeholder estándar seguro -->
+  <!-- Header inyectado por app.js -->
   <div id="header-placeholder" data-src="header.html"></div>
 
   <main class="section">
@@ -35,12 +35,21 @@
           </select>
         </div>
 
-        <div class="control">
-          <label for="canalFilter">Canal</label>
-          <!-- Multiselección; “Todos” incluido (afecta SOLO a las tarjetas) -->
-          <select id="canalFilter" multiple title="Este filtro afecta solo a las tarjetas (KPIs)">
-            <option value="__all__" selected>Todos</option>
-          </select>
+        <!-- Dropdown multiselección con checkboxes -->
+        <div class="control dd">
+          <label for="canalDropdownToggle">Canal</label>
+          <button id="canalDropdownToggle" class="dd-toggle" type="button" aria-haspopup="listbox" aria-expanded="false">
+            Todos
+          </button>
+          <div id="canalDropdownPanel" class="dd-panel" hidden>
+            <div class="dd-actions">
+              <button type="button" id="canalSelectAllBtn" class="btn-mini">Seleccionar todo</button>
+              <button type="button" id="canalClearBtn" class="btn-mini">Limpiar</button>
+            </div>
+            <div class="dd-list" id="canalOptions" role="listbox" aria-multiselectable="true">
+              <!-- Opciones generadas por JS -->
+            </div>
+          </div>
         </div>
 
         <div id="status" class="loading" aria-live="polite">
@@ -51,8 +60,8 @@
 
       <!-- ===== Card de Indicadores (Centro + Canal) ===== -->
       <section class="card" aria-label="Indicadores">
-        <!-- Carrusel horizontal; todas las cards en una sola línea -->
-        <div class="kpi-row" id="kpiCard"></div>
+        <!-- Todas las cards en una sola línea (grid 7 columnas) -->
+        <div class="kpi-grid" id="kpiCard"></div>
       </section>
 
       <!-- ===== Tabla por Canal (filtrada SOLO por Centro) ===== -->
