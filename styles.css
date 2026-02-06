@@ -5,22 +5,23 @@
   --ink:#fff;
   --muted:#cfcfcf;
   /* Paleta global */
-  --brand:#f1c40f; /* amarillo */
-  --brand-2:#ffd94a; /* variante clara */
+  --brand:#f1c40f;
+  --brand-2:#ffd94a;
   --stroke:#1f1f1f;
   --radius:12px;
   --shadow:0 10px 30px rgba(0,0,0,.35);
 
-  /* Escalas responsivas suaves */
-  --fs-0: clamp(.78rem, .75rem + .1vw, .85rem);
-  --fs-1: clamp(.9rem, .86rem + .2vw, 1rem);
-  --fs-2: clamp(1rem, .95rem + .3vw, 1.15rem);
-  --fs-3: clamp(1.05rem, 1rem + .5vw, 1.3rem);
+  /* Tipos reducidos (compacto) */
+  --filter-fs: clamp(.82rem, .8rem + .15vw, .9rem); /* etiquetas y contenido de filtros */
+  --fs-0: clamp(.78rem, .74rem + .15vw, .86rem);    /* texto pequeño / pct */
+  --fs-1: clamp(.86rem, .82rem + .2vw, .95rem);     /* etiquetas KPI */
+  --fs-2: clamp(.95rem, .9rem + .25vw, 1.08rem);    /* valores KPI */
 
-  /* Alturas/espacios para KPIs */
-  --kpi-gap: 12px;
-  --kpi-pad: 14px;
-  --kpi-minw: 190px;  /* ancho mínimo para evitar scroll */
+  /* KPI compact */
+  --kpi-pad: 10px;
+  --kpi-gap: 8px;
+  --kpi-icon: 22px;
+  --kpi-minh: 86px; /* alto mínimo para uniformidad visual */
 }
 
 *{box-sizing:border-box}
@@ -32,8 +33,9 @@ body{
   color:var(--ink);
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
-  overflow-x:hidden; /* evita scroll horizontal global */
+  overflow-x:hidden; /* evitamos barras horizontales */
 }
+
 .container{width:92%;max-width:1200px;margin-inline:auto}
 
 /* ====== HEADER ====== */
@@ -52,10 +54,10 @@ body{
 .main-header .active, .main-header a[aria-current="page"]{ color:var(--brand) }
 
 /* ====== SECTIONS / CARDS ====== */
-.section{padding:56px 0}
+.section{padding:48px 0}
 .card{
   background:var(--card);
-  padding:18px;
+  padding:16px;
   border-radius:var(--radius);
   border:1px solid var(--stroke);
   box-shadow:var(--shadow);
@@ -65,23 +67,27 @@ body{
 .filters{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:0 0 14px }
 .filters .control{
   position:relative;
-  display:inline-flex; gap:10px; align-items:center; background:#0f0f0f;
-  border:1px solid #242424; border-radius:10px; padding:10px 12px;
+  display:inline-flex; gap:8px; align-items:center; background:#0f0f0f;
+  border:1px solid #242424; border-radius:10px; padding:8px 10px;
 }
-.filters label{ color: var(--muted); font-weight:700; letter-spacing:.2px; font-size:var(--fs-0) }
+.filters label{
+  color: var(--muted); font-weight:700; letter-spacing:.2px; font-size:var(--filter-fs);
+  white-space:nowrap;
+}
 .filters select{
   background: transparent; border: 0; color: #fff; font: inherit; outline: none;
-  min-width: 200px; -webkit-appearance:none; appearance:none; font-size:var(--fs-1);
+  min-width: 200px; -webkit-appearance:none; appearance:none;
+  font-size:var(--filter-fs); line-height:1.15;
 }
-.loading{ display:flex; align-items:center; gap:10px; color: var(--muted); font-size:var(--fs-0) }
-.dotloader{ width:10px; height:10px; border-radius:50%; background: var(--brand); animation:pulse .9s infinite alternate ease-in-out }
+.loading{ display:flex; align-items:center; gap:8px; color: var(--muted); font-size:var(--fs-0) }
+.dotloader{ width:9px; height:9px; border-radius:50%; background: var(--brand); animation:pulse .9s infinite alternate ease-in-out }
 @keyframes pulse{ from{transform:scale(.9);opacity:.7} to{transform:scale(1.15);opacity:1} }
 
-/* ====== Dropdown multiselect (Canal) ====== */
-.dd{ min-width: 280px }
+/* Dropdown Canal */
+.dd{ min-width:280px }
 .dd-toggle{
-  background:#141414; color:#fff; border:1px solid #242424; border-radius:8px; padding:8px 12px;
-  font:inherit; cursor:pointer; min-width:200px; font-size:var(--fs-1);
+  background:#141414; color:#fff; border:1px solid #242424; border-radius:8px; padding:7px 10px;
+  font:inherit; cursor:pointer; min-width:200px; font-size:var(--filter-fs); line-height:1.15;
 }
 .dd-panel{
   position:absolute; top:calc(100% + 6px); left:0; background:#0f0f0f; border:1px solid #242424; border-radius:10px;
@@ -99,66 +105,60 @@ body{
 }
 .dd-item input{ accent-color: var(--brand); width:16px; height:16px }
 
-/* ====== KPI CARDS (UNIFORMES, SIN SCROLL) ====== */
-/* Grid responsivo: rellena en 1 a N columnas sin scroll horizontal */
+/* ====== KPI: UNA SOLA LÍNEA (7 columnas fijas) ====== */
 .kpi-grid{
   display:grid;
-  grid-template-columns: repeat(auto-fit, minmax(var(--kpi-minw), 1fr));
-  gap:14px;
+  grid-template-columns: repeat(7, minmax(0, 1fr)); /* 7 columnas siempre */
+  gap:10px;
   align-items:stretch;
   width:100%;
 }
 
-/* Tarjeta KPI con layout fijo: header + valor/progreso */
+/* Tarjeta compacta y uniforme */
 .kpi{
   background:linear-gradient(180deg,#101010,#0c0c0c);
-  border-radius:14px;
+  border-radius:12px;
   border:1px solid #222;
   padding:var(--kpi-pad);
   display:grid;
-  grid-template-rows: auto 1fr; /* header fijo + cuerpo flexible */
+  grid-template-rows:auto 1fr; /* header + cuerpo */
   gap:var(--kpi-gap);
-  box-shadow:0 6px 18px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.02);
-  transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
-  min-width:0; /* permite que el contenido se reduzca sin overflow */
+  box-shadow:0 6px 16px rgba(0,0,0,.32), inset 0 0 0 1px rgba(255,255,255,.02);
+  transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+  min-width:0;
+  min-height:var(--kpi-minh);
 }
-.kpi:hover{ transform:translateY(-2px); border-color:#2a2a2a; box-shadow:0 10px 26px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.04) }
-.kpi-head{ display:flex; align-items:center; gap:10px; min-width:0 }
+.kpi:hover{ transform:translateY(-1px); border-color:#2a2a2a; box-shadow:0 10px 22px rgba(0,0,0,.42), inset 0 0 0 1px rgba(255,255,255,.04) }
+.kpi-head{ display:flex; align-items:center; gap:8px; min-width:0 }
 .kpi-icon{
-  width:30px; height:30px; flex:0 0 30px; border-radius:8px;
-  background:linear-gradient(135deg, #ffd86b 0%, #f1c40f 50%, #ffb300 100%); /* estilo flaticon a color */
-  display:inline-flex; align-items:center; justify-content:center; box-shadow:0 2px 10px rgba(241,196,15,.35)
+  width:var(--kpi-icon); height:var(--kpi-icon); flex:0 0 var(--kpi-icon); border-radius:8px;
+  background:linear-gradient(135deg,#ffd86b 0%, #f1c40f 50%, #ffb300 100%);
+  display:inline-flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(241,196,15,.35)
 }
 .kpi-icon::before{
-  content:""; width:18px; height:18px; display:block; background-size:contain; background-repeat:no-repeat; background-position:center;
+  content:""; width:calc(var(--kpi-icon) - 6px); height:calc(var(--kpi-icon) - 6px);
+  display:block; background-size:contain; background-repeat:no-repeat; background-position:center;
   filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))
 }
 .kpi-label{
   color:#eaeaea; font-weight:800; letter-spacing:.2px; font-size:var(--fs-1);
-  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; /* evita que títulos largos rompan la tarjeta */
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
 
-/* Valores */
+/* Valores / pct compactos */
 .kpi-value{
-  font-size:var(--fs-2);
-  font-weight:800; color:#fff; display:flex; align-items:end; gap:8px;
-  min-height:2.1em; /* asegura altura similar al bloque con barra */
-  line-height:1.1;
+  font-size:var(--fs-2); font-weight:800; color:#fff; display:flex; align-items:end; gap:6px;
+  min-height:1.9em; line-height:1.05;
 }
-
-/* Componente “carretera” compacto */
 .cell-stat{ display:flex; flex-direction:column; align-items:flex-end; gap:6px; justify-content:center; }
 .cell-top{ display:flex; gap:8px; align-items:baseline; width:100%; justify-content:space-between; }
 .cell-top .pct{ color:#fff; font-weight:700; font-size:var(--fs-0) }
 
+/* Barra “carretera” más compacta */
 .road-progress{
-  width:100%;
-  height:12px;
-  border-radius:9999px;
-  background:#ECECEC;
+  width:100%; height:10px; border-radius:9999px; background:#ECECEC;
   box-shadow:inset 0 0 0 2px rgba(255,255,255,.9), 0 1px 2px rgba(0,0,0,.25);
   position:relative; overflow:hidden;
-  /* nunca crece más allá del contenedor y mantiene uniformidad */
 }
 .road-progress .road-bar{
   position:relative; height:100%; margin:0; width:0%;
@@ -168,12 +168,12 @@ body{
   transition:width .45s ease;
 }
 .road-progress .road-bar::before{
-  content:""; position:absolute; left:9px; right:22px; top:50%; height:2px; transform:translateY(-50%);
+  content:""; position:absolute; left:8px; right:20px; top:50%; height:2px; transform:translateY(-50%);
   background:repeating-linear-gradient(90deg, rgba(255,255,255,.95) 0 16px, rgba(255,255,255,0) 16px 32px);
   border-radius:2px; pointer-events:none;
 }
 .road-progress .road-bar::after{
-  content:""; position:absolute; right:5px; top:50%; transform:translateY(-50%); width:14px; height:14px;
+  content:""; position:absolute; right:4px; top:50%; transform:translateY(-50%); width:12px; height:12px;
   background-repeat:no-repeat; background-size:contain; filter:drop-shadow(0 1px 1px rgba(0,0,0,.35));
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'><path d='M3 7c0-1.1.9-2 2-2h8v8H3V7zM15 7h3.8c.3 0 .6.1.8.4l2.3 3.1c.1.2.2.4.2.7V13h-7V7zM7 18.5A1.5 1.5 0 1 1 7 15.5a1.5 1.5 0 0 1 0 3zM18 18.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM2 14h20v1.5c0 .3-.2.5-.5.5H21a3 3 0 0 1-6 0H9a3 3 0 0 1-6 0H2.5c-.3 0-.5-.2-.5-.5V14z'/></svg>");
 }
@@ -201,15 +201,13 @@ tfoot td{ padding:8px; border-top:2px solid var(--brand); font-weight:800; color
 .num{ text-align:right; white-space:nowrap }
 .muted{ color:var(--muted) }
 
-/* ====== Responsive ====== */
+/* ====== Responsive soft (no rompe la línea de KPIs) ====== */
 @media (max-width: 1200px){
   .logo, .logo img, img.logo{max-height:44px}
 }
-
 @media (max-width: 992px){
   .container{width:94%}
 }
-
 @media (max-width: 768px){
   .logo, .logo img, img.logo{max-height:40px}
   table{ min-width:740px; }
