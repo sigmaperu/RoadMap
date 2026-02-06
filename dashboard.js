@@ -1,4 +1,4 @@
-/* Dashboard con Card de Indicadores + Tablas por Canal y Rangos (barras solo en no‑ratio) */
+/* Dashboard: KPIs con filtros Centro + Canal (multi), tablas filtradas solo por Centro */
 "use strict";
 
 // URLs CSV
@@ -10,8 +10,8 @@ const RM = { Centro: 1, Placa: 2, Cliente: 3, KgPlan: 10, Valor: 11 };
 const CT = { Clave: 0, Canal: 21 };
 
 // Reglas
-const PLACA_EXCLUIR     = "FRT-001"; // excluida de TODO
-const PLACA_NO_VEHICULO = "RES-CLI"; // excluida SOLO del conteo de vehículos
+const PLACA_EXCLUIR     = "FRT-001"; // fuera de TODO
+const PLACA_NO_VEHICULO = "RES-CLI"; // fuera SOLO del conteo de vehículos
 
 // Rangos (tabla por Rango)
 const KG_RANGES = [
@@ -35,9 +35,9 @@ const fmtSoles = new Intl.NumberFormat("es-PE", { style: "currency", currency: "
 // Estado
 let ROADMAP_ROWS = [];
 let CATALOGO_MAP = new Map();
-let GLOBAL_AGG   = null;
+let GLOBAL_AGG   = null; // base para % de KPIs no-ratio
 
-/* ==== CSV utils ==== */
+// ==== CSV utils ====
 function detectDelimiter(firstLine = "") {
   const candidates = [",", ";", "\t"];
   const counts = candidates.map(d => firstLine.split(d).length - 1);
@@ -83,7 +83,6 @@ const HTML_ESC_MAP = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'
 const escapeHTML = s => String(s ?? "").replace(/[&<>"']/g, ch => HTML_ESC_MAP[ch]);
 const toKey = s => String(s ?? "").trim().replace(/\s+/g," ").toUpperCase();
 
-/* ==== Init ==== */
 (function init(){
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
   else start();
@@ -115,20 +114,35 @@ async function start(){
       if (k) CATALOGO_MAP.set(k, canal);
     }
 
-    // Filtro de centros
-    const sel = document.getElementById("locationFilter");
+    // Filtro CENTRO
+    const selCentro = document.getElementById("locationFilter");
     const locs = Array.from(new Set(ROADMAP_ROWS.map(r => String(r[RM.Centro] ?? "").trim()).filter(Boolean)))
       .sort((a,b)=>a.localeCompare(b,"es"));
     for (const loc of locs){
-      const o = document.createElement("option"); o.value = loc; o.textContent = loc; sel.appendChild(o);
+      const o = document.createElement("option"); o.value = loc; o.textContent = loc; selCentro.appendChild(o);
     }
-    sel.addEventListener("change", ()=>renderAll(sel.value));
+    selCentro.addEventListener("change", ()=>{
+      populateCanalOptions(selCentro.value);
+      renderAll(); // re-render con ambos filtros
+    });
 
-    // Totales globales (para % de la Card no‑ratio)
+    // Filtro CANAL (multiselección, solo KPIs)
+    const selCanal = document.getElementById("canalFilter");
+    selCanal.addEventListener("change", ()=>{
+      // Si selecciona "Todos", marcamos todo
+      const values = getSelectedCanales();
+      if (values.has("__all__")) selectAllCanales(true);
+      renderKpiOnly(); // solo tarjetas
+    });
+
+    // Totales globales (base % para KPIs no-ratio)
     GLOBAL_AGG = aggregateTotals(ROADMAP_ROWS);
 
+    // Inicializa opciones de Canal según el centro "__all__"
+    populateCanalOptions("__all__");
+
     // Primer render
-    renderAll("__all__");
+    renderAll();
 
     if(status){
       status.innerHTML = `<span class="dotloader" aria-hidden="true"></span><span>Listo</span>`;
@@ -140,17 +154,92 @@ async function start(){
   }
 }
 
-function renderAll(centroValue){
+/* ================= RENDER ================= */
+
+function renderAll(){
+  // Tablas: SOLO Centro
+  const rowsCentro = getRowsByCentro();
+  renderByCanal(rowsCentro);
+  renderByRangos(rowsCentro);
+
+  // KPIs: Centro + Canal (multi)
+  renderKpiCard(applyCanalFilter(rowsCentro));
+}
+function renderKpiOnly(){
+  const rowsCentro = getRowsByCentro();
+  renderKpiCard(applyCanalFilter(rowsCentro));
+}
+
+/* ========== Helpers filtros ========== */
+
+function getRowsByCentro(){
+  const sel = document.getElementById("locationFilter");
+  const centroValue = sel?.value || "__all__";
+  return (centroValue && centroValue !== "__all__")
+    ? ROADMAP_ROWS.filter(r => String(r[RM.Centro] ?? "").trim() === centroValue)
+    : ROADMAP_ROWS;
+}
+
+function populateCanalOptions(centroValue){
+  const sel = document.getElementById("canalFilter");
+  if (!sel) return;
+
+  // Obtiene filas según centro y extrae canales presentes
   const rows = (centroValue && centroValue !== "__all__")
     ? ROADMAP_ROWS.filter(r => String(r[RM.Centro] ?? "").trim() === centroValue)
     : ROADMAP_ROWS;
 
-  renderKpiCard(rows);   // KPIs (no‑ratio con barra + ratios sin barra)
-  renderByCanal(rows);   // Tabla por canal
-  renderByRangos(rows);  // Tabla por rangos
+  const canales = new Set();
+  for (const r of rows){
+    const cliente = toKey(r[RM.Cliente]);
+    const canal   = CATALOGO_MAP.get(cliente) || "Sin Canal";
+    if (canal) canales.add(canal);
+  }
+
+  // Construye opciones (incluye "Todos" al inicio)
+  const ordered = Array.from(canales).sort((a,b)=>a.localeCompare(b,"es"));
+  sel.innerHTML = "";
+  const optAll = document.createElement("option");
+  optAll.value = "__all__"; optAll.textContent = "Todos"; optAll.selected = true;
+  sel.appendChild(optAll);
+  for (const c of ordered){
+    const o = document.createElement("option");
+    o.value = c; o.textContent = c; sel.appendChild(o);
+  }
+  // Selecciona todos por defecto (para UX de “Todos”)
+  selectAllCanales(true);
 }
 
-/* ==== Helpers de agregación / visual ==== */
+function selectAllCanales(mark=true){
+  const sel = document.getElementById("canalFilter");
+  if (!sel) return;
+  for (const o of sel.options){
+    if (o.value === "__all__") { o.selected = true; continue; }
+    o.selected = !!mark;
+  }
+}
+function getSelectedCanales(){
+  const sel = document.getElementById("canalFilter");
+  const s = new Set();
+  if (!sel) return s;
+  for (const o of sel.selectedOptions) s.add(o.value);
+  if (s.size === 0 || s.has("__all__")) {
+    // Si nada o "Todos", considera todos (los que no son "__all__")
+    s.clear();
+    for (const o of sel.options) if (o.value !== "__all__") s.add(o.value);
+  }
+  return s;
+}
+function applyCanalFilter(rowsCentro){
+  const selected = getSelectedCanales(); // canales permitidos
+  return rowsCentro.filter(r=>{
+    const canal = CATALOGO_MAP.get(toKey(r[RM.Cliente])) || "Sin Canal";
+    return selected.has(canal);
+  });
+}
+
+/* ========== Agregación y visual ========== */
+
 function placaCuentaVehiculo(placaRaw){ const p = toKey(placaRaw); return p && p !== PLACA_NO_VEHICULO; }
 function ratio(a,b){ return b>0 ? (a/b) : 0; }
 const pct = (v,t) => t>0 ? (v/t*100) : 0;
@@ -181,12 +270,12 @@ function aggregateTotals(rows){
   return { clientes: clients.size, vehiculos: plates.size, kg, val };
 }
 
-/* ==== Card de Indicadores ==== */
-function renderKpiCard(rows){
+/* ================== KPIs ================== */
+function renderKpiCard(rowsKpi){
   const el = document.getElementById("kpiCard");
   if (!el) return;
 
-  const aggSel = aggregateTotals(rows);
+  const aggSel = aggregateTotals(rowsKpi);
   const base   = GLOBAL_AGG || { clientes:0, vehiculos:0, kg:0, val:0 };
 
   // % vs base global para métricas no‑ratio
@@ -195,26 +284,20 @@ function renderKpiCard(rows){
   const pKg  = pct(aggSel.kg,        base.kg);
   const pVal = pct(aggSel.val,       base.val);
 
-  // Ratios (filtro actual)
+  // Ratios (según filtros activos Centro + Canal)
   const kgVeh = ratio(aggSel.kg, aggSel.vehiculos);
   const kgCli = ratio(aggSel.kg, aggSel.clientes);
   const cliVeh= ratio(aggSel.clientes, aggSel.vehiculos);
 
   const kpiBar = (cssClass, label, valFmt, partPct) => `
     <div class="kpi ${cssClass}">
-      <div class="kpi-head">
-        <span class="kpi-icon" aria-hidden="true"></span>
-        <span class="kpi-label">${label}</span>
-      </div>
+      <div class="kpi-head"><span class="kpi-icon" aria-hidden="true"></span><span class="kpi-label">${label}</span></div>
       ${cellRoadHTML(valFmt, partPct)}
     </div>
   `;
   const kpiPlain = (cssClass, label, valFmt) => `
     <div class="kpi ${cssClass}">
-      <div class="kpi-head">
-        <span class="kpi-icon" aria-hidden="true"></span>
-        <span class="kpi-label">${label}</span>
-      </div>
+      <div class="kpi-head"><span class="kpi-icon" aria-hidden="true"></span><span class="kpi-label">${label}</span></div>
       <div class="kpi-value"><span>${valFmt}</span></div>
     </div>
   `;
@@ -226,14 +309,14 @@ function renderKpiCard(rows){
     kpiBar("kpi--clientes",  "# Clientes",  fmtInt.format(aggSel.clientes), pCli),
     kpiBar("kpi--vehiculos", "# Vehículos", fmtInt.format(aggSel.vehiculos), pVeh),
 
-    // Ratios (sin barra) con iconos
+    // Ratios (sin barra)
     kpiPlain("kpi--kgveh",   "Kg/Vehículo",       fmtNum.format(kgVeh)),
     kpiPlain("kpi--kgcli",   "Kg/Cliente",        fmtNum.format(kgCli)),
     kpiPlain("kpi--cliveh",  "Clientes/Vehículo", fmtNum.format(cliVeh)),
   ].join("");
 }
 
-/* ==== Tabla por Canal ==== */
+/* ============== Tabla por Canal (SOLO Centro) ============== */
 function renderByCanal(rows){
   const agg = new Map(); // canal -> {clients:Set, veh:Set, kg, val}
   for (const r of rows){
@@ -288,7 +371,7 @@ function renderByCanal(rows){
   document.getElementById("totCliVeh").textContent   = fmtNum.format(ratio(tCli, tVeh));
 }
 
-/* ==== Tabla por Rangos (POR CLIENTE) ==== */
+/* ============== Tabla por Rangos (SOLO Centro, por Cliente) ============== */
 function renderByRangos(rows){
   try{
     const tbody = document.getElementById("tbodyRangos");
