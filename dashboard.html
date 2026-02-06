@@ -7,7 +7,7 @@
   <meta name="color-scheme" content="dark only" />
   <title>RoadMap · Dashboard</title>
 
-  <!-- Tipografías y CSS global (correctos) -->
+  <!-- Tipografías y CSS global -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -26,7 +26,7 @@
   <main class="section">
     <div class="container">
 
-      <!-- ===== Filtros (misma línea) ===== -->
+      <!-- ===== Filtros ===== -->
       <div class="filters card" role="region" aria-label="Filtros">
         <div class="control">
           <label for="locationFilter">Centro</label>
@@ -60,8 +60,7 @@
 
       <!-- ===== Card de Indicadores (Centro + Canal) ===== -->
       <section class="card" aria-label="Indicadores">
-        <!-- Todas las cards en una sola línea (grid 7 columnas) -->
-        <div class="kpi-grid" id="kpiCard"></div>
+        <div class="kpi-grid" id="kpiCard"><!-- Render JS --></div>
       </section>
 
       <!-- ===== Tabla por Canal (filtrada SOLO por Centro) ===== -->
@@ -137,7 +136,7 @@
     </div>
   </main>
 
-  <!-- Scripts (correctos) -->
+  <!-- Scripts -->
   <script src="app.js" defer></script>
   <script src="dashboard.js" defer></script>
 </body>
