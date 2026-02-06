@@ -23,8 +23,8 @@ const KG_RANGES = [
   { label: "20–50",   test: kg => kg >= 20  && kg < 50  },
   { label: "50–100",  test: kg => kg >= 50  && kg < 100 },
   { label: "100–200", test: kg => kg >= 100 && kg < 200 },
-  { label: "200–500", test: kg => kg >= 200 && kg <= 500 },
-  { label: "Pedidos >500", test: kg => kg > 500 }
+  { label: "200–500", test: kg => kg >= 200 && kg < 500 },
+  { label: "Pedidos >=500", test: kg => kg >= 500 }
 ];
 
 // Formatters
