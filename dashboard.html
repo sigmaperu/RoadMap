@@ -8,44 +8,54 @@
   <title>RoadMap · Dashboard</title>
 
   <!-- Tipografías y CSS global -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  https://fonts.googleapis.com
+  https://fonts.gstatic.com
+  https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap
+  styles.css
 
   <!-- Favicons (opcional) -->
-  <link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
-  <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png">
-  <link rel="manifest" href="site.webmanifest">
+  https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png
+  https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png
+  https://raw.githubusercontent.com/sigmaperu/RoadMap/main/logotipo.png
+  site.webmanifest
 </head>
 <body>
   <!-- Header inyectado por app.js -->
-  <div id="header-placeholder" data-src="header.html"></div>
+  header.html</div>
 
   <main class="section">
     <div class="container">
 
-      <!-- ===== Filtro (arriba) ===== -->
-      <div class="filters card" role="region" aria-label="Filtro">
+      <!-- ===== Filtros (arriba, en la misma línea) ===== -->
+      <div class="filters card" role="region" aria-label="Filtros">
         <div class="control">
           <label for="locationFilter">Centro</label>
           <select id="locationFilter">
             <option value="__all__">Todos los centros</option>
           </select>
         </div>
+
+        <div class="control">
+          <label for="canalFilter">Canal</label>
+          <!-- Multiselección; “Todos” incluido -->
+          <select id="canalFilter" multiple title="Filtra solo las tarjetas">
+            <option value="__all__" selected>Todos</option>
+          </select>
+        </div>
+
         <div id="status" class="loading" aria-live="polite">
           <span class="dotloader" aria-hidden="true"></span>
           <span>Cargando datos…</span>
         </div>
       </div>
 
-      <!-- ===== Card de Indicadores (afectada por el filtro) ===== -->
+      <!-- ===== Card de Indicadores (afectada por Centro + Canal) ===== -->
       <section class="card" aria-label="Indicadores">
-        <div class="kpi-card" id="kpiCard"></div>
+        <!-- Carrusel horizontal; todas las cards en una sola línea -->
+        <div class="kpi-row" id="kpiCard"></div>
       </section>
 
-      <!-- ===== Tabla por Canal (filtrada) ===== -->
+      <!-- ===== Tabla por Canal (filtrada SOLO por Centro) ===== -->
       <section class="card" aria-label="Resumen por Canal">
         <div class="table-wrap">
           <table aria-describedby="status">
@@ -80,7 +90,7 @@
         </div>
       </section>
 
-      <!-- ===== Tabla por Rango de Kg Plan (filtrada) ===== -->
+      <!-- ===== Tabla por Rango de Kg Plan (filtrada SOLO por Centro) ===== -->
       <section class="card" aria-label="Resumen por Rango de Kg Plan">
         <div class="table-wrap">
           <table>
@@ -119,8 +129,7 @@
   </main>
 
   <!-- Scripts -->
-  <script src="app.js" defer></script>
-  <script src="dashboard.js" defer></script>
+  app.js</script>
+  dashboard.js</script>
 </body>
 </html>
-``
