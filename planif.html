@@ -8,29 +8,54 @@
   <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body>
-  <header class="rm-header">
-    <div class="rm-header-top">
-      <div class="rm-header-left"></div>
-      <div class="rm-header-yellow"></div>
-    </div>
-    <div class="rm-header-main">
-      <div class="rm-logo">
-        <img src="img/logotipo.png" alt="RoadMap">
-      </div>
-      <nav class="rm-nav">
-        <a href="index.html">Inicio</a>
-        <a href="agenda.html">Agenda</a>
-        <a href="dashboard.html">Dashboard</a>
-        <a href="planif.html" class="active">Planificación</a>
-        <a href="planos.html">Planos</a>
-        <a href="program.html">Programación</a>
-        <a href="ubicame.html">Ubícame</a>
-      </nav>
-    </div>
-  </header>
+  <div class="rm-layout">
+    <!-- SIDEBAR: logo + iconos -->
+   <aside class="rm-sidebar">
+  <div class="rm-sidebar-logo">
+    <img src="img/logotipo.png" alt="RoadMap">
+  </div>
 
-  <main class="rm-main">
-    <!-- contenido de Inicio irá aquí -->
-  </main>
+  <nav class="rm-sidebar-nav">
+    <a href="index.html">
+      <span class="rm-icon">🏠</span>
+      <span class="rm-label">Inicio</span>
+    </a>
+    <a href="agenda.html">
+      <span class="rm-icon">📒</span>
+      <span class="rm-label">Agenda</span>
+    </a>
+    <a href="dashboard.html">
+      <span class="rm-icon">📊</span>
+      <span class="rm-label">Dashboard</span>
+    </a>
+    <a href="planif.html" class="active">
+      <span class="rm-icon">🗺️</span>
+      <span class="rm-label">Planificación</span>
+    </a>
+    <a href="planos.html">
+      <span class="rm-icon">📍</span>
+      <span class="rm-label">Planos</span>
+    </a>
+    <a href="program.html">
+      <span class="rm-icon">🚚</span>
+      <span class="rm-label">Programación</span>
+    </a>
+    <a href="ubicame.html">
+      <span class="rm-icon">👤</span>
+      <span class="rm-label">Ubícame</span>
+    </a>
+  </nav>
+</aside>
+
+    <!-- BLANCO + AMARILLO 50/50 A PANTALLA COMPLETA -->
+    <div class="rm-split-full">
+      <div class="rm-panel-left">
+        <!-- contenido de la página -->
+      </div>
+      <div class="rm-panel-right">
+        <!-- visual / mapa / gráfico -->
+      </div>
+    </div>
+  </div>
 </body>
 </html>
