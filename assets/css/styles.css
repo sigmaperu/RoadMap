@@ -1,4 +1,6 @@
-/* RESET Y BASE */
+/* --------------------
+   RESET Y BASE
+-------------------- */
 
 *,
 *::before,
@@ -23,7 +25,9 @@ body {
     "Segoe UI", sans-serif;
 }
 
-/* LAYOUT: SIDEBAR + SPLIT 50/50 */
+/* --------------------
+   LAYOUT: SIDEBAR + SPLIT 50/50
+-------------------- */
 
 .rm-layout {
   width: 100%;
@@ -32,7 +36,9 @@ body {
   grid-template-columns: 72px 1fr; /* sidebar delgado + área principal */
 }
 
-/* SIDEBAR CON LOGO + ICONOS */
+/* --------------------
+   SIDEBAR: LOGO + ICONOS
+-------------------- */
 
 .rm-sidebar {
   background: #202125;
@@ -41,7 +47,7 @@ body {
   flex-direction: column;
   align-items: center;
   padding: 18px 10px;
-  gap: 30px;
+  gap: 26px;
 }
 
 .rm-sidebar-logo img {
@@ -49,45 +55,91 @@ body {
   height: auto;
 }
 
-/* iconos verticales, con tooltip del atributo title */
+/* Navegación vertical con íconos y etiqueta deslizante */
+
 .rm-sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-top: 6px;
+  gap: 14px;
+  margin-top: 4px;
 }
 
+/* Cada item es un círculo con un icono e incluye un “label” escondido */
+
 .rm-sidebar-nav a {
-  width: 32px;
-  height: 32px;
+  position: relative;
+  width: 36px;
+  height: 36px;
   border-radius: 999px;
   border: 1px solid transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: #d0d2d8;
-  text-decoration: none;
   background: transparent;
-  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease,
+  cursor: pointer;
+  text-decoration: none;
+  overflow: visible;
+  transition: background 0.2s ease, border-color 0.2s ease,
     transform 0.05s ease;
 }
+
+/* Icono (SVG/PNG) */
+
+.rm-sidebar-nav img {
+  width: 18px;
+  height: 18px;
+  display: block;
+  filter: brightness(1.1) contrast(1.05);
+}
+
+/* Etiqueta deslizante con nombre de la página */
+
+.rm-sidebar-nav a span {
+  position: absolute;
+  left: 42px;                /* inicia pegado al círculo */
+  top: 50%;
+  transform: translateX(-6px) translateY(-50%);
+  opacity: 0;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #222222;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.25);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+/* Hover: círculo resaltado + barrita se desliza */
 
 .rm-sidebar-nav a:hover {
   background: #2c2f36;
   border-color: #ffd54a;
-  color: #ffffff;
   transform: translateY(-1px);
 }
 
+.rm-sidebar-nav a:hover span {
+  opacity: 1;
+  transform: translateX(0) translateY(-50%);
+}
+
+/* Estado activo (página actual) */
+
 .rm-sidebar-nav a.active {
   background: #ffd54a;
-  color: #111111;
   border-color: #ffd54a;
 }
 
-/* ZONA PRINCIPAL: BLANCO Y AMARILLO MISMO ANCHO */
+.rm-sidebar-nav a.active img {
+  filter: none;
+}
+
+/* --------------------
+   ZONA PRINCIPAL: BLANCO Y AMARILLO
+-------------------- */
 
 .rm-split-full {
   width: 100%;
@@ -96,12 +148,16 @@ body {
   grid-template-columns: 1fr 1fr; /* 50 / 50 */
 }
 
+/* Panel blanco (contenido) */
+
 .rm-panel-left {
   background: #ffffff;
   display: flex;
   flex-direction: column;
   padding: 32px 36px;
 }
+
+/* Panel amarillo (visual) */
 
 .rm-panel-right {
   background: #ffd54a;
@@ -112,7 +168,9 @@ body {
   position: relative;
 }
 
-/* Tipografía de contenido en el panel blanco (opcional) */
+/* --------------------
+   TIPOGRAFÍA Y BOTONES EN PANEL IZQUIERDO
+-------------------- */
 
 .rm-kicker {
   font-size: 0.82rem;
@@ -141,8 +199,6 @@ body {
   max-width: 460px;
   margin-bottom: 24px;
 }
-
-/* Botones (si los usas) */
 
 .rm-actions {
   display: flex;
@@ -191,7 +247,9 @@ body {
   border-color: #c4c4c4;
 }
 
-/* ELEMENTOS OPCIONALES EN AMARILLO */
+/* --------------------
+   ELEMENTOS PANEL DERECHO (OPCIONALES)
+-------------------- */
 
 .rm-visual-box {
   width: 70%;
@@ -215,7 +273,9 @@ body {
   color: #222222;
 }
 
-/* RESPONSIVE */
+/* --------------------
+   RESPONSIVE
+-------------------- */
 
 @media (max-width: 960px) {
   .rm-layout {
@@ -227,13 +287,13 @@ body {
     height: auto;
   }
 
-  .rm-panel-right {
-    min-height: 260px;
-  }
-
   .rm-panel-left,
   .rm-panel-right {
     padding: 24px 20px;
+  }
+
+  .rm-panel-right {
+    min-height: 260px;
   }
 
   .rm-title {
