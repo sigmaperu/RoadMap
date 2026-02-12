@@ -1,6 +1,4 @@
-/* --------------------
-   RESET Y BASE
--------------------- */
+/* RESET Y BASE */
 
 *,
 *::before,
@@ -25,26 +23,44 @@ body {
     "Segoe UI", sans-serif;
 }
 
-/* --------------------
-   LAYOUT BLANCO / AMARILLO A PANTALLA COMPLETA
--------------------- */
+/* LAYOUT GENERAL: SIDEBAR + SPLIT */
+
+.rm-layout {
+  width: 100%;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 72px 1fr; /* sidebar delgado + contenido */
+}
+
+/* SIDEBAR: SOLO LOGO */
+
+.rm-sidebar {
+  background: #202125;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 18px;
+}
+
+.rm-sidebar-logo img {
+  width: 44px;
+  height: auto;
+}
+
+/* AREA PRINCIPAL: BLANCO + AMARILLO */
 
 .rm-split-full {
   width: 100%;
-  height: 100vh;          /* ocupa todo el alto visible */
+  height: 100vh;
   display: grid;
-  grid-template-columns: 1fr 1fr; /* mitad blanco, mitad amarillo */
+  grid-template-columns: 1fr 1fr;
 }
-
-/* Panel izquierdo (blanco) */
 
 .rm-panel-left {
   background: #ffffff;
   display: flex;
   flex-direction: column;
 }
-
-/* Panel derecho (amarillo) */
 
 .rm-panel-right {
   background: #ffd54a;
@@ -54,48 +70,11 @@ body {
   position: relative;
 }
 
-/* Si quieres usar una caja visual en el lado amarillo */
-.rm-visual-box {
-  width: 70%;
-  max-width: 360px;
-  height: 70%;
-  border-radius: 26px;
-  background: #ffeaa0;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
-}
-
-/* --------------------
-   HEADER DENTRO DEL PANEL BLANCO
--------------------- */
+/* HEADER CON NOMBRES DE PÁGINAS */
 
 .rm-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 32px;
+  padding: 16px 32px 8px;
 }
-
-.rm-header-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.rm-logo {
-  height: 32px;
-  width: auto;
-  display: block;
-}
-
-.rm-brand {
-  font-weight: 800;
-  font-size: 1.1rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #111111;
-}
-
-/* Menú horizontal */
 
 .rm-header-nav {
   display: flex;
@@ -136,19 +115,17 @@ body {
   width: 100%;
 }
 
-/* --------------------
-   CONTENIDO PRINCIPAL DEL PANEL BLANCO
--------------------- */
+/* CONTENIDO EN PANEL BLANCO */
 
 .rm-content {
   flex: 1;
-  padding: 24px 32px 32px;
+  padding: 16px 32px 32px;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-/* Tipografía principal para títulos y texto */
+/* Tipografía y botones (por si los usas) */
 
 .rm-kicker {
   font-size: 0.82rem;
@@ -178,8 +155,6 @@ body {
   margin-bottom: 24px;
 }
 
-/* Botones de acción */
-
 .rm-actions {
   display: flex;
   gap: 16px;
@@ -200,8 +175,8 @@ body {
   letter-spacing: 0.16em;
   cursor: pointer;
   text-decoration: none;
-  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease,
-    box-shadow 0.2s ease, transform 0.05s ease;
+  transition: background 0.2s, color 0.2s, border-color 0.2s,
+    box-shadow 0.2s, transform 0.05s;
 }
 
 .rm-btn-primary {
@@ -227,7 +202,16 @@ body {
   border-color: #c4c4c4;
 }
 
-/* Etiqueta flotante opcional en el panel amarillo */
+/* ELEMENTOS OPCIONALES PANEL DERECHO */
+
+.rm-visual-box {
+  width: 70%;
+  max-width: 360px;
+  height: 70%;
+  border-radius: 26px;
+  background: #ffeaa0;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+}
 
 .rm-tag {
   position: absolute;
@@ -242,34 +226,33 @@ body {
   color: #222222;
 }
 
-/* --------------------
-   RESPONSIVE
--------------------- */
+/* RESPONSIVE */
 
 @media (max-width: 960px) {
+  .rm-layout {
+    grid-template-columns: 56px 1fr;
+  }
+
   .rm-split-full {
     grid-template-columns: 1fr;
-    height: auto;          /* deja que crezca verticalmente en móvil */
+    height: auto;
   }
 
   .rm-panel-right {
     min-height: 260px;
   }
 
-  .rm-content {
-    padding: 16px 20px 24px;
-  }
-
   .rm-header {
-    padding: 12px 20px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+    padding: 12px 18px 6px;
   }
 
   .rm-header-nav {
     flex-wrap: wrap;
     gap: 12px 16px;
+  }
+
+  .rm-content {
+    padding: 16px 18px 24px;
   }
 
   .rm-title {
