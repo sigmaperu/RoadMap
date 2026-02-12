@@ -1,53 +1,122 @@
-/* Fondo general */
-body {
-  display: flex;
-  flex-direction: column;
-  background: #111;
-  color: #f5f5f5;
+/* Reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-/* Contenido centrado */
-.rm-main {
-  flex: 1;
+html, body {
+  height: 100%;
+  font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Fondo general amarillo + layout */
+body {
+  background: #ffd600;
+  color: #222;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+}
+
+/* Sidebar negra (logo + menú) */
+.sidebar {
+  background: #111;
+  color: #f5f5f5;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.rm-logo img {
+  max-width: 160px;
+  height: auto;
+}
+
+/* Navegación vertical */
+.rm-nav-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.rm-nav-vertical a {
+  color: #ccc;
+  text-decoration: none;
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 6px 0;
+  border-left: 2px solid transparent;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.rm-nav-vertical a:hover {
+  color: #ffd600;
+}
+
+.rm-nav-vertical a.active {
+  color: #ffd600;
+  border-color: #ffd600;
+}
+
+/* Columna de contenido (fondo amarillo, tipografía global) */
+.content {
+  background: #ffd600;
+  padding: 40px 48px;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, h3 {
+  font-weight: 700;
+  color: #222;
+}
+
+p {
+  color: #444;
+  line-height: 1.6;
+  font-size: 0.98rem;
+}
+
+/* DISEÑO blanco/amarillo usado en INICIO (opcional en otras) */
+.hero-full {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  height: 100%;
+}
+
+.hero-full-left {
+  background: #ffffff;
+  padding: 56px 56px 56px 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.hero-full-left h1 {
+  font-size: 2.6rem;
+  margin-bottom: 18px;
+}
+
+.hero-full-left p {
+  max-width: 420px;
+  margin-bottom: 26px;
+}
+
+.hero-full-right {
+  position: relative;
+  background: #ffd600;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
-}
-
-/* Tarjeta tipo hero */
-.hero {
-  display: grid;
-  grid-template-columns: 1.1fr 1fr;
-  max-width: 980px;
-  width: 100%;
-  min-height: 380px;
-  background: #ffd600;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
-}
-
-/* Columna izquierda (blanca) */
-.hero-left {
-  background: #ffffff;
-  color: #222;
-  padding: 48px 42px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.hero-left h1 {
-  font-size: 2.4rem;
-  margin-bottom: 16px;
-}
-
-.hero-left p {
-  font-size: 0.98rem;
-  line-height: 1.6;
-  margin-bottom: 24px;
-  color: #555;
 }
 
 /* Botones */
@@ -60,8 +129,8 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 20px;
-  font-size: 0.9rem;
+  padding: 10px 22px;
+  font-size: 0.88rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -84,48 +153,52 @@ body {
 .btn-ghost {
   background: transparent;
   color: #222;
-  border-color: #ddd;
+  border-color: #e0e0e0;
 }
 
 .btn-ghost:hover {
-  border-color: #bbb;
+  border-color: #c8c8c8;
 }
 
-/* Columna derecha (amarilla, imagen) */
-.hero-right {
-  position: relative;
-  background: #ffd600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Ejemplo de badge / icono */
 .hero-badge {
   position: absolute;
-  bottom: 24px;
-  left: 24px;
-  padding: 8px 14px;
+  bottom: 32px;
+  left: 32px;
+  padding: 8px 16px;
   border-radius: 999px;
-  border: 1px solid rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(0, 0, 0, 0.28);
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: #222;
 }
 
 /* Responsivo */
-@media (max-width: 768px) {
-  .hero {
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 72px 1fr;
+  }
+
+  .sidebar {
+    padding: 20px 12px;
+    align-items: center;
+  }
+
+  .rm-logo img {
+    max-width: 48px;
+  }
+
+  .rm-nav-vertical a {
+    font-size: 0;
+    border-left: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .hero-full {
     grid-template-columns: 1fr;
-    max-width: 90%;
   }
 
-  .hero-left {
+  .hero-full-left {
     padding: 32px 24px;
-  }
-
-  .hero-right {
-    min-height: 180px;
   }
 }
