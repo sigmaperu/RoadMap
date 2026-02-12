@@ -23,23 +23,25 @@ body {
     "Segoe UI", sans-serif;
 }
 
-/* LAYOUT GENERAL: SIDEBAR + SPLIT */
+/* LAYOUT: SIDEBAR + SPLIT 50/50 */
 
 .rm-layout {
   width: 100%;
   height: 100vh;
   display: grid;
-  grid-template-columns: 72px 1fr; /* sidebar delgado + contenido */
+  grid-template-columns: 72px 1fr; /* sidebar delgado + área principal */
 }
 
-/* SIDEBAR: SOLO LOGO */
+/* SIDEBAR CON LOGO + ICONOS */
 
 .rm-sidebar {
   background: #202125;
+  color: #f5f5f5;
   display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding-top: 18px;
+  flex-direction: column;
+  align-items: center;
+  padding: 18px 10px;
+  gap: 30px;
 }
 
 .rm-sidebar-logo img {
@@ -47,19 +49,58 @@ body {
   height: auto;
 }
 
-/* AREA PRINCIPAL: BLANCO + AMARILLO MITAD Y MITAD */
+/* iconos verticales, con tooltip del atributo title */
+.rm-sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 6px;
+}
+
+.rm-sidebar-nav a {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #d0d2d8;
+  text-decoration: none;
+  background: transparent;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease,
+    transform 0.05s ease;
+}
+
+.rm-sidebar-nav a:hover {
+  background: #2c2f36;
+  border-color: #ffd54a;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.rm-sidebar-nav a.active {
+  background: #ffd54a;
+  color: #111111;
+  border-color: #ffd54a;
+}
+
+/* ZONA PRINCIPAL: BLANCO Y AMARILLO MISMO ANCHO */
 
 .rm-split-full {
   width: 100%;
   height: 100vh;
   display: grid;
-  grid-template-columns: 1fr 1fr; /* misma anchura */
+  grid-template-columns: 1fr 1fr; /* 50 / 50 */
 }
 
 .rm-panel-left {
   background: #ffffff;
   display: flex;
   flex-direction: column;
+  padding: 32px 36px;
 }
 
 .rm-panel-right {
@@ -67,63 +108,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 32px 36px;
   position: relative;
 }
 
-/* HEADER CON NOMBRES DE PÁGINAS (COMPARTIDO) */
-
-.rm-header {
-  padding: 16px 32px 8px;
-}
-
-.rm-header-nav {
-  display: flex;
-  gap: 20px;
-  font-size: 0.85rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.rm-header-nav a {
-  text-decoration: none;
-  color: #222222;
-  position: relative;
-  padding-bottom: 4px;
-  font-weight: 600;
-}
-
-.rm-header-nav a::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 0;
-  height: 2px;
-  background: #ffb800;
-  transition: width 0.2s ease;
-}
-
-.rm-header-nav a:hover::after {
-  width: 100%;
-}
-
-.rm-header-nav a.active {
-  color: #000000;
-}
-
-.rm-header-nav a.active::after {
-  width: 100%;
-}
-
-/* CONTENIDO EN PANEL BLANCO */
-
-.rm-content {
-  flex: 1;
-  padding: 16px 32px 32px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
+/* Tipografía de contenido en el panel blanco (opcional) */
 
 .rm-kicker {
   font-size: 0.82rem;
@@ -153,7 +142,7 @@ body {
   margin-bottom: 24px;
 }
 
-/* OPCIONAL: BOTONES */
+/* Botones (si los usas) */
 
 .rm-actions {
   display: flex;
@@ -202,7 +191,7 @@ body {
   border-color: #c4c4c4;
 }
 
-/* ELEMENTOS PANEL DERECHO */
+/* ELEMENTOS OPCIONALES EN AMARILLO */
 
 .rm-visual-box {
   width: 70%;
@@ -242,17 +231,9 @@ body {
     min-height: 260px;
   }
 
-  .rm-header {
-    padding: 12px 18px 6px;
-  }
-
-  .rm-header-nav {
-    flex-wrap: wrap;
-    gap: 12px 16px;
-  }
-
-  .rm-content {
-    padding: 16px 18px 24px;
+  .rm-panel-left,
+  .rm-panel-right {
+    padding: 24px 20px;
   }
 
   .rm-title {
