@@ -14,13 +14,15 @@
     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
     crossorigin=""
   />
+
   <style>
-    /* Ajuste para que el mapa ocupe todo el panel amarillo */
+    /* El mapa ocupa todo el panel principal derecho */
     #map {
       width: 100%;
       height: 100%;
     }
 
+    /* Filtros flotando arriba del panel blanco */
     .filter-bar {
       display: flex;
       flex-wrap: wrap;
@@ -47,6 +49,18 @@
       outline: none;
       border-color: #ffb800;
       box-shadow: 0 0 0 2px rgba(255, 184, 0, 0.25);
+    }
+
+    /* Ocupa todo el alto blanco para filtros + descripción */
+    .rm-panel-left-planos {
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      padding: 16px 24px;
+    }
+
+    .rm-panel-left-planos .rm-text {
+      margin-bottom: 0;
     }
   </style>
 </head>
@@ -92,7 +106,8 @@
 
     <!-- BLANCO + AMARILLO 50/50 A PANTALLA COMPLETA -->
     <div class="rm-split-full">
-      <div class="rm-panel-left">
+      <!-- Panel blanco: filtros + texto -->
+      <div class="rm-panel-left rm-panel-left-planos">
         <div class="filter-bar">
           <div>
             <label for="f-centro">Centro:</label>
@@ -115,10 +130,12 @@
         </div>
 
         <p class="rm-text">
-          Selecciona Centro, Placa y Cliente para filtrar los puntos en el mapa de la derecha.
+          Selecciona Centro, Placa y Cliente para filtrar los puntos en el mapa
+          que ocupa toda el área amarilla.
         </p>
       </div>
 
+      <!-- Panel amarillo: mapa a pantalla completa dentro del panel -->
       <div class="rm-panel-right">
         <div id="map"></div>
       </div>
@@ -143,15 +160,15 @@
     const IDX_LAT = 16;
     const IDX_LNG = 17;
 
-    const fCentro = document.getElementById("f-centro");
-    const fPlaca  = document.getElementById("f-placa");
+    const fCentro  = document.getElementById("f-centro");
+    const fPlaca   = document.getElementById("f-placa");
     const fCliente = document.getElementById("f-cliente");
 
     let allRows = [];
     let markersLayer = L.layerGroup();
 
-    // Inicializar mapa
-    const map = L.map("map").setView([-12.0464, -77.0428], 11); // Lima aproximado
+    // Inicializar mapa (vista general)
+    const map = L.map("map").setView([-12.0464, -77.0428], 11); // Lima aprox
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
@@ -160,20 +177,19 @@
 
     markersLayer.addTo(map);
 
-    // Utilidad: parsear CSV simple
+    // Parsear CSV sencillo
     function parseCSV(text) {
       const lines = text.trim().split(/
 ?
 /);
       const rows = lines.slice(1).map(line => {
-        // dividir respetando comillas simples (simplificado)
         const parts = [];
         let current = "";
         let inQuotes = false;
 
         for (let i = 0; i < line.length; i++) {
           const ch = line[i];
-          if (ch === '"' ) {
+          if (ch === '"') {
             inQuotes = !inQuotes;
           } else if (ch === "," && !inQuotes) {
             parts.push(current);
@@ -209,7 +225,7 @@
       fetch(CSV_URL)
         .then(r => r.text())
         .then(text => {
-          allRows = parseCSV(text); // [web:101]
+          allRows = parseCSV(text); // [web:106]
           populateFilters();
           applyFiltersAndDraw();
         })
@@ -254,19 +270,18 @@
       fillSelect(fPlaca, placas, true);
       fillSelect(fCliente, clientes, true);
 
-      // Placa: por defecto primera placa alfabética (no Todos)
+      // Placa: por defecto primera placa alfabética (no "Todos")
       if (fPlaca.options.length > 1) {
         fPlaca.selectedIndex = 1;
       }
     }
 
     function applyFiltersAndDraw() {
-      const centroSel = fCentro.value;
-      const placaSel = fPlaca.value;
+      const centroSel  = fCentro.value;
+      const placaSel   = fPlaca.value;
       const clienteSel = fCliente.value;
 
       markersLayer.clearLayers();
-
       const bounds = [];
 
       allRows.forEach(row => {
@@ -274,8 +289,8 @@
         const placa  = (row[IDX_PLACA] || "").trim();
         const clienteLabel = buildClienteLabel(row).trim();
 
-        if (centroSel !== "__ALL__" && centro !== centroSel) return;
-        if (placaSel  !== "__ALL__" && placa  !== placaSel) return;
+        if (centroSel  !== "__ALL__" && centro !== centroSel) return;
+        if (placaSel   !== "__ALL__" && placa  !== placaSel) return;
         if (clienteSel !== "__ALL__" && clienteLabel !== clienteSel) return;
 
         const lat = parseFloat(row[IDX_LAT]);
