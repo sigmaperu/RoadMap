@@ -55,7 +55,7 @@ body {
   height: auto;
 }
 
-/* Navegación vertical con íconos y etiqueta deslizante */
+/* Navegación vertical */
 
 .rm-sidebar-nav {
   display: flex;
@@ -64,7 +64,7 @@ body {
   margin-top: 4px;
 }
 
-/* Cada item es un círculo con un icono e incluye un “label” escondido */
+/* Cada item: círculo + icono + label deslizante */
 
 .rm-sidebar-nav a {
   position: relative;
@@ -83,20 +83,17 @@ body {
     transform 0.05s ease;
 }
 
-/* Icono (SVG/PNG) */
+/* Icono (emoji o texto) */
 
-.rm-sidebar-nav img {
-  width: 18px;
-  height: 18px;
-  display: block;
-  filter: brightness(1.1) contrast(1.05);
+.rm-icon {
+  font-size: 1rem;
 }
 
-/* Etiqueta deslizante con nombre de la página */
+/* Etiqueta deslizante */
 
-.rm-sidebar-nav a span {
+.rm-label {
   position: absolute;
-  left: 42px;                /* inicia pegado al círculo */
+  left: 42px;
   top: 50%;
   transform: translateX(-6px) translateY(-50%);
   opacity: 0;
@@ -113,7 +110,7 @@ body {
   transition: opacity 0.18s ease, transform 0.18s ease;
 }
 
-/* Hover: círculo resaltado + barrita se desliza */
+/* Hover: resalta el círculo y aparece la barrita */
 
 .rm-sidebar-nav a:hover {
   background: #2c2f36;
@@ -121,20 +118,17 @@ body {
   transform: translateY(-1px);
 }
 
-.rm-sidebar-nav a:hover span {
+.rm-sidebar-nav a:hover .rm-label {
   opacity: 1;
   transform: translateX(0) translateY(-50%);
 }
 
-/* Estado activo (página actual) */
+/* Activo */
 
 .rm-sidebar-nav a.active {
   background: #ffd54a;
   border-color: #ffd54a;
-}
-
-.rm-sidebar-nav a.active img {
-  filter: none;
+  color: #111111;
 }
 
 /* --------------------
