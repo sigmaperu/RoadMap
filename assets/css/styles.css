@@ -83,14 +83,12 @@ body {
     transform 0.05s ease;
 }
 
-/* Icono (emoji o texto) */
-
+/* Icono (emoji) */
 .rm-icon {
   font-size: 1rem;
 }
 
-/* Etiqueta deslizante */
-
+/* Etiqueta deslizante (nombre de la página) */
 .rm-label {
   position: absolute;
   left: 42px;
@@ -111,7 +109,6 @@ body {
 }
 
 /* Hover: resalta el círculo y aparece la barrita */
-
 .rm-sidebar-nav a:hover {
   background: #2c2f36;
   border-color: #ffd54a;
@@ -123,8 +120,7 @@ body {
   transform: translateX(0) translateY(-50%);
 }
 
-/* Activo */
-
+/* Activo (página actual) */
 .rm-sidebar-nav a.active {
   background: #ffd54a;
   border-color: #ffd54a;
@@ -143,7 +139,6 @@ body {
 }
 
 /* Panel blanco (contenido) */
-
 .rm-panel-left {
   background: #ffffff;
   display: flex;
@@ -152,7 +147,6 @@ body {
 }
 
 /* Panel amarillo (visual) */
-
 .rm-panel-right {
   background: #ffd54a;
   display: flex;
