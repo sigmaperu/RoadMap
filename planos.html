@@ -16,13 +16,14 @@
   />
 
   <style>
-    /* El mapa ocupa todo el panel principal derecho */
-    #map {
-      width: 100%;
-      height: 100%;
+    /* Panel izquierdo: solo filtros y texto */
+    .rm-panel-left-planos {
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      padding: 16px 24px;
     }
 
-    /* Filtros flotando arriba del panel blanco */
     .filter-bar {
       display: flex;
       flex-wrap: wrap;
@@ -51,16 +52,10 @@
       box-shadow: 0 0 0 2px rgba(255, 184, 0, 0.25);
     }
 
-    /* Ocupa todo el alto blanco para filtros + descripción */
-    .rm-panel-left-planos {
-      background: #ffffff;
-      display: flex;
-      flex-direction: column;
-      padding: 16px 24px;
-    }
-
-    .rm-panel-left-planos .rm-text {
-      margin-bottom: 0;
+    /* Panel derecho: el mapa ocupa todo */
+    #map {
+      width: 100%;
+      height: 100%;
     }
   </style>
 </head>
@@ -106,7 +101,7 @@
 
     <!-- BLANCO + AMARILLO 50/50 A PANTALLA COMPLETA -->
     <div class="rm-split-full">
-      <!-- Panel blanco: filtros + texto -->
+      <!-- Panel blanco: filtros -->
       <div class="rm-panel-left rm-panel-left-planos">
         <div class="filter-bar">
           <div>
@@ -135,7 +130,7 @@
         </p>
       </div>
 
-      <!-- Panel amarillo: mapa a pantalla completa dentro del panel -->
+      <!-- Panel amarillo: Mapa Leaflet -->
       <div class="rm-panel-right">
         <div id="map"></div>
       </div>
@@ -152,7 +147,6 @@
   <script>
     const CSV_URL = "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
 
-    // índices según tu descripción
     const IDX_CENTRO = 1;
     const IDX_PLACA = 2;
     const IDX_CLIENTE = 3;
@@ -167,8 +161,7 @@
     let allRows = [];
     let markersLayer = L.layerGroup();
 
-    // Inicializar mapa (vista general)
-    const map = L.map("map").setView([-12.0464, -77.0428], 11); // Lima aprox
+    const map = L.map("map").setView([-12.0464, -77.0428], 11);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
@@ -177,7 +170,6 @@
 
     markersLayer.addTo(map);
 
-    // Parsear CSV sencillo
     function parseCSV(text) {
       const lines = text.trim().split(/
 ?
@@ -270,7 +262,6 @@
       fillSelect(fPlaca, placas, true);
       fillSelect(fCliente, clientes, true);
 
-      // Placa: por defecto primera placa alfabética (no "Todos")
       if (fPlaca.options.length > 1) {
         fPlaca.selectedIndex = 1;
       }
