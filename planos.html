@@ -6,56 +6,299 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="assets/img/favicon.ico">
   <link rel="stylesheet" href="assets/css/styles.css">
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+  <style>
+    /* Ajuste para que el mapa ocupe todo el panel amarillo */
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 12px;
+      font-size: 0.85rem;
+      align-items: center;
+    }
+
+    .filter-bar label {
+      font-weight: 600;
+      margin-right: 4px;
+    }
+
+    .filter-bar select {
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid #ddd;
+      font-size: 0.85rem;
+      background: #f8f8f8;
+    }
+
+    .filter-bar select:focus {
+      outline: none;
+      border-color: #ffb800;
+      box-shadow: 0 0 0 2px rgba(255, 184, 0, 0.25);
+    }
+  </style>
 </head>
 <body>
   <div class="rm-layout">
     <!-- SIDEBAR: logo + iconos -->
-   <aside class="rm-sidebar">
-  <div class="rm-sidebar-logo">
-    <img src="img/logotipo.png" alt="RoadMap">
-  </div>
+    <aside class="rm-sidebar">
+      <div class="rm-sidebar-logo">
+        <img src="img/logotipo.png" alt="RoadMap">
+      </div>
 
-  <nav class="rm-sidebar-nav">
-    <a href="index.html">
-      <span class="rm-icon">🏠</span>
-      <span class="rm-label">Inicio</span>
-    </a>
-    <a href="agenda.html">
-      <span class="rm-icon">📒</span>
-      <span class="rm-label">Agenda</span>
-    </a>
-    <a href="dashboard.html">
-      <span class="rm-icon">📊</span>
-      <span class="rm-label">Dashboard</span>
-    </a>
-    <a href="planif.html">
-      <span class="rm-icon">🗺️</span>
-      <span class="rm-label">Planificación</span>
-    </a>
-    <a href="planos.html" class="active">
-      <span class="rm-icon">📍</span>
-      <span class="rm-label">Planos</span>
-    </a>
-    <a href="program.html">
-      <span class="rm-icon">🚚</span>
-      <span class="rm-label">Programación</span>
-    </a>
-    <a href="ubicame.html">
-      <span class="rm-icon">👤</span>
-      <span class="rm-label">Ubícame</span>
-    </a>
-  </nav>
-</aside>
+      <nav class="rm-sidebar-nav">
+        <a href="index.html">
+          <span class="rm-icon">🏠</span>
+          <span class="rm-label">Inicio</span>
+        </a>
+        <a href="agenda.html">
+          <span class="rm-icon">📒</span>
+          <span class="rm-label">Agenda</span>
+        </a>
+        <a href="dashboard.html">
+          <span class="rm-icon">📊</span>
+          <span class="rm-label">Dashboard</span>
+        </a>
+        <a href="planif.html">
+          <span class="rm-icon">🗺️</span>
+          <span class="rm-label">Planificación</span>
+        </a>
+        <a href="planos.html" class="active">
+          <span class="rm-icon">📍</span>
+          <span class="rm-label">Planos</span>
+        </a>
+        <a href="program.html">
+          <span class="rm-icon">🚚</span>
+          <span class="rm-label">Programación</span>
+        </a>
+        <a href="ubicame.html">
+          <span class="rm-icon">👤</span>
+          <span class="rm-label">Ubícame</span>
+        </a>
+      </nav>
+    </aside>
 
     <!-- BLANCO + AMARILLO 50/50 A PANTALLA COMPLETA -->
     <div class="rm-split-full">
       <div class="rm-panel-left">
-        <!-- contenido de la página -->
+        <div class="filter-bar">
+          <div>
+            <label for="f-centro">Centro:</label>
+            <select id="f-centro">
+              <option value="__ALL__">Todos</option>
+            </select>
+          </div>
+          <div>
+            <label for="f-placa">Placa:</label>
+            <select id="f-placa">
+              <option value="__ALL__">Todos</option>
+            </select>
+          </div>
+          <div>
+            <label for="f-cliente">Cliente:</label>
+            <select id="f-cliente">
+              <option value="__ALL__">Todos</option>
+            </select>
+          </div>
+        </div>
+
+        <p class="rm-text">
+          Selecciona Centro, Placa y Cliente para filtrar los puntos en el mapa de la derecha.
+        </p>
       </div>
+
       <div class="rm-panel-right">
-        <!-- visual / mapa / gráfico -->
+        <div id="map"></div>
       </div>
     </div>
   </div>
+
+  <!-- Leaflet JS -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin="">
+  </script>
+
+  <script>
+    const CSV_URL = "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
+
+    // índices según tu descripción
+    const IDX_CENTRO = 1;
+    const IDX_PLACA = 2;
+    const IDX_CLIENTE = 3;
+    const IDX_CLIENTE_EXTRA = 4;
+    const IDX_LAT = 16;
+    const IDX_LNG = 17;
+
+    const fCentro = document.getElementById("f-centro");
+    const fPlaca  = document.getElementById("f-placa");
+    const fCliente = document.getElementById("f-cliente");
+
+    let allRows = [];
+    let markersLayer = L.layerGroup();
+
+    // Inicializar mapa
+    const map = L.map("map").setView([-12.0464, -77.0428], 11); // Lima aproximado
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap"
+    }).addTo(map);
+
+    markersLayer.addTo(map);
+
+    // Utilidad: parsear CSV simple
+    function parseCSV(text) {
+      const lines = text.trim().split(/
+?
+/);
+      const rows = lines.slice(1).map(line => {
+        // dividir respetando comillas simples (simplificado)
+        const parts = [];
+        let current = "";
+        let inQuotes = false;
+
+        for (let i = 0; i < line.length; i++) {
+          const ch = line[i];
+          if (ch === '"' ) {
+            inQuotes = !inQuotes;
+          } else if (ch === "," && !inQuotes) {
+            parts.push(current);
+            current = "";
+          } else {
+            current += ch;
+          }
+        }
+        parts.push(current);
+        return parts;
+      });
+      return rows;
+    }
+
+    function isValidExtra(value) {
+      if (!value) return false;
+      const trimmed = value.trim();
+      if (!trimmed) return false;
+      const bad = ["0", ".", "#N/A", "#N.A", "#NA"];
+      return !bad.includes(trimmed);
+    }
+
+    function buildClienteLabel(row) {
+      const base = row[IDX_CLIENTE] || "";
+      const extra = row[IDX_CLIENTE_EXTRA] || "";
+      if (isValidExtra(extra)) {
+        return base + " - " + extra;
+      }
+      return base;
+    }
+
+    function loadCSV() {
+      fetch(CSV_URL)
+        .then(r => r.text())
+        .then(text => {
+          allRows = parseCSV(text); // [web:101]
+          populateFilters();
+          applyFiltersAndDraw();
+        })
+        .catch(err => {
+          console.error("Error cargando CSV", err);
+          alert("No se pudo cargar el archivo de rutas.");
+        });
+    }
+
+    function populateFilters() {
+      const centros = new Set();
+      const placas  = new Set();
+      const clientes = new Set();
+
+      allRows.forEach(row => {
+        const centro = (row[IDX_CENTRO] || "").trim();
+        const placa  = (row[IDX_PLACA] || "").trim();
+        const clienteLabel = buildClienteLabel(row).trim();
+
+        if (centro) centros.add(centro);
+        if (placa) placas.add(placa);
+        if (clienteLabel) clientes.add(clienteLabel);
+      });
+
+      function fillSelect(select, values, includeTodos) {
+        select.innerHTML = "";
+        if (includeTodos) {
+          const optAll = document.createElement("option");
+          optAll.value = "__ALL__";
+          optAll.textContent = "Todos";
+          select.appendChild(optAll);
+        }
+        Array.from(values).sort().forEach(v => {
+          const opt = document.createElement("option");
+          opt.value = v;
+          opt.textContent = v;
+          select.appendChild(opt);
+        });
+      }
+
+      fillSelect(fCentro, centros, true);
+      fillSelect(fPlaca, placas, true);
+      fillSelect(fCliente, clientes, true);
+
+      // Placa: por defecto primera placa alfabética (no Todos)
+      if (fPlaca.options.length > 1) {
+        fPlaca.selectedIndex = 1;
+      }
+    }
+
+    function applyFiltersAndDraw() {
+      const centroSel = fCentro.value;
+      const placaSel = fPlaca.value;
+      const clienteSel = fCliente.value;
+
+      markersLayer.clearLayers();
+
+      const bounds = [];
+
+      allRows.forEach(row => {
+        const centro = (row[IDX_CENTRO] || "").trim();
+        const placa  = (row[IDX_PLACA] || "").trim();
+        const clienteLabel = buildClienteLabel(row).trim();
+
+        if (centroSel !== "__ALL__" && centro !== centroSel) return;
+        if (placaSel  !== "__ALL__" && placa  !== placaSel) return;
+        if (clienteSel !== "__ALL__" && clienteLabel !== clienteSel) return;
+
+        const lat = parseFloat(row[IDX_LAT]);
+        const lng = parseFloat(row[IDX_LNG]);
+        if (isNaN(lat) || isNaN(lng)) return;
+
+        const marker = L.marker([lat, lng]).bindPopup(
+          `<strong>${clienteLabel}</strong><br>Centro: ${centro}<br>Placa: ${placa}`
+        );
+        marker.addTo(markersLayer);
+        bounds.push([lat, lng]);
+      });
+
+      if (bounds.length) {
+        map.fitBounds(bounds, { padding: [30, 30] });
+      }
+    }
+
+    fCentro.addEventListener("change", applyFiltersAndDraw);
+    fPlaca.addEventListener("change", applyFiltersAndDraw);
+    fCliente.addEventListener("change", applyFiltersAndDraw);
+
+    loadCSV();
+  </script>
 </body>
 </html>
