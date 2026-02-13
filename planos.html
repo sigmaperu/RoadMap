@@ -85,9 +85,21 @@
   </script>
 
   <script>
-    console.log("Iniciando mapa básico de Planos...");
+    console.log("Planos: mapa + puntos CSV");
 
-    // Inicializa el mapa centrado en Lima
+    const CSV_URL = "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
+
+    // índices según tu descripción
+    const IDX_CENTRO = 1;
+    const IDX_PLACA = 2;
+    const IDX_CLIENTE = 3;
+    const IDX_CLIENTE_EXTRA = 4;
+    const IDX_LAT = 16;
+    const IDX_LNG = 17;
+
+    let allRows = [];
+    let markersLayer = L.layerGroup();
+
     const map = L.map("map").setView([-12.0464, -77.0428], 11);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -95,9 +107,99 @@
       attribution: "&copy; OpenStreetMap"
     }).addTo(map);
 
-    // Punto de prueba para verificar que el mapa carga
-    const marker = L.marker([-12.0464, -77.0428]).addTo(map);
-    marker.bindPopup("Mapa cargado correctamente.").openPopup();
+    markersLayer.addTo(map);
+
+    // Parseo simple de CSV con comillas
+    function parseCSV(text) {
+      const lines = text.trim().split(/
+?
+/);
+      console.log("Total líneas CSV:", lines.length);
+      const rows = lines.slice(1).map(line => {
+        const parts = [];
+        let current = "";
+        let inQuotes = false;
+
+        for (let i = 0; i < line.length; i++) {
+          const ch = line[i];
+          if (ch === '"') {
+            inQuotes = !inQuotes;
+          } else if (ch === "," && !inQuotes) {
+            parts.push(current);
+            current = "";
+          } else {
+            current += ch;
+          }
+        }
+        parts.push(current);
+        return parts;
+      });
+      return rows;
+    }
+
+    function isValidExtra(value) {
+      if (!value) return false;
+      const trimmed = value.trim();
+      if (!trimmed) return false;
+      const bad = ["0", ".", "#N/A", "#N.A", "#NA"];
+      return !bad.includes(trimmed);
+    }
+
+    function buildClienteLabel(row) {
+      const base = row[IDX_CLIENTE] || "";
+      const extra = row[IDX_CLIENTE_EXTRA] || "";
+      if (isValidExtra(extra)) {
+        return base + " - " + extra;
+      }
+      return base;
+    }
+
+    function loadCSV() {
+      console.log("Descargando CSV:", CSV_URL);
+      fetch(CSV_URL)
+        .then(r => {
+          console.log("Status CSV:", r.status);
+          return r.text();
+        })
+        .then(text => {
+          allRows = parseCSV(text); /* [web:106] */
+          console.log("Filas de datos (sin encabezado):", allRows.length);
+          drawAllPoints();
+        })
+        .catch(err => {
+          console.error("Error cargando CSV", err);
+          alert("No se pudo cargar el archivo de rutas. Abre la consola (F12) para ver detalles.");
+        });
+    }
+
+    function drawAllPoints() {
+      markersLayer.clearLayers();
+      const bounds = [];
+
+      allRows.forEach(row => {
+        const centro = (row[IDX_CENTRO] || "").trim();
+        const placa  = (row[IDX_PLACA] || "").trim();
+        const clienteLabel = buildClienteLabel(row).trim();
+
+        const lat = parseFloat(row[IDX_LAT]);
+        const lng = parseFloat(row[IDX_LNG]);
+        if (isNaN(lat) || isNaN(lng)) return;
+
+        const marker = L.marker([lat, lng]).bindPopup(
+          `<strong>${clienteLabel}</strong><br>Centro: ${centro}<br>Placa: ${placa}`
+        );
+        marker.addTo(markersLayer);
+        bounds.push([lat, lng]);
+      });
+
+      console.log("Puntos pintados en el mapa:", bounds.length);
+
+      if (bounds.length) {
+        map.fitBounds(bounds, { padding: [30, 30] });
+      }
+    }
+
+    loadCSV();
   </script>
 </body>
 </html>
