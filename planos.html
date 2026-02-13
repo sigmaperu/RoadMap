@@ -16,9 +16,8 @@
   />
 
   <style>
-    /* SOBREESCRIBIR SOLO PARA PLANOS */
+    /* PLANOS: zona principal solo mapa + filtros arriba */
 
-    /* la zona principal ya no será 50/50 sino solo mapa */
     .rm-split-full {
       width: 100%;
       height: 100vh;
@@ -26,9 +25,8 @@
       grid-template-columns: 1fr; /* todo a la derecha del sidebar */
     }
 
-    /* panel único con filtros arriba y mapa abajo */
     .rm-panel-planos {
-      background: #ffd54a; /* fondo amarillo general */
+      background: #ffd54a;
       display: flex;
       flex-direction: column;
       padding: 10px 10px 10px 10px;
@@ -41,10 +39,11 @@
       margin-bottom: 8px;
       font-size: 0.85rem;
       align-items: center;
-      background: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.95);
       border-radius: 999px;
       padding: 6px 12px;
       align-self: flex-start;
+      z-index: 10;
     }
 
     .filter-bar label {
@@ -66,7 +65,7 @@
       box-shadow: 0 0 0 2px rgba(255, 184, 0, 0.25);
     }
 
-    /* el mapa ocupa TODO el espacio restante */
+    /* El mapa ocupa todo el resto de la pantalla */
     #map {
       flex: 1;
       width: 100%;
@@ -126,7 +125,7 @@
       </nav>
     </aside>
 
-    <!-- ZONA PRINCIPAL: filtros + mapa a pantalla casi completa -->
+    <!-- ZONA PRINCIPAL: filtros + mapa -->
     <div class="rm-split-full">
       <div class="rm-panel-planos">
         <div class="filter-bar">
@@ -163,6 +162,8 @@
   </script>
 
   <script>
+    console.log("Iniciando Planos...");
+
     const CSV_URL = "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
 
     const IDX_CENTRO = 1;
@@ -179,6 +180,11 @@
     let allRows = [];
     let markersLayer = L.layerGroup();
 
+    const mapContainer = document.getElementById("map");
+    if (mapContainer) {
+      mapContainer.style.minHeight = "70vh";
+    }
+
     const map = L.map("map").setView([-12.0464, -77.0428], 11);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -192,6 +198,7 @@
       const lines = text.trim().split(/
 ?
 /);
+      console.log("Total líneas CSV (incluye encabezado):", lines.length);
       const rows = lines.slice(1).map(line => {
         const parts = [];
         let current = "";
@@ -232,16 +239,21 @@
     }
 
     function loadCSV() {
+      console.log("Descargando CSV:", CSV_URL);
       fetch(CSV_URL)
-        .then(r => r.text())
+        .then(r => {
+          console.log("Respuesta fetch CSV status:", r.status);
+          return r.text();
+        })
         .then(text => {
           allRows = parseCSV(text); /* [web:106] */
+          console.log("Filas de datos (sin encabezado):", allRows.length);
           populateFilters();
           applyFiltersAndDraw();
         })
         .catch(err => {
           console.error("Error cargando CSV", err);
-          alert("No se pudo cargar el archivo de rutas.");
+          alert("No se pudo cargar el archivo de rutas. Revisa la consola (F12).");
         });
     }
 
@@ -259,6 +271,10 @@
         if (placa) placas.add(placa);
         if (clienteLabel) clientes.add(clienteLabel);
       });
+
+      console.log("Centros únicos:", centros.size);
+      console.log("Placas únicas:", placas.size);
+      console.log("Clientes únicos:", clientes.size);
 
       function fillSelect(select, values, includeTodos) {
         select.innerHTML = "";
@@ -312,6 +328,8 @@
         marker.addTo(markersLayer);
         bounds.push([lat, lng]);
       });
+
+      console.log("Puntos pintados en el mapa:", bounds.length);
 
       if (bounds.length) {
         map.fitBounds(bounds, { padding: [30, 30] });
