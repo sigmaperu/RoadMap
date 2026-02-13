@@ -16,48 +16,18 @@
   />
 
   <style>
-    /* Filtros en una barra sobre la tarjeta */
-    .filter-bar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 12px;
-      font-size: 0.85rem;
-      align-items: center;
-    }
-
-    .filter-bar label {
-      font-weight: 600;
-      margin-right: 4px;
-    }
-
-    .filter-bar select {
-      padding: 4px 8px;
-      border-radius: 999px;
-      border: 1px solid #ddd;
-      font-size: 0.85rem;
-      background: #f8f8f8;
-    }
-
-    .filter-bar select:focus {
-      outline: none;
-      border-color: #ffb800;
-      box-shadow: 0 0 0 2px rgba(255, 184, 0, 0.25);
-    }
-
-    /* El mapa ocupa el resto de la tarjeta */
+    /* El mapa ocupa todo el área de contenido a la derecha del sidebar */
     #map {
       width: 100%;
-      height: calc(100vh - 120px); /* sidebar ya ocupa el alto, restamos filtros */
-      border-radius: 14px;
-      overflow: hidden;
-      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25);
+      height: 100%;
+      min-height: 100vh;
     }
 
-    @media (max-width: 960px) {
-      #map {
-        height: 60vh;
-      }
+    .rm-main-planos {
+      background: #f2f3f5;
+      padding: 0;
+      height: 100vh;
+      overflow: hidden;
     }
   </style>
 </head>
@@ -101,32 +71,9 @@
       </nav>
     </aside>
 
-    <!-- CONTENIDO PRINCIPAL -->
-    <main class="rm-main">
-      <div class="rm-card">
-        <div class="filter-bar">
-          <div>
-            <label for="f-centro">Centro:</label>
-            <select id="f-centro">
-              <option value="__ALL__">Todos</option>
-            </select>
-          </div>
-          <div>
-            <label for="f-placa">Placa:</label>
-            <select id="f-placa">
-              <option value="__ALL__">Todos</option>
-            </select>
-          </div>
-          <div>
-            <label for="f-cliente">Cliente:</label>
-            <select id="f-cliente">
-              <option value="__ALL__">Todos</option>
-            </select>
-          </div>
-        </div>
-
-        <div id="map"></div>
-      </div>
+    <!-- CONTENIDO PRINCIPAL: SOLO MAPA -->
+    <main class="rm-main rm-main-planos">
+      <div id="map"></div>
     </main>
   </div>
 
@@ -138,24 +85,9 @@
   </script>
 
   <script>
-    console.log("Iniciando Planos...");
+    console.log("Iniciando mapa básico de Planos...");
 
-    const CSV_URL = "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
-
-    const IDX_CENTRO = 1;
-    const IDX_PLACA = 2;
-    const IDX_CLIENTE = 3;
-    const IDX_CLIENTE_EXTRA = 4;
-    const IDX_LAT = 16;
-    const IDX_LNG = 17;
-
-    const fCentro  = document.getElementById("f-centro");
-    const fPlaca   = document.getElementById("f-placa");
-    const fCliente = document.getElementById("f-cliente");
-
-    let allRows = [];
-    let markersLayer = L.layerGroup();
-
+    // Inicializa el mapa centrado en Lima
     const map = L.map("map").setView([-12.0464, -77.0428], 11);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -163,153 +95,9 @@
       attribution: "&copy; OpenStreetMap"
     }).addTo(map);
 
-    markersLayer.addTo(map);
-
-    function parseCSV(text) {
-      const lines = text.trim().split(/
-?
-/);
-      console.log("Total líneas CSV:", lines.length);
-      const rows = lines.slice(1).map(line => {
-        const parts = [];
-        let current = "";
-        let inQuotes = false;
-
-        for (let i = 0; i < line.length; i++) {
-          const ch = line[i];
-          if (ch === '"') {
-            inQuotes = !inQuotes;
-          } else if (ch === "," && !inQuotes) {
-            parts.push(current);
-            current = "";
-          } else {
-            current += ch;
-          }
-        }
-        parts.push(current);
-        return parts;
-      });
-      return rows;
-    }
-
-    function isValidExtra(value) {
-      if (!value) return false;
-      const trimmed = value.trim();
-      if (!trimmed) return false;
-      const bad = ["0", ".", "#N/A", "#N.A", "#NA"];
-      return !bad.includes(trimmed);
-    }
-
-    function buildClienteLabel(row) {
-      const base = row[IDX_CLIENTE] || "";
-      const extra = row[IDX_CLIENTE_EXTRA] || "";
-      if (isValidExtra(extra)) {
-        return base + " - " + extra;
-      }
-      return base;
-    }
-
-    function loadCSV() {
-      console.log("Descargando CSV:", CSV_URL);
-      fetch(CSV_URL)
-        .then(r => {
-          console.log("Status CSV:", r.status);
-          return r.text();
-        })
-        .then(text => {
-          allRows = parseCSV(text); /* [web:106] */
-          console.log("Filas de datos:", allRows.length);
-          populateFilters();
-          applyFiltersAndDraw();
-        })
-        .catch(err => {
-          console.error("Error cargando CSV", err);
-          alert("No se pudo cargar el archivo de rutas. Abre la consola (F12) para ver detalles.");
-        });
-    }
-
-    function populateFilters() {
-      const centros = new Set();
-      const placas  = new Set();
-      const clientes = new Set();
-
-      allRows.forEach(row => {
-        const centro = (row[IDX_CENTRO] || "").trim();
-        const placa  = (row[IDX_PLACA] || "").trim();
-        const clienteLabel = buildClienteLabel(row).trim();
-
-        if (centro) centros.add(centro);
-        if (placa) placas.add(placa);
-        if (clienteLabel) clientes.add(clienteLabel);
-      });
-
-      function fillSelect(select, values, includeTodos) {
-        select.innerHTML = "";
-        if (includeTodos) {
-          const optAll = document.createElement("option");
-          optAll.value = "__ALL__";
-          optAll.textContent = "Todos";
-          select.appendChild(optAll);
-        }
-        Array.from(values).sort().forEach(v => {
-          const opt = document.createElement("option");
-          opt.value = v;
-          opt.textContent = v;
-          select.appendChild(opt);
-        });
-      }
-
-      fillSelect(fCentro, centros, true);
-      fillSelect(fPlaca, placas, true);
-      fillSelect(fCliente, clientes, true);
-
-      if (fPlaca.options.length > 1) {
-        fPlaca.selectedIndex = 1;
-      }
-
-      console.log("Centros:", centros.size, "Placas:", placas.size, "Clientes:", clientes.size);
-    }
-
-    function applyFiltersAndDraw() {
-      const centroSel  = fCentro.value;
-      const placaSel   = fPlaca.value;
-      const clienteSel = fCliente.value;
-
-      markersLayer.clearLayers();
-      const bounds = [];
-
-      allRows.forEach(row => {
-        const centro = (row[IDX_CENTRO] || "").trim();
-        const placa  = (row[IDX_PLACA] || "").trim();
-        const clienteLabel = buildClienteLabel(row).trim();
-
-        if (centroSel  !== "__ALL__" && centro !== centroSel) return;
-        if (placaSel   !== "__ALL__" && placa  !== placaSel) return;
-        if (clienteSel !== "__ALL__" && clienteLabel !== clienteSel) return;
-
-        const lat = parseFloat(row[IDX_LAT]);
-        const lng = parseFloat(row[IDX_LNG]);
-        if (isNaN(lat) || isNaN(lng)) return;
-
-        const marker = L.marker([lat, lng]).bindPopup(
-          `<strong>${clienteLabel}</strong><br>Centro: ${centro}<br>Placa: ${placa}`
-        );
-        marker.addTo(markersLayer);
-        bounds.push([lat, lng]);
-      });
-
-      console.log("Puntos pintados:", bounds.length);
-
-      if (bounds.length) {
-        map.fitBounds(bounds, { padding: [30, 30] });
-      }
-    }
-
-    fCentro.addEventListener("change", applyFiltersAndDraw);
-    fPlaca.addEventListener("change", applyFiltersAndDraw);
-    fCliente.addEventListener("change", applyFiltersAndDraw);
-
-    loadCSV();
+    // Punto de prueba para verificar que el mapa carga
+    const marker = L.marker([-12.0464, -77.0428]).addTo(map);
+    marker.bindPopup("Mapa cargado correctamente.").openPopup();
   </script>
 </body>
 </html>
