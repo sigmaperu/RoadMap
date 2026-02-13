@@ -16,34 +16,14 @@
   />
 
   <style>
-    /* PLANOS: zona principal solo mapa + filtros arriba */
-
-    .rm-split-full {
-      width: 100%;
-      height: 100vh;
-      display: grid;
-      grid-template-columns: 1fr; /* todo a la derecha del sidebar */
-    }
-
-    .rm-panel-planos {
-      background: #ffd54a;
-      display: flex;
-      flex-direction: column;
-      padding: 10px 10px 10px 10px;
-    }
-
+    /* Filtros en una barra sobre la tarjeta */
     .filter-bar {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
       font-size: 0.85rem;
       align-items: center;
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 999px;
-      padding: 6px 12px;
-      align-self: flex-start;
-      z-index: 10;
     }
 
     .filter-bar label {
@@ -65,29 +45,25 @@
       box-shadow: 0 0 0 2px rgba(255, 184, 0, 0.25);
     }
 
-    /* El mapa ocupa todo el resto de la pantalla */
+    /* El mapa ocupa el resto de la tarjeta */
     #map {
-      flex: 1;
       width: 100%;
-      border-radius: 24px;
+      height: calc(100vh - 120px); /* sidebar ya ocupa el alto, restamos filtros */
+      border-radius: 14px;
       overflow: hidden;
-      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25);
     }
 
     @media (max-width: 960px) {
-      .rm-split-full {
-        height: auto;
-      }
-
       #map {
-        min-height: 60vh;
+        height: 60vh;
       }
     }
   </style>
 </head>
 <body>
   <div class="rm-layout">
-    <!-- SIDEBAR: logo + iconos -->
+    <!-- SIDEBAR -->
     <aside class="rm-sidebar">
       <div class="rm-sidebar-logo">
         <img src="img/logotipo.png" alt="RoadMap">
@@ -125,9 +101,9 @@
       </nav>
     </aside>
 
-    <!-- ZONA PRINCIPAL: filtros + mapa -->
-    <div class="rm-split-full">
-      <div class="rm-panel-planos">
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="rm-main">
+      <div class="rm-card">
         <div class="filter-bar">
           <div>
             <label for="f-centro">Centro:</label>
@@ -151,7 +127,7 @@
 
         <div id="map"></div>
       </div>
-    </div>
+    </main>
   </div>
 
   <!-- Leaflet JS -->
@@ -180,11 +156,6 @@
     let allRows = [];
     let markersLayer = L.layerGroup();
 
-    const mapContainer = document.getElementById("map");
-    if (mapContainer) {
-      mapContainer.style.minHeight = "70vh";
-    }
-
     const map = L.map("map").setView([-12.0464, -77.0428], 11);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -198,7 +169,7 @@
       const lines = text.trim().split(/
 ?
 /);
-      console.log("Total líneas CSV (incluye encabezado):", lines.length);
+      console.log("Total líneas CSV:", lines.length);
       const rows = lines.slice(1).map(line => {
         const parts = [];
         let current = "";
@@ -242,18 +213,18 @@
       console.log("Descargando CSV:", CSV_URL);
       fetch(CSV_URL)
         .then(r => {
-          console.log("Respuesta fetch CSV status:", r.status);
+          console.log("Status CSV:", r.status);
           return r.text();
         })
         .then(text => {
           allRows = parseCSV(text); /* [web:106] */
-          console.log("Filas de datos (sin encabezado):", allRows.length);
+          console.log("Filas de datos:", allRows.length);
           populateFilters();
           applyFiltersAndDraw();
         })
         .catch(err => {
           console.error("Error cargando CSV", err);
-          alert("No se pudo cargar el archivo de rutas. Revisa la consola (F12).");
+          alert("No se pudo cargar el archivo de rutas. Abre la consola (F12) para ver detalles.");
         });
     }
 
@@ -271,10 +242,6 @@
         if (placa) placas.add(placa);
         if (clienteLabel) clientes.add(clienteLabel);
       });
-
-      console.log("Centros únicos:", centros.size);
-      console.log("Placas únicas:", placas.size);
-      console.log("Clientes únicos:", clientes.size);
 
       function fillSelect(select, values, includeTodos) {
         select.innerHTML = "";
@@ -299,6 +266,8 @@
       if (fPlaca.options.length > 1) {
         fPlaca.selectedIndex = 1;
       }
+
+      console.log("Centros:", centros.size, "Placas:", placas.size, "Clientes:", clientes.size);
     }
 
     function applyFiltersAndDraw() {
@@ -329,7 +298,7 @@
         bounds.push([lat, lng]);
       });
 
-      console.log("Puntos pintados en el mapa:", bounds.length);
+      console.log("Puntos pintados:", bounds.length);
 
       if (bounds.length) {
         map.fitBounds(bounds, { padding: [30, 30] });
