@@ -16,7 +16,6 @@
   />
 
   <style>
-    /* El mapa ocupa todo el área de contenido a la derecha del sidebar */
     #map {
       width: 100%;
       height: 100%;
@@ -28,6 +27,43 @@
       padding: 0;
       height: 100vh;
       overflow: hidden;
+      position: relative;
+    }
+
+    /* Barra de filtros flotando sobre el mapa */
+    .filter-bar {
+      position: absolute;
+      top: 10px;
+      left: 90px; /* un poco a la derecha del sidebar */
+      z-index: 1000;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 6px 10px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 999px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+      font-size: 0.82rem;
+      align-items: center;
+    }
+
+    .filter-bar label {
+      font-weight: 600;
+      margin-right: 4px;
+    }
+
+    .filter-bar select {
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid #d0d0d0;
+      background: #f9f9f9;
+      font-size: 0.8rem;
+    }
+
+    .filter-bar select:focus {
+      outline: none;
+      border-color: #ffb800;
+      box-shadow: 0 0 0 2px rgba(255, 184, 0, 0.3);
     }
   </style>
 </head>
@@ -71,8 +107,29 @@
       </nav>
     </aside>
 
-    <!-- CONTENIDO PRINCIPAL: SOLO MAPA -->
+    <!-- CONTENIDO PRINCIPAL: MAPA + FILTROS -->
     <main class="rm-main rm-main-planos">
+      <div class="filter-bar">
+        <div>
+          <label for="f-centro">Centro:</label>
+          <select id="f-centro">
+            <option value="__ALL__">Todos</option>
+          </select>
+        </div>
+        <div>
+          <label for="f-placa">Placa:</label>
+          <select id="f-placa">
+            <option value="__ALL__">Todos</option>
+          </select>
+        </div>
+        <div>
+          <label for="f-cliente">Cliente:</label>
+          <select id="f-cliente">
+            <option value="__ALL__">Todos</option>
+          </select>
+        </div>
+      </div>
+
       <div id="map"></div>
     </main>
   </div>
@@ -85,17 +142,20 @@
   </script>
 
   <script>
-    console.log("Planos: mapa + puntos CSV");
+    console.log("Planos: mapa + puntos CSV + filtros");
 
     const CSV_URL = "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
 
-    // índices según tu descripción
     const IDX_CENTRO = 1;
     const IDX_PLACA = 2;
     const IDX_CLIENTE = 3;
     const IDX_CLIENTE_EXTRA = 4;
     const IDX_LAT = 16;
     const IDX_LNG = 17;
+
+    const fCentro  = document.getElementById("f-centro");
+    const fPlaca   = document.getElementById("f-placa");
+    const fCliente = document.getElementById("f-cliente");
 
     let allRows = [];
     let markersLayer = L.layerGroup();
@@ -109,10 +169,10 @@
 
     markersLayer.addTo(map);
 
-    // Parseo simple de CSV con comillas
     function parseCSV(text) {
-      // ESTA es la línea correcta para separar por saltos de línea
-      const lines = text.trim().split(/\r?\n/);
+      const lines = text.trim().split(/
+?
+/);
       console.log("Total líneas CSV:", lines.length);
       const rows = lines.slice(1).map(line => {
         const parts = [];
@@ -163,7 +223,8 @@
         .then(text => {
           allRows = parseCSV(text); /* [web:106] */
           console.log("Filas de datos (sin encabezado):", allRows.length);
-          drawAllPoints();
+          populateFilters();
+          applyFiltersAndDraw();
         })
         .catch(err => {
           console.error("Error cargando CSV", err);
@@ -171,7 +232,59 @@
         });
     }
 
-    function drawAllPoints() {
+    function populateFilters() {
+      const centros = new Set();
+      const placas  = new Set();
+      const clientes = new Set();
+
+      allRows.forEach(row => {
+        const centro = (row[IDX_CENTRO] || "").trim();
+        const placa  = (row[IDX_PLACA] || "").trim();
+        const clienteLabel = buildClienteLabel(row).trim();
+
+        if (centro) centros.add(centro);
+        if (placa) placas.add(placa);
+        if (clienteLabel) clientes.add(clienteLabel);
+      });
+
+      function fillSelect(select, values, includeTodos) {
+        select.innerHTML = "";
+        if (includeTodos) {
+          const optAll = document.createElement("option");
+          optAll.value = "__ALL__";
+          optAll.textContent = "Todos";
+          select.appendChild(optAll);
+        }
+        Array.from(values).sort().forEach(v => {
+          const opt = document.createElement("option");
+          opt.value = v;
+          opt.textContent = v;
+          select.appendChild(opt);
+        });
+      }
+
+      // Centro: con opción "Todos"
+      fillSelect(fCentro, centros, true);
+
+      // Placa: primera opción "Todos", pero por defecto seleccionar la primera placa alfabética
+      fillSelect(fPlaca, placas, true);
+      if (fPlaca.options.length > 1) {
+        fPlaca.selectedIndex = 1; // primera placa distinta de "Todos"
+      }
+
+      // Cliente: con "Todos"
+      fillSelect(fCliente, clientes, true);
+
+      console.log("Centros únicos:", centros.size,
+                  "Placas únicas:", placas.size,
+                  "Clientes únicos:", clientes.size);
+    }
+
+    function applyFiltersAndDraw() {
+      const centroSel  = fCentro.value;
+      const placaSel   = fPlaca.value;
+      const clienteSel = fCliente.value;
+
       markersLayer.clearLayers();
       const bounds = [];
 
@@ -179,6 +292,10 @@
         const centro = (row[IDX_CENTRO] || "").trim();
         const placa  = (row[IDX_PLACA] || "").trim();
         const clienteLabel = buildClienteLabel(row).trim();
+
+        if (centroSel  !== "__ALL__" && centro !== centroSel) return;
+        if (placaSel   !== "__ALL__" && placa  !== placaSel) return;
+        if (clienteSel !== "__ALL__" && clienteLabel !== clienteSel) return;
 
         const lat = parseFloat(row[IDX_LAT]);
         const lng = parseFloat(row[IDX_LNG]);
@@ -191,12 +308,16 @@
         bounds.push([lat, lng]);
       });
 
-      console.log("Puntos pintados en el mapa:", bounds.length);
+      console.log("Puntos pintados con filtros:", bounds.length);
 
       if (bounds.length) {
         map.fitBounds(bounds, { padding: [30, 30] });
       }
     }
+
+    fCentro.addEventListener("change", applyFiltersAndDraw);
+    fPlaca.addEventListener("change", applyFiltersAndDraw);
+    fCliente.addEventListener("change", applyFiltersAndDraw);
 
     loadCSV();
   </script>
