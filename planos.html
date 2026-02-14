@@ -30,11 +30,10 @@
       position: relative;
     }
 
-    /* Barra de filtros flotando sobre el mapa */
     .filter-bar {
       position: absolute;
       top: 10px;
-      left: 90px; /* un poco a la derecha del sidebar */
+      left: 90px;
       z-index: 1000;
       display: flex;
       flex-wrap: wrap;
@@ -107,7 +106,7 @@
       </nav>
     </aside>
 
-    <!-- CONTENIDO PRINCIPAL: MAPA + FILTROS -->
+    <!-- CONTENIDO PRINCIPAL -->
     <main class="rm-main rm-main-planos">
       <div class="filter-bar">
         <div>
@@ -142,7 +141,7 @@
   </script>
 
   <script>
-    console.log("Planos: mapa + puntos CSV + filtros");
+    console.log("Planos: filtros + marcadores personalizados");
 
     const CSV_URL = "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
 
@@ -152,6 +151,7 @@
     const IDX_CLIENTE_EXTRA = 4;
     const IDX_LAT = 16;
     const IDX_LNG = 17;
+    const IDX_VENTANA = 18; // ventana horaria
 
     const fCentro  = document.getElementById("f-centro");
     const fPlaca   = document.getElementById("f-placa");
@@ -169,8 +169,21 @@
 
     markersLayer.addTo(map);
 
+    // colores por centro (hash simple)
+    function colorForCentro(centro) {
+      if (!centro) return "#666666";
+      let hash = 0;
+      for (let i = 0; i < centro.length; i++) {
+        hash = centro.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      const hue = Math.abs(hash) % 360;
+      return `hsl(${hue},70%,50%)`;
+    }
+
     function parseCSV(text) {
-      const lines = text.trim().split(/\r?\n/);
+      const lines = text.trim().split(/
+?
+/);
       console.log("Total líneas CSV:", lines.length);
       const rows = lines.slice(1).map(line => {
         const parts = [];
@@ -261,17 +274,15 @@
         });
       }
 
-      // Centro: con opción "Todos"
       fillSelect(fCentro, centros, true);
-
-      // Placa: primera opción "Todos", pero por defecto seleccionar la primera placa alfabética
       fillSelect(fPlaca, placas, true);
-      if (fPlaca.options.length > 1) {
-        fPlaca.selectedIndex = 1; // primera placa distinta de "Todos"
-      }
-
-      // Cliente: con "Todos"
       fillSelect(fCliente, clientes, true);
+
+      // por defecto dejamos Centro y Cliente en "Todos"
+      // y Placa en la primera placa distinta de "Todos"
+      if (fPlaca.options.length > 1) {
+        fPlaca.selectedIndex = 1;
+      }
 
       console.log("Centros únicos:", centros.size,
                   "Placas únicas:", placas.size,
@@ -286,10 +297,15 @@
       markersLayer.clearLayers();
       const bounds = [];
 
+      // si placa != Todos y cliente == Todos, usamos ventana horaria como “orden”
+      const usarVentanaComoNumero =
+        placaSel !== "__ALL__" && clienteSel === "__ALL__";
+
       allRows.forEach(row => {
         const centro = (row[IDX_CENTRO] || "").trim();
         const placa  = (row[IDX_PLACA] || "").trim();
         const clienteLabel = buildClienteLabel(row).trim();
+        const ventana = (row[IDX_VENTANA] || "").trim();
 
         if (centroSel  !== "__ALL__" && centro !== centroSel) return;
         if (placaSel   !== "__ALL__" && placa  !== placaSel) return;
@@ -299,9 +315,52 @@
         const lng = parseFloat(row[IDX_LNG]);
         if (isNaN(lat) || isNaN(lng)) return;
 
-        const marker = L.marker([lat, lng]).bindPopup(
-          `<strong>${clienteLabel}</strong><br>Centro: ${centro}<br>Placa: ${placa}`
+        const color = colorForCentro(centro);
+
+        let marker;
+        if (usarVentanaComoNumero && ventana) {
+          // círculo pequeño con número de ventana
+          const html = `
+            <div style="
+              width:20px;height:20px;
+              border-radius:50%;
+              background:${color};
+              color:#fff;
+              font-size:11px;
+              font-weight:bold;
+              display:flex;
+              align-items:center;
+              justify-content:center;
+              border:1px solid #fff;
+              box-shadow:0 0 4px rgba(0,0,0,0.5);
+            ">
+              ${ventana}
+            </div>`;
+          marker = L.marker([lat, lng], {
+            icon: L.divIcon({
+              html,
+              iconSize: [20, 20],
+              className: ""
+            })
+          });
+        } else {
+          // círculo pequeño estándar
+          marker = L.circleMarker([lat, lng], {
+            radius: 4,
+            color: "#ffffff",
+            weight: 1,
+            fillColor: color,
+            fillOpacity: 0.9
+          });
+        }
+
+        marker.bindPopup(
+          `<strong>${clienteLabel}</strong><br>
+           Centro: ${centro}<br>
+           Placa: ${placa}<br>
+           Ventana: ${ventana || "N/A"}`
         );
+
         marker.addTo(markersLayer);
         bounds.push([lat, lng]);
       });
