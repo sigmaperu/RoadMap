@@ -141,7 +141,7 @@
   </script>
 
   <script>
-    console.log("Planos: filtros + marcadores personalizados");
+    console.log("Planos: filtros dependientes + marcadores simples + geolocalización");
 
     const CSV_URL = "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
 
@@ -151,7 +151,6 @@
     const IDX_CLIENTE_EXTRA = 4;
     const IDX_LAT = 16;
     const IDX_LNG = 17;
-    const IDX_VENTANA = 18; // ventana horaria
 
     const fCentro  = document.getElementById("f-centro");
     const fPlaca   = document.getElementById("f-placa");
@@ -159,6 +158,7 @@
 
     let allRows = [];
     let markersLayer = L.layerGroup();
+    let myPositionMarker = null;
 
     const map = L.map("map").setView([-12.0464, -77.0428], 11);
 
@@ -169,15 +169,19 @@
 
     markersLayer.addTo(map);
 
-    // colores por centro (hash simple)
-    function colorForCentro(centro) {
-      if (!centro) return "#666666";
+    // Colores por cliente (centro+placa+cliente)
+    const clientColorCache = {};
+    function colorForClientKey(key) {
+      if (!key) return "#666666";
+      if (clientColorCache[key]) return clientColorCache[key];
       let hash = 0;
-      for (let i = 0; i < centro.length; i++) {
-        hash = centro.charCodeAt(i) + ((hash << 5) - hash);
+      for (let i = 0; i < key.length; i++) {
+        hash = key.charCodeAt(i) + ((hash << 5) - hash);
       }
       const hue = Math.abs(hash) % 360;
-      return `hsl(${hue},70%,50%)`;
+      const color = `hsl(${hue},75%,50%)`;
+      clientColorCache[key] = color;
+      return color;
     }
 
     function parseCSV(text) {
@@ -232,8 +236,9 @@
         .then(text => {
           allRows = parseCSV(text); /* [web:106] */
           console.log("Filas de datos (sin encabezado):", allRows.length);
-          populateFilters();
+          initDependentFilters();
           applyFiltersAndDraw();
+          initGeolocation();
         })
         .catch(err => {
           console.error("Error cargando CSV", err);
@@ -241,7 +246,10 @@
         });
     }
 
-    function populateFilters() {
+    // --- Filtros dependientes ---
+
+    // Calcula únicos según centro y placa actuales
+    function getUniqueValues(currentCentro, currentPlaca) {
       const centros = new Set();
       const placas  = new Set();
       const clientes = new Set();
@@ -251,41 +259,96 @@
         const placa  = (row[IDX_PLACA] || "").trim();
         const clienteLabel = buildClienteLabel(row).trim();
 
+        // Centro siempre a partir de todo el dataset
         if (centro) centros.add(centro);
+
+        // Placa: solo de filas que cumplan Centro (si hay seleccionado)
+        if (currentCentro !== "__ALL__" && centro !== currentCentro) return;
         if (placa) placas.add(placa);
+
+        // Cliente: solo de filas que cumplan Centro y Placa (si hay seleccionados)
+        if (currentCentro !== "__ALL__" && centro !== currentCentro) return;
+        if (currentPlaca !== "__ALL__" && placa !== currentPlaca) return;
         if (clienteLabel) clientes.add(clienteLabel);
       });
 
-      function fillSelect(select, values, includeTodos) {
-        select.innerHTML = "";
-        if (includeTodos) {
-          const optAll = document.createElement("option");
-          optAll.value = "__ALL__";
-          optAll.textContent = "Todos";
-          select.appendChild(optAll);
+      return { centros, placas, clientes };
+    }
+
+    function fillSelect(select, values, includeTodos, defaultFirstNonAll) {
+      const prev = select.value;
+      select.innerHTML = "";
+      if (includeTodos) {
+        const optAll = document.createElement("option");
+        optAll.value = "__ALL__";
+        optAll.textContent = "Todos";
+        select.appendChild(optAll);
+      }
+
+      const sorted = Array.from(values).sort();
+      let firstNonAll = null;
+      sorted.forEach(v => {
+        const opt = document.createElement("option");
+        opt.value = v;
+        opt.textContent = v;
+        select.appendChild(opt);
+        if (!firstNonAll) firstNonAll = v;
+      });
+
+      if (defaultFirstNonAll && firstNonAll) {
+        // seleccionar primer valor distinto de Todos
+        for (let i = 0; i < select.options.length; i++) {
+          if (select.options[i].value === firstNonAll) {
+            select.selectedIndex = i;
+            break;
+          }
         }
-        Array.from(values).sort().forEach(v => {
-          const opt = document.createElement("option");
-          opt.value = v;
-          opt.textContent = v;
-          select.appendChild(opt);
-        });
+      } else {
+        // intentar conservar valor anterior si aún existe
+        for (let i = 0; i < select.options.length; i++) {
+          if (select.options[i].value === prev) {
+            select.selectedIndex = i;
+            break;
+          }
+        }
       }
+    }
 
-      fillSelect(fCentro, centros, true);
-      fillSelect(fPlaca, placas, true);
-      fillSelect(fCliente, clientes, true);
+    function initDependentFilters() {
+      const { centros, placas, clientes } = getUniqueValues("__ALL__", "__ALL__");
 
-      // por defecto dejamos Centro y Cliente en "Todos"
-      // y Placa en la primera placa distinta de "Todos"
-      if (fPlaca.options.length > 1) {
-        fPlaca.selectedIndex = 1;
-      }
+      // Centro y Placa por defecto en su primer valor distinto de Todos
+      fillSelect(fCentro, centros, true, true);
+      fillSelect(fPlaca, placas, true, true);
+      fillSelect(fCliente, clientes, true, false);
 
       console.log("Centros únicos:", centros.size,
                   "Placas únicas:", placas.size,
                   "Clientes únicos:", clientes.size);
     }
+
+    function updateFiltersFromCentro() {
+      const centroSel = fCentro.value;
+
+      const { centros, placas, clientes } = getUniqueValues(centroSel, "__ALL__");
+
+      fillSelect(fCentro, centros, true, false); // mantener Centro
+      fillSelect(fPlaca,  placas,  true, true);  // Placa reinicia a primera válida
+      fillSelect(fCliente,clientes, true, false);
+    }
+
+    function updateFiltersFromPlaca() {
+      const centroSel = fCentro.value;
+      const placaSel  = fPlaca.value;
+
+      const { centros, placas, clientes } = getUniqueValues(centroSel, placaSel);
+
+      fillSelect(fCentro, centros, true, false);
+      fillSelect(fPlaca,  placas,  true, false);
+      fillSelect(fCliente,clientes, true, false);
+    }
+
+    // --- Pintar puntos ---
 
     function applyFiltersAndDraw() {
       const centroSel  = fCentro.value;
@@ -295,15 +358,10 @@
       markersLayer.clearLayers();
       const bounds = [];
 
-      // si placa != Todos y cliente == Todos, usamos ventana horaria como “orden”
-      const usarVentanaComoNumero =
-        placaSel !== "__ALL__" && clienteSel === "__ALL__";
-
       allRows.forEach(row => {
         const centro = (row[IDX_CENTRO] || "").trim();
         const placa  = (row[IDX_PLACA] || "").trim();
         const clienteLabel = buildClienteLabel(row).trim();
-        const ventana = (row[IDX_VENTANA] || "").trim();
 
         if (centroSel  !== "__ALL__" && centro !== centroSel) return;
         if (placaSel   !== "__ALL__" && placa  !== placaSel) return;
@@ -313,50 +371,21 @@
         const lng = parseFloat(row[IDX_LNG]);
         if (isNaN(lat) || isNaN(lng)) return;
 
-        const color = colorForCentro(centro);
+        const clientKey = `${centro}|${placa}|${clienteLabel}`;
+        const color = colorForClientKey(clientKey);
 
-        let marker;
-        if (usarVentanaComoNumero && ventana) {
-          // círculo pequeño con número de ventana
-          const html = `
-            <div style="
-              width:20px;height:20px;
-              border-radius:50%;
-              background:${color};
-              color:#fff;
-              font-size:11px;
-              font-weight:bold;
-              display:flex;
-              align-items:center;
-              justify-content:center;
-              border:1px solid #fff;
-              box-shadow:0 0 4px rgba(0,0,0,0.5);
-            ">
-              ${ventana}
-            </div>`;
-          marker = L.marker([lat, lng], {
-            icon: L.divIcon({
-              html,
-              iconSize: [20, 20],
-              className: ""
-            })
-          });
-        } else {
-          // círculo pequeño estándar
-          marker = L.circleMarker([lat, lng], {
-            radius: 4,
-            color: "#ffffff",
-            weight: 1,
-            fillColor: color,
-            fillOpacity: 0.9
-          });
-        }
+        const marker = L.circleMarker([lat, lng], {
+          radius: 4,
+          color: "#ffffff",
+          weight: 1,
+          fillColor: color,
+          fillOpacity: 0.9
+        });
 
         marker.bindPopup(
           `<strong>${clienteLabel}</strong><br>
            Centro: ${centro}<br>
-           Placa: ${placa}<br>
-           Ventana: ${ventana || "N/A"}`
+           Placa: ${placa}`
         );
 
         marker.addTo(markersLayer);
@@ -370,9 +399,57 @@
       }
     }
 
-    fCentro.addEventListener("change", applyFiltersAndDraw);
-    fPlaca.addEventListener("change", applyFiltersAndDraw);
-    fCliente.addEventListener("change", applyFiltersAndDraw);
+    // --- Geolocalización: punto negro en vivo ---
+
+    function initGeolocation() {
+      if (!navigator.geolocation) {
+        console.warn("Geolocation no soportada.");
+        return;
+      }
+
+      navigator.geolocation.watchPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+
+          if (!myPositionMarker) {
+            myPositionMarker = L.circleMarker([lat, lng], {
+              radius: 6,
+              color: "#000000",
+              weight: 2,
+              fillColor: "#000000",
+              fillOpacity: 1
+            }).addTo(map)
+              .bindPopup("Mi posición");
+          } else {
+            myPositionMarker.setLatLng([lat, lng]);
+          }
+        },
+        (err) => {
+          console.warn("No se pudo obtener la ubicación:", err.message);
+        },
+        {
+          enableHighAccuracy: true,
+          maximumAge: 30000,
+          timeout: 20000
+        }
+      );
+    }
+
+    // Eventos de filtros
+    fCentro.addEventListener("change", () => {
+      updateFiltersFromCentro();
+      applyFiltersAndDraw();
+    });
+
+    fPlaca.addEventListener("change", () => {
+      updateFiltersFromPlaca();
+      applyFiltersAndDraw();
+    });
+
+    fCliente.addEventListener("change", () => {
+      applyFiltersAndDraw();
+    });
 
     loadCSV();
   </script>
