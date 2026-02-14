@@ -111,12 +111,8 @@
 
     // Parseo simple de CSV con comillas
     function parseCSV(text) {
-      // ESTA es la línea correcta para separar por saltos de línea (
- o 
-)
-      const lines = text.trim().split(/
-?
-/);
+      // ESTA es la línea correcta para separar por saltos de línea
+      const lines = text.trim().split(/\r?\n/);
       console.log("Total líneas CSV:", lines.length);
       const rows = lines.slice(1).map(line => {
         const parts = [];
