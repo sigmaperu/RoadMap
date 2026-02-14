@@ -215,9 +215,7 @@
     }
 
     function parseCSV(text) {
-      const lines = text.trim().split(/
-?
-/);
+      const lines = text.trim().split(/\r?\n/);
       const rows = lines.slice(1).map(line => {
         const parts = [];
         let current = "";
