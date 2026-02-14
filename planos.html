@@ -181,9 +181,7 @@
     }
 
     function parseCSV(text) {
-      const lines = text.trim().split(/
-?
-/);
+      const lines = text.trim().split(/\r?\n/);
       console.log("Total líneas CSV:", lines.length);
       const rows = lines.slice(1).map(line => {
         const parts = [];
