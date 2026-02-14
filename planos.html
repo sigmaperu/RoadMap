@@ -22,18 +22,10 @@
       min-height: 100vh;
     }
 
-    .rm-main-planos {
-      background: #f2f3f5;
-      padding: 0;
-      height: 100vh;
-      overflow: hidden;
-      position: relative;
-    }
-
     .filter-bar {
       position: absolute;
       top: 10px;
-      left: 90px;
+      left: 90px; /* desplazado respecto al sidebar en desktop */
       z-index: 1000;
       display: flex;
       flex-wrap: wrap;
@@ -64,11 +56,40 @@
       border-color: #ffb800;
       box-shadow: 0 0 0 2px rgba(255, 184, 0, 0.3);
     }
+
+    @media (max-width: 960px) {
+      /* en móvil, la barra de filtros se centra arriba, bajo el header */
+      .filter-bar {
+        top: 56px;
+        left: 6px;
+        right: 6px;
+        justify-content: center;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="rm-layout">
-    <!-- SIDEBAR -->
+    <!-- HEADER MÓVIL (solo visible en pantallas pequeñas) -->
+    <header class="rm-mobile-header">
+      <div class="rm-mobile-header-logo">
+        <img src="img/logotipo.png" alt="RoadMap">
+      </div>
+      <button class="rm-burger" id="rm-burger-btn" aria-label="Menú">
+        <span></span>
+      </button>
+      <nav class="rm-mobile-menu" id="rm-mobile-menu">
+        <a href="index.html">Inicio</a>
+        <a href="agenda.html">Agenda</a>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="planif.html">Planificación</a>
+        <a href="planos.html" class="active">Planos</a>
+        <a href="program.html">Programación</a>
+        <a href="ubicame.html">Ubícame</a>
+      </nav>
+    </header>
+
+    <!-- SIDEBAR DESKTOP -->
     <aside class="rm-sidebar">
       <div class="rm-sidebar-logo">
         <img src="img/logotipo.png" alt="RoadMap">
@@ -141,7 +162,17 @@
   </script>
 
   <script>
-    console.log("Planos: filtros dependientes + marcador clásico + geolocalización pequeña");
+    // --- Menú móvil hamburguesa ---
+    const burgerBtn = document.getElementById("rm-burger-btn");
+    const mobileMenu = document.getElementById("rm-mobile-menu");
+    if (burgerBtn && mobileMenu) {
+      burgerBtn.addEventListener("click", () => {
+        const isOpen = mobileMenu.style.display === "block";
+        mobileMenu.style.display = isOpen ? "none" : "block";
+      });
+    }
+
+    console.log("Planos: responsive + filtros dependientes + geolocalización");
 
     const CSV_URL = "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
 
@@ -169,7 +200,6 @@
 
     markersLayer.addTo(map);
 
-    // Colores por cliente (centro+placa+cliente)
     const clientColorCache = {};
     function colorForClientKey(key) {
       if (!key) return "#2a7fff";
@@ -185,13 +215,13 @@
     }
 
     function parseCSV(text) {
-      const lines = text.trim().split(/\r?\n/);
-      console.log("Total líneas CSV:", lines.length);
+      const lines = text.trim().split(/
+?
+/);
       const rows = lines.slice(1).map(line => {
         const parts = [];
         let current = "";
         let inQuotes = false;
-
         for (let i = 0; i < line.length; i++) {
           const ch = line[i];
           if (ch === '"') {
@@ -227,26 +257,21 @@
     }
 
     function loadCSV() {
-      console.log("Descargando CSV:", CSV_URL);
       fetch(CSV_URL)
-        .then(r => {
-          console.log("Status CSV:", r.status);
-          return r.text();
-        })
+        .then(r => r.text())
         .then(text => {
           allRows = parseCSV(text); /* [web:106] */
-          console.log("Filas de datos (sin encabezado):", allRows.length);
           initDependentFilters();
           applyFiltersAndDraw();
           initGeolocation();
         })
         .catch(err => {
           console.error("Error cargando CSV", err);
-          alert("No se pudo cargar el archivo de rutas. Abre la consola (F12) para ver detalles.");
+          alert("No se pudo cargar el archivo de rutas.");
         });
     }
 
-    // --- Filtros dependientes ---
+    // ---- Filtros dependientes ----
 
     function getUniqueValues(currentCentro, currentPlaca) {
       const centros = new Set();
@@ -258,14 +283,11 @@
         const placa  = (row[IDX_PLACA] || "").trim();
         const clienteLabel = buildClienteLabel(row).trim();
 
-        // Centros: siempre sobre todo el dataset
         if (centro) centros.add(centro);
 
-        // Placas: restringidas por Centro (si está filtrado)
         if (currentCentro !== "__ALL__" && centro !== currentCentro) return;
         if (placa) placas.add(placa);
 
-        // Clientes: restringidos por Centro y Placa (si están filtrados)
         if (currentCentro !== "__ALL__" && centro !== currentCentro) return;
         if (currentPlaca !== "__ALL__" && placa !== currentPlaca) return;
         if (clienteLabel) clientes.add(clienteLabel);
@@ -295,7 +317,6 @@
       });
 
       if (defaultFirstNonAll && firstNonAll) {
-        // seleccionar primer valor distinto de Todos
         for (let i = 0; i < select.options.length; i++) {
           if (select.options[i].value === firstNonAll) {
             select.selectedIndex = i;
@@ -303,7 +324,6 @@
           }
         }
       } else {
-        // intentar conservar valor anterior
         for (let i = 0; i < select.options.length; i++) {
           if (select.options[i].value === prev) {
             select.selectedIndex = i;
@@ -315,54 +335,39 @@
 
     function initDependentFilters() {
       const { centros, placas, clientes } = getUniqueValues("__ALL__", "__ALL__");
-
-      // Centro y Placa: por defecto primer valor (más rápido)
-      fillSelect(fCentro, centros, true, true);
-      fillSelect(fPlaca, placas, true, true);
+      fillSelect(fCentro, centros, true, true); // primer centro
+      fillSelect(fPlaca, placas, true, true);   // primera placa
       fillSelect(fCliente, clientes, true, false);
-
-      console.log("Centros únicos:", centros.size,
-                  "Placas únicas:", placas.size,
-                  "Clientes únicos:", clientes.size);
     }
 
     function updateFiltersFromCentro() {
       const centroSel = fCentro.value;
-
       const { centros, placas, clientes } = getUniqueValues(centroSel, "__ALL__");
-
-      fillSelect(fCentro, centros, true, false); // mantiene centro
-      fillSelect(fPlaca, placas, true, true);    // placa reinicia a primera válida
+      fillSelect(fCentro, centros, true, false);
+      fillSelect(fPlaca, placas, true, true);
       fillSelect(fCliente, clientes, true, false);
     }
 
     function updateFiltersFromPlaca() {
       const centroSel = fCentro.value;
       const placaSel  = fPlaca.value;
-
       const { centros, placas, clientes } = getUniqueValues(centroSel, placaSel);
-
       fillSelect(fCentro, centros, true, false);
       fillSelect(fPlaca, placas, true, false);
-      // aquí es donde antes fallaba: ahora cliente se recalcula con centro+placa
       fillSelect(fCliente, clientes, true, false);
     }
 
-    // --- Pintar puntos ---
+    // ---- Pintar puntos ----
 
-    // Icono clásico de Leaflet con color personalizado
-    function createColoredIcon(color) {
+    function createClassicIcon() {
       return L.icon({
         iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
         iconSize: [25, 41],
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
         shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-        shadowSize: [41, 41],
-        className: "",
+        shadowSize: [41, 41]
       });
-      // Nota: para cambiar realmente el color del PNG necesitas tu propio icono.
-      // Aquí usamos el clásico; el color lógico va en el popup/leyenda.
     }
 
     function applyFiltersAndDraw() {
@@ -386,38 +391,29 @@
         const lng = parseFloat(row[IDX_LNG]);
         if (isNaN(lat) || isNaN(lng)) return;
 
-        const clientKey = `${centro}|${placa}|${clienteLabel}`;
-        const color = colorForClientKey(clientKey);
-
         const marker = L.marker([lat, lng], {
-          icon: createColoredIcon(color)   // marcador clásico
+          icon: createClassicIcon()
         });
 
         marker.bindPopup(
           `<strong>${clienteLabel}</strong><br>
            Centro: ${centro}<br>
-           Placa: ${placa}<br>
-           Color lógico: ${color}`
+           Placa: ${placa}`
         );
 
         marker.addTo(markersLayer);
         bounds.push([lat, lng]);
       });
 
-      console.log("Puntos pintados con filtros:", bounds.length);
-
       if (bounds.length) {
         map.fitBounds(bounds, { padding: [30, 30] });
       }
     }
 
-    // --- Geolocalización: punto negro pequeño ---
+    // ---- Geolocalización: punto negro pequeño ----
 
     function initGeolocation() {
-      if (!navigator.geolocation) {
-        console.warn("Geolocation no soportada.");
-        return;
-      }
+      if (!navigator.geolocation) return;
 
       navigator.geolocation.watchPosition(
         (pos) => {
@@ -426,12 +422,13 @@
 
           if (!myPositionMarker) {
             myPositionMarker = L.circleMarker([lat, lng], {
-              radius: 4,            // más pequeño
+              radius: 4,
               color: "#000000",
               weight: 1,
               fillColor: "#000000",
               fillOpacity: 1
-            }).addTo(map)
+            })
+              .addTo(map)
               .bindPopup("Mi posición");
           } else {
             myPositionMarker.setLatLng([lat, lng]);
