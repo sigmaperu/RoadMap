@@ -28,17 +28,20 @@ body {
 }
 
 /* --------------------
-   LAYOUT: SIDEBAR + CONTENIDO (DESKTOP)
+   LAYOUT GENERAL
 -------------------- */
 
 .rm-layout {
   width: 100%;
   height: 100vh;
   display: grid;
-  grid-template-columns: 72px 1fr; /* sidebar + main */
+  grid-template-columns: 72px 1fr; /* sidebar + contenido */
+  grid-template-rows: 1fr;
 }
 
-/* SIDEBAR (DESKTOP) */
+/* --------------------
+   SIDEBAR DESKTOP
+-------------------- */
 
 .rm-sidebar {
   background: #202125;
@@ -79,14 +82,15 @@ body {
   overflow: visible;
   transition: background 0.2s ease, border-color 0.2s ease,
     transform 0.05s ease;
+  color: inherit;
 }
 
-/* Icono (emoji) */
 .rm-icon {
   font-size: 1rem;
 }
 
-/* Etiqueta deslizante */
+/* Etiqueta emergente */
+
 .rm-label {
   position: absolute;
   left: 42px;
@@ -123,67 +127,17 @@ body {
   color: #111111;
 }
 
-/* CONTENIDO PRINCIPAL */
-
-.rm-main {
-  background: #f2f3f5;
-  padding: 16px 18px;
-  height: 100vh;
-  overflow: auto;
-}
-
-/* Tarjeta genérica (otras páginas) */
-
-.rm-card {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 18px 20px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
-}
-
-/* Tipografía base */
-
-.rm-kicker {
-  font-size: 0.82rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  color: #ffb800;
-  margin-bottom: 10px;
-}
-
-.rm-title {
-  font-size: 2rem;
-  line-height: 1.2;
-  font-weight: 800;
-  margin-bottom: 10px;
-}
-
-.rm-text {
-  font-size: 0.96rem;
-  color: #555555;
-}
-
-/* --------------------
-   PLANOS: MAIN ESPECIAL
--------------------- */
-
-.rm-main-planos {
-  background: #f2f3f5;
-  padding: 0;
-  height: 100vh;
-  overflow: hidden;
-  position: relative;
-}
-
-/* La barra de filtros se define en planos.html con .filter-bar */
-
 /* --------------------
    HEADER MÓVIL (SIDEBAR COLAPSADO)
 -------------------- */
 
 .rm-mobile-header {
   display: none; /* solo móvil */
+}
+
+.rm-mobile-header-logo img {
+  height: 28px;
+  width: auto;
 }
 
 /* Botón hamburguesa */
@@ -256,10 +210,123 @@ body {
 }
 
 /* --------------------
-   LEAFLET ajustes globales (zoom)
+   CONTENIDO GENERAL
 -------------------- */
 
-/* mover botones de zoom a abajo en todas las vistas */
+.rm-main {
+  background: #f2f3f5;
+  padding: 16px 18px;
+  height: 100vh;
+  overflow: auto;
+}
+
+/* Tarjeta genérica */
+
+.rm-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 18px 20px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* Tipografía base */
+
+.rm-kicker {
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: #ffb800;
+  margin-bottom: 10px;
+}
+
+.rm-title {
+  font-size: 2rem;
+  line-height: 1.2;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.rm-text {
+  font-size: 0.96rem;
+  color: #555555;
+}
+
+/* --------------------
+   PLANOS (MAPA + FILTROS)
+-------------------- */
+
+.rm-main-planos {
+  background: #f2f3f5;
+  padding: 0;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Contenedor fijo de filtros en la parte superior del contenido */
+.filter-bar-wrapper {
+  background: #f2f3f5;
+  padding: 4px 10px 6px 10px;
+  z-index: 1000;
+}
+
+/* Desktop: barrita flotante a la derecha del sidebar */
+.filter-bar {
+  margin-left: 90px;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 999px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+  font-size: 0.82rem;
+  align-items: center;
+}
+
+.filter-bar > div {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.filter-bar label {
+  font-weight: 600;
+}
+
+.filter-bar select {
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid #d0d0d0;
+  background: #f9f9f9;
+  font-size: 0.8rem;
+}
+
+.filter-bar select:focus {
+  outline: none;
+  border-color: #ffb800;
+  box-shadow: 0 0 0 2px rgba(255, 184, 0, 0.3);
+}
+
+/* Contenedor del mapa ocupa todo lo que queda */
+.rm-map-container {
+  flex: 1 1 auto;
+}
+
+/* El propio mapa Leaflet (id="map") debe ocupar todo el contenedor */
+#map {
+  width: 100%;
+  height: 100%;
+}
+
+/* --------------------
+   LEAFLET
+-------------------- */
+
+/* mover controles de zoom a la esquina inferior derecha */
 .leaflet-bottom.leaflet-right {
   bottom: 10px;
   right: 10px;
@@ -270,7 +337,7 @@ body {
 -------------------- */
 
 @media (max-width: 960px) {
-  /* Layout: header + contenido, sin sidebar fijo */
+  /* Layout pasa a header + contenido, sin sidebar fijo */
   .rm-layout {
     grid-template-columns: 1fr;
     grid-template-rows: auto 1fr;
@@ -278,12 +345,6 @@ body {
 
   .rm-sidebar {
     display: none;
-  }
-
-  .rm-main,
-  .rm-main-planos {
-    padding: 0;
-    height: calc(100vh - 48px); /* dejamos espacio para header */
   }
 
   .rm-mobile-header {
@@ -297,8 +358,43 @@ body {
     z-index: 1400;
   }
 
-  .rm-mobile-header-logo img {
-    height: 28px;
-    width: auto;
+  .rm-main,
+  .rm-main-planos {
+    padding: 0;
+    height: calc(100vh - 48px); /* restamos la altura del header móvil */
+  }
+
+  /* Barra de filtros: bloque completo arriba, mapa debajo sin solaparse */
+  .filter-bar-wrapper {
+    padding: 4px 6px 4px 6px;
+  }
+
+  .filter-bar {
+    margin-left: 0;
+    width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+    flex-direction: row;
+    justify-content: space-between;
+    font-size: 0.78rem;
+  }
+
+  .filter-bar > div {
+    flex: 1 1 0;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .filter-bar label {
+    margin-bottom: 2px;
+  }
+
+  .filter-bar select {
+    width: 100%;
+    font-size: 0.78rem;
+  }
+
+  .rm-map-container {
+    height: calc(100% - 70px); /* espacio fijo aproximado para filtros */
   }
 }
