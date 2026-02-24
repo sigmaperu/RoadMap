@@ -1,1 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>RoadMap | Inicio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/apple-touch-icon.png">
+  <!-- Fuentes Google (Material feel) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <!-- Estilos globales -->
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar__logo">
+        <img src="assets/img/logotipo.png" alt="RoadMap">
+      </div>
+      <nav class="sidebar__nav">
+        <a href="index.html" class="nav-item nav-item--active">
+          <span class="nav-item__icon material-icon">home</span>
+          <span class="nav-item__label">Inicio</span>
+        </a>
+        <a href="agenda.html" class="nav-item">
+          <span class="nav-item__icon material-icon">event</span>
+          <span class="nav-item__label">Agenda</span>
+        </a>
+        <a href="dashboard.html" class="nav-item">
+          <span class="nav-item__icon material-icon">dashboard</span>
+          <span class="nav-item__label">Dashboard</span>
+        </a>
+        <a href="planif.html" class="nav-item">
+          <span class="nav-item__icon material-icon">timeline</span>
+          <span class="nav-item__label">Planificación</span>
+        </a>
+        <a href="planos.html" class="nav-item">
+          <span class="nav-item__icon material-icon">map</span>
+          <span class="nav-item__label">Planos</span>
+        </a>
+        <a href="program.html" class="nav-item">
+          <span class="nav-item__icon material-icon">view_week</span>
+          <span class="nav-item__label">Programación</span>
+        </a>
+        <a href="ubicame.html" class="nav-item">
+          <span class="nav-item__icon material-icon">my_location</span>
+          <span class="nav-item__label">Ubícame</span>
+        </a>
+      </nav>
+    </aside>
 
+    <div class="main-layout">
+      <header class="topbar">
+        <div class="topbar__title">
+          <h1>Inicio</h1>
+        </div>
+        <div class="topbar__actions">
+          <!-- botones de usuario, tema, etc. -->
+          <button class="icon-button" aria-label="Notificaciones">
+            <span class="material-icon">notifications</span>
+          </button>
+          <button class="icon-button" aria-label="Perfil">
+            <span class="material-icon">account_circle</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="content">
+        <section class="page-section">
+          <h2 class="page-section__title">Bienvenido a RoadMap</h2>
+          <p class="page-section__subtitle">
+            Aquí podrás gestionar tu agenda, planificación, programación y ubicación de proyectos.
+          </p>
+
+          <div class="grid">
+            <article class="card">
+              <h3 class="card__title">Próximos hitos</h3>
+              <p class="card__text">Aquí mostraremos los próximos hitos de tus proyectos.</p>
+            </article>
+
+            <article class="card">
+              <h3 class="card__title">Resumen general</h3>
+              <p class="card__text">Un resumen de tu actividad reciente se mostrará en este panel.</p>
+            </article>
+
+            <article class="card">
+              <h3 class="card__title">Accesos rápidos</h3>
+              <p class="card__text">Accede rápidamente a Agenda, Planificación y Ubícame.</p>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
