@@ -1,1 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>RoadMap | Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar__logo">
+        <img src="assets/img/logotipo.png" alt="RoadMap">
+      </div>
+      <nav class="sidebar__nav">
+        <a href="index.html" class="nav-item">
+          <span class="nav-item__icon material-icons">home</span>
+          <span class="nav-item__label">Inicio</span>
+        </a>
+        <a href="agenda.html" class="nav-item">
+          <span class="nav-item__icon material-icons">event</span>
+          <span class="nav-item__label">Agenda</span>
+        </a>
+        <a href="dashboard.html" class="nav-item nav-item--active">
+          <span class="nav-item__icon material-icons">dashboard</span>
+          <span class="nav-item__label">Dashboard</span>
+        </a>
+        <a href="planif.html" class="nav-item">
+          <span class="nav-item__icon material-icons">timeline</span>
+          <span class="nav-item__label">Planificación</span>
+        </a>
+        <a href="planos.html" class="nav-item">
+          <span class="nav-item__icon material-icons">map</span>
+          <span class="nav-item__label">Planos</span>
+        </a>
+        <a href="program.html" class="nav-item">
+          <span class="nav-item__icon material-icons">view_week</span>
+          <span class="nav-item__label">Programación</span>
+        </a>
+        <a href="ubicame.html" class="nav-item">
+          <span class="nav-item__icon material-icons">my_location</span>
+          <span class="nav-item__label">Ubícame</span>
+        </a>
+      </nav>
+    </aside>
 
+    <div class="main-layout">
+      <header class="topbar">
+        <div class="topbar__title">
+          <h1>Dashboard</h1>
+        </div>
+        <div class="topbar__actions">
+          <button class="icon-button" aria-label="Notificaciones">
+            <span class="material-icons">notifications</span>
+          </button>
+          <button class="icon-button" aria-label="Perfil">
+            <span class="material-icons">account_circle</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="content">
+        <section class="page-section">
+          <h2 class="page-section__title">Panel de control</h2>
+          <p class="page-section__subtitle">
+            Aquí mostraremos gráficas, indicadores y KPIs de tus proyectos.
+          </p>
+
+          <div class="grid">
+            <article class="card">
+              <h3 class="card__title">Progreso de proyectos</h3>
+              <p class="card__text">Lugar para gráficos de avance por proyecto.</p>
+            </article>
+            <article class="card">
+              <h3 class="card__title">Estado de hitos</h3>
+              <p class="card__text">Resumen de hitos completados, en riesgo y retrasados.</p>
+            </article>
+            <article class="card">
+              <h3 class="card__title">Alertas</h3>
+              <p class="card__text">Lista de alertas críticas y recomendaciones.</p>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
