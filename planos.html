@@ -4,14 +4,121 @@
   <meta charset="UTF-8">
   <title>RoadMap | Planos</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/img/apple-touch-icon.png">
+
+  <!-- Roboto + Material Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+
+  <!-- Estilos -->
   <link rel="stylesheet" href="assets/css/styles.css">
+
+  <style>
+    /* Ajustes específicos para esta página */
+    .filters-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+      align-items: center;
+    }
+
+    .filters-bar label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .filters-bar select {
+      min-width: 180px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid rgba(0,0,0,0.2);
+      font-family: inherit;
+      font-size: 0.9rem;
+      background-color: #fff;
+    }
+
+    .filters-bar .filter-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    #map {
+      width: 100%;
+      height: 520px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow-elevated);
+      overflow: hidden;
+    }
+
+    .map-card {
+      background-color: var(--surface);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow-elevated);
+      padding: 16px 18px;
+    }
+
+    .map-card__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .map-card__title {
+      margin: 0;
+      font-size: 1.05rem;
+    }
+
+    .map-card__subtitle {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .btn-small {
+      border: none;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      background-color: var(--primary);
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .btn-small .material-icons {
+      font-size: 18px;
+    }
+
+    .btn-small:hover {
+      background-color: var(--primary-dark);
+    }
+
+    @media (max-width: 920px) {
+      #map {
+        height: 420px;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="app-shell">
@@ -71,29 +178,288 @@
 
       <main class="content">
         <section class="page-section">
-          <h2 class="page-section__title">Gestión de planos</h2>
+          <h2 class="page-section__title">Planos por unidad</h2>
           <p class="page-section__subtitle">
-            Sube, organiza y visualiza planos por proyecto.
+            Visualiza las unidades en el mapa filtrando por centro, placa y cliente.
           </p>
 
-          <div class="card">
-            <h3 class="card__title">Listado de planos</h3>
-            <p class="card__text">
-              Listado con filtros por zona, versión y estado.
-            </p>
-          </div>
+          <div class="map-card">
+            <div class="map-card__header">
+              <div>
+                <h3 class="map-card__title">Filtros</h3>
+                <p class="map-card__subtitle">Datos desde RoadMap.csv</p>
+              </div>
+              <button id="btnLocateMe" class="btn-small" type="button">
+                <span class="material-icons">my_location</span>
+                Mi ubicación
+              </button>
+            </div>
 
-          <div class="card" style="margin-top:16px;">
-            <h3 class="card__title">Visor</h3>
-            <p class="card__text">
-              Visor de planos con zoom, capas y anotaciones.
-            </p>
+            <div class="filters-bar">
+              <div class="filter-group">
+                <label for="filterCentro">Centro</label>
+                <select id="filterCentro">
+                  <option value="">Todos los centros</option>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <label for="filterPlaca">Placa</label>
+                <select id="filterPlaca">
+                  <option value="">Todas las placas</option>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <label for="filterCliente">Cliente</label>
+                <select id="filterCliente">
+                  <option value="">Todos los clientes</option>
+                </select>
+              </div>
+            </div>
+
+            <div id="map"></div>
           </div>
         </section>
       </main>
     </div>
   </div>
 
+  <!-- Leaflet JS -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+
+  <!-- JS global -->
   <script src="assets/js/main.js"></script>
+
+  <!-- JS específico para planos -->
+  <script>
+    // URL del CSV raw
+    const CSV_URL = "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
+
+    // Índices indicados:
+    // 0: cabecera
+    // 1: Centro
+    // 2: Placa / unidad
+    // 4: Cliente
+    // 5: texto extra para cliente (si no es 0, error o vacío)
+    // 16: Latitud
+    // 17: Longitud
+
+    let allRows = [];
+    let leafletMap = null;
+    let markersLayer = null;
+
+    const filterCentro = document.getElementById("filterCentro");
+    const filterPlaca = document.getElementById("filterPlaca");
+    const filterCliente = document.getElementById("filterCliente");
+    const btnLocateMe = document.getElementById("btnLocateMe");
+
+    // Parse sencillo de CSV (asume que no hay comas dentro de campos)
+    function parseCSV(text) {
+      const lines = text.split(/\\r?\
+/).filter(l => l.trim() !== "");
+      const header = lines.shift().split(",");
+      const rows = lines.map(line => line.split(","));
+      return { header, rows };
+    }
+
+    function unique(values) {
+      return Array.from(new Set(values.filter(v => v !== "" && v != null)));
+    }
+
+    function loadFilters() {
+      const centros = unique(allRows.map(r => r[1]));
+      const placas = unique(allRows.map(r => r[2]));
+      const clientes = unique(allRows.map(r => r[4]));
+
+      // Centro
+      centros.sort().forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c;
+        opt.textContent = c;
+        filterCentro.appendChild(opt);
+      });
+
+      // Placa
+      placas.sort().forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p;
+        opt.textContent = p;
+        filterPlaca.appendChild(opt);
+      });
+
+      // Cliente (con sufijo de índice 5 si aplica)
+      clientes.sort().forEach(cli => {
+        const rowsCli = allRows.filter(r => r[4] === cli);
+        const extra = rowsCli[0] ? (rowsCli[0][5] || "") : "";
+        let label = cli;
+        if (extra && extra !== "0" && extra.toLowerCase() !== "error") {
+          label = cli + " - " + extra;
+        }
+        const opt = document.createElement("option");
+        opt.value = cli;
+        opt.textContent = label;
+        filterCliente.appendChild(opt);
+      });
+    }
+
+    function applyFilters() {
+      const centro = filterCentro.value;
+      const placa = filterPlaca.value;
+      const cliente = filterCliente.value;
+
+      let filtered = allRows.slice();
+
+      if (centro) {
+        filtered = filtered.filter(r => r[1] === centro);
+      }
+      if (placa) {
+        filtered = filtered.filter(r => r[2] === placa);
+      }
+      if (cliente) {
+        filtered = filtered.filter(r => r[4] === cliente);
+      }
+
+      // Tomamos combinaciones únicas por placa (índice 2) con lat/lng válidos
+      const seenPlacas = new Set();
+      const points = [];
+
+      filtered.forEach(r => {
+        const placaVal = r[2];
+        if (!placaVal || seenPlacas.has(placaVal)) return;
+
+        const lat = parseFloat(r[16]);
+        const lng = parseFloat(r[17]);
+        if (Number.isNaN(lat) || Number.isNaN(lng)) return;
+
+        seenPlacas.add(placaVal);
+
+        const centroVal = r[1];
+        const clienteVal = r[4];
+        const extraVal = r[5];
+
+        let clienteLabel = clienteVal;
+        if (extraVal && extraVal !== "0" && extraVal.toLowerCase() !== "error") {
+          clienteLabel = clienteVal + " - " + extraVal;
+        }
+
+        points.push({
+          centro: centroVal,
+          placa: placaVal,
+          cliente: clienteLabel,
+          lat,
+          lng
+        });
+      });
+
+      renderMarkers(points);
+    }
+
+    function initMap() {
+      if (leafletMap) return;
+
+      // Centro inicial aproximado al Perú
+      leafletMap = L.map("map").setView([-9.19, -75.02], 5);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "&copy; OpenStreetMap contributors"
+      }).addTo(leafletMap);
+
+      markersLayer = L.layerGroup().addTo(leafletMap);
+    }
+
+    function renderMarkers(points) {
+      if (!leafletMap || !markersLayer) return;
+
+      markersLayer.clearLayers();
+
+      const bounds = [];
+
+      points.forEach(p => {
+        const marker = L.circleMarker([p.lat, p.lng], {
+          radius: 6,
+          color: "#4A148C",
+          fillColor: "#7B1FA2",
+          fillOpacity: 0.9
+        }).bindPopup(
+          "<strong>Placa:</strong> " + p.placa +
+          "<br><strong>Centro:</strong> " + p.centro +
+          "<br><strong>Cliente:</strong> " + p.cliente
+        );
+        marker.addTo(markersLayer);
+        bounds.push([p.lat, p.lng]);
+      });
+
+      if (bounds.length > 0) {
+        leafletMap.fitBounds(bounds, { padding: [30, 30] });
+      } else {
+        leafletMap.setView([-9.19, -75.02], 5);
+      }
+    }
+
+    function locateUser() {
+      if (!leafletMap || !navigator.geolocation) return;
+
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          const { latitude, longitude } = position.coords;
+
+          const userMarker = L.circleMarker([latitude, longitude], {
+            radius: 7,
+            color: "#000000",
+            fillColor: "#000000",
+            fillOpacity: 1
+          }).bindPopup("Mi ubicación");
+          userMarker.addTo(leafletMap);
+
+          leafletMap.setView([latitude, longitude], 14);
+        },
+        error => {
+          console.error("Error al obtener ubicación:", error);
+          alert("No se pudo obtener tu ubicación.");
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000
+        }
+      );
+    }
+
+    async function initPlanosPage() {
+      initMap();
+
+      try {
+        const resp = await fetch(CSV_URL);
+        const text = await resp.text();
+        const { rows } = parseCSV(text);
+        allRows = rows;
+
+        loadFilters();
+        applyFilters();
+      } catch (err) {
+        console.error("Error cargando CSV:", err);
+        alert("No se pudo cargar RoadMap.csv");
+      }
+
+      filterCentro.addEventListener("change", () => {
+        applyFilters();
+      });
+      filterPlaca.addEventListener("change", () => {
+        applyFilters();
+      });
+      filterCliente.addEventListener("change", () => {
+        applyFilters();
+      });
+
+      btnLocateMe.addEventListener("click", locateUser);
+    }
+
+    document.addEventListener("DOMContentLoaded", initPlanosPage);
+  </script>
 </body>
 </html>
