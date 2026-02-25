@@ -41,7 +41,7 @@
       overflow: hidden;
     }
 
-    /* Panel flotante de filtros ocupando casi todo el ancho */
+    /* Panel flotante de filtros a todo lo ancho */
     .filters-floating {
       position: absolute;
       top: 12px;
@@ -58,16 +58,12 @@
       gap: 8px;
     }
 
-    .filters-floating__title {
-      margin: 0 0 4px 0;
-      font-size: 0.95rem;
-    }
-
     .filters-floating__row {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
       width: 100%;
+      align-items: center;
     }
 
     .filter-group {
@@ -93,15 +89,6 @@
       width: 100%;
     }
 
-    .filters-floating__actions {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 4px;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
     .btn-small {
       border: none;
       border-radius: 999px;
@@ -124,14 +111,19 @@
       background-color: var(--primary-dark);
     }
 
-    .filters-floating__hint {
-      font-size: 0.75rem;
-      color: var(--text-muted);
+    /* Hacemos que el botón "Mi ubicación" comparta fila con filtros */
+    .filters-floating__row--top {
+      justify-content: space-between;
     }
 
     @media (max-width: 920px) {
       #map {
-        height: 650px; /* mapa más grande en móvil */
+        height: 700px; /* mapa más grande en móvil */
+      }
+      .filters-floating {
+        top: 10px;
+        left: 10px;
+        right: 10px;
       }
     }
   </style>
@@ -196,9 +188,7 @@
         <section class="page-section">
           <div class="map-wrapper">
             <div class="filters-floating">
-              <h3 class="filters-floating__title">Filtros</h3>
-
-              <div class="filters-floating__row">
+              <div class="filters-floating__row filters-floating__row--top">
                 <div class="filter-group">
                   <label for="filterCentro">Centro</label>
                   <select id="filterCentro">
@@ -219,10 +209,7 @@
                     <option value="">Todos</option>
                   </select>
                 </div>
-              </div>
 
-              <div class="filters-floating__actions">
-                <span class="filters-floating__hint">Fuente: RoadMap.csv</span>
                 <button id="btnLocateMe" class="btn-small" type="button">
                   <span class="material-icons">my_location</span>
                   Mi ubicación
@@ -266,7 +253,6 @@
     const filterCliente = document.getElementById("filterCliente");
     const btnLocateMe = document.getElementById("btnLocateMe");
 
-    // Icono estilo Google Maps (pin sencillo)[web:42][web:52]
     const pinIcon = L.icon({
       iconUrl: "https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi2_hdpi.png",
       iconSize: [25, 41],
@@ -274,7 +260,7 @@
       popupAnchor: [0, -30]
     });
 
-    // Parser CSV robusto[web:62]
+    // CSV parser robusto[web:62]
     function parseCSV(text) {
       const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
       const header = lines.shift().split(",");
@@ -309,27 +295,65 @@
       return Array.from(new Set(values.filter(v => v !== "" && v != null)));
     }
 
-    function loadFilters() {
-      const centros = unique(allRows.map(r => r[1]));
-      const placas = unique(allRows.map(r => r[2]));
-      const clientes = unique(allRows.map(r => r[4]));
+    // Opciones completas para dependencias
+    let allCentros = [];
+    let allPlacas = [];
+    let allClientes = [];
 
-      centros.sort().forEach(c => {
+    function populateBaseOptions() {
+      allCentros = unique(allRows.map(r => r[1])).sort();
+      allPlacas = unique(allRows.map(r => r[2])).sort();
+      allClientes = unique(allRows.map(r => r[4])).sort();
+    }
+
+    function resetSelect(selectEl, labelTodos) {
+      selectEl.innerHTML = "";
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "Todos";
+      selectEl.appendChild(opt);
+    }
+
+    function refreshCentroOptions() {
+      resetSelect(filterCentro, "Todos");
+      allCentros.forEach(c => {
         const opt = document.createElement("option");
         opt.value = c;
         opt.textContent = c;
         filterCentro.appendChild(opt);
       });
+    }
 
-      placas.sort().forEach(p => {
+    function refreshPlacaOptions(currentCentro) {
+      resetSelect(filterPlaca, "Todos");
+
+      let subset = allRows;
+      if (currentCentro) {
+        subset = subset.filter(r => r[1] === currentCentro);
+      }
+      const placas = unique(subset.map(r => r[2])).sort();
+      placas.forEach(p => {
         const opt = document.createElement("option");
         opt.value = p;
         opt.textContent = p;
         filterPlaca.appendChild(opt);
       });
+    }
 
-      clientes.sort().forEach(cli => {
-        const rowsCli = allRows.filter(r => r[4] === cli);
+    function refreshClienteOptions(currentCentro, currentPlaca) {
+      resetSelect(filterCliente, "Todos");
+
+      let subset = allRows;
+      if (currentCentro) {
+        subset = subset.filter(r => r[1] === currentCentro);
+      }
+      if (currentPlaca) {
+        subset = subset.filter(r => r[2] === currentPlaca);
+      }
+      const clientes = unique(subset.map(r => r[4])).sort();
+
+      clientes.forEach(cli => {
+        const rowsCli = subset.filter(r => r[4] === cli);
         const extra = rowsCli[0] ? (rowsCli[0][5] || "") : "";
         let label = cli;
         if (extra && extra !== "0" && extra.toLowerCase() !== "error") {
@@ -340,6 +364,13 @@
         opt.textContent = label;
         filterCliente.appendChild(opt);
       });
+    }
+
+    function loadFiltersInitial() {
+      populateBaseOptions();
+      refreshCentroOptions();
+      refreshPlacaOptions("");
+      refreshClienteOptions("", "");
     }
 
     function applyFilters() {
@@ -359,7 +390,7 @@
         filtered = filtered.filter(r => r[4] === cliente);
       }
 
-      // Agrupar por cliente (valor único col 4) y tomar una lat/lon válida por cliente
+      // Agrupar por cliente
       const clientMap = new Map();
 
       filtered.forEach(r => {
@@ -397,12 +428,17 @@
     function initMap() {
       if (leafletMap) return;
 
-      leafletMap = L.map("map").setView([-9.19, -75.02], 5);
+      leafletMap = L.map("map", {
+        zoomControl: false  // quitamos control por defecto
+      }).setView([-9.19, -75.02], 5);
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
         attribution: "&copy; OpenStreetMap contributors"
       }).addTo(leafletMap);
+
+      // Agregar zoom bottomright[web:73][web:74]
+      L.control.zoom({ position: "bottomright" }).addTo(leafletMap);
 
       markersLayer = L.layerGroup().addTo(leafletMap);
     }
@@ -441,7 +477,7 @@
           const { latitude, longitude } = position.coords;
 
           const userMarker = L.circleMarker([latitude, longitude], {
-            radius: 4,               // más pequeño
+            radius: 3,  // más pequeño
             color: "#000000",
             fillColor: "#000000",
             fillOpacity: 1
@@ -470,15 +506,30 @@
         const { rows } = parseCSV(text);
         allRows = rows;
 
-        loadFilters();
+        loadFiltersInitial();
         applyFilters();
       } catch (err) {
         console.error("Error cargando CSV:", err);
         alert("No se pudo cargar RoadMap.csv");
       }
 
-      filterCentro.addEventListener("change", applyFilters);
-      filterPlaca.addEventListener("change", applyFilters);
+      // Dependencias entre selects
+      filterCentro.addEventListener("change", () => {
+        const centroVal = filterCentro.value;
+        // al cambiar centro, recalculamos Placa y Cliente
+        refreshPlacaOptions(centroVal);
+        refreshClienteOptions(centroVal, filterPlaca.value || "");
+        applyFilters();
+      });
+
+      filterPlaca.addEventListener("change", () => {
+        const centroVal = filterCentro.value;
+        const placaVal = filterPlaca.value;
+        // al cambiar placa, recalculamos Cliente
+        refreshClienteOptions(centroVal, placaVal);
+        applyFilters();
+      });
+
       filterCliente.addEventListener("change", applyFilters);
 
       btnLocateMe.addEventListener("click", locateUser);
