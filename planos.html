@@ -28,7 +28,6 @@
   <link rel="stylesheet" href="assets/css/styles.css">
 
   <style>
-    /* Contenedor principal del mapa */
     .map-wrapper {
       position: relative;
       width: 100%;
@@ -36,17 +35,18 @@
 
     #map {
       width: 100%;
-      height: 520px;
+      height: 560px;
       border-radius: var(--border-radius);
       box-shadow: var(--shadow-elevated);
       overflow: hidden;
     }
 
-    /* Panel flotante de filtros sobre el mapa */
+    /* Panel flotante de filtros ocupando casi todo el ancho */
     .filters-floating {
       position: absolute;
-      top: 16px;
-      left: 16px;
+      top: 12px;
+      left: 12px;
+      right: 12px;
       z-index: 1000;
       background: rgba(255, 255, 255, 0.96);
       backdrop-filter: blur(4px);
@@ -56,7 +56,6 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      max-width: 320px;
     }
 
     .filters-floating__title {
@@ -68,13 +67,14 @@
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
+      width: 100%;
     }
 
     .filter-group {
       display: flex;
       flex-direction: column;
-      min-width: 140px;
       flex: 1;
+      min-width: 120px;
     }
 
     .filter-group label {
@@ -90,6 +90,7 @@
       font-family: inherit;
       font-size: 0.85rem;
       background-color: #fff;
+      width: 100%;
     }
 
     .filters-floating__actions {
@@ -98,6 +99,7 @@
       align-items: center;
       margin-top: 4px;
       gap: 8px;
+      flex-wrap: wrap;
     }
 
     .btn-small {
@@ -129,13 +131,7 @@
 
     @media (max-width: 920px) {
       #map {
-        height: 420px;
-      }
-      .filters-floating {
-        top: 10px;
-        left: 10px;
-        right: 10px;
-        max-width: none;
+        height: 650px; /* mapa más grande en móvil */
       }
     }
   </style>
@@ -199,7 +195,6 @@
       <main class="content">
         <section class="page-section">
           <div class="map-wrapper">
-            <!-- Panel flotante de filtros -->
             <div class="filters-floating">
               <h3 class="filters-floating__title">Filtros</h3>
 
@@ -217,9 +212,7 @@
                     <option value="">Todos</option>
                   </select>
                 </div>
-              </div>
 
-              <div class="filters-floating__row">
                 <div class="filter-group">
                   <label for="filterCliente">Cliente</label>
                   <select id="filterCliente">
@@ -237,7 +230,6 @@
               </div>
             </div>
 
-            <!-- Mapa -->
             <div id="map"></div>
           </div>
         </section>
@@ -252,10 +244,8 @@
     crossorigin=""
   ></script>
 
-  <!-- JS global -->
   <script src="assets/js/main.js"></script>
 
-  <!-- JS específico para planos -->
   <script>
     const CSV_URL = "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
 
@@ -263,7 +253,7 @@
     // 1: Centro
     // 2: Placa / unidad
     // 4: Cliente
-    // 5: detalle cliente (para mostrar junto al cliente si aplica)
+    // 5: detalle cliente
     // 16: Latitud
     // 17: Longitud
 
@@ -276,7 +266,15 @@
     const filterCliente = document.getElementById("filterCliente");
     const btnLocateMe = document.getElementById("btnLocateMe");
 
-    // Parser CSV más robusto (maneja comillas y comas dentro de campos)[web:62]
+    // Icono estilo Google Maps (pin sencillo)[web:42][web:52]
+    const pinIcon = L.icon({
+      iconUrl: "https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi2_hdpi.png",
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [0, -30]
+    });
+
+    // Parser CSV robusto[web:62]
     function parseCSV(text) {
       const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
       const header = lines.shift().split(",");
@@ -287,8 +285,7 @@
 
         for (let i = 0; i < line.length; i++) {
           const char = line[i];
-          if (char === '"' ) {
-            // Toggle comillas o escapar comillas dobles
+          if (char === '"') {
             if (inQuotes && line[i + 1] === '"') {
               current += '"';
               i++;
@@ -362,37 +359,38 @@
         filtered = filtered.filter(r => r[4] === cliente);
       }
 
-      const seenPlacas = new Set();
-      const points = [];
+      // Agrupar por cliente (valor único col 4) y tomar una lat/lon válida por cliente
+      const clientMap = new Map();
 
       filtered.forEach(r => {
-        const placaVal = r[2];
-        if (!placaVal || seenPlacas.has(placaVal)) return;
+        const clientKey = r[4];
+        if (!clientKey) return;
 
         const lat = parseFloat((r[16] || "").replace(",", "."));
         const lng = parseFloat((r[17] || "").replace(",", "."));
         if (Number.isNaN(lat) || Number.isNaN(lng)) return;
 
-        seenPlacas.add(placaVal);
+        if (!clientMap.has(clientKey)) {
+          const centroVal = r[1];
+          const placaVal = r[2];
+          const extraVal = r[5];
 
-        const centroVal = r[1];
-        const clienteVal = r[4];
-        const extraVal = r[5];
+          let clienteLabel = clientKey;
+          if (extraVal && extraVal !== "0" && extraVal.toLowerCase() !== "error") {
+            clienteLabel = clientKey + " - " + extraVal;
+          }
 
-        let clienteLabel = clienteVal;
-        if (extraVal && extraVal !== "0" && extraVal.toLowerCase() !== "error") {
-          clienteLabel = clienteVal + " - " + extraVal;
+          clientMap.set(clientKey, {
+            centro: centroVal,
+            placa: placaVal,
+            cliente: clienteLabel,
+            lat,
+            lng
+          });
         }
-
-        points.push({
-          centro: centroVal,
-          placa: placaVal,
-          cliente: clienteLabel,
-          lat,
-          lng
-        });
       });
 
+      const points = Array.from(clientMap.values());
       renderMarkers(points);
     }
 
@@ -417,15 +415,12 @@
       const bounds = [];
 
       points.forEach(p => {
-        const marker = L.circleMarker([p.lat, p.lng], {
-          radius: 6,
-          color: "#4A148C",
-          fillColor: "#7B1FA2",
-          fillOpacity: 0.9
+        const marker = L.marker([p.lat, p.lng], {
+          icon: pinIcon
         }).bindPopup(
-          "<strong>Placa:</strong> " + p.placa +
+          "<strong>Cliente:</strong> " + p.cliente +
           "<br><strong>Centro:</strong> " + p.centro +
-          "<br><strong>Cliente:</strong> " + p.cliente
+          "<br><strong>Placa (ejemplo):</strong> " + (p.placa || "")
         );
         marker.addTo(markersLayer);
         bounds.push([p.lat, p.lng]);
@@ -446,7 +441,7 @@
           const { latitude, longitude } = position.coords;
 
           const userMarker = L.circleMarker([latitude, longitude], {
-            radius: 7,
+            radius: 4,               // más pequeño
             color: "#000000",
             fillColor: "#000000",
             fillOpacity: 1
