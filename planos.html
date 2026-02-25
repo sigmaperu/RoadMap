@@ -24,39 +24,14 @@
     crossorigin=""
   />
 
-  <!-- Estilos -->
+  <!-- Estilos globales -->
   <link rel="stylesheet" href="assets/css/styles.css">
 
   <style>
-    /* Ajustes específicos para esta página */
-    .filters-bar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 16px;
-      align-items: center;
-    }
-
-    .filters-bar label {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      display: block;
-      margin-bottom: 4px;
-    }
-
-    .filters-bar select {
-      min-width: 180px;
-      padding: 6px 8px;
-      border-radius: 8px;
-      border: 1px solid rgba(0,0,0,0.2);
-      font-family: inherit;
-      font-size: 0.9rem;
-      background-color: #fff;
-    }
-
-    .filters-bar .filter-group {
-      display: flex;
-      flex-direction: column;
+    /* Contenedor principal del mapa */
+    .map-wrapper {
+      position: relative;
+      width: 100%;
     }
 
     #map {
@@ -67,42 +42,76 @@
       overflow: hidden;
     }
 
-    .map-card {
-      background-color: var(--surface);
-      border-radius: var(--border-radius);
-      box-shadow: var(--shadow-elevated);
-      padding: 16px 18px;
+    /* Panel flotante de filtros sobre el mapa */
+    .filters-floating {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(4px);
+      border-radius: 12px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-width: 320px;
     }
 
-    .map-card__header {
+    .filters-floating__title {
+      margin: 0 0 4px 0;
+      font-size: 0.95rem;
+    }
+
+    .filters-floating__row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      min-width: 140px;
+      flex: 1;
+    }
+
+    .filter-group label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+
+    .filter-group select {
+      padding: 4px 6px;
+      border-radius: 8px;
+      border: 1px solid rgba(0,0,0,0.2);
+      font-family: inherit;
+      font-size: 0.85rem;
+      background-color: #fff;
+    }
+
+    .filters-floating__actions {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
-    }
-
-    .map-card__title {
-      margin: 0;
-      font-size: 1.05rem;
-    }
-
-    .map-card__subtitle {
-      margin: 0;
-      color: var(--text-muted);
-      font-size: 0.9rem;
+      margin-top: 4px;
+      gap: 8px;
     }
 
     .btn-small {
       border: none;
       border-radius: 999px;
-      padding: 6px 12px;
-      font-size: 0.85rem;
+      padding: 6px 10px;
+      font-size: 0.8rem;
       cursor: pointer;
       background-color: var(--primary);
       color: #fff;
       display: inline-flex;
       align-items: center;
       gap: 4px;
+      white-space: nowrap;
     }
 
     .btn-small .material-icons {
@@ -113,9 +122,20 @@
       background-color: var(--primary-dark);
     }
 
+    .filters-floating__hint {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
     @media (max-width: 920px) {
       #map {
         height: 420px;
+      }
+      .filters-floating {
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        max-width: none;
       }
     }
   </style>
@@ -178,46 +198,46 @@
 
       <main class="content">
         <section class="page-section">
-          <h2 class="page-section__title">Planos por unidad</h2>
-          <p class="page-section__subtitle">
-            Visualiza las unidades en el mapa filtrando por centro, placa y cliente.
-          </p>
+          <div class="map-wrapper">
+            <!-- Panel flotante de filtros -->
+            <div class="filters-floating">
+              <h3 class="filters-floating__title">Filtros</h3>
 
-          <div class="map-card">
-            <div class="map-card__header">
-              <div>
-                <h3 class="map-card__title">Filtros</h3>
-                <p class="map-card__subtitle">Datos desde RoadMap.csv</p>
+              <div class="filters-floating__row">
+                <div class="filter-group">
+                  <label for="filterCentro">Centro</label>
+                  <select id="filterCentro">
+                    <option value="">Todos</option>
+                  </select>
+                </div>
+
+                <div class="filter-group">
+                  <label for="filterPlaca">Placa</label>
+                  <select id="filterPlaca">
+                    <option value="">Todos</option>
+                  </select>
+                </div>
               </div>
-              <button id="btnLocateMe" class="btn-small" type="button">
-                <span class="material-icons">my_location</span>
-                Mi ubicación
-              </button>
+
+              <div class="filters-floating__row">
+                <div class="filter-group">
+                  <label for="filterCliente">Cliente</label>
+                  <select id="filterCliente">
+                    <option value="">Todos</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="filters-floating__actions">
+                <span class="filters-floating__hint">Fuente: RoadMap.csv</span>
+                <button id="btnLocateMe" class="btn-small" type="button">
+                  <span class="material-icons">my_location</span>
+                  Mi ubicación
+                </button>
+              </div>
             </div>
 
-            <div class="filters-bar">
-              <div class="filter-group">
-                <label for="filterCentro">Centro</label>
-                <select id="filterCentro">
-                  <option value="">Todos los centros</option>
-                </select>
-              </div>
-
-              <div class="filter-group">
-                <label for="filterPlaca">Placa</label>
-                <select id="filterPlaca">
-                  <option value="">Todas las placas</option>
-                </select>
-              </div>
-
-              <div class="filter-group">
-                <label for="filterCliente">Cliente</label>
-                <select id="filterCliente">
-                  <option value="">Todos los clientes</option>
-                </select>
-              </div>
-            </div>
-
+            <!-- Mapa -->
             <div id="map"></div>
           </div>
         </section>
@@ -237,15 +257,13 @@
 
   <!-- JS específico para planos -->
   <script>
-    // URL del CSV raw
     const CSV_URL = "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
 
-    // Índices indicados:
-    // 0: cabecera
+    // Índices:
     // 1: Centro
     // 2: Placa / unidad
     // 4: Cliente
-    // 5: texto extra para cliente (si no es 0, error o vacío)
+    // 5: detalle cliente (para mostrar junto al cliente si aplica)
     // 16: Latitud
     // 17: Longitud
 
@@ -258,11 +276,36 @@
     const filterCliente = document.getElementById("filterCliente");
     const btnLocateMe = document.getElementById("btnLocateMe");
 
-    // Parse sencillo de CSV (asume que no hay comas dentro de campos)
+    // Parser CSV más robusto (maneja comillas y comas dentro de campos)[web:62]
     function parseCSV(text) {
-      const lines = text.split(/\\r?\n/).filter(l => l.trim() !== "");
+      const lines = text.split(/\\r?\
+/).filter(l => l.trim() !== "");
       const header = lines.shift().split(",");
-      const rows = lines.map(line => line.split(","));
+      const rows = lines.map(line => {
+        const result = [];
+        let current = "";
+        let inQuotes = false;
+
+        for (let i = 0; i < line.length; i++) {
+          const char = line[i];
+          if (char === '"' ) {
+            // Toggle comillas o escapar comillas dobles
+            if (inQuotes && line[i + 1] === '"') {
+              current += '"';
+              i++;
+            } else {
+              inQuotes = !inQuotes;
+            }
+          } else if (char === "," && !inQuotes) {
+            result.push(current);
+            current = "";
+          } else {
+            current += char;
+          }
+        }
+        result.push(current);
+        return result;
+      });
       return { header, rows };
     }
 
@@ -275,7 +318,6 @@
       const placas = unique(allRows.map(r => r[2]));
       const clientes = unique(allRows.map(r => r[4]));
 
-      // Centro
       centros.sort().forEach(c => {
         const opt = document.createElement("option");
         opt.value = c;
@@ -283,7 +325,6 @@
         filterCentro.appendChild(opt);
       });
 
-      // Placa
       placas.sort().forEach(p => {
         const opt = document.createElement("option");
         opt.value = p;
@@ -291,7 +332,6 @@
         filterPlaca.appendChild(opt);
       });
 
-      // Cliente (con sufijo de índice 5 si aplica)
       clientes.sort().forEach(cli => {
         const rowsCli = allRows.filter(r => r[4] === cli);
         const extra = rowsCli[0] ? (rowsCli[0][5] || "") : "";
@@ -323,7 +363,6 @@
         filtered = filtered.filter(r => r[4] === cliente);
       }
 
-      // Tomamos combinaciones únicas por placa (índice 2) con lat/lng válidos
       const seenPlacas = new Set();
       const points = [];
 
@@ -331,8 +370,8 @@
         const placaVal = r[2];
         if (!placaVal || seenPlacas.has(placaVal)) return;
 
-        const lat = parseFloat(r[16]);
-        const lng = parseFloat(r[17]);
+        const lat = parseFloat((r[16] || "").replace(",", "."));
+        const lng = parseFloat((r[17] || "").replace(",", "."));
         if (Number.isNaN(lat) || Number.isNaN(lng)) return;
 
         seenPlacas.add(placaVal);
@@ -361,7 +400,6 @@
     function initMap() {
       if (leafletMap) return;
 
-      // Centro inicial aproximado al Perú
       leafletMap = L.map("map").setView([-9.19, -75.02], 5);
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -445,15 +483,9 @@
         alert("No se pudo cargar RoadMap.csv");
       }
 
-      filterCentro.addEventListener("change", () => {
-        applyFilters();
-      });
-      filterPlaca.addEventListener("change", () => {
-        applyFilters();
-      });
-      filterCliente.addEventListener("change", () => {
-        applyFilters();
-      });
+      filterCentro.addEventListener("change", applyFilters);
+      filterPlaca.addEventListener("change", applyFilters);
+      filterCliente.addEventListener("change", applyFilters);
 
       btnLocateMe.addEventListener("click", locateUser);
     }
