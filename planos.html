@@ -41,7 +41,7 @@
       overflow: hidden;
     }
 
-    /* Panel flotante de filtros a todo lo ancho */
+    /* Panel flotante de filtros */
     .filters-floating {
       position: absolute;
       top: 12px;
@@ -56,6 +56,13 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    .filters-floating--collapsed {
+      transform: translateY(-120%);
+      opacity: 0;
+      pointer-events: none;
     }
 
     .filters-floating__row {
@@ -111,14 +118,17 @@
       background-color: var(--primary-dark);
     }
 
-    /* Hacemos que el botón "Mi ubicación" comparta fila con filtros */
-    .filters-floating__row--top {
-      justify-content: space-between;
+    /* Botón para mostrar/ocultar filtros (siempre visible) */
+    .filters-toggle-btn {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      z-index: 1100;
     }
 
     @media (max-width: 920px) {
       #map {
-        height: 700px; /* mapa más grande en móvil */
+        height: 720px;
       }
       .filters-floating {
         top: 10px;
@@ -187,8 +197,15 @@
       <main class="content">
         <section class="page-section">
           <div class="map-wrapper">
-            <div class="filters-floating">
-              <div class="filters-floating__row filters-floating__row--top">
+            <!-- Botón de mostrar/ocultar filtros -->
+            <button id="btnToggleFilters" class="btn-small filters-toggle-btn" type="button">
+              <span class="material-icons">filter_list</span>
+              Filtros
+            </button>
+
+            <!-- Panel flotante de filtros -->
+            <div id="filtersPanel" class="filters-floating">
+              <div class="filters-floating__row">
                 <div class="filter-group">
                   <label for="filterCentro">Centro</label>
                   <select id="filterCentro">
@@ -209,11 +226,6 @@
                     <option value="">Todos</option>
                   </select>
                 </div>
-
-                <button id="btnLocateMe" class="btn-small" type="button">
-                  <span class="material-icons">my_location</span>
-                  Mi ubicación
-                </button>
               </div>
             </div>
 
@@ -241,8 +253,14 @@
     // 2: Placa / unidad
     // 4: Cliente
     // 5: detalle cliente
+    // 6: Ruta (nombre)
+    // 10: Peso
+    // 14: algo de dirección (ej. distrito)
+    // 15: dirección principal
     // 16: Latitud
     // 17: Longitud
+    // 18: VH
+    // 19: algo añadido a ruta
 
     let allRows = [];
     let leafletMap = null;
@@ -251,18 +269,30 @@
     const filterCentro = document.getElementById("filterCentro");
     const filterPlaca = document.getElementById("filterPlaca");
     const filterCliente = document.getElementById("filterCliente");
-    const btnLocateMe = document.getElementById("btnLocateMe");
+    const btnToggleFilters = document.getElementById("btnToggleFilters");
+    const filtersPanel = document.getElementById("filtersPanel");
 
-    const pinIcon = L.icon({
+    const pinGray = L.icon({
       iconUrl: "https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi2_hdpi.png",
       iconSize: [25, 41],
       iconAnchor: [12, 41],
       popupAnchor: [0, -30]
     });
 
+    // Marcador morado simple usando divIcon[web:90]
+    const pinPurple = L.divIcon({
+      className: "custom-purple-marker",
+      html: '<div style="background-color:#7B1FA2;width:22px;height:22px;border-radius:50%;border:2px solid #4A148C;"></div>',
+      iconSize: [22, 22],
+      iconAnchor: [11, 11],
+      popupAnchor: [0, -12]
+    });
+
     // CSV parser robusto[web:62]
     function parseCSV(text) {
-      const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
+      const lines = text.split(/
+?
+/).filter(l => l.trim() !== "");
       const header = lines.shift().split(",");
       const rows = lines.map(line => {
         const result = [];
@@ -295,7 +325,6 @@
       return Array.from(new Set(values.filter(v => v !== "" && v != null)));
     }
 
-    // Opciones completas para dependencias
     let allCentros = [];
     let allPlacas = [];
     let allClientes = [];
@@ -306,7 +335,7 @@
       allClientes = unique(allRows.map(r => r[4])).sort();
     }
 
-    function resetSelect(selectEl, labelTodos) {
+    function resetSelect(selectEl) {
       selectEl.innerHTML = "";
       const opt = document.createElement("option");
       opt.value = "";
@@ -315,7 +344,7 @@
     }
 
     function refreshCentroOptions() {
-      resetSelect(filterCentro, "Todos");
+      resetSelect(filterCentro);
       allCentros.forEach(c => {
         const opt = document.createElement("option");
         opt.value = c;
@@ -325,7 +354,7 @@
     }
 
     function refreshPlacaOptions(currentCentro) {
-      resetSelect(filterPlaca, "Todos");
+      resetSelect(filterPlaca);
 
       let subset = allRows;
       if (currentCentro) {
@@ -341,7 +370,7 @@
     }
 
     function refreshClienteOptions(currentCentro, currentPlaca) {
-      resetSelect(filterCliente, "Todos");
+      resetSelect(filterCliente);
 
       let subset = allRows;
       if (currentCentro) {
@@ -390,7 +419,7 @@
         filtered = filtered.filter(r => r[4] === cliente);
       }
 
-      // Agrupar por cliente
+      // Agrupar por cliente y sumar pesos (col. 10)
       const clientMap = new Map();
 
       filtered.forEach(r => {
@@ -401,23 +430,50 @@
         const lng = parseFloat((r[17] || "").replace(",", "."));
         if (Number.isNaN(lat) || Number.isNaN(lng)) return;
 
-        if (!clientMap.has(clientKey)) {
-          const centroVal = r[1];
-          const placaVal = r[2];
-          const extraVal = r[5];
+        const centroVal = r[1];
+        const placaVal = r[2];
+        const extraVal = r[5];
+        const rutaNombre = r[6];
+        const dir15 = r[15] || "";
+        const dir14 = r[14] || "";
+        const vh = r[18] || "";
+        const rutaExtra = r[19] || "";
+        const peso = parseFloat((r[10] || "0").replace(",", "."));
 
+        const existing = clientMap.get(clientKey);
+
+        if (!existing) {
           let clienteLabel = clientKey;
           if (extraVal && extraVal !== "0" && extraVal.toLowerCase() !== "error") {
             clienteLabel = clientKey + " - " + extraVal;
           }
 
+          // Ruta texto
+          let rutaTexto = rutaNombre || "";
+          if (rutaExtra && rutaExtra !== "0" && rutaExtra.toLowerCase() !== "error") {
+            rutaTexto = rutaTexto ? (rutaTexto + " - " + rutaExtra) : rutaExtra;
+          }
+
+          // Dirección texto
+          let direccionTexto = dir15;
+          if (dir14 && dir14 !== "0" && dir14.toLowerCase() !== "error") {
+            direccionTexto = direccionTexto ? (direccionTexto + " - " + dir14) : dir14;
+          }
+
           clientMap.set(clientKey, {
             centro: centroVal,
-            placa: placaVal,
+            clienteKey: clientKey,
             cliente: clienteLabel,
             lat,
-            lng
+            lng,
+            direccion: direccionTexto,
+            ruta: rutaTexto,
+            vh,
+            pesoTotal: isNaN(peso) ? 0 : peso
           });
+        } else {
+          const nuevoPeso = isNaN(peso) ? 0 : peso;
+          existing.pesoTotal += nuevoPeso;
         }
       });
 
@@ -429,7 +485,7 @@
       if (leafletMap) return;
 
       leafletMap = L.map("map", {
-        zoomControl: false  // quitamos control por defecto
+        zoomControl: false
       }).setView([-9.19, -75.02], 5);
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -437,7 +493,7 @@
         attribution: "&copy; OpenStreetMap contributors"
       }).addTo(leafletMap);
 
-      // Agregar zoom bottomright[web:73][web:74]
+      // Zoom en esquina inferior derecha[web:73][web:74]
       L.control.zoom({ position: "bottomright" }).addTo(leafletMap);
 
       markersLayer = L.layerGroup().addTo(leafletMap);
@@ -451,15 +507,44 @@
       const bounds = [];
 
       points.forEach(p => {
-        const marker = L.marker([p.lat, p.lng], {
-          icon: pinIcon
-        }).bindPopup(
-          "<strong>Cliente:</strong> " + p.cliente +
-          "<br><strong>Centro:</strong> " + p.centro +
-          "<br><strong>Placa (ejemplo):</strong> " + (p.placa || "")
-        );
+        // marcador morado si pesoTotal > 100
+        const icon = p.pesoTotal > 100 ? pinPurple : pinGray;
+
+        const googleUrl = `https://www.google.com/maps?q=${encodeURIComponent(p.lat + "," + p.lng)}`;
+
+        const popupHtml = `
+          <div style="min-width:220px;">
+            <strong>Cliente:</strong> ${p.cliente}<br>
+            <strong>Dirección:</strong> <a href="${googleUrl}" target="_blank" rel="noopener noreferrer">
+              ${p.direccion || "Ver en mapa"}
+            </a><br>
+            <strong>Ruta:</strong> ${p.ruta || "-"}<br>
+            <strong>VH:</strong> ${p.vh || "-"}<br>
+            <label style="margin-top:4px;display:flex;align-items:center;gap:4px;font-size:0.85rem;">
+              <input type="checkbox" class="visitado-checkbox">
+              Visitado
+            </label>
+          </div>
+        `;
+
+        const marker = L.marker([p.lat, p.lng], { icon }).bindPopup(popupHtml);
         marker.addTo(markersLayer);
         bounds.push([p.lat, p.lng]);
+
+        // manejar "Visitado" para ese popup
+        marker.on("popupopen", e => {
+          const checkbox = e.popup.getElement().querySelector(".visitado-checkbox");
+          if (!checkbox) return;
+
+          checkbox.addEventListener("change", () => {
+            if (checkbox.checked) {
+              // pequeño highlight blanco
+              e.popup.getElement().style.backgroundColor = "#FFFFFF";
+            } else {
+              e.popup.getElement().style.backgroundColor = "";
+            }
+          });
+        });
       });
 
       if (bounds.length > 0) {
@@ -469,7 +554,7 @@
       }
     }
 
-    function locateUser() {
+    function locateUserOnLoad() {
       if (!leafletMap || !navigator.geolocation) return;
 
       navigator.geolocation.getCurrentPosition(
@@ -477,22 +562,22 @@
           const { latitude, longitude } = position.coords;
 
           const userMarker = L.circleMarker([latitude, longitude], {
-            radius: 3,  // más pequeño
+            radius: 3,
             color: "#000000",
             fillColor: "#000000",
             fillOpacity: 1
           }).bindPopup("Mi ubicación");
           userMarker.addTo(leafletMap);
 
-          leafletMap.setView([latitude, longitude], 14);
+          leafletMap.setView([latitude, longitude], 12);
         },
         error => {
-          console.error("Error al obtener ubicación:", error);
-          alert("No se pudo obtener tu ubicación.");
+          console.warn("No se pudo obtener tu ubicación:", error);
+          // si falla, nos quedamos con el centro general
         },
         {
           enableHighAccuracy: true,
-          timeout: 10000
+          timeout: 8000
         }
       );
     }
@@ -513,10 +598,9 @@
         alert("No se pudo cargar RoadMap.csv");
       }
 
-      // Dependencias entre selects
+      // Filtros dependientes
       filterCentro.addEventListener("change", () => {
         const centroVal = filterCentro.value;
-        // al cambiar centro, recalculamos Placa y Cliente
         refreshPlacaOptions(centroVal);
         refreshClienteOptions(centroVal, filterPlaca.value || "");
         applyFilters();
@@ -525,14 +609,19 @@
       filterPlaca.addEventListener("change", () => {
         const centroVal = filterCentro.value;
         const placaVal = filterPlaca.value;
-        // al cambiar placa, recalculamos Cliente
         refreshClienteOptions(centroVal, placaVal);
         applyFilters();
       });
 
       filterCliente.addEventListener("change", applyFilters);
 
-      btnLocateMe.addEventListener("click", locateUser);
+      // Mostrar/ocultar filtros
+      btnToggleFilters.addEventListener("click", () => {
+        filtersPanel.classList.toggle("filters-floating--collapsed");
+      });
+
+      // Geolocalización automática al cargar[web:94][web:97]
+      locateUserOnLoad();
     }
 
     document.addEventListener("DOMContentLoaded", initPlanosPage);
