@@ -278,8 +278,7 @@
 
     // Parser CSV más robusto (maneja comillas y comas dentro de campos)[web:62]
     function parseCSV(text) {
-      const lines = text.split(/\\r?\
-/).filter(l => l.trim() !== "");
+      const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
       const header = lines.shift().split(",");
       const rows = lines.map(line => {
         const result = [];
