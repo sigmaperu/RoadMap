@@ -260,8 +260,7 @@
 
     // Parse sencillo de CSV (asume que no hay comas dentro de campos)
     function parseCSV(text) {
-      const lines = text.split(/\\r?\
-/).filter(l => l.trim() !== "");
+      const lines = text.split(/\\r?\n/).filter(l => l.trim() !== "");
       const header = lines.shift().split(",");
       const rows = lines.map(line => line.split(","));
       return { header, rows };
