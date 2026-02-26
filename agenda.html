@@ -4,13 +4,19 @@
   <meta charset="UTF-8">
   <title>RoadMap | Agenda</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/img/apple-touch-icon.png">
+
+  <!-- Roboto + Material Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <!-- Estilos globales -->
   <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body>
@@ -71,29 +77,294 @@
 
       <main class="content">
         <section class="page-section">
-          <h2 class="page-section__title">Agenda de actividades</h2>
-          <p class="page-section__subtitle">
-            Gestiona reuniones, eventos y plazos importantes.
-          </p>
+          <h2 class="page-section__title">Agenda de visitas</h2>
+          <p class="page-section__subtitle">Consulta por centro y busca por placa, cliente, ruta u otros datos.</p>
 
-          <div class="card">
-            <h3 class="card__title">Calendario</h3>
-            <p class="card__text">
-              Aquí integraremos un calendario interactivo por día, semana o mes.
-            </p>
-          </div>
+          <div class="agenda-card">
+            <div class="agenda-filters">
+              <!-- Filtro Centro (sin opción "Todos") -->
+              <div class="agenda-filters__group">
+                <label for="agendaCentro">Centro</label>
+                <select id="agendaCentro"></select>
+              </div>
 
-          <div class="card" style="margin-top:16px;">
-            <h3 class="card__title">Próximos eventos</h3>
-            <p class="card__text">
-              Listado de eventos próximos con filtros por proyecto y estado.
-            </p>
+              <button id="agendaSearchToggle" class="agenda-search-toggle" type="button">
+                <span class="material-icons">search</span>
+                Buscar
+              </button>
+            </div>
+
+            <div id="agendaSearchBar" class="agenda-search-bar">
+              <input
+                id="agendaSearchInput"
+                class="agenda-search-input"
+                type="text"
+                placeholder="Escribe placa, cliente, nombre, ruta, auxiliar, teléfono..."
+              />
+            </div>
+
+            <div class="agenda-table-wrapper">
+              <table id="agendaTable" class="agenda-table">
+                <thead>
+                  <tr>
+                    <th>Placa</th>
+                    <th>Cliente</th>
+                    <th>Nombre</th>
+                    <th>VH</th>
+                    <th>Ruta</th>
+                    <th>Auxiliar</th>
+                    <th>Teléfono</th>
+                    <th>Dirección</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- filas generadas por JS -->
+                </tbody>
+              </table>
+            </div>
           </div>
         </section>
       </main>
     </div>
   </div>
 
+  <!-- JS global (menú hamburguesa etc.) -->
   <script src="assets/js/main.js"></script>
+
+  <script>
+    const CSV_URL = "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
+
+    // Índices RoadMap:
+    // 1: Centro
+    // 2: Placa
+    // 3: Cliente (abreviado/código)
+    // 4: Nombre
+    // 5: Detalle nombre
+    // 6: Ruta
+    // 10: Peso (no se muestra, pero existe)
+    // 12: Auxiliar
+    // 13: Teléfono
+    // 14: complemento dirección
+    // 15: dirección
+    // 16: Latitud
+    // 17: Longitud
+    // 18: VH
+    // 19: detalle ruta
+
+    let agendaRows = [];
+    let centrosAgenda = [];
+
+    const agendaCentroSelect = document.getElementById("agendaCentro");
+    const agendaSearchToggle = document.getElementById("agendaSearchToggle");
+    const agendaSearchBar = document.getElementById("agendaSearchBar");
+    const agendaSearchInput = document.getElementById("agendaSearchInput");
+    const agendaTableBody = document.querySelector("#agendaTable tbody");
+
+    // CSV parser (mismo que en planos)
+    function parseCSV(text) {
+      const lines = text.split(/
+?
+/).filter(l => l.trim() !== "");
+      const header = lines.shift().split(",");
+      const rows = lines.map(line => {
+        const result = [];
+        let current = "";
+        let inQuotes = false;
+
+        for (let i = 0; i < line.length; i++) {
+          const char = line[i];
+          if (char === '"') {
+            if (inQuotes && line[i + 1] === '"') {
+              current += '"';
+              i++;
+            } else {
+              inQuotes = !inQuotes;
+            }
+          } else if (char === "," && !inQuotes) {
+            result.push(current);
+            current = "";
+          } else {
+            current += char;
+          }
+        }
+        result.push(current);
+        return result;
+      });
+      return { header, rows };
+    }
+
+    function unique(values) {
+      return Array.from(new Set(values.filter(v => v !== "" && v != null)));
+    }
+
+    function loadCentros() {
+      centrosAgenda = unique(agendaRows.map(r => r[1])).sort();
+      agendaCentroSelect.innerHTML = "";
+      centrosAgenda.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c;
+        opt.textContent = c;
+        agendaCentroSelect.appendChild(opt);
+      });
+      // seleccionar el primero por defecto si existe
+      if (centrosAgenda.length > 0) {
+        agendaCentroSelect.value = centrosAgenda[0];
+      }
+    }
+
+    function buildDireccion(row) {
+      const dir15 = row[15] || "";
+      const dir14 = row[14] || "";
+      let texto = dir15;
+      if (dir14 && dir14 !== "0" && dir14.toLowerCase() !== "error") {
+        texto = texto ? (texto + " - " + dir14) : dir14;
+      }
+      return texto;
+    }
+
+    function buildNombre(row) {
+      const nom4 = row[4] || "";
+      const nom5 = row[5] || "";
+      if (nom5 && nom5 !== "0" && nom5.toLowerCase() !== "error") {
+        return nom4 ? (nom4 + " - " + nom5) : nom5;
+      }
+      return nom4;
+    }
+
+    function buildRuta(row) {
+      const r6 = row[6] || "";
+      const r19 = row[19] || "";
+      if (r19 && r19 !== "0" && r19.toLowerCase() !== "error") {
+        return r6 ? (r6 + " - " + r19) : r19;
+      }
+      return r6;
+    }
+
+    function googleMapsLink(row) {
+      const lat = parseFloat((row[16] || "").replace(",", "."));
+      const lng = parseFloat((row[17] || "").replace(",", "."));
+      if (Number.isNaN(lat) || Number.isNaN(lng)) return null;
+      return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(lat + "," + lng);
+    }
+
+    function renderAgenda() {
+      const centroSel = agendaCentroSelect.value;
+      const term = (agendaSearchInput.value || "").toLowerCase().trim();
+
+      // filtrar por centro obligatorio
+      let rows = agendaRows.filter(r => r[1] === centroSel);
+
+      if (term) {
+        rows = rows.filter(r => {
+          const placa = (r[2] || "").toLowerCase();
+          const cliente = (r[3] || "").toLowerCase();
+          const nombre = buildNombre(r).toLowerCase();
+          const ruta = buildRuta(r).toLowerCase();
+          const auxiliar = (r[12] || "").toLowerCase();
+          const telefono = (r[13] || "").toLowerCase();
+          const direccion = buildDireccion(r).toLowerCase();
+          return (
+            placa.includes(term) ||
+            cliente.includes(term) ||
+            nombre.includes(term) ||
+            ruta.includes(term) ||
+            auxiliar.includes(term) ||
+            telefono.includes(term) ||
+            direccion.includes(term)
+          );
+        });
+      }
+
+      agendaTableBody.innerHTML = "";
+
+      rows.forEach(r => {
+        const placa = r[2] || "";
+        const cliente = r[3] || "";
+        const nombre = buildNombre(r);
+        const vh = r[18] || "";
+        const ruta = buildRuta(r);
+        const auxiliar = r[12] || "";
+        const telefono = r[13] || "";
+        const dirTexto = buildDireccion(r);
+        const mapsUrl = googleMapsLink(r);
+
+        const tr = document.createElement("tr");
+
+        function td(value, label) {
+          const cell = document.createElement("td");
+          cell.textContent = value || "-";
+          cell.setAttribute("data-label", label);
+          return cell;
+        }
+
+        tr.appendChild(td(placa, "Placa"));
+        tr.appendChild(td(cliente, "Cliente"));
+        tr.appendChild(td(nombre, "Nombre"));
+        tr.appendChild(td(vh, "VH"));
+        tr.appendChild(td(ruta, "Ruta"));
+        tr.appendChild(td(auxiliar, "Auxiliar"));
+        tr.appendChild(td(telefono, "Teléfono"));
+
+        const tdDir = document.createElement("td");
+        tdDir.setAttribute("data-label", "Dirección");
+        if (mapsUrl) {
+          const a = document.createElement("a");
+          a.href = mapsUrl;
+          a.target = "_blank";
+          a.rel = "noopener noreferrer";
+          a.className = "agenda-link";
+          a.textContent = dirTexto || "Ver en mapa";
+          tdDir.appendChild(a);
+        } else {
+          tdDir.textContent = dirTexto || "-";
+        }
+        tr.appendChild(tdDir);
+
+        agendaTableBody.appendChild(tr);
+      });
+
+      if (rows.length === 0) {
+        const trEmpty = document.createElement("tr");
+        const tdEmpty = document.createElement("td");
+        tdEmpty.colSpan = 8;
+        tdEmpty.textContent = "No se encontraron registros.";
+        trEmpty.appendChild(tdEmpty);
+        agendaTableBody.appendChild(trEmpty);
+      }
+    }
+
+    async function initAgenda() {
+      try {
+        const resp = await fetch(CSV_URL);
+        const text = await resp.text();
+        const { rows } = parseCSV(text);
+        agendaRows = rows;
+
+        loadCentros();
+        renderAgenda();
+      } catch (err) {
+        console.error("Error cargando RoadMap.csv en Agenda:", err);
+        alert("No se pudo cargar RoadMap.csv para Agenda");
+      }
+
+      agendaCentroSelect.addEventListener("change", renderAgenda);
+
+      agendaSearchToggle.addEventListener("click", () => {
+        agendaSearchBar.classList.toggle("agenda-search-bar--open");
+        if (agendaSearchBar.classList.contains("agenda-search-bar--open")) {
+          agendaSearchInput.focus();
+        } else {
+          agendaSearchInput.value = "";
+          renderAgenda();
+        }
+      });
+
+      agendaSearchInput.addEventListener("input", () => {
+        renderAgenda();
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", initAgenda);
+  </script>
 </body>
 </html>
