@@ -253,7 +253,7 @@ body {
   position: relative;
   margin-left: 24px;
   flex: 1;                 /* ocupa el espacio libre del título */
-  max-width: 240px;        /* para que no sea enorme en pantallas grandes */
+  max-width: 260px;
   height: 26px;
   overflow: hidden;
   display: flex;
@@ -305,7 +305,7 @@ body {
   100% { transform: translateX(120%); opacity: 0; }
 }
 
-/* Carretera se mueve de derecha a izquierda (contrario) */
+/* Carretera se mueve de derecha a izquierda (contrario al camión) */
 @keyframes truck-road-move {
   0%   { transform: translateX(100%); }
   100% { transform: translateX(-40px); }
