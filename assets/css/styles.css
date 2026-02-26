@@ -214,7 +214,7 @@ body {
 .truck-animation {
   position: relative;
   margin-left: 24px;
-  flex: 1;                 /* ocupa espacio libre del título */
+  flex: 1;
   max-width: 260px;
   height: 26px;
   overflow: hidden;
@@ -228,7 +228,6 @@ body {
   height: 100%;
 }
 
-/* Icono del camión */
 .truck-icon {
   position: absolute;
   font-size: 22px;
@@ -237,7 +236,6 @@ body {
   animation: truck-drive 4s linear infinite;
 }
 
-/* Carretera */
 .truck-road {
   position: absolute;
   bottom: 3px;
@@ -248,7 +246,6 @@ body {
   overflow: hidden;
 }
 
-/* Segmento que se desplaza en sentido contrario al camión */
 .truck-road::before {
   content: "";
   position: absolute;
@@ -259,7 +256,6 @@ body {
   animation: truck-road-move 0.8s linear infinite;
 }
 
-/* Camión va de izquierda a derecha */
 @keyframes truck-drive {
   0%   { transform: translateX(-30px); opacity: 0; }
   10%  { opacity: 1; }
@@ -267,7 +263,6 @@ body {
   100% { transform: translateX(120%); opacity: 0; }
 }
 
-/* Carretera se mueve de derecha a izquierda */
 @keyframes truck-road-move {
   0%   { transform: translateX(100%); }
   100% { transform: translateX(-40px); }
