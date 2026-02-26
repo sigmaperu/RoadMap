@@ -436,7 +436,7 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  align-items: center;
+  align-items: flex-end; /* alinear verticalmente select y botón */
   margin-bottom: 12px;
 }
 
@@ -460,23 +460,22 @@ body {
   font-size: 0.9rem;
 }
 
-/* Botón buscar */
+/* Botón buscar solo con lupa */
 .agenda-search-toggle {
   border: none;
   border-radius: 999px;
-  padding: 6px 10px;
+  padding: 7px;
   font-size: 0.8rem;
   cursor: pointer;
   background-color: var(--primary);
   color: #fff;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  white-space: nowrap;
+  justify-content: center;
 }
 
 .agenda-search-toggle .material-icons {
-  font-size: 18px;
+  font-size: 20px;
 }
 
 .agenda-search-toggle:hover {
