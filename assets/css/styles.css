@@ -422,3 +422,164 @@ body {
     display: none;
   }
 }
+
+/* Agenda: contenedor */
+.agenda-card {
+  background-color: var(--surface);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-elevated);
+  padding: 16px 18px;
+}
+
+/* Filtros Agenda */
+.agenda-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.agenda-filters__group {
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+}
+
+.agenda-filters__group label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.agenda-filters__group select {
+  padding: 4px 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.2);
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+/* Botón buscar */
+.agenda-search-toggle {
+  border: none;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  background-color: var(--primary);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.agenda-search-toggle .material-icons {
+  font-size: 18px;
+}
+
+.agenda-search-toggle:hover {
+  background-color: var(--primary-dark);
+}
+
+/* Barra de búsqueda plegable */
+.agenda-search-bar {
+  margin-top: 8px;
+  display: none;
+}
+
+.agenda-search-bar--open {
+  display: block;
+}
+
+.agenda-search-input {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.2);
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+/* Tabla / cards */
+.agenda-table-wrapper {
+  margin-top: 12px;
+  overflow-x: auto;
+}
+
+.agenda-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.agenda-table thead {
+  background: #FAFAFA;
+}
+
+.agenda-table th,
+.agenda-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #E0E0E0;
+  text-align: left;
+}
+
+.agenda-table th {
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+/* Links de dirección */
+.agenda-link {
+  color: var(--primary-dark);
+  text-decoration: none;
+}
+
+.agenda-link:hover {
+  text-decoration: underline;
+}
+
+/* Móvil: transformar tabla en cards */
+@media (max-width: 800px) {
+  .agenda-table thead {
+    display: none;
+  }
+
+  .agenda-table,
+  .agenda-table tbody,
+  .agenda-table tr,
+  .agenda-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .agenda-table tr {
+    margin-bottom: 10px;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    background-color: #FFFFFF;
+    padding: 8px 10px;
+  }
+
+  .agenda-table td {
+    border-bottom: none;
+    padding: 4px 0;
+  }
+
+  .agenda-table td::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 1px;
+  }
+
+  .agenda-table td:last-child {
+    margin-bottom: 4px;
+  }
+
+  .agenda-card {
+    padding: 12px 10px;
+  }
+}
