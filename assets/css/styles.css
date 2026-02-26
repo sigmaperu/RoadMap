@@ -228,11 +228,10 @@ body {
   height: 100%;
 }
 
-.truck-icon {
+.truck-emoji {
   position: absolute;
-  font-size: 22px;
-  color: var(--primary);
-  top: 2px;
+  font-size: 20px;
+  top: 0;
   animation: truck-drive 4s linear infinite;
 }
 
