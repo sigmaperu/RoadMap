@@ -242,3 +242,60 @@ body {
     padding: 16px;
   }
 }
+
+/* Camioncito animado en el header */
+.truck-animation {
+  position: relative;
+  margin-left: 16px;
+  width: 80px;           /* largo del recorrido visible */
+  height: 24px;
+  overflow: hidden;
+}
+
+.truck-icon {
+  position: absolute;
+  font-size: 22px;
+  color: var(--primary);
+  animation: truck-drive 3.5s linear infinite;
+}
+
+/* Línea de carretera bajo el camión */
+.truck-road {
+  position: absolute;
+  bottom: 2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(0,0,0,0.12);
+  overflow: hidden;
+}
+
+.truck-road::before {
+  content: "";
+  position: absolute;
+  width: 40px;
+  height: 100%;
+  background: rgba(0,0,0,0.28);
+  left: -40px;
+  animation: truck-road-move 1.2s linear infinite;
+}
+
+/* Animación del camión: va de izquierda a derecha y vuelve a salir */
+@keyframes truck-drive {
+  0%   { transform: translateX(-24px); opacity: 0; }
+  10%  { opacity: 1; }
+  80%  { transform: translateX(72px); opacity: 1; }
+  100% { transform: translateX(96px); opacity: 0; }
+}
+
+/* Movimiento de la “carretera” */
+@keyframes truck-road-move {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(80px); }
+}
+
+@media (max-width: 600px) {
+  .truck-animation {
+    display: none; /* si quieres ocultarlo en pantallas muy pequeñas */
+  }
+}
