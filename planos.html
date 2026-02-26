@@ -26,127 +26,6 @@
 
   <!-- Estilos globales -->
   <link rel="stylesheet" href="assets/css/styles.css">
-
-  <style>
-    .map-wrapper {
-      position: relative;
-      width: 100%;
-    }
-
-    #map {
-      width: 100%;
-      height: 560px;
-      border-radius: var(--border-radius);
-      box-shadow: var(--shadow-elevated);
-      overflow: hidden;
-    }
-
-    /* Panel flotante de filtros */
-    .filters-floating {
-      position: absolute;
-      top: 12px;
-      right: 56px; /* deja espacio para el botón */
-      left: 12px;
-      z-index: 1000;
-      background: rgba(255, 255, 255, 0.96);
-      backdrop-filter: blur(4px);
-      border-radius: 12px;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.2);
-      padding: 10px 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      transform-origin: top right;
-      transition: transform 0.2s ease, opacity 0.2s ease;
-    }
-
-    .filters-floating--collapsed {
-      transform: scale(0.8) translateY(-40%);
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .filters-floating__row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      width: 100%;
-      align-items: center;
-    }
-
-    .filter-group {
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      min-width: 120px;
-    }
-
-    .filter-group label {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      margin-bottom: 2px;
-    }
-
-    .filter-group select {
-      padding: 4px 6px;
-      border-radius: 8px;
-      border: 1px solid rgba(0,0,0,0.2);
-      font-family: inherit;
-      font-size: 0.85rem;
-      background-color: #fff;
-      width: 100%;
-    }
-
-    .btn-small-icon {
-      border: none;
-      border-radius: 999px;
-      padding: 6px;
-      font-size: 0.8rem;
-      cursor: pointer;
-      background-color: rgba(255,255,255,0.96);
-      color: var(--text-main);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-      transition: transform 0.2s ease;
-    }
-
-    .btn-small-icon .material-icons {
-      font-size: 20px;
-      transition: transform 0.2s ease;
-    }
-
-    .btn-small-icon--open .material-icons {
-      transform: rotate(180deg);
-    }
-
-    .btn-small-icon:hover {
-      background-color: #FFFFFF;
-    }
-
-    .filters-toggle-btn {
-      position: absolute;
-      top: 14px;
-      right: 14px;
-      z-index: 1100;
-    }
-
-    @media (max-width: 920px) {
-      #map {
-        height: 720px;
-      }
-      .filters-floating {
-        top: 10px;
-        left: 10px;
-        right: 54px;
-      }
-      .filters-toggle-btn {
-        top: 14px;
-        right: 12px;
-      }
-    }
-  </style>
 </head>
 <body>
   <div class="app-shell">
@@ -194,6 +73,7 @@
           </button>
           <h1>Planos</h1>
 
+          <!-- Camioncito animado -->
           <div class="truck-animation">
             <div class="truck-animation-inner">
               <span class="material-icons truck-icon">local_shipping</span>
@@ -214,7 +94,7 @@
       <main class="content">
         <section class="page-section">
           <div class="map-wrapper">
-            <!-- Botón de mostrar/ocultar filtros (solo icono, con giro) -->
+            <!-- Botón de mostrar/ocultar filtros -->
             <button id="btnToggleFilters" class="btn-small-icon filters-toggle-btn" type="button" title="Mostrar/ocultar filtros">
               <span class="material-icons">tune</span>
             </button>
@@ -245,7 +125,7 @@
               </div>
             </div>
 
-            <div id="map"></div>
+            <div id="map" style="width:100%;height:560px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.08);overflow:hidden;"></div>
           </div>
         </section>
       </main>
@@ -259,6 +139,7 @@
     crossorigin=""
   ></script>
 
+  <!-- JS global (para el menú hamburguesa, etc.) -->
   <script src="assets/js/main.js"></script>
 
   <script>
@@ -288,7 +169,7 @@
     const btnToggleFilters = document.getElementById("btnToggleFilters");
     const filtersPanel = document.getElementById("filtersPanel");
 
-    // Usamos las variantes 2x de leaflet-color-markers[web:114][web:129]
+    // Pins de colores (leaflet-color-markers)[web:114]
     const shadowUrl = "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png";
 
     const redPin = new L.Icon({
@@ -318,9 +199,11 @@
       shadowSize: [41, 41]
     });
 
-    // CSV parser robusto[web:62]
+    // CSV parser robusto
     function parseCSV(text) {
-      const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
+      const lines = text.split(/
+?
+/).filter(l => l.trim() !== "");
       const header = lines.shift().split(",");
       const rows = lines.map(line => {
         const result = [];
@@ -459,7 +342,6 @@
         if (Number.isNaN(lat) || Number.isNaN(lng)) return;
 
         const centroVal = r[1];
-        const placaVal = r[2];
         const extraVal = r[5];
         const rutaNombre = r[6];
         const dir15 = r[15] || "";
