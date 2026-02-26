@@ -77,9 +77,6 @@
 
       <main class="content">
         <section class="page-section">
-          <h2 class="page-section__title">Agenda de visitas</h2>
-          <p class="page-section__subtitle">Consulta por centro y busca por placa, cliente, ruta u otros datos.</p>
-
           <div class="agenda-card">
             <div class="agenda-filters">
               <!-- Filtro Centro (sin opción "Todos") -->
@@ -99,7 +96,7 @@
                 id="agendaSearchInput"
                 class="agenda-search-input"
                 type="text"
-                placeholder="Escribe placa, cliente, nombre, ruta, auxiliar, teléfono..."
+                placeholder="Buscar por placa, cliente, nombre, ruta, auxiliar, teléfono o dirección..."
               />
             </div>
 
@@ -137,11 +134,11 @@
     // Índices RoadMap:
     // 1: Centro
     // 2: Placa
-    // 3: Cliente (abreviado/código)
+    // 3: Cliente (código)
     // 4: Nombre
     // 5: Detalle nombre
     // 6: Ruta
-    // 10: Peso (no se muestra, pero existe)
+    // 10: Peso
     // 12: Auxiliar
     // 13: Teléfono
     // 14: complemento dirección
@@ -160,7 +157,6 @@
     const agendaSearchInput = document.getElementById("agendaSearchInput");
     const agendaTableBody = document.querySelector("#agendaTable tbody");
 
-    // CSV parser (mismo que en planos)
     function parseCSV(text) {
       const lines = text.split(/
 ?
@@ -206,20 +202,9 @@
         opt.textContent = c;
         agendaCentroSelect.appendChild(opt);
       });
-      // seleccionar el primero por defecto si existe
       if (centrosAgenda.length > 0) {
         agendaCentroSelect.value = centrosAgenda[0];
       }
-    }
-
-    function buildDireccion(row) {
-      const dir15 = row[15] || "";
-      const dir14 = row[14] || "";
-      let texto = dir15;
-      if (dir14 && dir14 !== "0" && dir14.toLowerCase() !== "error") {
-        texto = texto ? (texto + " - " + dir14) : dir14;
-      }
-      return texto;
     }
 
     function buildNombre(row) {
@@ -240,6 +225,16 @@
       return r6;
     }
 
+    function buildDireccion(row) {
+      const dir15 = row[15] || "";
+      const dir14 = row[14] || "";
+      let texto = dir15;
+      if (dir14 && dir14 !== "0" && dir14.toLowerCase() !== "error") {
+        texto = texto ? (texto + " - " + dir14) : dir14;
+      }
+      return texto;
+    }
+
     function googleMapsLink(row) {
       const lat = parseFloat((row[16] || "").replace(",", "."));
       const lng = parseFloat((row[17] || "").replace(",", "."));
@@ -251,7 +246,6 @@
       const centroSel = agendaCentroSelect.value;
       const term = (agendaSearchInput.value || "").toLowerCase().trim();
 
-      // filtrar por centro obligatorio
       let rows = agendaRows.filter(r => r[1] === centroSel);
 
       if (term) {
@@ -339,7 +333,6 @@
         const text = await resp.text();
         const { rows } = parseCSV(text);
         agendaRows = rows;
-
         loadCentros();
         renderAgenda();
       } catch (err) {
@@ -359,9 +352,7 @@
         }
       });
 
-      agendaSearchInput.addEventListener("input", () => {
-        renderAgenda();
-      });
+      agendaSearchInput.addEventListener("input", renderAgenda);
     }
 
     document.addEventListener("DOMContentLoaded", initAgenda);
