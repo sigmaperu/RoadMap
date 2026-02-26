@@ -281,7 +281,7 @@
     const btnToggleFilters = document.getElementById("btnToggleFilters");
     const filtersPanel = document.getElementById("filtersPanel");
 
-    // Usamos las variantes 2x de leaflet-color-markers, todas con el mismo tamaño[web:114][web:129]
+    // Usamos las variantes 2x de leaflet-color-markers[web:114][web:129]
     const shadowUrl = "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png";
 
     const redPin = new L.Icon({
@@ -302,8 +302,8 @@
       shadowSize: [41, 41]
     });
 
-    const whitePin = new L.Icon({
-      iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-white.png",
+    const blackPin = new L.Icon({
+      iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-black.png",
       shadowUrl,
       iconSize: [25, 41],
       iconAnchor: [12, 41],
@@ -547,7 +547,7 @@
 
         const marker = L.marker([p.lat, p.lng], { icon: baseIcon });
         marker._baseIcon = baseIcon;
-        marker._whiteIcon = whitePin;
+        marker._visitedIcon = blackPin;
 
         marker.bindPopup(popupHtml);
         marker.addTo(markersLayer);
@@ -560,7 +560,7 @@
 
           checkbox.addEventListener("change", () => {
             if (checkbox.checked) {
-              marker.setIcon(marker._whiteIcon);
+              marker.setIcon(marker._visitedIcon);
             } else {
               marker.setIcon(marker._baseIcon);
             }
