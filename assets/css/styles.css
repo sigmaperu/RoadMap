@@ -210,7 +210,7 @@ body {
   z-index: 0;
 }
 
-/* Camioncito animado en el header (emoji, sin Material Icons) */
+/* Camioncito animado en el header (emoji) */
 .truck-animation {
   position: relative;
   margin-left: 24px;
@@ -228,14 +228,16 @@ body {
   height: 100%;
 }
 
-/* OJO: ahora animamos .truck-emoji, no .truck-icon */
+/* Emoji del camión */
 .truck-emoji {
   position: absolute;
   font-size: 20px;
   top: 0;
+  left: -30px;                 /* arranca fuera de la vista */
   animation: truck-drive 4s linear infinite;
 }
 
+/* Línea de carretera */
 .truck-road {
   position: absolute;
   bottom: 3px;
@@ -258,10 +260,10 @@ body {
 
 /* Camión va de izquierda a derecha */
 @keyframes truck-drive {
-  0%   { transform: translateX(-30px); opacity: 0; }
+  0%   { transform: translateX(0); opacity: 0; }
   10%  { opacity: 1; }
   80%  { transform: translateX(100%); opacity: 1; }
-  100% { transform: translateX(120%); opacity: 0; }
+  100% { transform: translateX(130%); opacity: 0; }
 }
 
 /* Carretera se mueve de derecha a izquierda */
