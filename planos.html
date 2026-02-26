@@ -96,32 +96,31 @@
       width: 100%;
     }
 
-    .btn-small {
+    .btn-small-icon {
       border: none;
       border-radius: 999px;
-      padding: 6px 10px;
+      padding: 6px;
       font-size: 0.8rem;
       cursor: pointer;
-      background-color: var(--primary);
-      color: #fff;
+      background-color: rgba(255,255,255,0.96);
+      color: var(--text-main);
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      white-space: nowrap;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
     }
 
-    .btn-small .material-icons {
-      font-size: 18px;
+    .btn-small-icon .material-icons {
+      font-size: 20px;
     }
 
-    .btn-small:hover {
-      background-color: var(--primary-dark);
+    .btn-small-icon:hover {
+      background-color: #FFFFFF;
     }
 
-    /* Botón para mostrar/ocultar filtros (siempre visible) */
     .filters-toggle-btn {
       position: absolute;
-      top: 12px;
+      top: 14px;
       right: 16px;
       z-index: 1100;
     }
@@ -134,6 +133,10 @@
         top: 10px;
         left: 10px;
         right: 10px;
+      }
+      .filters-toggle-btn {
+        top: 16px;
+        right: 18px;
       }
     }
   </style>
@@ -197,10 +200,9 @@
       <main class="content">
         <section class="page-section">
           <div class="map-wrapper">
-            <!-- Botón de mostrar/ocultar filtros -->
-            <button id="btnToggleFilters" class="btn-small filters-toggle-btn" type="button">
-              <span class="material-icons">filter_list</span>
-              Filtros
+            <!-- Botón de mostrar/ocultar filtros (solo icono) -->
+            <button id="btnToggleFilters" class="btn-small-icon filters-toggle-btn" type="button" title="Mostrar/ocultar filtros">
+              <span class="material-icons">tune</span>
             </button>
 
             <!-- Panel flotante de filtros -->
@@ -250,17 +252,17 @@
 
     // Índices:
     // 1: Centro
-    // 2: Placa / unidad
+    // 2: Placa
     // 4: Cliente
     // 5: detalle cliente
-    // 6: Ruta (nombre)
+    // 6: Ruta
     // 10: Peso
-    // 14: algo de dirección (ej. distrito)
-    // 15: dirección principal
+    // 14: complemento dirección
+    // 15: dirección
     // 16: Latitud
     // 17: Longitud
     // 18: VH
-    // 19: algo añadido a ruta
+    // 19: detalle ruta
 
     let allRows = [];
     let leafletMap = null;
@@ -272,20 +274,30 @@
     const btnToggleFilters = document.getElementById("btnToggleFilters");
     const filtersPanel = document.getElementById("filtersPanel");
 
-    const pinGray = L.icon({
+    // Pin rojo por defecto (ubicación) y pin morado usando imágenes tipo Google Maps[web:98][web:109][web:112]
+    const redPin = L.icon({
       iconUrl: "https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi2_hdpi.png",
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
-      popupAnchor: [0, -30]
+      iconSize: [20, 32],
+      iconAnchor: [10, 32],
+      popupAnchor: [0, -28]
     });
 
-    // Marcador morado simple usando divIcon[web:90]
-    const pinPurple = L.divIcon({
-      className: "custom-purple-marker",
-      html: '<div style="background-color:#7B1FA2;width:22px;height:22px;border-radius:50%;border:2px solid #4A148C;"></div>',
-      iconSize: [22, 22],
-      iconAnchor: [11, 11],
-      popupAnchor: [0, -12]
+    const purplePin = L.icon({
+      iconUrl: "https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi-dotless2_hdpi.png",
+      iconSize: [20, 32],
+      iconAnchor: [10, 32],
+      popupAnchor: [0, -28],
+      // filtro morado via CSS no es trivial, usamos variante base + tono aproximado
+    });
+
+    // Pin blanco para visitado (usamos un pin blanco desde una hoja de color markers)[web:102]
+    const whitePin = L.icon({
+      iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-white.png",
+      shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+      iconSize: [20, 32],
+      iconAnchor: [10, 32],
+      popupAnchor: [0, -28],
+      shadowSize: [32, 32]
     });
 
     // CSV parser robusto[web:62]
@@ -417,7 +429,7 @@
         filtered = filtered.filter(r => r[4] === cliente);
       }
 
-      // Agrupar por cliente y sumar pesos (col. 10)
+      // Agrupar por cliente, sumando peso (col 10)
       const clientMap = new Map();
 
       filtered.forEach(r => {
@@ -446,13 +458,11 @@
             clienteLabel = clientKey + " - " + extraVal;
           }
 
-          // Ruta texto
           let rutaTexto = rutaNombre || "";
           if (rutaExtra && rutaExtra !== "0" && rutaExtra.toLowerCase() !== "error") {
             rutaTexto = rutaTexto ? (rutaTexto + " - " + rutaExtra) : rutaExtra;
           }
 
-          // Dirección texto
           let direccionTexto = dir15;
           if (dir14 && dir14 !== "0" && dir14.toLowerCase() !== "error") {
             direccionTexto = direccionTexto ? (direccionTexto + " - " + dir14) : dir14;
@@ -491,7 +501,6 @@
         attribution: "&copy; OpenStreetMap contributors"
       }).addTo(leafletMap);
 
-      // Zoom en esquina inferior derecha[web:73][web:74]
       L.control.zoom({ position: "bottomright" }).addTo(leafletMap);
 
       markersLayer = L.layerGroup().addTo(leafletMap);
@@ -505,8 +514,8 @@
       const bounds = [];
 
       points.forEach(p => {
-        // marcador morado si pesoTotal > 100
-        const icon = p.pesoTotal > 100 ? pinPurple : pinGray;
+        // pin morado si pesoTotal >= 100, rojo si no
+        const baseIcon = p.pesoTotal >= 100 ? purplePin : redPin;
 
         const googleUrl = `https://www.google.com/maps?q=${encodeURIComponent(p.lat + "," + p.lng)}`;
 
@@ -525,21 +534,24 @@
           </div>
         `;
 
-        const marker = L.marker([p.lat, p.lng], { icon }).bindPopup(popupHtml);
+        const marker = L.marker([p.lat, p.lng], { icon: baseIcon });
+        marker._baseIcon = baseIcon;
+        marker._whiteIcon = whitePin;
+
+        marker.bindPopup(popupHtml);
         marker.addTo(markersLayer);
         bounds.push([p.lat, p.lng]);
 
-        // manejar "Visitado" para ese popup
         marker.on("popupopen", e => {
-          const checkbox = e.popup.getElement().querySelector(".visitado-checkbox");
+          const popupEl = e.popup.getElement();
+          const checkbox = popupEl.querySelector(".visitado-checkbox");
           if (!checkbox) return;
 
           checkbox.addEventListener("change", () => {
             if (checkbox.checked) {
-              // pequeño highlight blanco
-              e.popup.getElement().style.backgroundColor = "#FFFFFF";
+              marker.setIcon(marker._whiteIcon);
             } else {
-              e.popup.getElement().style.backgroundColor = "";
+              marker.setIcon(marker._baseIcon);
             }
           });
         });
@@ -560,7 +572,7 @@
           const { latitude, longitude } = position.coords;
 
           const userMarker = L.circleMarker([latitude, longitude], {
-            radius: 3,
+            radius: 2,
             color: "#000000",
             fillColor: "#000000",
             fillOpacity: 1
@@ -569,10 +581,7 @@
 
           leafletMap.setView([latitude, longitude], 12);
         },
-        error => {
-          console.warn("No se pudo obtener tu ubicación:", error);
-          // si falla, nos quedamos con el centro general
-        },
+        () => {},
         {
           enableHighAccuracy: true,
           timeout: 8000
@@ -596,7 +605,6 @@
         alert("No se pudo cargar RoadMap.csv");
       }
 
-      // Filtros dependientes
       filterCentro.addEventListener("change", () => {
         const centroVal = filterCentro.value;
         refreshPlacaOptions(centroVal);
@@ -613,12 +621,10 @@
 
       filterCliente.addEventListener("change", applyFilters);
 
-      // Mostrar/ocultar filtros
       btnToggleFilters.addEventListener("click", () => {
         filtersPanel.classList.toggle("filters-floating--collapsed");
       });
 
-      // Geolocalización automática al cargar[web:94][web:97]
       locateUserOnLoad();
     }
 
