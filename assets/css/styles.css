@@ -225,7 +225,7 @@ body {
     box-shadow: 0 4px 16px rgba(0,0,0,0.25);
     transform: translateX(-100%);
     transition: transform 0.25s ease;
-    z-index: 20;
+    z-index: 100; /* MÁS ALTO QUE EL MAPA Y EL HEADER */
   }
 
   .sidebar--open {
@@ -235,11 +235,16 @@ body {
   .topbar {
     position: sticky;
     top: 0;
-    z-index: 30;
+    z-index: 90;
   }
 
   .content {
     padding: 16px;
+  }
+
+  /* Mapa más alto en móvil (si quieres mantenerlo) */
+  #map {
+    height: 720px;
   }
 }
 
