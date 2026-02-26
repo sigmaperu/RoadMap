@@ -45,8 +45,8 @@
     .filters-floating {
       position: absolute;
       top: 12px;
+      right: 56px; /* deja espacio para el botón */
       left: 12px;
-      right: 12px;
       z-index: 1000;
       background: rgba(255, 255, 255, 0.96);
       backdrop-filter: blur(4px);
@@ -56,11 +56,12 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
+      transform-origin: top right;
       transition: transform 0.2s ease, opacity 0.2s ease;
     }
 
     .filters-floating--collapsed {
-      transform: translateY(-120%);
+      transform: scale(0.8) translateY(-40%);
       opacity: 0;
       pointer-events: none;
     }
@@ -108,10 +109,16 @@
       align-items: center;
       justify-content: center;
       box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      transition: transform 0.2s ease;
     }
 
     .btn-small-icon .material-icons {
       font-size: 20px;
+      transition: transform 0.2s ease;
+    }
+
+    .btn-small-icon--open .material-icons {
+      transform: rotate(180deg);
     }
 
     .btn-small-icon:hover {
@@ -121,7 +128,7 @@
     .filters-toggle-btn {
       position: absolute;
       top: 14px;
-      right: 16px;
+      right: 14px;
       z-index: 1100;
     }
 
@@ -132,11 +139,11 @@
       .filters-floating {
         top: 10px;
         left: 10px;
-        right: 10px;
+        right: 54px;
       }
       .filters-toggle-btn {
-        top: 16px;
-        right: 18px;
+        top: 14px;
+        right: 12px;
       }
     }
   </style>
@@ -200,7 +207,7 @@
       <main class="content">
         <section class="page-section">
           <div class="map-wrapper">
-            <!-- Botón de mostrar/ocultar filtros (solo icono) -->
+            <!-- Botón de mostrar/ocultar filtros (solo icono, con giro) -->
             <button id="btnToggleFilters" class="btn-small-icon filters-toggle-btn" type="button" title="Mostrar/ocultar filtros">
               <span class="material-icons">tune</span>
             </button>
@@ -274,29 +281,33 @@
     const btnToggleFilters = document.getElementById("btnToggleFilters");
     const filtersPanel = document.getElementById("filtersPanel");
 
-    // Pin rojo por defecto (ubicación) y pin morado usando imágenes tipo Google Maps[web:98][web:109][web:112]
-    const redPin = L.icon({
-      iconUrl: "https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi2_hdpi.png",
+    // Usamos leaflet-color-markers para pins consistentes[web:114][web:100]
+    const shadowUrl = "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png";
+
+    const redPin = new L.Icon({
+      iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
+      shadowUrl,
       iconSize: [20, 32],
       iconAnchor: [10, 32],
-      popupAnchor: [0, -28]
+      popupAnchor: [1, -28],
+      shadowSize: [32, 32]
     });
 
-    const purplePin = L.icon({
-      iconUrl: "https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi-dotless2_hdpi.png",
+    const purplePin = new L.Icon({
+      iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png",
+      shadowUrl,
       iconSize: [20, 32],
       iconAnchor: [10, 32],
-      popupAnchor: [0, -28],
-      // filtro morado via CSS no es trivial, usamos variante base + tono aproximado
+      popupAnchor: [1, -28],
+      shadowSize: [32, 32]
     });
 
-    // Pin blanco para visitado (usamos un pin blanco desde una hoja de color markers)[web:102]
-    const whitePin = L.icon({
+    const whitePin = new L.Icon({
       iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-white.png",
-      shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+      shadowUrl,
       iconSize: [20, 32],
       iconAnchor: [10, 32],
-      popupAnchor: [0, -28],
+      popupAnchor: [1, -28],
       shadowSize: [32, 32]
     });
 
@@ -623,6 +634,7 @@
 
       btnToggleFilters.addEventListener("click", () => {
         filtersPanel.classList.toggle("filters-floating--collapsed");
+        btnToggleFilters.classList.toggle("btn-small-icon--open");
       });
 
       locateUserOnLoad();
