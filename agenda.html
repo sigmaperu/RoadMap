@@ -78,6 +78,7 @@
       <main class="content">
         <section class="page-section">
           <div class="agenda-card">
+            <!-- Filtro + búsqueda -->
             <div class="agenda-filters">
               <div class="agenda-filters-inner">
                 <div class="agenda-filters__group">
@@ -102,6 +103,7 @@
               </div>
             </div>
 
+            <!-- Resultados -->
             <div class="agenda-table-wrapper" id="agendaResults" style="display:none;">
               <table id="agendaTable" class="agenda-table">
                 <thead>
@@ -141,7 +143,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <!-- filas por JS -->
+                  <!-- filas generadas por JS -->
                 </tbody>
               </table>
             </div>
@@ -155,6 +157,23 @@
 
   <script>
     const CSV_URL = "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
+
+    // Índices RoadMap:
+    // 1: Centro
+    // 2: Placa
+    // 3: Cliente (código)
+    // 4: Nombre
+    // 5: Detalle nombre
+    // 6: Ruta
+    // 10: Peso
+    // 12: Auxiliar
+    // 13: Teléfono
+    // 14: complemento dirección
+    // 15: dirección
+    // 16: Latitud
+    // 17: Longitud
+    // 18: VH
+    // 19: detalle ruta
 
     let agendaRows = [];
     let centrosAgenda = [];
@@ -257,6 +276,7 @@
       return phoneRaw.replace(/[^0-9]/g, "");
     }
 
+    // Agrupa por Centro + Cliente (un registro por cliente)
     function groupByCliente(rows) {
       const map = new Map();
       rows.forEach(r => {
