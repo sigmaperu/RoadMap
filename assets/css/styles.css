@@ -428,7 +428,7 @@ body {
   background-color: var(--surface);
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-elevated);
-  padding: 16px 20px; /* más amplio para la tabla */
+  padding: 16px 20px;
 }
 
 /* Filtros Agenda */
@@ -460,6 +460,13 @@ body {
   font-size: 0.78rem;
 }
 
+/* Contenedor lupa + barra, alineados entre sí */
+.agenda-search-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 /* Botón buscar solo con lupa */
 .agenda-search-toggle {
   border: none;
@@ -482,18 +489,22 @@ body {
   background-color: var(--primary-dark);
 }
 
-/* Barra de búsqueda plegable */
+/* Barra de búsqueda que se expande desde la lupa hacia la izquierda */
 .agenda-search-bar {
-  margin-top: 6px;
-  display: none;
+  position: relative;
+  overflow: hidden;
+  max-width: 0;
+  opacity: 0;
+  transition: max-width 0.3s ease, opacity 0.25s ease;
 }
 
 .agenda-search-bar--open {
-  display: block;
+  max-width: 220px; /* ancho máximo de la barra */
+  opacity: 1;
 }
 
 .agenda-search-input {
-  width: 100%;
+  width: 220px;
   padding: 5px 8px;
   border-radius: 999px;
   border: 1px solid rgba(0,0,0,0.2);
@@ -510,7 +521,7 @@ body {
 .agenda-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.8rem; /* base */
+  font-size: 0.8rem;
 }
 
 .agenda-table thead {
@@ -524,7 +535,7 @@ body {
   text-align: left;
 }
 
-/* Cabeceras con iconos, un poco más grandes */
+/* Cabeceras con iconos */
 .agenda-table th {
   font-weight: 500;
   color: var(--text-muted);
@@ -558,23 +569,25 @@ body {
 /* Botón WhatsApp en celda de teléfono */
 .agenda-whatsapp-btn {
   border: none;
-  border-radius: 999px;
-  padding: 3px 6px;
-  font-size: 0.68rem;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
   cursor: pointer;
   background-color: #25D366;
   color: #fff;
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  justify-content: center;
   margin-left: 4px;
 }
 
-.agenda-whatsapp-btn .material-icons {
-  font-size: 14px;
+.agenda-whatsapp-btn svg {
+  width: 14px;
+  height: 14px;
+  display: block;
 }
 
-/* Móvil: tabla → cards con etiquetas */
+/* Móvil: tabla → cards */
 @media (max-width: 800px) {
   .agenda-table thead {
     display: none;
@@ -616,5 +629,10 @@ body {
 
   .agenda-card {
     padding: 12px 10px;
+  }
+
+  /* Search box compacto en móvil */
+  .agenda-search-box {
+    margin-top: 4px;
   }
 }
