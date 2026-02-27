@@ -539,27 +539,7 @@ body {
   text-decoration: underline;
 }
 
-/* Estado “compacto” de las cards (móvil) */
-.agenda-row-main {
-  font-weight: 500;
-  margin-bottom: 2px;
-}
-
-.agenda-row-secondary {
-  font-size: 0.74rem;
-  color: var(--text-muted);
-}
-
-.agenda-row-extra {
-  margin-top: 4px;
-  font-size: 0.74rem;
-}
-
-.agenda-card-row {
-  cursor: pointer;
-}
-
-/* Móvil: transformar tabla en cards compactas expandibles */
+/* Móvil: tabla → cards (versión anterior, completa) */
 @media (max-width: 800px) {
   .agenda-table thead {
     display: none;
@@ -574,23 +554,31 @@ body {
   }
 
   .agenda-table tr {
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     border-radius: 8px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.08);
     background-color: #FFFFFF;
-    padding: 6px 8px;
+    padding: 8px 10px;
   }
 
   .agenda-table td {
     border-bottom: none;
-    padding: 2px 0;
+    padding: 4px 0;
   }
 
   .agenda-table td::before {
-    display: none; /* no mostrar etiquetas por celda, usamos diseño propio */
+    content: attr(data-label);
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 1px;
+  }
+
+  .agenda-table td:last-child {
+    margin-bottom: 4px;
   }
 
   .agenda-card {
-    padding: 10px 8px;
+    padding: 12px 10px;
   }
 }
