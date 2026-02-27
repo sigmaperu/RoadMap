@@ -423,16 +423,25 @@ body {
   }
 }
 
+/* ===================== */
+/* AGENDA                */
+/* ===================== */
+
+.agenda-card {
+  background-color: var(--surface);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-elevated);
+  padding: 16px 20px;
+}
+
 /* Filtros + búsqueda en una sola línea */
 .agenda-filters {
   display: flex;
-  flex-wrap: nowrap;          /* no permitir salto de línea */
+  flex-wrap: nowrap;
   align-items: flex-end;
-  gap: 10px;
   margin-bottom: 8px;
 }
 
-/* Contenedor que ocupa todo el ancho */
 .agenda-filters-inner {
   display: flex;
   flex: 1;
@@ -461,12 +470,12 @@ body {
   font-size: 0.78rem;
 }
 
-/* Lupa + barra en la misma línea, empujados a la derecha */
+/* Lupa + barra juntos, alineados a la derecha */
 .agenda-search-box {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-left: auto;          /* se pega al lado derecho */
+  margin-left: auto;
 }
 
 /* Botón buscar solo con lupa */
@@ -514,8 +523,126 @@ body {
   font-size: 0.8rem;
 }
 
-/* Ajuste en móviles: todo sigue en una línea pero más compacto */
+/* Tabla / cards */
+.agenda-table-wrapper {
+  margin-top: 8px;
+  overflow-x: auto;
+}
+
+.agenda-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.agenda-table thead {
+  background: #FAFAFA;
+}
+
+.agenda-table th,
+.agenda-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid #E0E0E0;
+  text-align: left;
+}
+
+/* Cabeceras con iconos, un poco más pequeñas para armonía */
+.agenda-table th {
+  font-weight: 500;
+  color: var(--text-muted);
+  white-space: nowrap;
+  font-size: 0.8rem;
+}
+
+.agenda-th-icon {
+  font-size: 14px;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+/* Cuerpo más pequeño solo en desktop */
+@media (min-width: 801px) {
+  .agenda-table td {
+    font-size: 0.7rem;
+  }
+}
+
+/* Links de dirección */
+.agenda-link {
+  color: var(--primary-dark);
+  text-decoration: none;
+}
+
+.agenda-link:hover {
+  text-decoration: underline;
+}
+
+/* Botón WhatsApp en celda de teléfono */
+.agenda-whatsapp-btn {
+  border: none;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  background-color: #25D366;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 4px;
+}
+
+.agenda-whatsapp-btn svg {
+  width: 13px;
+  height: 13px;
+  display: block;
+}
+
+/* ========= MÓVIL: tabla → cards ========= */
 @media (max-width: 800px) {
+  .agenda-table thead {
+    display: none;
+  }
+
+  .agenda-table,
+  .agenda-table tbody,
+  .agenda-table tr,
+  .agenda-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .agenda-table tr {
+    margin-bottom: 10px;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    background-color: #FFFFFF;
+    padding: 8px 10px;
+  }
+
+  .agenda-table td {
+    border-bottom: none;
+    padding: 4px 0;
+    font-size: 0.78rem;
+  }
+
+  .agenda-table td::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 0.74rem;
+    color: var(--text-muted);
+    margin-bottom: 1px;
+  }
+
+  .agenda-table td:last-child {
+    margin-bottom: 4px;
+  }
+
+  .agenda-card {
+    padding: 12px 10px;
+  }
+
+  /* Search box compacto en móvil, pero en la misma línea */
   .agenda-filters-inner {
     gap: 6px;
   }
