@@ -239,39 +239,29 @@
       return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(lat + "," + lng);
     }
 
-    // Decide qué mostrar como “principal” según búsqueda
-    function getMainInfo(row, termLower) {
-      const placa = (row[2] || "").trim();
-      const cliente = (row[3] || "").trim();
-      const nombre = buildNombre(row).trim();
-      const ruta = buildRuta(row).trim();
-
-      const term = termLower || "";
-
-      const matchPlaca = term && placa.toLowerCase().includes(term);
-      const matchRuta = term && ruta.toLowerCase().includes(term);
-
-      if (matchRuta && !matchPlaca) {
-        // búsqueda más orientada a ruta
-        return {
-          line1: ruta || "(Sin ruta)",
-          line2: (cliente || "") + (cliente && nombre ? " · " : "") + (nombre || "")
-        };
-      }
-
-      // por defecto (o búsqueda por placa/cliente/nombre)
-      return {
-        line1: placa || "(Sin placa)",
-        line2: (cliente || "") + (cliente && nombre ? " · " : "") + (nombre || "")
-      };
+    // Agrupa filas por Centro + Cliente (código col 3)
+    function groupByCliente(rows) {
+      const map = new Map();
+      rows.forEach(r => {
+        const centro = r[1] || "";
+        const cliente = r[3] || "";
+        const key = centro + "||" + cliente;
+        if (!cliente) return; // sin código cliente, ignorar
+        if (!map.has(key)) {
+          map.set(key, r); // guardamos primera fila del cliente en ese centro
+        }
+      });
+      return Array.from(map.values());
     }
 
     function renderAgenda() {
       const centroSel = agendaCentroSelect.value;
       const term = (agendaSearchInput.value || "").toLowerCase().trim();
 
+      // primero filtro por centro
       let rows = agendaRows.filter(r => r[1] === centroSel);
 
+      // luego filtro por término (en todas las filas)
       if (term) {
         rows = rows.filter(r => {
           const placa = (r[2] || "").toLowerCase();
@@ -293,9 +283,12 @@
         });
       }
 
+      // finalmente agrupo por cliente para que quede un registro único
+      const grouped = groupByCliente(rows);
+
       agendaTableBody.innerHTML = "";
 
-      rows.forEach(r => {
+      grouped.forEach(r => {
         const placa = r[2] || "";
         const cliente = r[3] || "";
         const nombre = buildNombre(r);
@@ -307,26 +300,43 @@
         const mapsUrl = googleMapsLink(r);
 
         const tr = document.createElement("tr");
-        tr.classList.add("agenda-card-row");
 
-        // Desktop: celdas normales
-        function td(value, label) {
+        function td(value, label, iconName) {
           const cell = document.createElement("td");
-          cell.textContent = value || "-";
           cell.setAttribute("data-label", label);
+          if (iconName) {
+            const icon = document.createElement("span");
+            icon.className = "material-icons";
+            icon.style.fontSize = "14px";
+            icon.style.verticalAlign = "middle";
+            icon.style.marginRight = "4px";
+            icon.textContent = iconName;
+            cell.appendChild(icon);
+          }
+          const text = document.createElement("span");
+          text.textContent = value || "-";
+          cell.appendChild(text);
           return cell;
         }
 
-        tr.appendChild(td(placa, "Placa"));
-        tr.appendChild(td(cliente, "Cliente"));
-        tr.appendChild(td(nombre, "Nombre"));
-        tr.appendChild(td(vh, "VH"));
-        tr.appendChild(td(ruta, "Ruta"));
-        tr.appendChild(td(auxiliar, "Auxiliar"));
-        tr.appendChild(td(telefono, "Teléfono"));
+        tr.appendChild(td(placa, "Placa", "local_shipping"));
+        tr.appendChild(td(cliente, "Cliente", "badge"));
+        tr.appendChild(td(nombre, "Nombre", "person"));
+        tr.appendChild(td(vh, "VH", "precision_manufacturing"));
+        tr.appendChild(td(ruta, "Ruta", "alt_route"));
+        tr.appendChild(td(auxiliar, "Auxiliar", "group"));
+        tr.appendChild(td(telefono, "Teléfono", "phone"));
 
         const tdDir = document.createElement("td");
         tdDir.setAttribute("data-label", "Dirección");
+        const iconLoc = document.createElement("span");
+        iconLoc.className = "material-icons";
+        iconLoc.style.fontSize = "14px";
+        iconLoc.style.verticalAlign = "middle";
+        iconLoc.style.marginRight = "4px";
+        iconLoc.textContent = "location_on";
+        tdDir.appendChild(iconLoc);
+
         if (mapsUrl) {
           const a = document.createElement("a");
           a.href = mapsUrl;
@@ -336,22 +346,16 @@
           a.textContent = dirTexto || "Ver en mapa";
           tdDir.appendChild(a);
         } else {
-          tdDir.textContent = dirTexto || "-";
+          const span = document.createElement("span");
+          span.textContent = dirTexto || "-";
+          tdDir.appendChild(span);
         }
         tr.appendChild(tdDir);
-
-        // Modo móvil: contenido compacto dentro de la fila
-        const { line1, line2 } = getMainInfo(r, term);
-        tr.dataset.mainLine1 = line1;
-        tr.dataset.mainLine2 = line2;
-        tr.dataset.extra = JSON.stringify({
-          vh, ruta, auxiliar, telefono, dirTexto, mapsUrl
-        });
 
         agendaTableBody.appendChild(tr);
       });
 
-      if (rows.length === 0) {
+      if (grouped.length === 0) {
         const trEmpty = document.createElement("tr");
         const tdEmpty = document.createElement("td");
         tdEmpty.colSpan = 8;
@@ -359,72 +363,6 @@
         trEmpty.appendChild(tdEmpty);
         agendaTableBody.appendChild(trEmpty);
       }
-
-      applyMobileLayout();
-    }
-
-    // Reconstruye contenido de las filas en móvil como cards compactas/expandibles
-    function applyMobileLayout() {
-      const isMobile = window.matchMedia("(max-width: 800px)").matches;
-      const rows = agendaTableBody.querySelectorAll("tr.agenda-card-row");
-
-      rows.forEach(tr => {
-        const tds = Array.from(tr.children);
-        if (!isMobile) {
-          // Desktop: asegurar que se vea la tabla estándar
-          tds.forEach((td, idx) => {
-            td.style.display = "";
-          });
-          tr.onclick = null;
-          tr.innerHTML = "";
-          tds.forEach(td => tr.appendChild(td));
-          return;
-        }
-
-        // Móvil: construir card compacta
-        const mainLine1 = tr.dataset.mainLine1 || "";
-        const mainLine2 = tr.dataset.mainLine2 || "";
-        let extra = {};
-        try {
-          extra = JSON.parse(tr.dataset.extra || "{}");
-        } catch (_) {}
-
-        tr.innerHTML = "";
-
-        const tdSingle = document.createElement("td");
-        tdSingle.style.display = "block";
-
-        const mainDiv = document.createElement("div");
-        mainDiv.className = "agenda-row-main";
-        mainDiv.textContent = mainLine1;
-
-        const secDiv = document.createElement("div");
-        secDiv.className = "agenda-row-secondary";
-        secDiv.textContent = mainLine2;
-
-        const extraDiv = document.createElement("div");
-        extraDiv.className = "agenda-row-extra";
-        extraDiv.style.display = "none";
-
-        const lines = [];
-        if (extra.vh) lines.push("VH: " + extra.vh);
-        if (extra.ruta) lines.push("Ruta: " + extra.ruta);
-        if (extra.auxiliar) lines.push("Auxiliar: " + extra.auxiliar);
-        if (extra.telefono) lines.push("Teléfono: " + extra.telefono);
-        if (extra.dirTexto) lines.push("Dirección: " + extra.dirTexto);
-
-        extraDiv.textContent = lines.join(" · ");
-
-        tdSingle.appendChild(mainDiv);
-        tdSingle.appendChild(secDiv);
-        tdSingle.appendChild(extraDiv);
-        tr.appendChild(tdSingle);
-
-        tr.onclick = () => {
-          const visible = extraDiv.style.display === "block";
-          extraDiv.style.display = visible ? "none" : "block";
-        };
-      });
     }
 
     async function initAgenda() {
@@ -453,8 +391,6 @@
       });
 
       agendaSearchInput.addEventListener("input", renderAgenda);
-
-      window.addEventListener("resize", applyMobileLayout);
     }
 
     document.addEventListener("DOMContentLoaded", initAgenda);
