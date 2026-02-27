@@ -428,7 +428,7 @@ body {
   background-color: var(--surface);
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-elevated);
-  padding: 12px 14px;
+  padding: 14px 18px; /* un poco más amplio para la tabla */
 }
 
 /* Filtros Agenda */
@@ -510,7 +510,7 @@ body {
 .agenda-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.74rem; /* más pequeño en desktop */
+  font-size: 0.8rem; /* tamaño base */
 }
 
 .agenda-table thead {
@@ -519,21 +519,30 @@ body {
 
 .agenda-table th,
 .agenda-table td {
-  padding: 5px 7px;
+  padding: 6px 8px;
   border-bottom: 1px solid #E0E0E0;
   text-align: left;
 }
 
+/* Cabeceras (con iconos) un poco más grandes en desktop */
 .agenda-table th {
   font-weight: 500;
   color: var(--text-muted);
   white-space: nowrap;
+  font-size: 0.82rem;
 }
 
 .agenda-th-icon {
   font-size: 14px;
   vertical-align: middle;
   margin-right: 4px;
+}
+
+/* Cuerpo más pequeño solo en desktop */
+@media (min-width: 801px) {
+  .agenda-table td {
+    font-size: 0.74rem;
+  }
 }
 
 /* Links de dirección */
@@ -546,7 +555,7 @@ body {
   text-decoration: underline;
 }
 
-/* Móvil: tabla → cards completas con etiquetas */
+/* Móvil: tabla → cards, mostrando etiquetas (con iconos incluidos desde el thead) */
 @media (max-width: 800px) {
   .agenda-table thead {
     display: none;
@@ -562,7 +571,7 @@ body {
 
   .agenda-table tr {
     margin-bottom: 10px;
-    border-radius: 8px;
+    border-radius: 10px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.08);
     background-color: #FFFFFF;
     padding: 8px 10px;
@@ -571,12 +580,13 @@ body {
   .agenda-table td {
     border-bottom: none;
     padding: 4px 0;
+    font-size: 0.78rem;
   }
 
   .agenda-table td::before {
     content: attr(data-label);
     display: block;
-    font-size: 0.72rem;
+    font-size: 0.74rem;
     color: var(--text-muted);
     margin-bottom: 1px;
   }
