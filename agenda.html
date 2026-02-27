@@ -79,26 +79,28 @@
         <section class="page-section">
           <div class="agenda-card">
             <div class="agenda-filters">
-              <div class="agenda-filters__group">
-                <label for="agendaCentro">Centro</label>
-                <select id="agendaCentro"></select>
-              </div>
+  <div class="agenda-filters-inner">
+    <div class="agenda-filters__group">
+      <label for="agendaCentro">Centro</label>
+      <select id="agendaCentro"></select>
+    </div>
 
-              <div class="agenda-search-box">
-                <div id="agendaSearchBar" class="agenda-search-bar">
-                  <input
-                    id="agendaSearchInput"
-                    class="agenda-search-input"
-                    type="text"
-                    placeholder="Buscar por placa, cliente, ruta, etc."
-                  />
-                </div>
+    <div class="agenda-search-box">
+      <div id="agendaSearchBar" class="agenda-search-bar">
+        <input
+          id="agendaSearchInput"
+          class="agenda-search-input"
+          type="text"
+          placeholder="Buscar por placa, cliente, ruta, etc."
+        />
+      </div>
 
-                <button id="agendaSearchToggle" class="agenda-search-toggle" type="button" aria-label="Buscar">
-                  <span class="material-icons">search</span>
-                </button>
-              </div>
-            </div>
+      <button id="agendaSearchToggle" class="agenda-search-toggle" type="button" aria-label="Buscar">
+        <span class="material-icons">search</span>
+      </button>
+    </div>
+  </div>
+</div>
 
             <div class="agenda-table-wrapper" id="agendaResults" style="display:none;">
               <table id="agendaTable" class="agenda-table">
