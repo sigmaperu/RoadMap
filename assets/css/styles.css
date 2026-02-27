@@ -422,22 +422,7 @@ body {
     display: none;
   }
 }
-
-/* ===================== */
-/* LAYOUT GENERAL (ancho)*/
-/* ===================== */
-
-/* Ensanchar área útil del contenido en desktop */
-@media (min-width: 1024px) {
-  .content {
-    max-width: 1320px;
-    margin: 0 auto;
-  }
-}
-
-/* ===================== */
-/* AGENDA                */
-/* ===================== */
+/* ========== AGENDA: FILTROS + BÚSQUEDA ========== */
 
 .agenda-card {
   background-color: var(--surface);
@@ -446,11 +431,11 @@ body {
   padding: 14px 18px;
 }
 
-/* Filtros + búsqueda en una sola línea */
+/* Todo en una sola línea, centrado verticalmente */
 .agenda-filters {
   display: flex;
   flex-wrap: nowrap;
-  align-items: center; /* todo centrado verticalmente */
+  align-items: center;
   margin-bottom: 8px;
 }
 
@@ -474,8 +459,13 @@ body {
   margin-bottom: 2px;
 }
 
+/* Alto estándar para TODOS los controles (select, input, botón) */
+:root {
+  --agenda-control-height: 30px;
+}
+
 .agenda-filters__group select {
-  height: 30px;
+  height: var(--agenda-control-height);
   padding: 0 10px;
   border-radius: 999px;
   border: 1px solid rgba(0,0,0,0.2);
@@ -484,7 +474,7 @@ body {
   box-sizing: border-box;
 }
 
-/* Lupa + barra juntos, alineados a la derecha */
+/* Lupa + barra, alineados a la derecha */
 .agenda-search-box {
   display: flex;
   align-items: center;
@@ -492,12 +482,12 @@ body {
   margin-left: auto;
 }
 
-/* Botón buscar solo con lupa */
+/* Botón lupa */
 .agenda-search-toggle {
   border: none;
   border-radius: 999px;
-  width: 30px;
-  height: 30px;
+  width: var(--agenda-control-height);
+  height: var(--agenda-control-height);
   cursor: pointer;
   background-color: var(--primary);
   color: #fff;
@@ -510,10 +500,6 @@ body {
   font-size: 18px;
 }
 
-.agenda-search-toggle:hover {
-  background-color: var(--primary-dark);
-}
-
 /* Barra que se expande desde la lupa hacia la izquierda */
 .agenda-search-bar {
   position: relative;
@@ -521,7 +507,7 @@ body {
   max-width: 0;
   opacity: 0;
   transition: max-width 0.3s ease, opacity 0.25s ease;
-  height: 30px;           /* misma altura que select y lupa */
+  height: var(--agenda-control-height);
   display: flex;
   align-items: center;
 }
@@ -533,7 +519,7 @@ body {
 
 .agenda-search-input {
   width: 220px;
-  height: 30px;
+  height: var(--agenda-control-height);
   padding: 0 10px;
   border-radius: 999px;
   border: 1px solid rgba(0,0,0,0.2);
@@ -542,128 +528,12 @@ body {
   box-sizing: border-box;
 }
 
-/* Tabla / cards */
-.agenda-table-wrapper {
-  margin-top: 8px;
-  overflow-x: auto;
-}
-
-.agenda-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.76rem;
-}
-
-/* Cabecera morada con iconos blancos */
-.agenda-table thead {
-  background: #7B1FA2;
-  color: #FFFFFF;
-}
-
-.agenda-table th,
-.agenda-table td {
-  padding: 5px 7px;
-  border-bottom: 1px solid #E0E0E0;
-  text-align: left;
-}
-
-/* Cabeceras más compactas */
-.agenda-table th {
-  font-weight: 500;
-  white-space: nowrap;
-  font-size: 0.72rem;
-}
-
-.agenda-th-icon {
-  font-size: 14px;
-  vertical-align: middle;
-  margin-right: 4px;
-  color: #F3E5F5;
-}
-
-/* Cuerpo aún más pequeño solo en desktop */
-@media (min-width: 801px) {
-  .agenda-table td {
-    font-size: 0.66rem;
-  }
-}
-
-/* Links de dirección */
-.agenda-link {
-  color: var(--primary-dark);
-  text-decoration: none;
-}
-
-.agenda-link:hover {
-  text-decoration: underline;
-}
-
-/* Botón WhatsApp */
-.agenda-whatsapp-btn {
-  border: none;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-  background-color: #25D366;
-  color: #fff;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 4px;
-}
-
-.agenda-whatsapp-btn svg {
-  width: 12px;
-  height: 12px;
-  display: block;
-}
-
-/* ========= MÓVIL: tabla → cards ========= */
+/* En móvil hacemos la barra un poco más corta, pero alineada igual */
 @media (max-width: 800px) {
-  .agenda-table thead {
-    display: none;
+  .agenda-filters__group {
+    min-width: 140px;
   }
 
-  .agenda-table,
-  .agenda-table tbody,
-  .agenda-table tr,
-  .agenda-table td {
-    display: block;
-    width: 100%;
-  }
-
-  .agenda-table tr {
-    margin-bottom: 10px;
-    border-radius: 10px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-    background-color: #FFFFFF;
-    padding: 8px 10px;
-  }
-
-  .agenda-table td {
-    border-bottom: none;
-    padding: 4px 0;
-    font-size: 0.78rem;
-  }
-
-  .agenda-table td::before {
-    content: attr(data-label);
-    display: block;
-    font-size: 0.74rem;
-    color: var(--text-muted);
-    margin-bottom: 1px;
-  }
-
-  .agenda-table td:last-child {
-    margin-bottom: 4px;
-  }
-
-  .agenda-card {
-    padding: 12px 10px;
-  }
-
-  /* Barra un poco más corta en móvil, pero alineada */
   .agenda-search-bar--open {
     max-width: 150px;
   }
@@ -671,4 +541,14 @@ body {
   .agenda-search-input {
     width: 150px;
   }
+}
+
+/* Reducir área gris entre header y tarjeta en Agenda */
+.content {
+  padding-top: 8px;   /* antes probablemente era 16px o más */
+}
+
+/* Si tienes una regla más específica para .page-section, también la compactamos */
+.page-section {
+  margin-top: 4px;
 }
