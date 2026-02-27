@@ -424,6 +424,18 @@ body {
 }
 
 /* ===================== */
+/* LAYOUT GENERAL (ancho)*/
+/* ===================== */
+
+/* Ensanchar área útil del contenido en desktop */
+@media (min-width: 1024px) {
+  .content {
+    max-width: 1320px;
+    margin: 0 auto;
+  }
+}
+
+/* ===================== */
 /* AGENDA                */
 /* ===================== */
 
@@ -431,14 +443,14 @@ body {
   background-color: var(--surface);
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-elevated);
-  padding: 16px 20px;
+  padding: 14px 18px;
 }
 
 /* Filtros + búsqueda en una sola línea */
 .agenda-filters {
   display: flex;
   flex-wrap: nowrap;
-  align-items: center; /* centra verticalmente todo */
+  align-items: center; /* todo centrado verticalmente */
   margin-bottom: 8px;
 }
 
@@ -446,29 +458,30 @@ body {
   display: flex;
   flex: 1;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 /* Grupo Centro */
 .agenda-filters__group {
   display: flex;
   flex-direction: column;
-  min-width: 140px;
+  min-width: 160px;
 }
 
 .agenda-filters__group label {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: var(--text-muted);
   margin-bottom: 2px;
 }
 
 .agenda-filters__group select {
-  height: 32px;
-  padding: 0 8px;
+  height: 30px;
+  padding: 0 10px;
   border-radius: 999px;
   border: 1px solid rgba(0,0,0,0.2);
   font-family: inherit;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
+  box-sizing: border-box;
 }
 
 /* Lupa + barra juntos, alineados a la derecha */
@@ -483,8 +496,8 @@ body {
 .agenda-search-toggle {
   border: none;
   border-radius: 999px;
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   cursor: pointer;
   background-color: var(--primary);
   color: #fff;
@@ -508,7 +521,7 @@ body {
   max-width: 0;
   opacity: 0;
   transition: max-width 0.3s ease, opacity 0.25s ease;
-  height: 32px; /* misma altura que el select y la lupa */
+  height: 30px;           /* misma altura que select y lupa */
   display: flex;
   align-items: center;
 }
@@ -520,12 +533,12 @@ body {
 
 .agenda-search-input {
   width: 220px;
-  height: 32px;
+  height: 30px;
   padding: 0 10px;
   border-radius: 999px;
   border: 1px solid rgba(0,0,0,0.2);
   font-family: inherit;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   box-sizing: border-box;
 }
 
@@ -538,40 +551,40 @@ body {
 .agenda-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
 }
 
 /* Cabecera morada con iconos blancos */
 .agenda-table thead {
-  background: #7B1FA2; /* morado */
+  background: #7B1FA2;
   color: #FFFFFF;
 }
 
 .agenda-table th,
 .agenda-table td {
-  padding: 6px 8px;
+  padding: 5px 7px;
   border-bottom: 1px solid #E0E0E0;
   text-align: left;
 }
 
-/* Cabeceras más pequeñas y con iconos claros */
+/* Cabeceras más compactas */
 .agenda-table th {
   font-weight: 500;
   white-space: nowrap;
-  font-size: 0.76rem;
+  font-size: 0.72rem;
 }
 
 .agenda-th-icon {
-  font-size: 15px;
+  font-size: 14px;
   vertical-align: middle;
   margin-right: 4px;
-  color: #F3E5F5; /* lila claro */
+  color: #F3E5F5;
 }
 
-/* Cuerpo más pequeño solo en desktop */
+/* Cuerpo aún más pequeño solo en desktop */
 @media (min-width: 801px) {
   .agenda-table td {
-    font-size: 0.7rem;
+    font-size: 0.66rem;
   }
 }
 
@@ -589,8 +602,8 @@ body {
 .agenda-whatsapp-btn {
   border: none;
   border-radius: 50%;
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   cursor: pointer;
   background-color: #25D366;
   color: #fff;
@@ -601,8 +614,8 @@ body {
 }
 
 .agenda-whatsapp-btn svg {
-  width: 13px;
-  height: 13px;
+  width: 12px;
+  height: 12px;
   display: block;
 }
 
