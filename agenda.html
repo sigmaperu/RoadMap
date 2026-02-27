@@ -265,7 +265,6 @@
       return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(lat + "," + lng);
     }
 
-    // Agrupa filas por Centro + Cliente (código col 3)
     function groupByCliente(rows) {
       const map = new Map();
       rows.forEach(r => {
@@ -282,7 +281,6 @@
 
     function renderAgenda() {
       if (!hasSearched) {
-        // si aún no se ha hecho búsqueda, no renderizamos datos
         agendaResults.style.display = "none";
         agendaTableBody.innerHTML = "";
         return;
@@ -383,7 +381,6 @@
         const { rows } = parseCSV(text);
         agendaRows = rows;
         loadCentros();
-        // no renderizamos aún; esperamos a que el usuario busque
       } catch (err) {
         console.error("Error cargando RoadMap.csv en Agenda:", err);
         alert("No se pudo cargar RoadMap.csv para Agenda");
@@ -394,7 +391,6 @@
       });
 
       agendaSearchToggle.addEventListener("click", () => {
-        // al abrir la barra de búsqueda no mostramos datos todavía
         agendaSearchBar.classList.toggle("agenda-search-bar--open");
         if (agendaSearchBar.classList.contains("agenda-search-bar--open")) {
           agendaSearchInput.focus();
