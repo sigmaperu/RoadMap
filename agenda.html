@@ -152,7 +152,7 @@
   <script>
     const CSV_URL = "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
 
-    // Índices:
+    // Índices RoadMap:
     // 1: Centro
     // 2: Placa
     // 3: Cliente (código)
@@ -265,6 +265,12 @@
       return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(lat + "," + lng);
     }
 
+    // Limpia un teléfono a solo dígitos para wa.me
+    function cleanPhone(phoneRaw) {
+      if (!phoneRaw) return "";
+      return phoneRaw.replace(/[^0-9]/g, "");
+    }
+
     function groupByCliente(rows) {
       const map = new Map();
       rows.forEach(r => {
@@ -342,8 +348,33 @@
         tr.appendChild(td(vh, "VH"));
         tr.appendChild(td(ruta, "Ruta"));
         tr.appendChild(td(auxiliar, "Auxiliar"));
-        tr.appendChild(td(telefono, "Teléfono"));
 
+        // Teléfono + botón WhatsApp
+        const tdTel = document.createElement("td");
+        tdTel.setAttribute("data-label", "Teléfono");
+        tdTel.textContent = telefono || "-";
+        const phoneClean = cleanPhone(telefono);
+        if (phoneClean) {
+          const waLink = "https://wa.me/" + phoneClean;
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "agenda-whatsapp-btn";
+          btn.onclick = (e) => {
+            e.stopPropagation();
+            window.open(waLink, "_blank");
+          };
+          const icon = document.createElement("span");
+          icon.className = "material-icons";
+          icon.textContent = "whatsapp";
+          const label = document.createElement("span");
+          label.textContent = "Chat";
+          btn.appendChild(icon);
+          btn.appendChild(label);
+          tdTel.appendChild(btn);
+        }
+        tr.appendChild(tdTel);
+
+        // Dirección
         const tdDir = document.createElement("td");
         tdDir.setAttribute("data-label", "Dirección");
         if (mapsUrl) {
