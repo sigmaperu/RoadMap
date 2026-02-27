@@ -98,22 +98,46 @@
               />
             </div>
 
-            <div class="agenda-table-wrapper">
+            <div class="agenda-table-wrapper" id="agendaResults" style="display:none;">
               <table id="agendaTable" class="agenda-table">
                 <thead>
                   <tr>
-                    <th>Placa</th>
-                    <th>Cliente</th>
-                    <th>Nombre</th>
-                    <th>VH</th>
-                    <th>Ruta</th>
-                    <th>Auxiliar</th>
-                    <th>Teléfono</th>
-                    <th>Dirección</th>
+                    <th>
+                      <span class="material-icons agenda-th-icon">local_shipping</span>
+                      Placa
+                    </th>
+                    <th>
+                      <span class="material-icons agenda-th-icon">badge</span>
+                      Cliente
+                    </th>
+                    <th>
+                      <span class="material-icons agenda-th-icon">person</span>
+                      Nombre
+                    </th>
+                    <th>
+                      <span class="material-icons agenda-th-icon">precision_manufacturing</span>
+                      VH
+                    </th>
+                    <th>
+                      <span class="material-icons agenda-th-icon">alt_route</span>
+                      Ruta
+                    </th>
+                    <th>
+                      <span class="material-icons agenda-th-icon">group</span>
+                      Auxiliar
+                    </th>
+                    <th>
+                      <span class="material-icons agenda-th-icon">phone</span>
+                      Teléfono
+                    </th>
+                    <th>
+                      <span class="material-icons agenda-th-icon">location_on</span>
+                      Dirección
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  <!-- filas generadas por JS -->
+                  <!-- filas por JS -->
                 </tbody>
               </table>
             </div>
@@ -128,7 +152,7 @@
   <script>
     const CSV_URL = "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
 
-    // Índices RoadMap:
+    // Índices:
     // 1: Centro
     // 2: Placa
     // 3: Cliente (código)
@@ -147,12 +171,14 @@
 
     let agendaRows = [];
     let centrosAgenda = [];
+    let hasSearched = false;
 
     const agendaCentroSelect = document.getElementById("agendaCentro");
     const agendaSearchToggle = document.getElementById("agendaSearchToggle");
     const agendaSearchBar = document.getElementById("agendaSearchBar");
     const agendaSearchInput = document.getElementById("agendaSearchInput");
     const agendaTableBody = document.querySelector("#agendaTable tbody");
+    const agendaResults = document.getElementById("agendaResults");
 
     function parseCSV(text) {
       const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
@@ -246,22 +272,27 @@
         const centro = r[1] || "";
         const cliente = r[3] || "";
         const key = centro + "||" + cliente;
-        if (!cliente) return; // sin código cliente, ignorar
+        if (!cliente) return;
         if (!map.has(key)) {
-          map.set(key, r); // guardamos primera fila del cliente en ese centro
+          map.set(key, r);
         }
       });
       return Array.from(map.values());
     }
 
     function renderAgenda() {
+      if (!hasSearched) {
+        // si aún no se ha hecho búsqueda, no renderizamos datos
+        agendaResults.style.display = "none";
+        agendaTableBody.innerHTML = "";
+        return;
+      }
+
       const centroSel = agendaCentroSelect.value;
       const term = (agendaSearchInput.value || "").toLowerCase().trim();
 
-      // primero filtro por centro
       let rows = agendaRows.filter(r => r[1] === centroSel);
 
-      // luego filtro por término (en todas las filas)
       if (term) {
         rows = rows.filter(r => {
           const placa = (r[2] || "").toLowerCase();
@@ -283,7 +314,6 @@
         });
       }
 
-      // finalmente agrupo por cliente para que quede un registro único
       const grouped = groupByCliente(rows);
 
       agendaTableBody.innerHTML = "";
@@ -301,42 +331,23 @@
 
         const tr = document.createElement("tr");
 
-        function td(value, label, iconName) {
+        function td(value, label) {
           const cell = document.createElement("td");
           cell.setAttribute("data-label", label);
-          if (iconName) {
-            const icon = document.createElement("span");
-            icon.className = "material-icons";
-            icon.style.fontSize = "14px";
-            icon.style.verticalAlign = "middle";
-            icon.style.marginRight = "4px";
-            icon.textContent = iconName;
-            cell.appendChild(icon);
-          }
-          const text = document.createElement("span");
-          text.textContent = value || "-";
-          cell.appendChild(text);
+          cell.textContent = value || "-";
           return cell;
         }
 
-        tr.appendChild(td(placa, "Placa", "local_shipping"));
-        tr.appendChild(td(cliente, "Cliente", "badge"));
-        tr.appendChild(td(nombre, "Nombre", "person"));
-        tr.appendChild(td(vh, "VH", "precision_manufacturing"));
-        tr.appendChild(td(ruta, "Ruta", "alt_route"));
-        tr.appendChild(td(auxiliar, "Auxiliar", "group"));
-        tr.appendChild(td(telefono, "Teléfono", "phone"));
+        tr.appendChild(td(placa, "Placa"));
+        tr.appendChild(td(cliente, "Cliente"));
+        tr.appendChild(td(nombre, "Nombre"));
+        tr.appendChild(td(vh, "VH"));
+        tr.appendChild(td(ruta, "Ruta"));
+        tr.appendChild(td(auxiliar, "Auxiliar"));
+        tr.appendChild(td(telefono, "Teléfono"));
 
         const tdDir = document.createElement("td");
         tdDir.setAttribute("data-label", "Dirección");
-        const iconLoc = document.createElement("span");
-        iconLoc.className = "material-icons";
-        iconLoc.style.fontSize = "14px";
-        iconLoc.style.verticalAlign = "middle";
-        iconLoc.style.marginRight = "4px";
-        iconLoc.textContent = "location_on";
-        tdDir.appendChild(iconLoc);
-
         if (mapsUrl) {
           const a = document.createElement("a");
           a.href = mapsUrl;
@@ -346,9 +357,7 @@
           a.textContent = dirTexto || "Ver en mapa";
           tdDir.appendChild(a);
         } else {
-          const span = document.createElement("span");
-          span.textContent = dirTexto || "-";
-          tdDir.appendChild(span);
+          tdDir.textContent = dirTexto || "-";
         }
         tr.appendChild(tdDir);
 
@@ -363,6 +372,8 @@
         trEmpty.appendChild(tdEmpty);
         agendaTableBody.appendChild(trEmpty);
       }
+
+      agendaResults.style.display = "block";
     }
 
     async function initAgenda() {
@@ -372,25 +383,32 @@
         const { rows } = parseCSV(text);
         agendaRows = rows;
         loadCentros();
-        renderAgenda();
+        // no renderizamos aún; esperamos a que el usuario busque
       } catch (err) {
         console.error("Error cargando RoadMap.csv en Agenda:", err);
         alert("No se pudo cargar RoadMap.csv para Agenda");
       }
 
-      agendaCentroSelect.addEventListener("change", renderAgenda);
+      agendaCentroSelect.addEventListener("change", () => {
+        if (hasSearched) renderAgenda();
+      });
 
       agendaSearchToggle.addEventListener("click", () => {
+        // al abrir la barra de búsqueda no mostramos datos todavía
         agendaSearchBar.classList.toggle("agenda-search-bar--open");
         if (agendaSearchBar.classList.contains("agenda-search-bar--open")) {
           agendaSearchInput.focus();
         } else {
           agendaSearchInput.value = "";
+          hasSearched = false;
           renderAgenda();
         }
       });
 
-      agendaSearchInput.addEventListener("input", renderAgenda);
+      agendaSearchInput.addEventListener("input", () => {
+        hasSearched = true;
+        renderAgenda();
+      });
     }
 
     document.addEventListener("DOMContentLoaded", initAgenda);
