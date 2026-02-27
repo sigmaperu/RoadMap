@@ -438,14 +438,14 @@ body {
 .agenda-filters {
   display: flex;
   flex-wrap: nowrap;
-  align-items: flex-end;
+  align-items: center; /* centra verticalmente todo */
   margin-bottom: 8px;
 }
 
 .agenda-filters-inner {
   display: flex;
   flex: 1;
-  align-items: flex-end;
+  align-items: center;
   gap: 8px;
 }
 
@@ -453,21 +453,22 @@ body {
 .agenda-filters__group {
   display: flex;
   flex-direction: column;
-  min-width: 120px;
+  min-width: 140px;
 }
 
 .agenda-filters__group label {
   font-size: 0.72rem;
   color: var(--text-muted);
-  margin-bottom: 1px;
+  margin-bottom: 2px;
 }
 
 .agenda-filters__group select {
-  padding: 3px 5px;
-  border-radius: 8px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 999px;
   border: 1px solid rgba(0,0,0,0.2);
   font-family: inherit;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
 }
 
 /* Lupa + barra juntos, alineados a la derecha */
@@ -482,8 +483,8 @@ body {
 .agenda-search-toggle {
   border: none;
   border-radius: 999px;
-  padding: 6px;
-  font-size: 0.8rem;
+  width: 32px;
+  height: 32px;
   cursor: pointer;
   background-color: var(--primary);
   color: #fff;
@@ -507,6 +508,9 @@ body {
   max-width: 0;
   opacity: 0;
   transition: max-width 0.3s ease, opacity 0.25s ease;
+  height: 32px; /* misma altura que el select y la lupa */
+  display: flex;
+  align-items: center;
 }
 
 .agenda-search-bar--open {
@@ -516,11 +520,13 @@ body {
 
 .agenda-search-input {
   width: 220px;
-  padding: 5px 8px;
+  height: 32px;
+  padding: 0 10px;
   border-radius: 999px;
   border: 1px solid rgba(0,0,0,0.2);
   font-family: inherit;
   font-size: 0.8rem;
+  box-sizing: border-box;
 }
 
 /* Tabla / cards */
@@ -532,11 +538,13 @@ body {
 .agenda-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
 }
 
+/* Cabecera morada con iconos blancos */
 .agenda-table thead {
-  background: #FAFAFA;
+  background: #7B1FA2; /* morado */
+  color: #FFFFFF;
 }
 
 .agenda-table th,
@@ -546,18 +554,18 @@ body {
   text-align: left;
 }
 
-/* Cabeceras con iconos, un poco más pequeñas para armonía */
+/* Cabeceras más pequeñas y con iconos claros */
 .agenda-table th {
   font-weight: 500;
-  color: var(--text-muted);
   white-space: nowrap;
-  font-size: 0.8rem;
+  font-size: 0.76rem;
 }
 
 .agenda-th-icon {
-  font-size: 14px;
+  font-size: 15px;
   vertical-align: middle;
   margin-right: 4px;
+  color: #F3E5F5; /* lila claro */
 }
 
 /* Cuerpo más pequeño solo en desktop */
@@ -577,7 +585,7 @@ body {
   text-decoration: underline;
 }
 
-/* Botón WhatsApp en celda de teléfono */
+/* Botón WhatsApp */
 .agenda-whatsapp-btn {
   border: none;
   border-radius: 50%;
@@ -642,16 +650,7 @@ body {
     padding: 12px 10px;
   }
 
-  /* Search box compacto en móvil, pero en la misma línea */
-  .agenda-filters-inner {
-    gap: 6px;
-  }
-
-  .agenda-filters__group {
-    min-width: 0;
-    flex: 1;
-  }
-
+  /* Barra un poco más corta en móvil, pero alineada */
   .agenda-search-bar--open {
     max-width: 150px;
   }
