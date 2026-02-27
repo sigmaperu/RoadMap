@@ -423,27 +423,28 @@ body {
   }
 }
 
-/* Agenda: contenedor */
-.agenda-card {
-  background-color: var(--surface);
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow-elevated);
-  padding: 16px 20px;
-}
-
-/* Filtros Agenda */
+/* Filtros + búsqueda en una sola línea */
 .agenda-filters {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  flex-wrap: nowrap;          /* no permitir salto de línea */
   align-items: flex-end;
+  gap: 10px;
   margin-bottom: 8px;
 }
 
+/* Contenedor que ocupa todo el ancho */
+.agenda-filters-inner {
+  display: flex;
+  flex: 1;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+/* Grupo Centro */
 .agenda-filters__group {
   display: flex;
   flex-direction: column;
-  min-width: 140px;
+  min-width: 120px;
 }
 
 .agenda-filters__group label {
@@ -460,11 +461,12 @@ body {
   font-size: 0.78rem;
 }
 
-/* Contenedor lupa + barra, alineados entre sí */
+/* Lupa + barra en la misma línea, empujados a la derecha */
 .agenda-search-box {
   display: flex;
   align-items: center;
   gap: 6px;
+  margin-left: auto;          /* se pega al lado derecho */
 }
 
 /* Botón buscar solo con lupa */
@@ -489,7 +491,7 @@ body {
   background-color: var(--primary-dark);
 }
 
-/* Barra de búsqueda que se expande desde la lupa hacia la izquierda */
+/* Barra que se expande desde la lupa hacia la izquierda */
 .agenda-search-bar {
   position: relative;
   overflow: hidden;
@@ -499,7 +501,7 @@ body {
 }
 
 .agenda-search-bar--open {
-  max-width: 220px; /* ancho máximo de la barra */
+  max-width: 220px;
   opacity: 1;
 }
 
@@ -512,127 +514,22 @@ body {
   font-size: 0.8rem;
 }
 
-/* Tabla / cards */
-.agenda-table-wrapper {
-  margin-top: 8px;
-  overflow-x: auto;
-}
-
-.agenda-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.8rem;
-}
-
-.agenda-table thead {
-  background: #FAFAFA;
-}
-
-.agenda-table th,
-.agenda-table td {
-  padding: 6px 8px;
-  border-bottom: 1px solid #E0E0E0;
-  text-align: left;
-}
-
-/* Cabeceras con iconos */
-.agenda-table th {
-  font-weight: 500;
-  color: var(--text-muted);
-  white-space: nowrap;
-  font-size: 0.84rem;
-}
-
-.agenda-th-icon {
-  font-size: 14px;
-  vertical-align: middle;
-  margin-right: 4px;
-}
-
-/* Cuerpo más pequeño solo en desktop */
-@media (min-width: 801px) {
-  .agenda-table td {
-    font-size: 0.74rem;
-  }
-}
-
-/* Links de dirección */
-.agenda-link {
-  color: var(--primary-dark);
-  text-decoration: none;
-}
-
-.agenda-link:hover {
-  text-decoration: underline;
-}
-
-/* Botón WhatsApp en celda de teléfono */
-.agenda-whatsapp-btn {
-  border: none;
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  cursor: pointer;
-  background-color: #25D366;
-  color: #fff;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 4px;
-}
-
-.agenda-whatsapp-btn svg {
-  width: 14px;
-  height: 14px;
-  display: block;
-}
-
-/* Móvil: tabla → cards */
+/* Ajuste en móviles: todo sigue en una línea pero más compacto */
 @media (max-width: 800px) {
-  .agenda-table thead {
-    display: none;
+  .agenda-filters-inner {
+    gap: 6px;
   }
 
-  .agenda-table,
-  .agenda-table tbody,
-  .agenda-table tr,
-  .agenda-table td {
-    display: block;
-    width: 100%;
+  .agenda-filters__group {
+    min-width: 0;
+    flex: 1;
   }
 
-  .agenda-table tr {
-    margin-bottom: 10px;
-    border-radius: 10px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-    background-color: #FFFFFF;
-    padding: 8px 10px;
+  .agenda-search-bar--open {
+    max-width: 150px;
   }
 
-  .agenda-table td {
-    border-bottom: none;
-    padding: 4px 0;
-    font-size: 0.78rem;
-  }
-
-  .agenda-table td::before {
-    content: attr(data-label);
-    display: block;
-    font-size: 0.74rem;
-    color: var(--text-muted);
-    margin-bottom: 1px;
-  }
-
-  .agenda-table td:last-child {
-    margin-bottom: 4px;
-  }
-
-  .agenda-card {
-    padding: 12px 10px;
-  }
-
-  /* Search box compacto en móvil */
-  .agenda-search-box {
-    margin-top: 4px;
+  .agenda-search-input {
+    width: 150px;
   }
 }
