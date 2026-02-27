@@ -428,7 +428,7 @@ body {
   background-color: var(--surface);
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-elevated);
-  padding: 14px 18px; /* un poco más amplio para la tabla */
+  padding: 16px 20px; /* más amplio para la tabla */
 }
 
 /* Filtros Agenda */
@@ -510,7 +510,7 @@ body {
 .agenda-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.8rem; /* tamaño base */
+  font-size: 0.8rem; /* base */
 }
 
 .agenda-table thead {
@@ -524,12 +524,12 @@ body {
   text-align: left;
 }
 
-/* Cabeceras (con iconos) un poco más grandes en desktop */
+/* Cabeceras con iconos, un poco más grandes */
 .agenda-table th {
   font-weight: 500;
   color: var(--text-muted);
   white-space: nowrap;
-  font-size: 0.82rem;
+  font-size: 0.84rem;
 }
 
 .agenda-th-icon {
@@ -555,7 +555,26 @@ body {
   text-decoration: underline;
 }
 
-/* Móvil: tabla → cards, mostrando etiquetas (con iconos incluidos desde el thead) */
+/* Botón WhatsApp en celda de teléfono */
+.agenda-whatsapp-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 3px 6px;
+  font-size: 0.68rem;
+  cursor: pointer;
+  background-color: #25D366;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 4px;
+}
+
+.agenda-whatsapp-btn .material-icons {
+  font-size: 14px;
+}
+
+/* Móvil: tabla → cards con etiquetas */
 @media (max-width: 800px) {
   .agenda-table thead {
     display: none;
