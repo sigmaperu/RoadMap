@@ -1,21 +1,21 @@
 // assets/js/main.js
 (() => {
-  // Config global única (evita choques y dobles declaraciones)
+  // Config global única
   window.RoadMapConfig = window.RoadMapConfig || {};
   RoadMapConfig.CSV_URL =
     RoadMapConfig.CSV_URL ||
     "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
 
-  // ---- Monta el header compartido en todas las páginas ----
+  // ---- Monta el header en todas las páginas ----
   async function mountHeader() {
     const host = document.getElementById('app-header');
-    if (!host) return; // si una página no tiene contenedor, no hacemos nada
+    if (!host) return;
 
     try {
       const res = await fetch('partials/header.html', { cache: 'no-cache' });
       host.innerHTML = await res.text();
 
-      // Título dinámico: desde data-title del <body> (o <title>)
+      // Título dinámico
       const titleEl = document.getElementById('pageTitle');
       if (titleEl) {
         const pageTitle = document.body.dataset.title || document.title || 'RoadMap';
@@ -31,7 +31,7 @@
         });
       }
 
-      // Cierra el sidebar al navegar en mobile
+      // Cierra sidebar al navegar en mobile
       const navLinks = document.querySelectorAll('.sidebar__nav .nav-item');
       navLinks.forEach(link => {
         link.addEventListener('click', () => {
@@ -44,20 +44,19 @@
       // Fecha en header
       initTopbarFecha();
 
-      // Fallback: si a los 500 ms #topbarFecha sigue vacío, coloca hora local
+      // Fallback de 500 ms por si el CSV tarda
       setTimeout(() => {
         const el = document.getElementById('topbarFecha');
         if (el && !el.textContent.trim()) el.textContent = getLocalNow();
       }, 500);
 
-      // Evento opcional para que páginas escuchen cuando el header está listo
       document.dispatchEvent(new CustomEvent('header:ready'));
     } catch (e) {
       console.error('No se pudo montar el header:', e);
     }
   }
 
-  // ---- Fecha en header: del CSV (fallback local) ----
+  // ---- Fecha en header ----
   function getLocalNow() {
     const d = new Date();
     const pad = n => (n < 10 ? "0"+n : ""+n);
@@ -68,25 +67,16 @@
   function formatFecha(raw) {
     if (!raw) return "";
     const s = String(raw).trim().replace(/[\"'\[\]]/g, "");
-    // ISO yyyy-mm-dd
     const iso = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
-    if (iso) {
-      const [, yyyy, mm, dd] = iso;
-      return `${String(dd).padStart(2,"0")}/${String(mm).padStart(2,"0")}/${yyyy}`;
-    }
-    // dd/mm/yyyy
+    if (iso) { const [, yyyy, mm, dd] = iso; return `${dd.padStart(2,"0")}/${mm.padStart(2,"0")}/${yyyy}`; }
     const latam = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-    if (latam) {
-      const [, dd, mm, yyyy] = latam;
-      return `${String(dd).padStart(2,"0")}/${String(mm).padStart(2,"0")}/${yyyy}`;
-    }
+    if (latam) { const [, dd, mm, yyyy] = latam; return `${dd.padStart(2,"0")}/${mm.padStart(2,"0")}/${yyyy}`; }
     return s;
   }
 
   async function initTopbarFecha() {
     const el = document.getElementById("topbarFecha");
     if (!el) return;
-
     try {
       const resp = await fetch(RoadMapConfig.CSV_URL);
       const text = await resp.text();
@@ -104,3 +94,4 @@
 
   document.addEventListener('DOMContentLoaded', mountHeader);
 })();
+``
