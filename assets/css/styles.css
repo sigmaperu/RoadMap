@@ -236,7 +236,6 @@ body {
 /* MAPA / PLANOS         */
 /* ===================== */
 
-/* Leaflet: bajar el mapa en la pila para que sidebar y overlays lo superen */
 .leaflet-container {
   z-index: 0;
 }
@@ -259,16 +258,14 @@ body {
   height: 100%;
 }
 
-/* Emoji del camión */
 .truck-emoji {
   position: absolute;
   font-size: 20px;
   top: 0;
-  left: -30px;                 /* arranca fuera de la vista */
+  left: -30px;
   animation: truck-drive 4s linear infinite;
 }
 
-/* Línea de carretera */
 .truck-road {
   position: absolute;
   bottom: 3px;
@@ -289,7 +286,6 @@ body {
   animation: truck-road-move 0.8s linear infinite;
 }
 
-/* Camión va de izquierda a derecha */
 @keyframes truck-drive {
   0%   { transform: translateX(0); opacity: 0; }
   10%  { opacity: 1; }
@@ -297,7 +293,6 @@ body {
   100% { transform: translateX(130%); opacity: 0; }
 }
 
-/* Carretera se mueve de derecha a izquierda */
 @keyframes truck-road-move {
   0%   { transform: translateX(100%); }
   100% { transform: translateX(-40px); }
@@ -339,7 +334,6 @@ body {
   z-index: 1100;
 }
 
-/* Panel flotante de filtros (mapa) */
 .filters-floating {
   position: absolute;
   top: 12px;
@@ -395,9 +389,7 @@ body {
   width: 100%;
 }
 
-/* ===================== */
-/* RESPONSIVE GENERAL    */
-/* ===================== */
+/* Responsive general */
 
 @media (max-width: 920px) {
   .app-shell {
@@ -461,7 +453,6 @@ body {
 /* AGENDA                */
 /* ===================== */
 
-/* Card contenedora */
 .agenda-card {
   background-color: var(--surface);
   border-radius: var(--border-radius);
@@ -469,11 +460,11 @@ body {
   padding: 14px 18px;
 }
 
-/* Filtros + búsqueda en una sola línea */
+/* Filtros + búsqueda en una sola línea, alineados */
 .agenda-filters {
   display: flex;
   flex-wrap: nowrap;
-  align-items: center;      /* alinea verticalmente todo */
+  align-items: center;
   margin-bottom: 8px;
 }
 
@@ -497,7 +488,10 @@ body {
   margin-bottom: 2px;
 }
 
-.agenda-filters__group select {
+/* Misma “caja” para select, input y botón → alineación perfecta */
+.agenda-filters__group select,
+.agenda-search-input,
+.agenda-search-toggle {
   height: var(--agenda-control-height);
   padding: 0 10px;
   border-radius: 999px;
@@ -507,20 +501,11 @@ body {
   box-sizing: border-box;
 }
 
-/* Lupa + barra, alineados a la derecha */
-.agenda-search-box {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: auto;
-}
-
-/* Botón lupa */
+/* Sobrescribir botón lupa (mismo alto, sin borde) */
 .agenda-search-toggle {
-  border: none;
-  border-radius: 999px;
   width: var(--agenda-control-height);
-  height: var(--agenda-control-height);
+  padding: 0;
+  border: none;
   cursor: pointer;
   background-color: var(--primary);
   color: #fff;
@@ -531,6 +516,14 @@ body {
 
 .agenda-search-toggle .material-icons {
   font-size: 18px;
+}
+
+/* Lupa + barra, alineados a la derecha */
+.agenda-search-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
 }
 
 /* Barra que se expande desde la lupa hacia la izquierda */
@@ -552,13 +545,6 @@ body {
 
 .agenda-search-input {
   width: 220px;
-  height: var(--agenda-control-height);
-  padding: 0 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(0,0,0,0.2);
-  font-family: inherit;
-  font-size: 0.78rem;
-  box-sizing: border-box;
 }
 
 /* Ajuste en móvil: barra más corta pero alineada */
@@ -596,7 +582,7 @@ body {
 
 .agenda-table th,
 .agenda-table td {
-  padding: 4px 6px;                /* filas bajas */
+  padding: 4px 6px;
   border-bottom: 1px solid #E0E0E0;
   text-align: left;
 }
@@ -621,14 +607,26 @@ body {
   }
 }
 
-/* Links de dirección */
-.agenda-link {
-  color: var(--primary-dark);
-  text-decoration: none;
+/* Links e iconos dentro de Nombre */
+.agenda-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.agenda-link:hover {
-  text-decoration: underline;
+.agenda-map-icon {
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  color: #1976D2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.agenda-map-icon .material-icons {
+  font-size: 16px;
 }
 
 /* Botón WhatsApp */
