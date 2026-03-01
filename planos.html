@@ -4,26 +4,30 @@
   <meta charset="UTF-8" />
   <title>RoadMap – Planos</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  https://fonts.googleapis.com
-  https://fonts.gstatic.com
-  https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap
-  https://fonts.googleapis.com/icon?family=Material+Icons
-  https://unpkg.com/leaflet@1.9.4/dist/leaflet.css
-  assets/css/styles.css
-  assets/js/main.js</script>
+
+  <!-- Fuentes + Material Icons + Leaflet + Estilos (ETIQUETAS REALES) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <link rel="stylesheet" href="assets/css/styles.css">
+
+  <!-- Header global y config -->
+  <script defer src="assets/js/main.js"></script>
 </head>
 <body data-title="Planos">
   <div class="app-shell">
     <aside class="sidebar">
-      <div class="sidebar__logo">assets/img/logotipo.png</div>
+      <div class="sidebar__logo"><img src="assets/img/logotipo.png" alt="RoadMap"></div>
       <nav class="sidebar__nav">
-        index.html<span class="nav-item__icon material-icons">home</span><span class="nav-item__label">Inicio</span></a>
-        agenda.html<span class="nav-item__icon material-icons">event</span><span class="nav-item__label">Agenda</span></a>
-        dashboard.html<span class="nav-item__icon material-icons">dashboard</span><span class="nav-item__label">Dashboard</span></a>
-        planif.html<span class="nav-item__icon material-icons">timeline</span><span class="nav-item__label">Planificación</span></a>
-        planos.html<span class="nav-item__icon material-icons">map</span><span class="nav-item__label">Planos</span></a>
-        program.html<span class="nav-item__icon material-icons">view_week</span><span class="nav-item__label">Programación</span></a>
-        ubicame.html<span class="nav-item__icon material-icons">my_location</span><span class="nav-item__label">Ubícame</span></a>
+        <a href="index.html" class="nav-item"><span class="nav-item__icon material-icons">home</span><span>Inicio</span></a>
+        <a href="agenda.html" class="nav-item"><span class="nav-item__icon material-icons">event</span><span>Agenda</span></a>
+        <a href="dashboard.html" class="nav-item"><span class="nav-item__icon material-icons">dashboard</span><span>Dashboard</span></a>
+        <a href="planif.html" class="nav-item"><span class="nav-item__icon material-icons">timeline</span><span>Planificación</span></a>
+        <a href="planos.html" class="nav-item nav-item--active"><span class="nav-item__icon material-icons">map</span><span>Planos</span></a>
+        <a href="program.html" class="nav-item"><span class="nav-item__icon material-icons">view_week</span><span>Programación</span></a>
+        <a href="ubicame.html" class="nav-item"><span class="nav-item__icon material-icons">my_location</span><span>Ubícame</span></a>
       </nav>
     </aside>
 
@@ -33,6 +37,7 @@
       <main class="content">
         <section class="page-section">
           <div class="map-wrapper" style="position:relative;width:100%;">
+            <!-- Toolbar: botón + filtros a un lado -->
             <div class="map-toolbar">
               <button id="btnToggleFilters" class="btn-small-icon" type="button" title="Mostrar/ocultar filtros">
                 <span class="material-icons">tune</span>
@@ -63,8 +68,10 @@
     </div>
   </div>
 
-  https://unpkg.com/leaflet@1.9.4/dist/leaflet.js</script>
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
+  <!-- JS específico de Planos -->
   <script>
   (() => {
     const CSV_URL =
@@ -162,7 +169,6 @@
         const googleUrl = `https://www.google.com/maps?q=${encodeURIComponent(p.lat + "," + p.lng)}`;
         const direccionTexto = p.direccion || "Ver en Google Maps";
 
-        // 👉 Dirección como ENLACE real
         const popupHtml = `
           <div style="min-width:220px;">
             <strong>Cliente:</strong> ${p.cliente}<br>
