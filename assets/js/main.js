@@ -49,11 +49,15 @@ async function initTopbarFecha() {
   try {
     const resp = await fetch(CSV_URL);
     const text = await resp.text();
+
+    // ESTA es la regex correcta: maneja 
+ y 
+ [web:311]
     const lines = text.split(/
 ?
 /).filter(l => l.trim() !== "");
-    if (lines.length < 2) return;
 
+    if (lines.length < 2) return;
     const firstDataRow = lines[1].split(",");
     const rawDate = firstDataRow[0] || "";
     el.textContent = formatFecha(rawDate);
