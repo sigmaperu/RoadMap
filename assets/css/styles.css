@@ -13,8 +13,6 @@
   --text-muted: #757575;
   --border-radius: 12px;
   --shadow-elevated: 0 4px 12px rgba(0,0,0,0.08);
-
-  --agenda-control-height: 30px;
 }
 
 /* ===================== */
@@ -173,42 +171,12 @@ body {
   margin-top: 4px;
 }
 
-.page-section__title {
-  margin-top: 0;
-  margin-bottom: 4px;
-  font-size: 1.3rem;
-}
-
-.page-section__subtitle {
-  margin-top: 0;
-  margin-bottom: 16px;
-  color: var(--text-muted);
-}
-
-/* Cards y grid genérico */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 16px;
-  margin-top: 16px;
-}
-
+/* Cards genéricos */
 .card {
   background-color: var(--surface);
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-elevated);
   padding: 16px 18px;
-}
-
-.card__title {
-  margin-top: 0;
-  margin-bottom: 8px;
-  font-size: 1.05rem;
-}
-
-.card__text {
-  margin: 0;
-  color: var(--text-muted);
 }
 
 /* ===================== */
@@ -256,8 +224,8 @@ body {
   position: absolute;
   font-size: 20px;
   top: 0;
-  left: -40px;              /* arranca más a la izquierda */
-  animation: truck-drive 6s linear infinite; /* más tiempo de recorrido */
+  left: -40px;
+  animation: truck-drive 6s linear infinite;
 }
 
 .truck-road {
@@ -281,10 +249,10 @@ body {
 }
 
 @keyframes truck-drive {
-  0%   { transform: translateX(0) scaleX(1); opacity: 0; }
+  0%   { transform: translateX(0); opacity: 0; }
   10%  { opacity: 1; }
-  90%  { transform: translateX(120%) scaleX(1); opacity: 1; }
-  100% { transform: translateX(140%) scaleX(1); opacity: 0; }
+  90%  { transform: translateX(120%); opacity: 1; }
+  100% { transform: translateX(140%); opacity: 0; }
 }
 
 @keyframes truck-road-move {
@@ -296,105 +264,6 @@ body {
   .truck-animation {
     display: none;
   }
-}
-
-/* ===================== */
-/* MAPA / PLANOS         */
-/* ===================== */
-
-.leaflet-container {
-  z-index: 0;
-}
-
-/* Botón de filtros del mapa (solo icono) */
-.btn-small-icon {
-  border: none;
-  border-radius: 999px;
-  padding: 6px;
-  font-size: 0.8rem;
-  cursor: pointer;
-  background-color: rgba(255,255,255,0.96);
-  color: var(--text-main);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-  transition: transform 0.2s ease;
-}
-
-.btn-small-icon .material-icons {
-  font-size: 20px;
-  transition: transform 0.2s ease;
-}
-
-.btn-small-icon--open .material-icons {
-  transform: rotate(180deg);
-}
-
-.btn-small-icon:hover {
-  background-color: #FFFFFF;
-}
-
-.filters-toggle-btn {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  z-index: 1100;
-}
-
-.filters-floating {
-  position: absolute;
-  top: 12px;
-  right: 56px;
-  left: 12px;
-  z-index: 1000;
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(4px);
-  border-radius: 12px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.2);
-  padding: 10px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  transform-origin: top right;
-  transition: transform 0.2s ease, opacity 0.2s ease;
-}
-
-.filters-floating--collapsed {
-  transform: scale(0.8) translateY(-40%);
-  opacity: 0;
-  pointer-events: none;
-}
-
-.filters-floating__row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  width: 100%;
-  align-items: center;
-}
-
-.filter-group {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-width: 120px;
-}
-
-.filter-group label {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  margin-bottom: 2px;
-}
-
-.filter-group select {
-  padding: 4px 6px;
-  border-radius: 8px;
-  border: 1px solid rgba(0,0,0,0.2);
-  font-family: inherit;
-  font-size: 0.85rem;
-  background-color: #fff;
-  width: 100%;
 }
 
 /* ===================== */
@@ -435,21 +304,6 @@ body {
 
   .content {
     padding: 16px;
-  }
-
-  #map {
-    height: 720px;
-  }
-
-  .filters-floating {
-    top: 10px;
-    left: 10px;
-    right: 54px;
-  }
-
-  .filters-toggle-btn {
-    top: 14px;
-    right: 12px;
   }
 }
 
@@ -505,7 +359,7 @@ body {
   box-sizing: border-box;
 }
 
-/* Altura visual usando padding, no height */
+/* Altura visual con padding */
 .agenda-filters__group select,
 .agenda-search-input {
   height: auto;
@@ -514,7 +368,7 @@ body {
   padding-bottom: 6px;
 }
 
-/* Lupa */
+/* Botón lupa */
 .agenda-search-toggle {
   padding: 6px;
   border-radius: 50%;
@@ -526,7 +380,11 @@ body {
   justify-content: center;
 }
 
-/* Contenedor búsqueda (ocupa el resto) */
+.agenda-search-toggle .material-icons {
+  font-size: 18px;
+}
+
+/* Contenedor búsqueda */
 .agenda-search-box {
   display: flex;
   align-items: center;
@@ -555,14 +413,93 @@ body {
   width: 100%;
 }
 
-/* Desktop: que no desborde */
+/* Tabla */
+.agenda-table-wrapper {
+  margin-top: 8px;
+  overflow-x: auto;
+}
+
+.agenda-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.76rem;
+}
+
+.agenda-table thead {
+  background: var(--primary-dark);
+  color: #FFFFFF;
+}
+
+.agenda-table th,
+.agenda-table td {
+  padding: 4px 6px;
+  border-bottom: 1px solid #E0E0E0;
+  text-align: left;
+}
+
+.agenda-table th {
+  font-weight: 500;
+  white-space: nowrap;
+  font-size: 0.7rem;
+}
+
+.agenda-th-icon {
+  font-size: 14px;
+  vertical-align: middle;
+  margin-right: 4px;
+  color: var(--primary-light);
+}
+
 @media (min-width: 801px) {
-  .agenda-filters-inner {
-    gap: 12px;
+  .agenda-table td {
+    font-size: 0.64rem;
   }
 }
 
-/* Móvil: ponerlos en dos filas ordenadas para que no desborde */
+/* Nombre + iconos */
+.agenda-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.agenda-map-icon {
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  color: #1976D2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.agenda-map-icon .material-icons {
+  font-size: 16px;
+}
+
+/* Botón WhatsApp */
+.agenda-whatsapp-btn {
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  background-color: #25D366;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 4px;
+}
+
+.agenda-whatsapp-btn svg {
+  width: 12px;
+  height: 12px;
+  display: block;
+}
+
+/* Agenda móvil: tabla → cards */
 @media (max-width: 800px) {
   .agenda-filters {
     flex-wrap: wrap;
@@ -584,5 +521,47 @@ body {
 
   .agenda-search-bar--open {
     max-width: 100%;
+  }
+
+  .agenda-table thead {
+    display: none;
+  }
+
+  .agenda-table,
+  .agenda-table tbody,
+  .agenda-table tr,
+  .agenda-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .agenda-table tr {
+    margin-bottom: 10px;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    background-color: #FFFFFF;
+    padding: 8px 10px;
+  }
+
+  .agenda-table td {
+    border-bottom: none;
+    padding: 4px 0;
+    font-size: 0.78rem;
+  }
+
+  .agenda-table td::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 0.74rem;
+    color: var(--text-muted);
+    margin-bottom: 1px;
+  }
+
+  .agenda-table td:last-child {
+    margin-bottom: 4px;
+  }
+
+  .agenda-card {
+    padding: 12px 10px;
   }
 }
