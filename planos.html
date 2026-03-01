@@ -4,109 +4,53 @@
   <meta charset="UTF-8" />
   <title>RoadMap – Planos</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/apple-touch-icon.png" />
-  <!-- Roboto + Material Icons -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Roboto + Material Icons + Leaflet CSS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-  <!-- Leaflet CSS -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-    crossorigin=""
-  />
-  <!-- Estilos globales -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
   <link rel="stylesheet" href="assets/css/styles.css" />
+  <script src="assets/js/main.js" defer></script>
 </head>
-<body>
+<body data-title="Planos">
   <div class="app-shell">
     <aside class="sidebar">
-      <div class="sidebar__logo">
-        <img src="assets/img/logotipo.png" alt="RoadMap" />
-      </div>
+      <div class="sidebar__logo"><img src="assets/img/logotipo.png" alt="RoadMap" /></div>
       <nav class="sidebar__nav">
-        <a href="index.html" class="nav-item">
-          <span class="nav-item__icon material-icons">home</span><span class="nav-item__label">Inicio</span>
-        </a>
-        <a href="agenda.html" class="nav-item">
-          <span class="nav-item__icon material-icons">event</span><span class="nav-item__label">Agenda</span>
-        </a>
-        <a href="dashboard.html" class="nav-item">
-          <span class="nav-item__icon material-icons">dashboard</span><span class="nav-item__label">Dashboard</span>
-        </a>
-        <a href="planif.html" class="nav-item">
-          <span class="nav-item__icon material-icons">timeline</span><span class="nav-item__label">Planificación</span>
-        </a>
-        <a href="planos.html" class="nav-item nav-item--active">
-          <span class="nav-item__icon material-icons">map</span><span class="nav-item__label">Planos</span>
-        </a>
-        <a href="program.html" class="nav-item">
-          <span class="nav-item__icon material-icons">view_week</span><span class="nav-item__label">Programación</span>
-        </a>
-        <a href="ubicame.html" class="nav-item">
-          <span class="nav-item__icon material-icons">my_location</span><span class="nav-item__label">Ubícame</span>
-        </a>
+        <a href="index.html" class="nav-item"><span class="nav-item__icon material-icons">home</span><span class="nav-item__label">Inicio</span></a>
+        <a href="agenda.html" class="nav-item"><span class="nav-item__icon material-icons">event</span><span class="nav-item__label">Agenda</span></a>
+        <a href="dashboard.html" class="nav-item"><span class="nav-item__icon material-icons">dashboard</span><span class="nav-item__label">Dashboard</span></a>
+        <a href="planif.html" class="nav-item"><span class="nav-item__icon material-icons">timeline</span><span class="nav-item__label">Planificación</span></a>
+        <a href="planos.html" class="nav-item nav-item--active"><span class="nav-item__icon material-icons">map</span><span class="nav-item__label">Planos</span></a>
+        <a href="program.html" class="nav-item"><span class="nav-item__icon material-icons">view_week</span><span class="nav-item__label">Programación</span></a>
+        <a href="ubicame.html" class="nav-item"><span class="nav-item__icon material-icons">my_location</span><span class="nav-item__label">Ubícame</span></a>
       </nav>
     </aside>
 
     <div class="main-layout">
-      <header class="topbar">
-        <div class="topbar__title">
-          <button class="icon-button icon-button--menu" aria-label="Menú" id="menuToggle">
-            <span class="material-icons">menu</span>
-          </button>
-          <h1>Planos</h1>
-          <!-- Camioncito animado -->
-          <div class="truck-animation">
-            <div class="truck-animation-inner">
-              <span class="truck-emoji">🚚</span>
-              <div class="truck-road"></div>
-            </div>
-          </div>
-        </div>
-        <div class="topbar__actions">
-          <button class="icon-button" aria-label="Notificaciones">
-            <span class="material-icons">notifications</span>
-          </button>
-          <button class="icon-button" aria-label="Perfil">
-            <span class="material-icons">account_circle</span>
-          </button>
-        </div>
-      </header>
+      <!-- Header global -->
+      <div id="app-header"></div>
 
       <main class="content">
         <section class="page-section">
           <div class="map-wrapper" style="position:relative;width:100%;">
-            <!-- Botón de mostrar/ocultar filtros -->
             <button id="btnToggleFilters" class="btn-small-icon filters-toggle-btn" type="button" title="Mostrar/ocultar filtros">
               <span class="material-icons">tune</span>
             </button>
 
-            <!-- Panel flotante de filtros -->
             <div id="filtersPanel" class="filters-floating">
               <div class="filters-floating__row">
                 <div class="filter-group">
                   <label for="filterCentro">Centro</label>
-                  <select id="filterCentro">
-                    <option value="">Todos</option>
-                  </select>
+                  <select id="filterCentro"><option value="">Todos</option></select>
                 </div>
                 <div class="filter-group">
                   <label for="filterPlaca">Placa</label>
-                  <select id="filterPlaca">
-                    <option value="">Todos</option>
-                  </select>
+                  <select id="filterPlaca"><option value="">Todos</option></select>
                 </div>
                 <div class="filter-group">
                   <label for="filterCliente">Cliente</label>
-                  <select id="filterCliente">
-                    <option value="">Todos</option>
-                  </select>
+                  <select id="filterCliente"><option value="">Todos</option></select>
                 </div>
               </div>
             </div>
@@ -119,30 +63,12 @@
   </div>
 
   <!-- Leaflet JS -->
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-    crossorigin=""
-  ></script>
-  <!-- JS global -->
-  <script src="assets/js/main.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- JS de la página: encapsulado -->
   <script>
-    const CSV_URL = "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
-
-    // Índices:
-    // 1: Centro
-    // 2: Placa
-    // 4: Cliente
-    // 5: detalle cliente
-    // 6: Ruta
-    // 10: Peso
-    // 14: complemento dirección
-    // 15: dirección
-    // 16: Latitud
-    // 17: Longitud
-    // 18: VH
-    // 19: detalle ruta
-
+  (() => {
+    const CSV_URL = window.RoadMapConfig.CSV_URL; // ✔️ sin choques
     let allRows = [];
     let leafletMap = null;
     let markersLayer = null;
@@ -153,203 +79,74 @@
     const btnToggleFilters = document.getElementById("btnToggleFilters");
     const filtersPanel = document.getElementById("filtersPanel");
 
-    // Pins de colores (leaflet-color-markers)
     const shadowUrl = "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png";
     const redPin = new L.Icon({
       iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
-      shadowUrl,
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
-      popupAnchor: [1, -34],
-      shadowSize: [41, 41]
+      shadowUrl, iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
     });
     const purplePin = new L.Icon({
       iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-violet.png",
-      shadowUrl,
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
-      popupAnchor: [1, -34],
-      shadowSize: [41, 41]
+      shadowUrl, iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
     });
     const blackPin = new L.Icon({
       iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-black.png",
-      shadowUrl,
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
-      popupAnchor: [1, -34],
-      shadowSize: [41, 41]
+      shadowUrl, iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
     });
 
-    // CSV parser robusto
     function parseCSV(text) {
       const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
-      const header = lines.shift()?.split(",") || [];
+      const header = (lines.shift() || "").split(",");
       const rows = lines.map(line => {
-        const result = [];
-        let current = "";
-        let inQuotes = false;
+        const result = []; let current = ""; let inQuotes = false;
         for (let i = 0; i < line.length; i++) {
           const char = line[i];
           if (char === '"') {
-            if (inQuotes && line[i + 1] === '"') { current += '"'; i++; }
-            else { inQuotes = !inQuotes; }
-          } else if (char === "," && !inQuotes) {
-            result.push(current);
-            current = "";
-          } else {
-            current += char;
-          }
+            if (inQuotes && line[i + 1] === '"') { current += '"'; i++; } else { inQuotes = !inQuotes; }
+          } else if (char === "," && !inQuotes) { result.push(current); current = ""; }
+          else { current += char; }
         }
         result.push(current);
         return result;
       });
       return { header, rows };
     }
+    const unique = arr => Array.from(new Set(arr.filter(v => v !== "" && v != null)));
 
-    function unique(values) {
-      return Array.from(new Set(values.filter(v => v !== "" && v != null)));
-    }
-
-    let allCentros = [];
-    let allPlacas = [];
-    let allClientes = [];
-
+    let allCentros = [], allPlacas = [], allClientes = [];
     function populateBaseOptions() {
       allCentros  = unique(allRows.map(r => r[1] || "")).sort();
       allPlacas   = unique(allRows.map(r => r[2] || "")).sort();
       allClientes = unique(allRows.map(r => r[4] || "")).sort();
     }
-
-    function resetSelect(selectEl) {
-      selectEl.innerHTML = "";
-      const opt = document.createElement("option");
-      opt.value = "";
-      opt.textContent = "Todos";
-      selectEl.appendChild(opt);
-    }
-
+    function resetSelect(sel) { sel.innerHTML = ""; const o=document.createElement("option"); o.value=""; o.textContent="Todos"; sel.appendChild(o); }
     function refreshCentroOptions() {
       resetSelect(filterCentro);
-      allCentros.forEach(c => {
-        const opt = document.createElement("option");
-        opt.value = c;
-        opt.textContent = c;
-        filterCentro.appendChild(opt);
-      });
+      allCentros.forEach(c => { const o=document.createElement("option"); o.value=c; o.textContent=c; filterCentro.appendChild(o); });
     }
-
-    function refreshPlacaOptions(currentCentro) {
+    function refreshPlacaOptions(centro) {
       resetSelect(filterPlaca);
       let subset = allRows;
-      if (currentCentro) subset = subset.filter(r => (r[1] || "") === currentCentro);
-      const placas = unique(subset.map(r => r[2] || "")).sort();
-      placas.forEach(p => {
-        const opt = document.createElement("option");
-        opt.value = p;
-        opt.textContent = p;
-        filterPlaca.appendChild(opt);
-      });
+      if (centro) subset = subset.filter(r => (r[1] || "") === centro);
+      unique(subset.map(r => r[2] || "")).sort()
+        .forEach(p => { const o=document.createElement("option"); o.value=p; o.textContent=p; filterPlaca.appendChild(o); });
     }
-
-    function refreshClienteOptions(currentCentro, currentPlaca) {
+    function refreshClienteOptions(centro, placa) {
       resetSelect(filterCliente);
       let subset = allRows;
-      if (currentCentro) subset = subset.filter(r => (r[1] || "") === currentCentro);
-      if (currentPlaca)  subset = subset.filter(r => (r[2] || "") === currentPlaca);
-
-      const clientes = unique(subset.map(r => r[4] || "")).sort();
-      clientes.forEach(cli => {
+      if (centro) subset = subset.filter(r => (r[1] || "") === centro);
+      if (placa)  subset = subset.filter(r => (r[2] || "") === placa);
+      unique(subset.map(r => r[4] || "")).sort().forEach(cli => {
         const rowsCli = subset.filter(r => (r[4] || "") === cli);
         const extra = rowsCli[0] ? (rowsCli[0][5] || "") : "";
-        let label = cli;
-        if (extra && extra !== "0" && extra.toLowerCase() !== "error") {
-          label = cli + " - " + extra;
-        }
-        const opt = document.createElement("option");
-        opt.value = cli;
-        opt.textContent = label;
-        filterCliente.appendChild(opt);
+        const label = (extra && extra !== "0" && extra.toLowerCase() !== "error") ? `${cli} - ${extra}` : cli;
+        const o=document.createElement("option"); o.value=cli; o.textContent=label; filterCliente.appendChild(o);
       });
-    }
-
-    function loadFiltersInitial() {
-      populateBaseOptions();
-      refreshCentroOptions();
-      refreshPlacaOptions("");
-      refreshClienteOptions("", "");
-    }
-
-    function applyFilters() {
-      const centro = filterCentro.value;
-      const placa = filterPlaca.value;
-      const cliente = filterCliente.value;
-
-      let filtered = allRows.slice();
-      if (centro)  filtered = filtered.filter(r => (r[1] || "") === centro);
-      if (placa)   filtered = filtered.filter(r => (r[2] || "") === placa);
-      if (cliente) filtered = filtered.filter(r => (r[4] || "") === cliente);
-
-      // Agrupar por cliente, sumando peso (col 10)
-      const clientMap = new Map();
-      filtered.forEach(r => {
-        const clientKey = r[4] || "";
-        if (!clientKey) return;
-
-        const lat = parseFloat((r[16] || "").replace(",", "."));
-        const lng = parseFloat((r[17] || "").replace(",", "."));
-        if (Number.isNaN(lat) || Number.isNaN(lng)) return;
-
-        const centroVal = r[1] || "";
-        const extraVal  = r[5] || "";
-        const rutaNombre = r[6] || "";
-        const dir15 = r[15] || "";
-        const dir14 = r[14] || "";
-        const vh    = r[18] || "";
-        const rutaExtra = r[19] || "";
-        const peso  = parseFloat((r[10] || "0").replace(",", "."));
-
-        const existing = clientMap.get(clientKey);
-        if (!existing) {
-          let clienteLabel = clientKey;
-          if (extraVal && extraVal !== "0" && extraVal.toLowerCase() !== "error") {
-            clienteLabel = clientKey + " - " + extraVal;
-          }
-          let rutaTexto = rutaNombre || "";
-          if (rutaExtra && rutaExtra !== "0" && rutaExtra.toLowerCase() !== "error") {
-            rutaTexto = rutaTexto ? (rutaTexto + " - " + rutaExtra) : rutaExtra;
-          }
-          let direccionTexto = dir15;
-          if (dir14 && dir14 !== "0" && dir14.toLowerCase() !== "error") {
-            direccionTexto = direccionTexto ? (direccionTexto + " - " + dir14) : dir14;
-          }
-
-          clientMap.set(clientKey, {
-            centro: centroVal,
-            clienteKey: clientKey,
-            cliente: clienteLabel,
-            lat, lng,
-            direccion: direccionTexto,
-            ruta: rutaTexto,
-            vh,
-            pesoTotal: isNaN(peso) ? 0 : peso
-          });
-        } else {
-          const nuevoPeso = isNaN(peso) ? 0 : peso;
-          existing.pesoTotal += nuevoPeso;
-        }
-      });
-
-      const points = Array.from(clientMap.values());
-      renderMarkers(points);
     }
 
     function initMap() {
       if (leafletMap) return;
       leafletMap = L.map("map", { zoomControl: false }).setView([-9.19, -75.02], 5);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-        attribution: "© OpenStreetMap contributors"
-      }).addTo(leafletMap);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap contributors" }).addTo(leafletMap);
       L.control.zoom({ position: "bottomright" }).addTo(leafletMap);
       markersLayer = L.layerGroup().addTo(leafletMap);
     }
@@ -358,56 +155,77 @@
       if (!leafletMap || !markersLayer) return;
       markersLayer.clearLayers();
       const bounds = [];
-
       points.forEach(p => {
         const baseIcon = p.pesoTotal >= 100 ? purplePin : redPin;
         const googleUrl = `https://www.google.com/maps?q=${encodeURIComponent(p.lat + "," + p.lng)}`;
         const popupHtml = `
           <div style="min-width:220px;">
             <strong>Cliente:</strong> ${p.cliente}<br>
-            <strong>Dirección:</strong> <a href="${googleUrl}" target="_blank" rel="noopener noreferrer">
-              ${p.direccion || "Ver en mapa"}
-            </a><br>
+            <strong>Dirección:</strong> <a href="${googleUrl}" target="_blank" rel="noopener noreferrer">${p.direccion || "Ver en mapa"}</a><br>
             <strong>Ruta:</strong> ${p.ruta || "-"}<br>
             <strong>VH:</strong> ${p.vh || "-"}<br>
             <label style="margin-top:4px;display:flex;align-items:center;gap:4px;font-size:0.85rem;">
               <input type="checkbox" class="visitado-checkbox"> Visitado
             </label>
-          </div>
-        `;
+          </div>`;
         const marker = L.marker([p.lat, p.lng], { icon: baseIcon });
-        marker._baseIcon = baseIcon;
-        marker._visitedIcon = blackPin;
-        marker.bindPopup(popupHtml);
-        marker.addTo(markersLayer);
+        marker._baseIcon = baseIcon; marker._visitedIcon = blackPin;
+        marker.bindPopup(popupHtml); marker.addTo(markersLayer);
         bounds.push([p.lat, p.lng]);
-
         marker.on("popupopen", e => {
-          const popupEl = e.popup.getElement();
-          const checkbox = popupEl.querySelector(".visitado-checkbox");
-          if (!checkbox) return;
-          checkbox.addEventListener("change", () => {
-            marker.setIcon(checkbox.checked ? marker._visitedIcon : marker._baseIcon);
-          });
+          const checkbox = e.popup.getElement().querySelector(".visitado-checkbox");
+          if (checkbox) checkbox.addEventListener("change", () => { marker.setIcon(checkbox.checked ? marker._visitedIcon : marker._baseIcon); });
         });
       });
+      if (bounds.length > 0) leafletMap.fitBounds(bounds, { padding: [30, 30] }); else leafletMap.setView([-9.19, -75.02], 5);
+    }
 
-      if (bounds.length > 0) {
-        leafletMap.fitBounds(bounds, { padding: [30, 30] });
-      } else {
-        leafletMap.setView([-9.19, -75.02], 5);
-      }
+    function applyFilters() {
+      const centro = filterCentro.value;
+      const placa  = filterPlaca.value;
+      const cliente= filterCliente.value;
+
+      let filtered = allRows.slice();
+      if (centro)  filtered = filtered.filter(r => (r[1] || "") === centro);
+      if (placa)   filtered = filtered.filter(r => (r[2] || "") === placa);
+      if (cliente) filtered = filtered.filter(r => (r[4] || "") === cliente);
+
+      const clientMap = new Map();
+      filtered.forEach(r => {
+        const clientKey = r[4] || "";
+        if (!clientKey) return;
+        const lat = parseFloat((r[16] || "").replace(",", ".")); const lng = parseFloat((r[17] || "").replace(",", "."));
+        if (Number.isNaN(lat) || Number.isNaN(lng)) return;
+
+        const extra = r[5] || "", ruta = r[6] || "", rutaExtra = r[19] || "";
+        const dir15 = r[15] || "", dir14 = r[14] || "", vh = r[18] || "";
+        const peso = parseFloat((r[10] || "0").replace(",", "."));
+
+        const existing = clientMap.get(clientKey);
+        if (!existing) {
+          const clienteLabel = (extra && extra !== "0" && extra.toLowerCase() !== "error") ? `${clientKey} - ${extra}` : clientKey;
+          const rutaTexto = (rutaExtra && rutaExtra !== "0" && rutaExtra.toLowerCase() !== "error") ? (ruta ? `${ruta} - ${rutaExtra}` : rutaExtra) : ruta;
+          const direccion = (dir14 && dir14 !== "0" && dir14.toLowerCase() !== "error") ? (dir15 ? `${dir15} - ${dir14}` : dir14) : dir15;
+          clientMap.set(clientKey, { cliente: clienteLabel, lat, lng, direccion, ruta: rutaTexto, vh, pesoTotal: isNaN(peso) ? 0 : peso });
+        } else {
+          existing.pesoTotal += isNaN(peso) ? 0 : peso;
+        }
+      });
+
+      renderMarkers(Array.from(clientMap.values()));
+    }
+
+    function loadFiltersInitial() {
+      populateBaseOptions(); refreshCentroOptions(); refreshPlacaOptions(""); refreshClienteOptions("", "");
     }
 
     function locateUserOnLoad() {
       if (!leafletMap || !navigator.geolocation) return;
       navigator.geolocation.getCurrentPosition(
-        position => {
-          const { latitude, longitude } = position.coords;
-          const userMarker = L.circleMarker([latitude, longitude], {
-            radius: 2, color: "#000000", fillColor: "#000000", fillOpacity: 1
-          }).bindPopup("Mi ubicación");
-          userMarker.addTo(leafletMap);
+        pos => {
+          const { latitude, longitude } = pos.coords;
+          L.circleMarker([latitude, longitude], { radius: 2, color: "#000", fillColor: "#000", fillOpacity: 1 })
+            .bindPopup("Mi ubicación").addTo(leafletMap);
           leafletMap.setView([latitude, longitude], 12);
         },
         () => {},
@@ -422,24 +240,17 @@
         const text = await resp.text();
         const { rows } = parseCSV(text);
         allRows = rows;
-        loadFiltersInitial();
-        applyFilters();
+        loadFiltersInitial(); applyFilters();
       } catch (err) {
         console.error("Error cargando CSV:", err);
         alert("No se pudo cargar RoadMap.csv");
       }
 
       filterCentro.addEventListener("change", () => {
-        const centroVal = filterCentro.value;
-        refreshPlacaOptions(centroVal);
-        refreshClienteOptions(centroVal, filterPlaca.value || "");
-        applyFilters();
+        const c = filterCentro.value; refreshPlacaOptions(c); refreshClienteOptions(c, filterPlaca.value || ""); applyFilters();
       });
       filterPlaca.addEventListener("change", () => {
-        const centroVal = filterCentro.value;
-        const placaVal = filterPlaca.value;
-        refreshClienteOptions(centroVal, placaVal);
-        applyFilters();
+        const c = filterCentro.value; refreshClienteOptions(c, filterPlaca.value); applyFilters();
       });
       filterCliente.addEventListener("change", applyFilters);
 
@@ -452,6 +263,7 @@
     }
 
     document.addEventListener("DOMContentLoaded", initPlanosPage);
+  })();
   </script>
 </body>
 </html>
