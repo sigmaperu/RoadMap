@@ -78,7 +78,6 @@
       <main class="content">
         <section class="page-section">
           <div class="agenda-card">
-            <!-- Filtro + búsqueda -->
             <div class="agenda-filters">
               <div class="agenda-filters-inner">
                 <div class="agenda-filters__group">
@@ -103,7 +102,6 @@
               </div>
             </div>
 
-            <!-- Resultados -->
             <div class="agenda-table-wrapper" id="agendaResults" style="display:none;">
               <table id="agendaTable" class="agenda-table">
                 <thead>
@@ -136,14 +134,10 @@
                       <span class="material-icons agenda-th-icon">phone</span>
                       Teléfono
                     </th>
-                    <th>
-                      <span class="material-icons agenda-th-icon">location_on</span>
-                      Dirección
-                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  <!-- filas generadas por JS -->
+                  <!-- filas por JS -->
                 </tbody>
               </table>
             </div>
@@ -276,7 +270,6 @@
       return phoneRaw.replace(/[^0-9]/g, "");
     }
 
-    // Agrupa por Centro + Cliente (un registro por cliente)
     function groupByCliente(rows) {
       const map = new Map();
       rows.forEach(r => {
@@ -350,12 +343,41 @@
 
         tr.appendChild(td(placa, "Placa"));
         tr.appendChild(td(cliente, "Cliente"));
-        tr.appendChild(td(nombre, "Nombre"));
+
+        // Nombre + icono de Maps (tooltip con dirección)
+        const tdNombre = document.createElement("td");
+        tdNombre.setAttribute("data-label", "Nombre");
+
+        const spanNombre = document.createElement("span");
+        spanNombre.className = "agenda-name";
+        const textoNombre = document.createElement("span");
+        textoNombre.textContent = nombre || "-";
+        spanNombre.appendChild(textoNombre);
+
+        if (mapsUrl) {
+          const btnMap = document.createElement("button");
+          btnMap.type = "button";
+          btnMap.className = "agenda-map-icon";
+          btnMap.title = dirTexto || "Ver dirección"; // tooltip nativo
+          btnMap.onclick = (e) => {
+            e.stopPropagation();
+            window.open(mapsUrl, "_blank");
+          };
+          const icon = document.createElement("span");
+          icon.className = "material-icons";
+          icon.textContent = "location_on";
+          btnMap.appendChild(icon);
+          spanNombre.appendChild(btnMap);
+        }
+
+        tdNombre.appendChild(spanNombre);
+        tr.appendChild(tdNombre);
+
         tr.appendChild(td(vh, "VH"));
         tr.appendChild(td(ruta, "Ruta"));
         tr.appendChild(td(auxiliar, "Auxiliar"));
 
-        // Teléfono + botón WhatsApp
+        // Teléfono + WhatsApp
         const tdTel = document.createElement("td");
         tdTel.setAttribute("data-label", "Teléfono");
         tdTel.textContent = telefono || "-";
@@ -378,29 +400,13 @@
         }
         tr.appendChild(tdTel);
 
-        // Dirección
-        const tdDir = document.createElement("td");
-        tdDir.setAttribute("data-label", "Dirección");
-        if (mapsUrl) {
-          const a = document.createElement("a");
-          a.href = mapsUrl;
-          a.target = "_blank";
-          a.rel = "noopener noreferrer";
-          a.className = "agenda-link";
-          a.textContent = dirTexto || "Ver en mapa";
-          tdDir.appendChild(a);
-        } else {
-          tdDir.textContent = dirTexto || "-";
-        }
-        tr.appendChild(tdDir);
-
         agendaTableBody.appendChild(tr);
       });
 
       if (grouped.length === 0) {
         const trEmpty = document.createElement("tr");
         const tdEmpty = document.createElement("td");
-        tdEmpty.colSpan = 8;
+        tdEmpty.colSpan = 7;
         tdEmpty.textContent = "No se encontraron registros.";
         trEmpty.appendChild(tdEmpty);
         agendaTableBody.appendChild(trEmpty);
