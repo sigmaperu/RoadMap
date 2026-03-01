@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Cerrar sidebar al hacer clic en un enlace, solo en móvil
   const navLinks = document.querySelectorAll('.sidebar__nav .nav-item');
   navLinks.forEach(link => {
     link.addEventListener('click', () => {
@@ -18,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // ---- Fecha + camión en header (todas las páginas que tengan #topbarFecha) ----
+  // ---- Fecha + camión en header (páginas que tengan #topbarFecha) ----
   initTopbarFecha();
 });
 
@@ -28,10 +29,16 @@ function formatFecha(raw) {
   if (!raw) return "";
   const parts = raw.replace(/["']/g, "").trim().split(/[/-]/);
   if (parts.length === 3) {
+    // yyyy-mm-dd
     if (parts[0].length === 4) {
-      return parts[2].padStart(2,"0") + "/" + parts[1].padStart(2,"0") + "/" + parts[0];
+      return parts[2].padStart(2, "0") + "/" +
+             parts[1].padStart(2, "0") + "/" +
+             parts[0];
     }
-    return parts[0].padStart(2,"0") + "/" + parts[1].padStart(2,"0") + "/" + parts[2];
+    // dd/mm/yyyy
+    return parts[0].padStart(2, "0") + "/" +
+           parts[1].padStart(2, "0") + "/" +
+           parts[2];
   }
   return raw;
 }
@@ -43,10 +50,15 @@ async function initTopbarFecha() {
   try {
     const resp = await fetch(CSV_URL);
     const text = await resp.text();
+
+    // Línea por línea (maneja 
+ y 
+ correctamente) [web:311]
     const lines = text.split(/
 ?
 /).filter(l => l.trim() !== "");
     if (lines.length < 2) return;
+
     const firstDataRow = lines[1].split(",");
     const rawDate = firstDataRow[0] || "";
     el.textContent = formatFecha(rawDate);
