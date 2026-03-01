@@ -1,5 +1,6 @@
 <!-- partials/header.html -->
 <header class="topbar">
+  <!-- Izquierda: menú + título -->
   <div class="topbar__left">
     <button class="icon-button icon-button--menu" aria-label="Menú" id="menuToggle">
       <span class="material-icons">menu</span>
@@ -7,11 +8,8 @@
     <h1 id="pageTitle">RoadMap</h1>
   </div>
 
-  <!-- Centro: fecha arriba + animación abajo (ambas ocultas en móvil) -->
+  <!-- Centro: solo animación (oculta en móvil) -->
   <div class="topbar__center">
-    <div id="topbarFecha" class="topbar-fecha">--/--/----</div>
-
-    <!-- Animación con colinas, ciudad y árboles -->
     <div class="truck-animation" aria-hidden="true">
       <div class="scenery">
         <div class="bg bg-hills"></div>
@@ -25,12 +23,8 @@
     </div>
   </div>
 
-  <div class="topbar__actions">
-    <button class="icon-button" aria-label="Notificaciones">
-      <span class="material-icons">notifications</span>
-    </button>
-    <button class="icon-button" aria-label="Perfil">
-      <span class="material-icons">account_circle</span>
-    </button>
+  <!-- Derecha: fecha (oculta en móvil) -->
+  <div class="topbar__right">
+    <div id="topbarFecha" class="topbar-fecha">--/--/----</div>
   </div>
 </header>
