@@ -13,10 +13,13 @@
   --text-muted: #757575;
   --border-radius: 12px;
   --shadow-elevated: 0 4px 12px rgba(0,0,0,0.08);
+
+  /* altura unificada de controles en Agenda */
+  --agenda-control-height: 30px;
 }
 
 /* ===================== */
-/* RESET                 */
+/* RESET BÁSICO          */
 /* ===================== */
 
 *,
@@ -45,6 +48,7 @@ body {
   min-height: 100vh;
 }
 
+/* Sidebar */
 .sidebar {
   width: 250px;
   background: #FFFFFF;
@@ -106,6 +110,7 @@ body {
   flex-direction: column;
 }
 
+/* Topbar */
 .topbar {
   height: 64px;
   padding: 0 24px;
@@ -133,6 +138,7 @@ body {
   gap: 8px;
 }
 
+/* Icon buttons */
 .icon-button {
   border: none;
   background: transparent;
@@ -150,21 +156,42 @@ body {
   background-color: rgba(0,0,0,0.04);
 }
 
+/* Menú hamburguesa: oculto en desktop */
 .icon-button--menu {
   margin-right: 8px;
   display: none;
 }
 
 /* ===================== */
-/* CONTENIDO GENERAL     */
+/* CONTENIDO / PÁGINAS   */
 /* ===================== */
 
 .content {
-  padding: 8px 24px 24px;
+  padding: 8px 24px 24px; /* menos espacio gris arriba */
 }
 
 .page-section {
   margin-top: 4px;
+}
+
+.page-section__title {
+  margin-top: 0;
+  margin-bottom: 4px;
+  font-size: 1.3rem;
+}
+
+.page-section__subtitle {
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: var(--text-muted);
+}
+
+/* Cards y grid genérico */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
 }
 
 .card {
@@ -172,6 +199,17 @@ body {
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-elevated);
   padding: 16px 18px;
+}
+
+.card__title {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 1.05rem;
+}
+
+.card__text {
+  margin: 0;
+  color: var(--text-muted);
 }
 
 /* ===================== */
@@ -184,15 +222,26 @@ body {
   font-style: normal;
   font-size: 24px;
   line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
   display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
   -webkit-font-feature-settings: 'liga';
   -webkit-font-smoothing: antialiased;
 }
 
 /* ===================== */
-/* CAMIONCITO (Planos)   */
+/* MAPA / PLANOS         */
 /* ===================== */
 
+/* Leaflet: bajar el mapa en la pila para que sidebar y overlays lo superen */
+.leaflet-container {
+  z-index: 0;
+}
+
+/* Camioncito animado en el header (emoji) */
 .truck-animation {
   position: relative;
   margin-left: 24px;
@@ -210,14 +259,16 @@ body {
   height: 100%;
 }
 
+/* Emoji del camión */
 .truck-emoji {
   position: absolute;
   font-size: 20px;
   top: 0;
-  left: -50px;
-  animation: truck-drive 7s linear infinite;
+  left: -30px;                 /* arranca fuera de la vista */
+  animation: truck-drive 4s linear infinite;
 }
 
+/* Línea de carretera */
 .truck-road {
   position: absolute;
   bottom: 3px;
@@ -231,45 +282,28 @@ body {
 .truck-road::before {
   content: "";
   position: absolute;
-  width: 60px;
+  width: 40px;
   height: 100%;
   background: rgba(0,0,0,0.28);
   left: 0;
-  animation: truck-road-move 1.2s linear infinite;
+  animation: truck-road-move 0.8s linear infinite;
 }
 
+/* Camión va de izquierda a derecha */
 @keyframes truck-drive {
   0%   { transform: translateX(0); opacity: 0; }
   10%  { opacity: 1; }
-  90%  { transform: translateX(130%); opacity: 1; }
-  100% { transform: translateX(150%); opacity: 0; }
+  80%  { transform: translateX(100%); opacity: 1; }
+  100% { transform: translateX(130%); opacity: 0; }
 }
 
+/* Carretera se mueve de derecha a izquierda */
 @keyframes truck-road-move {
   0%   { transform: translateX(100%); }
-  100% { transform: translateX(-60px); }
+  100% { transform: translateX(-40px); }
 }
 
-@media (max-width: 600px) {
-  .truck-animation {
-    display: none;
-  }
-}
-
-/* ===================== */
-/* MAPA / PLANOS         */
-/* ===================== */
-
-.map-wrapper {
-  position: relative;
-  width: 100%;
-}
-
-.leaflet-container {
-  z-index: 0;
-}
-
-/* Botón flotante estilo material para filtros */
+/* Botón de filtros del mapa (solo icono) */
 .btn-small-icon {
   border: none;
   border-radius: 999px;
@@ -282,7 +316,7 @@ body {
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-  transition: background-color 0.15s ease, transform 0.2s ease;
+  transition: transform 0.2s ease;
 }
 
 .btn-small-icon .material-icons {
@@ -305,7 +339,7 @@ body {
   z-index: 1100;
 }
 
-/* Panel flotante Material para filtros */
+/* Panel flotante de filtros (mapa) */
 .filters-floating {
   position: absolute;
   top: 12px;
@@ -400,12 +434,34 @@ body {
   .content {
     padding: 16px;
   }
+
+  #map {
+    height: 720px;
+  }
+
+  .filters-floating {
+    top: 10px;
+    left: 10px;
+    right: 54px;
+  }
+
+  .filters-toggle-btn {
+    top: 14px;
+    right: 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  .truck-animation {
+    display: none;
+  }
 }
 
 /* ===================== */
 /* AGENDA                */
 /* ===================== */
 
+/* Card contenedora */
 .agenda-card {
   background-color: var(--surface);
   border-radius: var(--border-radius);
@@ -413,11 +469,11 @@ body {
   padding: 14px 18px;
 }
 
-/* Filtros + búsqueda en la misma fila */
+/* Filtros + búsqueda en una sola línea */
 .agenda-filters {
   display: flex;
   flex-wrap: nowrap;
-  align-items: center;
+  align-items: center;      /* alinea verticalmente todo */
   margin-bottom: 8px;
 }
 
@@ -425,15 +481,14 @@ body {
   display: flex;
   flex: 1;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
-/* Columna Centro */
+/* Grupo Centro */
 .agenda-filters__group {
   display: flex;
   flex-direction: column;
-  flex: 0 0 40%;
-  max-width: 260px;
+  min-width: 160px;
 }
 
 .agenda-filters__group label {
@@ -442,10 +497,8 @@ body {
   margin-bottom: 2px;
 }
 
-/* Misma caja para select, input y botón [web:277][web:294] */
-.agenda-filters__group select,
-.agenda-search-input,
-.agenda-search-toggle {
+.agenda-filters__group select {
+  height: var(--agenda-control-height);
   padding: 0 10px;
   border-radius: 999px;
   border: 1px solid rgba(0,0,0,0.2);
@@ -454,20 +507,21 @@ body {
   box-sizing: border-box;
 }
 
-/* Altura con padding, sin height fijo → misma altura visual [web:277] */
-.agenda-filters__group select,
-.agenda-search-input {
-  height: auto;
-  line-height: 1.2;
-  padding-top: 6px;
-  padding-bottom: 6px;
+/* Lupa + barra, alineados a la derecha */
+.agenda-search-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
 }
 
 /* Botón lupa */
 .agenda-search-toggle {
-  padding: 6px;
-  border-radius: 50%;
   border: none;
+  border-radius: 999px;
+  width: var(--agenda-control-height);
+  height: var(--agenda-control-height);
+  cursor: pointer;
   background-color: var(--primary);
   color: #fff;
   display: inline-flex;
@@ -479,36 +533,50 @@ body {
   font-size: 18px;
 }
 
-/* Contenedor búsqueda */
-.agenda-search-box {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex: 1;
-  justify-content: flex-end;
-}
-
-/* Barra expansible */
+/* Barra que se expande desde la lupa hacia la izquierda */
 .agenda-search-bar {
   position: relative;
   overflow: hidden;
   max-width: 0;
   opacity: 0;
   transition: max-width 0.3s ease, opacity 0.25s ease;
+  height: var(--agenda-control-height);
   display: flex;
   align-items: center;
 }
 
 .agenda-search-bar--open {
-  max-width: 260px;
+  max-width: 220px;
   opacity: 1;
 }
 
 .agenda-search-input {
-  width: 100%;
+  width: 220px;
+  height: var(--agenda-control-height);
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.2);
+  font-family: inherit;
+  font-size: 0.78rem;
+  box-sizing: border-box;
 }
 
-/* Tabla Agenda */
+/* Ajuste en móvil: barra más corta pero alineada */
+@media (max-width: 800px) {
+  .agenda-filters__group {
+    min-width: 140px;
+  }
+
+  .agenda-search-bar--open {
+    max-width: 150px;
+  }
+
+  .agenda-search-input {
+    width: 150px;
+  }
+}
+
+/* Tabla / cards */
 .agenda-table-wrapper {
   margin-top: 8px;
   overflow-x: auto;
@@ -520,6 +588,7 @@ body {
   font-size: 0.76rem;
 }
 
+/* Cabecera morada con iconos claros, compacta */
 .agenda-table thead {
   background: var(--primary-dark);
   color: #FFFFFF;
@@ -527,7 +596,7 @@ body {
 
 .agenda-table th,
 .agenda-table td {
-  padding: 4px 6px;
+  padding: 4px 6px;                /* filas bajas */
   border-bottom: 1px solid #E0E0E0;
   text-align: left;
 }
@@ -545,32 +614,21 @@ body {
   color: var(--primary-light);
 }
 
+/* Cuerpo pequeño en desktop */
 @media (min-width: 801px) {
   .agenda-table td {
     font-size: 0.64rem;
   }
 }
 
-/* Nombre + iconos */
-.agenda-name {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+/* Links de dirección */
+.agenda-link {
+  color: var(--primary-dark);
+  text-decoration: none;
 }
 
-.agenda-map-icon {
-  border: none;
-  background: transparent;
-  padding: 0;
-  cursor: pointer;
-  color: #1976D2;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.agenda-map-icon .material-icons {
-  font-size: 16px;
+.agenda-link:hover {
+  text-decoration: underline;
 }
 
 /* Botón WhatsApp */
@@ -594,30 +652,8 @@ body {
   display: block;
 }
 
-/* Agenda móvil: tabla → cards y filtros en dos filas */
+/* Móvil: tabla → cards */
 @media (max-width: 800px) {
-  .agenda-filters {
-    flex-wrap: wrap;
-  }
-
-  .agenda-filters-inner {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .agenda-filters__group {
-    flex: 1 1 auto;
-    max-width: none;
-  }
-
-  .agenda-search-box {
-    justify-content: flex-start;
-  }
-
-  .agenda-search-bar--open {
-    max-width: 100%;
-  }
-
   .agenda-table thead {
     display: none;
   }
