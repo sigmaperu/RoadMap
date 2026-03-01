@@ -50,9 +50,7 @@ async function initTopbarFecha() {
     const resp = await fetch(CSV_URL);
     const text = await resp.text();
 
-    // ESTA es la regex correcta: maneja 
- y 
- [web:311]
+    // ESTA es la regex correcta: maneja \r\n (Windows) y \n (Unix)
     const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
 
     if (lines.length < 2) return;
