@@ -1,19 +1,28 @@
 <!-- partials/header.html -->
 <header class="topbar">
-  <div class="topbar__title">
+  <div class="topbar__left">
     <button class="icon-button icon-button--menu" aria-label="Menú" id="menuToggle">
       <span class="material-icons">menu</span>
     </button>
     <h1 id="pageTitle">RoadMap</h1>
   </div>
 
-  <!-- Camioncito animado: mirando a la derecha -->
-  <div class="truck-animation">
-    <div class="truck-animation-inner">
-      <div id="topbarFecha" class="topbar-fecha"></div>
-      <!-- flip fijo + animación con LEFT -->
-      <span class="truck-emoji"><span class="truck-emoji-run">🚚</span></span>
-      <div class="truck-road"></div>
+  <!-- Centro: fecha arriba + animación abajo (no se muestran en mobile) -->
+  <div class="topbar__center">
+    <div id="topbarFecha" class="topbar-fecha">--/--/----</div>
+
+    <!-- Animación con escenario (colinas, ciudad y árboles) -->
+    <div class="truck-animation" aria-hidden="true">
+      <div class="scenery">
+        <div class="bg bg-hills"></div>
+        <div class="bg bg-city"></div>
+        <div class="bg bg-trees"></div>
+      </div>
+
+      <div class="truck-lane">
+        <span class="truck-emoji"><span class="truck-emoji-run">🚚</span></span>
+        <div class="truck-road"></div>
+      </div>
     </div>
   </div>
 
