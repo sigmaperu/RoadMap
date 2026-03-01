@@ -5,20 +5,18 @@
   <title>RoadMap – Agenda</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- Fuentes + estilos -->
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet"/>
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
-  <link rel="stylesheet" href="assets/css/styles.css"/>
-  <!-- Header global y config (DEFER) -->
-  <script defer src="assets/js/main.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <!-- Header global y config -->
+  <script src="assets/js/main.js" defer></script>
 </head>
 <body data-title="Agenda">
   <div class="app-shell">
     <aside class="sidebar">
-      <div class="sidebar__logo">
-        <img src="assets/img/logotipo.png" alt="RoadMap"/>
-      </div>
+      <div class="sidebar__logo"><img src="assets/img/logotipo.png" alt="RoadMap"></div>
       <nav class="sidebar__nav">
         <a href="index.html" class="nav-item"><span class="nav-item__icon material-icons">home</span><span>Inicio</span></a>
         <a href="agenda.html" class="nav-item nav-item--active"><span class="nav-item__icon material-icons">event</span><span>Agenda</span></a>
@@ -31,7 +29,7 @@
     </aside>
 
     <div class="main-layout">
-      <!-- Header global se inyecta aquí -->
+      <!-- Header global -->
       <div id="app-header"></div>
 
       <main class="content">
@@ -46,12 +44,7 @@
 
                 <div class="agenda-search-box">
                   <div id="agendaSearchBar" class="agenda-search-bar">
-                    <input
-                      id="agendaSearchInput"
-                      class="agenda-search-input"
-                      type="text"
-                      placeholder="Buscar por placa, cliente, ruta, etc."
-                    />
+                    <input id="agendaSearchInput" class="agenda-search-input" type="text" placeholder="Buscar por placa, cliente, ruta, etc." />
                   </div>
                   <button id="agendaSearchToggle" class="agenda-search-toggle" type="button" aria-label="Buscar">
                     <span class="material-icons">search</span>
@@ -82,7 +75,7 @@
     </div>
   </div>
 
-  <!-- JS de la página (encapsulado) -->
+  <!-- JS de la página -->
   <script>
   (() => {
     const CSV_URL =
@@ -109,9 +102,8 @@
         const result = []; let current = ""; let inQuotes = false;
         for (let i = 0; i < line.length; i++) {
           const char = line[i];
-          if (char === '"') {
-            if (inQuotes && line[i + 1] === '"') { current += '"'; i++; } else { inQuotes = !inQuotes; }
-          } else if (char === "," && !inQuotes) { result.push(current); current = ""; }
+          if (char === '"') { if (inQuotes && line[i + 1] === '"') { current += '"'; i++; } else { inQuotes = !inQuotes; } }
+          else if (char === "," && !inQuotes) { result.push(current); current = ""; }
           else { current += char; }
         }
         result.push(current);
@@ -132,18 +124,9 @@
       if (centrosAgenda.length > 0) agendaCentroSelect.value = centrosAgenda[0];
     }
 
-    const buildNombre = r => {
-      const a = r[4] || "", b = r[5] || "";
-      return (b && b !== "0" && b.toLowerCase() !== "error") ? (a ? `${a} - ${b}` : b) : a;
-    };
-    const buildRuta = r => {
-      const a = r[6] || "", b = r[19] || "";
-      return (b && b !== "0" && b.toLowerCase() !== "error") ? (a ? `${a} - ${b}` : b) : a;
-    };
-    const buildDireccion = r => {
-      const d1 = r[15] || "", d2 = r[14] || "";
-      return (d2 && d2 !== "0" && d2.toLowerCase() !== "error") ? (d1 ? `${d1} - ${d2}` : d2) : d1;
-    };
+    const buildNombre = r => { const a=r[4]||"", b=r[5]||""; return (b && b!=="0" && b.toLowerCase()!=="error") ? (a?`${a} - ${b}`:b) : a; };
+    const buildRuta   = r => { const a=r[6]||"", b=r[19]||""; return (b && b!=="0" && b.toLowerCase()!=="error") ? (a?`${a} - ${b}`:b) : a; };
+    const buildDireccion = r => { const d1=r[15]||"", d2=r[14]||""; return (d2 && d2!=="0" && d2.toLowerCase()!=="error") ? (d1?`${d1} - ${d2}`:d2):d1; };
     function googleMapsLink(r) {
       const lat = parseFloat((r[16] || "").replace(",", ".")); const lng = parseFloat((r[17] || "").replace(",", "."));
       if (Number.isNaN(lat) || Number.isNaN(lng)) return null;
@@ -258,10 +241,14 @@
       }
 
       agendaCentroSelect.addEventListener("change", () => { hasSearched = true; renderAgenda(); });
+
+      // Toggle animado de la barra de búsqueda
       agendaSearchToggle.addEventListener("click", () => {
-        // Dejamos la barra siempre visible (sin toggle) => Si prefieres toggle, comenta las 2 líneas siguientes y descomenta las de antes.
-        agendaSearchInput.focus();
+        const isOpen = agendaSearchBar.classList.toggle("agenda-search-bar--open");
+        if (isOpen) agendaSearchInput.focus();
+        else { agendaSearchInput.value = ""; hasSearched = true; renderAgenda(); }
       });
+
       agendaSearchInput.addEventListener("input", () => { hasSearched = true; renderAgenda(); });
     }
 
