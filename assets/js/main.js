@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // ---- Fecha + camión (todas las páginas que tengan #topbarFecha) ----
+  // ---- Fecha + camión en header (todas las páginas que tengan #topbarFecha) ----
   initTopbarFecha();
 });
 
