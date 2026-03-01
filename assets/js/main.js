@@ -1,10 +1,12 @@
 // assets/js/main.js
 (() => {
-  // Config global única (evita dobles declaraciones)
+  // Config global única (evita dobles declaraciones y choques)
   window.RoadMapConfig = window.RoadMapConfig || {};
-  RoadMapConfig.CSV_URL = RoadMapConfig.CSV_URL || "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
+  RoadMapConfig.CSV_URL =
+    RoadMapConfig.CSV_URL ||
+    "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
 
-  // Monta el header compartido en todas las páginas
+  // ---- Monta el header compartido en todas las páginas ----
   async function mountHeader() {
     const host = document.getElementById('app-header');
     if (!host) return; // si una página no tiene contenedor, no hacemos nada
@@ -13,7 +15,7 @@
       const res = await fetch('partials/header.html', { cache: 'no-cache' });
       host.innerHTML = await res.text();
 
-      // Título: lo tomamos de data-title del <body> (o de <title>)
+      // Título dinámico: desde data-title del <body> (o <title>)
       const titleEl = document.getElementById('pageTitle');
       if (titleEl) {
         const pageTitle = document.body.dataset.title || document.title || 'RoadMap';
@@ -41,12 +43,23 @@
 
       // Fecha en header
       initTopbarFecha();
+
+      // Fallback: si por alguna razón a los 500 ms #topbarFecha sigue vacío, coloca hora local
+      setTimeout(() => {
+        const el = document.getElementById('topbarFecha');
+        if (el && !el.textContent.trim()) {
+          el.textContent = getLocalNow();
+        }
+      }, 500);
+
+      // Evento opcional para que las páginas sepan que el header está listo
+      document.dispatchEvent(new CustomEvent('header:ready'));
     } catch (e) {
       console.error('No se pudo montar el header:', e);
     }
   }
 
-  // ---- Fecha en header: lee de CSV (fallback a hora local) ----
+  // ---- Fecha en header: del CSV (fallback local) ----
   function getLocalNow() {
     const d = new Date();
     const pad = n => (n < 10 ? "0"+n : ""+n);
@@ -94,3 +107,4 @@
   // Espera DOM y monta el header
   document.addEventListener('DOMContentLoaded', mountHeader);
 })();
+``
