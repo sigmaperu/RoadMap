@@ -1,21 +1,18 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>RoadMap | Planos</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  <meta charset="UTF-8" />
+  <title>RoadMap – Planos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- Favicon -->
-  <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/apple-touch-icon.png">
-
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/apple-touch-icon.png" />
   <!-- Roboto + Material Icons -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
   <!-- Leaflet CSS -->
   <link
     rel="stylesheet"
@@ -23,44 +20,36 @@
     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
     crossorigin=""
   />
-
   <!-- Estilos globales -->
-  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/styles.css" />
 </head>
 <body>
   <div class="app-shell">
     <aside class="sidebar">
       <div class="sidebar__logo">
-        <img src="assets/img/logotipo.png" alt="RoadMap">
+        <img src="assets/img/logotipo.png" alt="RoadMap" />
       </div>
       <nav class="sidebar__nav">
         <a href="index.html" class="nav-item">
-          <span class="nav-item__icon material-icons">home</span>
-          <span class="nav-item__label">Inicio</span>
+          <span class="nav-item__icon material-icons">home</span><span class="nav-item__label">Inicio</span>
         </a>
         <a href="agenda.html" class="nav-item">
-          <span class="nav-item__icon material-icons">event</span>
-          <span class="nav-item__label">Agenda</span>
+          <span class="nav-item__icon material-icons">event</span><span class="nav-item__label">Agenda</span>
         </a>
         <a href="dashboard.html" class="nav-item">
-          <span class="nav-item__icon material-icons">dashboard</span>
-          <span class="nav-item__label">Dashboard</span>
+          <span class="nav-item__icon material-icons">dashboard</span><span class="nav-item__label">Dashboard</span>
         </a>
         <a href="planif.html" class="nav-item">
-          <span class="nav-item__icon material-icons">timeline</span>
-          <span class="nav-item__label">Planificación</span>
+          <span class="nav-item__icon material-icons">timeline</span><span class="nav-item__label">Planificación</span>
         </a>
         <a href="planos.html" class="nav-item nav-item--active">
-          <span class="nav-item__icon material-icons">map</span>
-          <span class="nav-item__label">Planos</span>
+          <span class="nav-item__icon material-icons">map</span><span class="nav-item__label">Planos</span>
         </a>
         <a href="program.html" class="nav-item">
-          <span class="nav-item__icon material-icons">view_week</span>
-          <span class="nav-item__label">Programación</span>
+          <span class="nav-item__icon material-icons">view_week</span><span class="nav-item__label">Programación</span>
         </a>
         <a href="ubicame.html" class="nav-item">
-          <span class="nav-item__icon material-icons">my_location</span>
-          <span class="nav-item__label">Ubícame</span>
+          <span class="nav-item__icon material-icons">my_location</span><span class="nav-item__label">Ubícame</span>
         </a>
       </nav>
     </aside>
@@ -72,8 +61,7 @@
             <span class="material-icons">menu</span>
           </button>
           <h1>Planos</h1>
-
-          <!-- Camioncito animado (emoji, sin depender de Material Icons) -->
+          <!-- Camioncito animado -->
           <div class="truck-animation">
             <div class="truck-animation-inner">
               <span class="truck-emoji">🚚</span>
@@ -99,7 +87,7 @@
               <span class="material-icons">tune</span>
             </button>
 
-            <!-- Panel flotante de filtros (dentro del wrapper del mapa) -->
+            <!-- Panel flotante de filtros -->
             <div id="filtersPanel" class="filters-floating">
               <div class="filters-floating__row">
                 <div class="filter-group">
@@ -108,14 +96,12 @@
                     <option value="">Todos</option>
                   </select>
                 </div>
-
                 <div class="filter-group">
                   <label for="filterPlaca">Placa</label>
                   <select id="filterPlaca">
                     <option value="">Todos</option>
                   </select>
                 </div>
-
                 <div class="filter-group">
                   <label for="filterCliente">Cliente</label>
                   <select id="filterCliente">
@@ -138,10 +124,8 @@
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
     crossorigin=""
   ></script>
-
-  <!-- JS global (para el menú hamburguesa, etc.) -->
+  <!-- JS global -->
   <script src="assets/js/main.js"></script>
-
   <script>
     const CSV_URL = "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
 
@@ -163,15 +147,14 @@
     let leafletMap = null;
     let markersLayer = null;
 
-    const filterCentro = document.getElementById("filterCentro");
-    const filterPlaca = document.getElementById("filterPlaca");
+    const filterCentro  = document.getElementById("filterCentro");
+    const filterPlaca   = document.getElementById("filterPlaca");
     const filterCliente = document.getElementById("filterCliente");
     const btnToggleFilters = document.getElementById("btnToggleFilters");
     const filtersPanel = document.getElementById("filtersPanel");
 
-    // Pins de colores (leaflet-color-markers)[web:114]
+    // Pins de colores (leaflet-color-markers)
     const shadowUrl = "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png";
-
     const redPin = new L.Icon({
       iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
       shadowUrl,
@@ -180,7 +163,6 @@
       popupAnchor: [1, -34],
       shadowSize: [41, 41]
     });
-
     const purplePin = new L.Icon({
       iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-violet.png",
       shadowUrl,
@@ -189,7 +171,6 @@
       popupAnchor: [1, -34],
       shadowSize: [41, 41]
     });
-
     const blackPin = new L.Icon({
       iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-black.png",
       shadowUrl,
@@ -202,21 +183,16 @@
     // CSV parser robusto
     function parseCSV(text) {
       const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
-      const header = lines.shift().split(",");
+      const header = lines.shift()?.split(",") || [];
       const rows = lines.map(line => {
         const result = [];
         let current = "";
         let inQuotes = false;
-
         for (let i = 0; i < line.length; i++) {
           const char = line[i];
           if (char === '"') {
-            if (inQuotes && line[i + 1] === '"') {
-              current += '"';
-              i++;
-            } else {
-              inQuotes = !inQuotes;
-            }
+            if (inQuotes && line[i + 1] === '"') { current += '"'; i++; }
+            else { inQuotes = !inQuotes; }
           } else if (char === "," && !inQuotes) {
             result.push(current);
             current = "";
@@ -239,9 +215,9 @@
     let allClientes = [];
 
     function populateBaseOptions() {
-      allCentros = unique(allRows.map(r => r[1])).sort();
-      allPlacas = unique(allRows.map(r => r[2])).sort();
-      allClientes = unique(allRows.map(r => r[4])).sort();
+      allCentros  = unique(allRows.map(r => r[1] || "")).sort();
+      allPlacas   = unique(allRows.map(r => r[2] || "")).sort();
+      allClientes = unique(allRows.map(r => r[4] || "")).sort();
     }
 
     function resetSelect(selectEl) {
@@ -264,12 +240,9 @@
 
     function refreshPlacaOptions(currentCentro) {
       resetSelect(filterPlaca);
-
       let subset = allRows;
-      if (currentCentro) {
-        subset = subset.filter(r => r[1] === currentCentro);
-      }
-      const placas = unique(subset.map(r => r[2])).sort();
+      if (currentCentro) subset = subset.filter(r => (r[1] || "") === currentCentro);
+      const placas = unique(subset.map(r => r[2] || "")).sort();
       placas.forEach(p => {
         const opt = document.createElement("option");
         opt.value = p;
@@ -280,18 +253,13 @@
 
     function refreshClienteOptions(currentCentro, currentPlaca) {
       resetSelect(filterCliente);
-
       let subset = allRows;
-      if (currentCentro) {
-        subset = subset.filter(r => r[1] === currentCentro);
-      }
-      if (currentPlaca) {
-        subset = subset.filter(r => r[2] === currentPlaca);
-      }
-      const clientes = unique(subset.map(r => r[4])).sort();
+      if (currentCentro) subset = subset.filter(r => (r[1] || "") === currentCentro);
+      if (currentPlaca)  subset = subset.filter(r => (r[2] || "") === currentPlaca);
 
+      const clientes = unique(subset.map(r => r[4] || "")).sort();
       clientes.forEach(cli => {
-        const rowsCli = subset.filter(r => r[4] === cli);
+        const rowsCli = subset.filter(r => (r[4] || "") === cli);
         const extra = rowsCli[0] ? (rowsCli[0][5] || "") : "";
         let label = cli;
         if (extra && extra !== "0" && extra.toLowerCase() !== "error") {
@@ -317,50 +285,39 @@
       const cliente = filterCliente.value;
 
       let filtered = allRows.slice();
-
-      if (centro) {
-        filtered = filtered.filter(r => r[1] === centro);
-      }
-      if (placa) {
-        filtered = filtered.filter(r => r[2] === placa);
-      }
-      if (cliente) {
-        filtered = filtered.filter(r => r[4] === cliente);
-      }
+      if (centro)  filtered = filtered.filter(r => (r[1] || "") === centro);
+      if (placa)   filtered = filtered.filter(r => (r[2] || "") === placa);
+      if (cliente) filtered = filtered.filter(r => (r[4] || "") === cliente);
 
       // Agrupar por cliente, sumando peso (col 10)
       const clientMap = new Map();
-
       filtered.forEach(r => {
-        const clientKey = r[4];
+        const clientKey = r[4] || "";
         if (!clientKey) return;
 
         const lat = parseFloat((r[16] || "").replace(",", "."));
         const lng = parseFloat((r[17] || "").replace(",", "."));
         if (Number.isNaN(lat) || Number.isNaN(lng)) return;
 
-        const centroVal = r[1];
-        const extraVal = r[5];
-        const rutaNombre = r[6];
+        const centroVal = r[1] || "";
+        const extraVal  = r[5] || "";
+        const rutaNombre = r[6] || "";
         const dir15 = r[15] || "";
         const dir14 = r[14] || "";
-        const vh = r[18] || "";
+        const vh    = r[18] || "";
         const rutaExtra = r[19] || "";
-        const peso = parseFloat((r[10] || "0").replace(",", "."));
+        const peso  = parseFloat((r[10] || "0").replace(",", "."));
 
         const existing = clientMap.get(clientKey);
-
         if (!existing) {
           let clienteLabel = clientKey;
           if (extraVal && extraVal !== "0" && extraVal.toLowerCase() !== "error") {
             clienteLabel = clientKey + " - " + extraVal;
           }
-
           let rutaTexto = rutaNombre || "";
           if (rutaExtra && rutaExtra !== "0" && rutaExtra.toLowerCase() !== "error") {
             rutaTexto = rutaTexto ? (rutaTexto + " - " + rutaExtra) : rutaExtra;
           }
-
           let direccionTexto = dir15;
           if (dir14 && dir14 !== "0" && dir14.toLowerCase() !== "error") {
             direccionTexto = direccionTexto ? (direccionTexto + " - " + dir14) : dir14;
@@ -370,8 +327,7 @@
             centro: centroVal,
             clienteKey: clientKey,
             cliente: clienteLabel,
-            lat,
-            lng,
+            lat, lng,
             direccion: direccionTexto,
             ruta: rutaTexto,
             vh,
@@ -389,33 +345,23 @@
 
     function initMap() {
       if (leafletMap) return;
-
-      leafletMap = L.map("map", {
-        zoomControl: false
-      }).setView([-9.19, -75.02], 5);
-
+      leafletMap = L.map("map", { zoomControl: false }).setView([-9.19, -75.02], 5);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
-        attribution: "&copy; OpenStreetMap contributors"
+        attribution: "© OpenStreetMap contributors"
       }).addTo(leafletMap);
-
       L.control.zoom({ position: "bottomright" }).addTo(leafletMap);
-
       markersLayer = L.layerGroup().addTo(leafletMap);
     }
 
     function renderMarkers(points) {
       if (!leafletMap || !markersLayer) return;
-
       markersLayer.clearLayers();
-
       const bounds = [];
 
       points.forEach(p => {
         const baseIcon = p.pesoTotal >= 100 ? purplePin : redPin;
-
         const googleUrl = `https://www.google.com/maps?q=${encodeURIComponent(p.lat + "," + p.lng)}`;
-
         const popupHtml = `
           <div style="min-width:220px;">
             <strong>Cliente:</strong> ${p.cliente}<br>
@@ -425,16 +371,13 @@
             <strong>Ruta:</strong> ${p.ruta || "-"}<br>
             <strong>VH:</strong> ${p.vh || "-"}<br>
             <label style="margin-top:4px;display:flex;align-items:center;gap:4px;font-size:0.85rem;">
-              <input type="checkbox" class="visitado-checkbox">
-              Visitado
+              <input type="checkbox" class="visitado-checkbox"> Visitado
             </label>
           </div>
         `;
-
         const marker = L.marker([p.lat, p.lng], { icon: baseIcon });
         marker._baseIcon = baseIcon;
         marker._visitedIcon = blackPin;
-
         marker.bindPopup(popupHtml);
         marker.addTo(markersLayer);
         bounds.push([p.lat, p.lng]);
@@ -443,13 +386,8 @@
           const popupEl = e.popup.getElement();
           const checkbox = popupEl.querySelector(".visitado-checkbox");
           if (!checkbox) return;
-
           checkbox.addEventListener("change", () => {
-            if (checkbox.checked) {
-              marker.setIcon(marker._visitedIcon);
-            } else {
-              marker.setIcon(marker._baseIcon);
-            }
+            marker.setIcon(checkbox.checked ? marker._visitedIcon : marker._baseIcon);
           });
         });
       });
@@ -463,38 +401,27 @@
 
     function locateUserOnLoad() {
       if (!leafletMap || !navigator.geolocation) return;
-
       navigator.geolocation.getCurrentPosition(
         position => {
           const { latitude, longitude } = position.coords;
-
           const userMarker = L.circleMarker([latitude, longitude], {
-            radius: 2,
-            color: "#000000",
-            fillColor: "#000000",
-            fillOpacity: 1
+            radius: 2, color: "#000000", fillColor: "#000000", fillOpacity: 1
           }).bindPopup("Mi ubicación");
           userMarker.addTo(leafletMap);
-
           leafletMap.setView([latitude, longitude], 12);
         },
         () => {},
-        {
-          enableHighAccuracy: true,
-          timeout: 8000
-        }
+        { enableHighAccuracy: true, timeout: 8000 }
       );
     }
 
     async function initPlanosPage() {
       initMap();
-
       try {
         const resp = await fetch(CSV_URL);
         const text = await resp.text();
         const { rows } = parseCSV(text);
         allRows = rows;
-
         loadFiltersInitial();
         applyFilters();
       } catch (err) {
@@ -508,14 +435,12 @@
         refreshClienteOptions(centroVal, filterPlaca.value || "");
         applyFilters();
       });
-
       filterPlaca.addEventListener("change", () => {
         const centroVal = filterCentro.value;
         const placaVal = filterPlaca.value;
         refreshClienteOptions(centroVal, placaVal);
         applyFilters();
       });
-
       filterCliente.addEventListener("change", applyFilters);
 
       btnToggleFilters.addEventListener("click", () => {
