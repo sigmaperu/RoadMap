@@ -4,16 +4,17 @@
   <meta charset="UTF-8" />
   <title>RoadMap – Agenda</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Fuentes + estilos -->
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/styles.css" />
-  <!-- Cargamos main.js primero (defer), así el header y la config quedan listos antes del JS de página -->
-  <script src="assets/js/main.js" defer></script>
+  <!-- Header global y config (DEFER) -->
+  <script defer src="assets/js/main.js"></script>
 </head>
 <body data-title="Agenda">
   <div class="app-shell">
     <aside class="sidebar">
-      <div class="sidebar__logo"><img src="assets/img/logotipo.png" alt="RoadMap" /></div>
+      <div class="sidebar__logo"><img src="assets/img/logotipo.png" alt="RoadMap"></div>
       <nav class="sidebar__nav">
         <a href="index.html" class="nav-item"><span class="nav-item__icon material-icons">home</span><span>Inicio</span></a>
         <a href="agenda.html" class="nav-item nav-item--active"><span class="nav-item__icon material-icons">event</span><span>Agenda</span></a>
@@ -72,10 +73,14 @@
     </div>
   </div>
 
-  <!-- JS de la página, aislado en IIFE para no contaminar el global -->
+  <!-- JS de la página, encapsulado -->
   <script>
   (() => {
-    const CSV_URL = window.RoadMapConfig.CSV_URL; // ✔️ sin dobles declaraciones
+    // Fallback robusto: si RoadMapConfig no está listo aún, usa URL directa
+    const CSV_URL =
+      (window.RoadMapConfig && window.RoadMapConfig.CSV_URL)
+      || "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
+
     let agendaRows = [];
     let centrosAgenda = [];
     let hasSearched = false;
