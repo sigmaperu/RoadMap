@@ -1,47 +1,40 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>RoadMap | Agenda</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css">
+  <meta charset="UTF-8" />
+  <title>RoadMap – Agenda</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
 </head>
 <body>
   <div class="app-shell">
     <aside class="sidebar">
       <div class="sidebar__logo">
-        <img src="assets/img/logotipo.png" alt="RoadMap">
+        <img src="assets/img/logotipo.png" alt="RoadMap" />
       </div>
       <nav class="sidebar__nav">
         <a href="index.html" class="nav-item">
-          <span class="nav-item__icon material-icons">home</span>
-          <span>Inicio</span>
+          <span class="nav-item__icon material-icons">home</span><span>Inicio</span>
         </a>
         <a href="agenda.html" class="nav-item nav-item--active">
-          <span class="nav-item__icon material-icons">event</span>
-          <span>Agenda</span>
+          <span class="nav-item__icon material-icons">event</span><span>Agenda</span>
         </a>
         <a href="dashboard.html" class="nav-item">
-          <span class="nav-item__icon material-icons">dashboard</span>
-          <span>Dashboard</span>
+          <span class="nav-item__icon material-icons">dashboard</span><span>Dashboard</span>
         </a>
         <a href="planif.html" class="nav-item">
-          <span class="nav-item__icon material-icons">timeline</span>
-          <span>Planificación</span>
+          <span class="nav-item__icon material-icons">timeline</span><span>Planificación</span>
         </a>
         <a href="planos.html" class="nav-item">
-          <span class="nav-item__icon material-icons">map</span>
-          <span>Planos</span>
+          <span class="nav-item__icon material-icons">map</span><span>Planos</span>
         </a>
         <a href="program.html" class="nav-item">
-          <span class="nav-item__icon material-icons">view_week</span>
-          <span>Programación</span>
+          <span class="nav-item__icon material-icons">view_week</span><span>Programación</span>
         </a>
         <a href="ubicame.html" class="nav-item">
-          <span class="nav-item__icon material-icons">my_location</span>
-          <span>Ubícame</span>
+          <span class="nav-item__icon material-icons">my_location</span><span>Ubícame</span>
         </a>
       </nav>
     </aside>
@@ -92,7 +85,6 @@
                       placeholder="Buscar por placa, cliente, ruta, etc."
                     />
                   </div>
-
                   <button id="agendaSearchToggle" class="agenda-search-toggle" type="button" aria-label="Buscar">
                     <span class="material-icons">search</span>
                   </button>
@@ -125,10 +117,8 @@
   </div>
 
   <script src="assets/js/main.js"></script>
-
   <script>
     const CSV_URL = "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
-
     let agendaRows = [];
     let centrosAgenda = [];
     let hasSearched = false;
@@ -140,6 +130,7 @@
     const agendaTableBody = document.querySelector("#agendaTable tbody");
     const agendaResults = document.getElementById("agendaResults");
 
+    // Utilidades seguras
     function parseCSV(text) {
       const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
       if (lines.length === 0) return { header: [], rows: [] };
@@ -149,16 +140,11 @@
         const result = [];
         let current = "";
         let inQuotes = false;
-
         for (let i = 0; i < line.length; i++) {
           const char = line[i];
           if (char === '"') {
-            if (inQuotes && line[i + 1] === '"') {
-              current += '"';
-              i++;
-            } else {
-              inQuotes = !inQuotes;
-            }
+            if (inQuotes && line[i + 1] === '"') { current += '"'; i++; }
+            else { inQuotes = !inQuotes; }
           } else if (char === "," && !inQuotes) {
             result.push(current);
             current = "";
@@ -177,7 +163,7 @@
     }
 
     function loadCentros() {
-      centrosAgenda = unique(agendaRows.map(r => r[1])).sort();
+      centrosAgenda = unique(agendaRows.map(r => r[1] || "")).sort();
       agendaCentroSelect.innerHTML = "";
       centrosAgenda.forEach(c => {
         const opt = document.createElement("option");
@@ -235,11 +221,9 @@
       rows.forEach(r => {
         const centro = r[1] || "";
         const cliente = r[3] || "";
-        const key = centro + "||" + cliente;
+        const key = centro + "\n" + cliente;
         if (!cliente) return;
-        if (!map.has(key)) {
-          map.set(key, r);
-        }
+        if (!map.has(key)) map.set(key, r);
       });
       return Array.from(map.values());
     }
@@ -250,21 +234,19 @@
         agendaTableBody.innerHTML = "";
         return;
       }
-
       const centroSel = agendaCentroSelect.value;
       const term = (agendaSearchInput.value || "").toLowerCase().trim();
-
-      let rows = agendaRows.filter(r => r[1] === centroSel);
+      let rows = agendaRows.filter(r => (r[1] || "") === centroSel);
 
       if (term) {
         rows = rows.filter(r => {
-          const placa = (r[2] || "").toLowerCase();
-          const cliente = (r[3] || "").toLowerCase();
-          const nombre = buildNombre(r).toLowerCase();
-          const ruta = buildRuta(r).toLowerCase();
-          const auxiliar = (r[12] || "").toLowerCase();
-          const telefono = (r[13] || "").toLowerCase();
-          const direccion = buildDireccion(r).toLowerCase();
+          const placa     = (r[2] || "").toLowerCase();
+          const cliente   = (r[3] || "").toLowerCase();
+          const nombre    = (buildNombre(r) || "").toLowerCase();
+          const ruta      = (buildRuta(r) || "").toLowerCase();
+          const auxiliar  = (r[12] || "").toLowerCase();
+          const telefono  = (r[13] || "").toLowerCase();
+          const direccion = (buildDireccion(r) || "").toLowerCase();
           return (
             placa.includes(term) ||
             cliente.includes(term) ||
@@ -278,22 +260,20 @@
       }
 
       const grouped = groupByCliente(rows);
-
       agendaTableBody.innerHTML = "";
 
       grouped.forEach(r => {
-        const placa = r[2] || "";
-        const cliente = r[3] || "";
-        const nombre = buildNombre(r);
-        const vh = r[18] || "";
-        const ruta = buildRuta(r);
+        const placa    = r[2] || "";
+        const cliente  = r[3] || "";
+        const nombre   = buildNombre(r);
+        const vh       = r[18] || "";
+        const ruta     = buildRuta(r);
         const auxiliar = r[12] || "";
         const telefono = r[13] || "";
         const dirTexto = buildDireccion(r);
-        const mapsUrl = googleMapsLink(r);
+        const mapsUrl  = googleMapsLink(r);
 
         const tr = document.createElement("tr");
-
         function td(value, label) {
           const cell = document.createElement("td");
           cell.setAttribute("data-label", label);
@@ -304,32 +284,36 @@
         tr.appendChild(td(placa, "Placa"));
         tr.appendChild(td(cliente, "Cliente"));
 
+        // Celda Nombre + Ubicación
         const tdNombre = document.createElement("td");
         tdNombre.setAttribute("data-label", "Nombre");
         const spanNombre = document.createElement("span");
         spanNombre.className = "agenda-name";
+
         const textoNombre = document.createElement("span");
         textoNombre.textContent = nombre || "-";
         spanNombre.appendChild(textoNombre);
+
         if (mapsUrl) {
           const btnMap = document.createElement("button");
           btnMap.type = "button";
           btnMap.className = "agenda-map-icon";
           btnMap.title = dirTexto || "Ver dirección";
-          btnMap.onclick = (e) => {
-            e.stopPropagation();
-            window.open(mapsUrl, "_blank");
-          };
-          const icon = document.createElement("span");
-          icon.className = "material-icons";
-          icon.textContent = "location_on";
-          btnMap.appendChild(icon);
+          btnMap.onclick = (e) => { e.stopPropagation(); window.open(mapsUrl, "_blank"); };
+
+          // SVG pin limpio
+          btnMap.innerHTML = `
+            <svg viewBox="0 0 24 24" class="map-pin" aria-hidden="true">
+              <path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z"/>
+            </svg>
+          `;
           spanNombre.appendChild(btnMap);
         }
+
         tdNombre.appendChild(spanNombre);
         tr.appendChild(tdNombre);
 
-        tr.appendChild(td(vh, "VH"));
+        tr.appendChild(td(vh,   "VH"));
         tr.appendChild(td(ruta, "Ruta"));
         tr.appendChild(td(auxiliar, "Auxiliar"));
 
@@ -342,10 +326,7 @@
           const btn = document.createElement("button");
           btn.type = "button";
           btn.className = "agenda-whatsapp-btn";
-          btn.onclick = (e) => {
-            e.stopPropagation();
-            window.open(waLink, "_blank");
-          };
+          btn.onclick = (e) => { e.stopPropagation(); window.open(waLink, "_blank"); };
           btn.innerHTML = `
             <svg viewBox="0 0 32 32" aria-hidden="true">
               <path fill="currentColor" d="M16 3.2A12.77 12.77 0 0 0 3.2 16a12.6 12.6 0 0 0 1.78 6.5L3 29l6.7-1.96A12.8 12.8 0 0 0 16 28.8 12.77 12.77 0 0 0 28.8 16 12.8 12.8 0 0 0 16 3.2zm0 22.3a9.5 9.5 0 0 1-4.84-1.34l-.35-.2-4 1.16 1.08-3.9-.23-.37A9.4 9.4 0 0 1 6.5 16 9.5 9.5 0 1 1 16 25.5zm4.94-7.1c-.27-.14-1.59-.8-1.84-.9s-.43-.14-.6.14-.69.9-.84 1.08-.31.2-.58.07a7.7 7.7 0 0 1-2.27-1.4 8 8 0 0 1-1.47-1.8c-.15-.27 0-.42.11-.56s.27-.31.4-.48a1.88 1.88 0 0 0 .27-.45.51.51 0 0 0-.02-.48c-.07-.14-.6-1.44-.82-1.98s-.44-.45-.6-.46h-.5a1 1 0 0 0-.7.33 3 3 0 0 0-.93 2.2 5.2 5.2 0 0 0 1.09 2.76 11.9 11.9 0 0 0 4.55 4 5.2 5.2 0 0 0 3.09.65 2.6 2.6 0 0 0 1.76-1.22 2.15 2.15 0 0 0 .15-1.22c-.06-.1-.24-.17-.5-.3z"/>
@@ -377,13 +358,28 @@
         const { rows } = parseCSV(text);
         agendaRows = rows;
         loadCentros();
+
+        // Mostrar resultados por defecto si hay centros
+        if (centrosAgenda.length > 0) {
+          agendaCentroSelect.value = centrosAgenda[0];
+          hasSearched = true;
+          renderAgenda();
+        }
       } catch (err) {
         console.error("Error cargando RoadMap.csv en Agenda:", err);
+        // Fallback: fecha local si falla CSV (main.js ya intenta mostrar fecha remota)
+        const el = document.getElementById("topbarFecha");
+        if (el) {
+          const d = new Date();
+          const pad = n => (n<10?"0"+n:n);
+          el.textContent = `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} · ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        }
         alert("No se pudo cargar RoadMap.csv para Agenda");
       }
 
       agendaCentroSelect.addEventListener("change", () => {
-        if (hasSearched) renderAgenda();
+        hasSearched = true;
+        renderAgenda();
       });
 
       agendaSearchToggle.addEventListener("click", () => {
@@ -392,17 +388,16 @@
           agendaSearchInput.focus();
         } else {
           agendaSearchInput.value = "";
-          hasSearched = false;
+          hasSearched = true; // mantenemos resultados visibles
           renderAgenda();
         }
       });
 
       agendaSearchInput.addEventListener("input", () => {
-        hasSearched = agendaSearchInput.value.trim().length > 0;
+        hasSearched = true;
         renderAgenda();
       });
     }
-
     document.addEventListener("DOMContentLoaded", initAgenda);
   </script>
 </body>
