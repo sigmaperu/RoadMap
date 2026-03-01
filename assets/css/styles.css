@@ -16,7 +16,7 @@
 }
 
 /* ===================== */
-/* RESET BÁSICO          */
+/* RESET                 */
 /* ===================== */
 
 *,
@@ -45,7 +45,6 @@ body {
   min-height: 100vh;
 }
 
-/* Sidebar */
 .sidebar {
   width: 250px;
   background: #FFFFFF;
@@ -107,7 +106,6 @@ body {
   flex-direction: column;
 }
 
-/* Topbar */
 .topbar {
   height: 64px;
   padding: 0 24px;
@@ -135,7 +133,6 @@ body {
   gap: 8px;
 }
 
-/* Icon buttons */
 .icon-button {
   border: none;
   background: transparent;
@@ -153,14 +150,13 @@ body {
   background-color: rgba(0,0,0,0.04);
 }
 
-/* Menú hamburguesa: oculto en desktop */
 .icon-button--menu {
   margin-right: 8px;
   display: none;
 }
 
 /* ===================== */
-/* CONTENIDO / PÁGINAS   */
+/* CONTENIDO             */
 /* ===================== */
 
 .content {
@@ -171,7 +167,6 @@ body {
   margin-top: 4px;
 }
 
-/* Cards genéricos */
 .card {
   background-color: var(--surface);
   border-radius: var(--border-radius);
@@ -189,12 +184,7 @@ body {
   font-style: normal;
   font-size: 24px;
   line-height: 1;
-  letter-spacing: normal;
-  text-transform: none;
   display: inline-block;
-  white-space: nowrap;
-  word-wrap: normal;
-  direction: ltr;
   -webkit-font-feature-settings: 'liga';
   -webkit-font-smoothing: antialiased;
 }
@@ -224,8 +214,8 @@ body {
   position: absolute;
   font-size: 20px;
   top: 0;
-  left: -40px;
-  animation: truck-drive 6s linear infinite;
+  left: -50px;
+  animation: truck-drive 7s linear infinite;
 }
 
 .truck-road {
@@ -251,8 +241,8 @@ body {
 @keyframes truck-drive {
   0%   { transform: translateX(0); opacity: 0; }
   10%  { opacity: 1; }
-  90%  { transform: translateX(120%); opacity: 1; }
-  100% { transform: translateX(140%); opacity: 0; }
+  90%  { transform: translateX(130%); opacity: 1; }
+  100% { transform: translateX(150%); opacity: 0; }
 }
 
 @keyframes truck-road-move {
@@ -318,7 +308,7 @@ body {
   padding: 14px 18px;
 }
 
-/* Filtros + búsqueda */
+/* Filtros + búsqueda en la misma fila */
 .agenda-filters {
   display: flex;
   flex-wrap: nowrap;
@@ -338,7 +328,7 @@ body {
   display: flex;
   flex-direction: column;
   flex: 0 0 40%;
-  max-width: 220px;
+  max-width: 260px;
 }
 
 .agenda-filters__group label {
@@ -359,7 +349,7 @@ body {
   box-sizing: border-box;
 }
 
-/* Altura visual con padding */
+/* Altura mediante padding, sin height fijo → evita desalineos [web:277] */
 .agenda-filters__group select,
 .agenda-search-input {
   height: auto;
@@ -393,7 +383,7 @@ body {
   justify-content: flex-end;
 }
 
-/* Barra expansible */
+/* Barra que se expande */
 .agenda-search-bar {
   position: relative;
   overflow: hidden;
@@ -499,7 +489,7 @@ body {
   display: block;
 }
 
-/* Agenda móvil: tabla → cards */
+/* Agenda móvil: tabla → cards y filtros en dos filas */
 @media (max-width: 800px) {
   .agenda-filters {
     flex-wrap: wrap;
