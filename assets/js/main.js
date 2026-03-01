@@ -1,6 +1,6 @@
 // assets/js/main.js
 (() => {
-  // Config global única
+  // Config global única (evita choques)
   window.RoadMapConfig = window.RoadMapConfig || {};
   RoadMapConfig.CSV_URL =
     RoadMapConfig.CSV_URL ||
@@ -44,7 +44,7 @@
       // Fecha en header
       initTopbarFecha();
 
-      // Fallback de 500 ms por si el CSV tarda
+      // Fallback por si tarda el CSV
       setTimeout(() => {
         const el = document.getElementById('topbarFecha');
         if (el && !el.textContent.trim()) el.textContent = getLocalNow();
@@ -94,4 +94,3 @@
 
   document.addEventListener('DOMContentLoaded', mountHeader);
 })();
-``
