@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - styles.css (versión unificada y completa)
+   RoadMap - styles.css (versión con casas y fábricas + camión más bajo)
    ========================================================================== */
 
 /* ===================== */
@@ -43,14 +43,11 @@ body {
 /* APP SHELL / SIDEBAR   */
 /* ===================== */
 .app-shell { display: flex; min-height: 100vh; }
-
-/* Sidebar */
 .sidebar {
   width: 250px;
   background: var(--surface);
   border-right: 1px solid rgba(0,0,0,0.06);
-  display: flex;
-  flex-direction: column;
+  display: flex; flex-direction: column;
   padding: 16px 0;
 }
 .sidebar__logo { padding: 0 24px 16px; margin-bottom: 8px; }
@@ -81,9 +78,11 @@ body {
 }
 .topbar__left { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
 .topbar__left h1 { font-size: 1.35rem; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
 .icon-button { border: none; background: transparent; border-radius: 999px; padding: 8px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; color: var(--text-main); transition: background-color 0.15s ease, color 0.15s ease; }
 .icon-button:hover { background-color: rgba(0,0,0,0.04); }
 .icon-button--menu { margin-right: 4px; display: none; }
+
 .topbar__center { display: flex; align-items: center; justify-content: center; }
 .topbar__right  { display: flex; align-items: center; justify-content: flex-end; }
 .topbar-fecha   { font-size: 0.95rem; font-weight: 600; color: var(--text-main); line-height: 1; }
@@ -92,39 +91,157 @@ body {
 /* ANIMACIÓN DEL CAMIÓN  */
 /* ===================== */
 .truck-animation { position: relative; width: min(560px, 70%); height: 38px; overflow: hidden; }
+
+/* Capas */
 .scenery { position: absolute; inset: 0; }
-.bg { position: absolute; left: 0; right: 0; background-repeat: repeat-x; background-size: auto 100%; opacity: 0.9; animation: scenery-move linear infinite; }
+.bg {
+  position: absolute; left: 0; right: 0;
+  background-repeat: repeat-x; background-size: auto 100%;
+  opacity: 0.9; animation: scenery-move linear infinite;
+}
+
+/* Nubes + sol */
 .bg-clouds {
   top: 2px; height: 12px; z-index: 0; opacity: .85; animation-duration: 30s;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='12' viewBox='0 0 240 12'><g fill='%23e6f0f8'><ellipse cx='18' cy='6' rx='18' ry='6'/><ellipse cx='60' cy='7' rx='22' ry='7'/><ellipse cx='110' cy='5' rx='16' ry='5'/><ellipse cx='156' cy='7' rx='20' ry='7'/><ellipse cx='206' cy='6' rx='18' ry='6'/></g></svg>");
+  background-image: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='240' height='12' viewBox='0 0 240 12'>\
+<g fill='%23e6f0f8'>\
+<ellipse cx='18' cy='6' rx='18' ry='6'/>\
+<ellipse cx='60' cy='7' rx='22' ry='7'/>\
+<ellipse cx='110' cy='5' rx='16' ry='5'/>\
+<ellipse cx='156' cy='7' rx='20' ry='7'/>\
+<ellipse cx='206' cy='6' rx='18' ry='6'/>\
+</g></svg>");
 }
 .bg-sun {
-  position: absolute; top: 0; left: 6%; width: 16px; height: 16px; z-index: 1; border-radius: 50%;
+  position: absolute; top: 0; left: 6%;
+  width: 16px; height: 16px; z-index: 1; border-radius: 50%;
   background: radial-gradient(circle at 35% 35%, #fff59d 0 30%, #ffeb3b 30% 60%, #fbc02d 60% 100%);
   animation: sun-drift 28s ease-in-out infinite alternate;
 }
-@keyframes sun-drift { 0% { left: 6%; transform: translateY(0);} 50% { left: 60%; transform: translateY(-2px);} 100% { left: 82%; transform: translateY(0);} }
+@keyframes sun-drift {
+  0% { left: 6%; transform: translateY(0); }
+  50% { left: 60%; transform: translateY(-2px); }
+  100% { left: 82%; transform: translateY(0); }
+}
+
+/* Colinas y ciudad (fondo) */
 .bg-hills {
-  bottom: 16px; height: 14px; z-index: 1; animation-duration: 22s;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='14' viewBox='0 0 240 14'><path fill='%23cfe8c8' d='M0 14 C30 2 60 2 90 14 L0 14Z'/><path fill='%23d9eecf' d='M80 14 C110 1 150 1 180 14 L80 14Z'/><path fill='%23c6e0c0' d='M160 14 C190 3 220 3 240 14 L160 14Z'/></svg>");
+  bottom: 17px; height: 14px; z-index: 1; animation-duration: 24s; /* un pelín más alto */
+  background-image: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='240' height='14' viewBox='0 0 240 14'>\
+<path fill='%23cfe8c8' d='M0 14 C30 2 60 2 90 14 L0 14Z'/>\
+<path fill='%23d9eecf' d='M80 14 C110 1 150 1 180 14 L80 14Z'/>\
+<path fill='%23c6e0c0' d='M160 14 C190 3 220 3 240 14 L160 14Z'/>\
+</svg>");
 }
 .bg-city {
-  bottom: 14px; height: 12px; z-index: 2; opacity: 0.85; animation-duration: 16s;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='12' viewBox='0 0 200 12'><rect x='0' y='4' width='18' height='8' fill='%23d1d9e6'/><rect x='20' y='2' width='14' height='10' fill='%23c4cfe0'/><rect x='40' y='1' width='22' height='11' fill='%23d1d9e6'/><rect x='66' y='3' width='16' height='9' fill='%23c4cfe0'/><rect x='86' y='2' width='18' height='10' fill='%23d1d9e6'/><rect x='108' y='4' width='14' height='8' fill='%23c4cfe0'/><rect x='126' y='1' width='24' height='11' fill='%23d1d9e6'/><rect x='154' y='3' width='16' height='9' fill='%23c4cfe0'/><rect x='174' y='2' width='20' height='10' fill='%23d1d9e6'/></svg>");
+  bottom: 15px; height: 12px; z-index: 2; opacity: 0.85; animation-duration: 18s;
+  background-image: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='200' height='12' viewBox='0 0 200 12'>\
+<rect x='0' y='4' width='18' height='8' fill='%23d1d9e6'/>\
+<rect x='20' y='2' width='14' height='10' fill='%23c4cfe0'/>\
+<rect x='40' y='1' width='22' height='11' fill='%23d1d9e6'/>\
+<rect x='66' y='3' width='16' height='9' fill='%23c4cfe0'/>\
+<rect x='86' y='2' width='18' height='10' fill='%23d1d9e6'/>\
+<rect x='108' y='4' width='14' height='8' fill='%23c4cfe0'/>\
+<rect x='126' y='1' width='24' height='11' fill='%23d1d9e6'/>\
+<rect x='154' y='3' width='16' height='9' fill='%23c4cfe0'/>\
+<rect x='174' y='2' width='20' height='10' fill='%23d1d9e6'/>\
+</svg>");
 }
+
+/* NUEVO: Capa de casas (medio) */
+.bg-houses {
+  bottom: 13px; height: 12px; z-index: 3; opacity: .95; animation-duration: 14s;
+  background-image: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='240' height='12' viewBox='0 0 240 12'>\
+<g fill='none' stroke='none'>\
+  <!-- Casa 1 -->\
+  <rect x='4' y='5' width='12' height='7' fill='%23e6e9ef'/>\
+  <polygon points='4,5 10,1 16,5' fill='%23cfd5e3'/>\
+  <rect x='7' y='7' width='3' height='3' fill='%2399a6bf'/>\
+  <!-- Casa 2 -->\
+  <rect x='28' y='4' width='14' height='8' fill='%23eaeef5'/>\
+  <polygon points='28,4 35,0 42,4' fill='%23d2d9ea'/>\
+  <rect x='31' y='7' width='3' height='3' fill='%2399a6bf'/>\
+  <!-- Casa 3 -->\
+  <rect x='58' y='5' width='10' height='7' fill='%23e6e9ef'/>\
+  <polygon points='58,5 63,2 68,5' fill='%23cfd5e3'/>\
+  <rect x='61' y='7' width='2' height='3' fill='%2399a6bf'/>\
+  <!-- Repeticiones ligeras -->\
+  <rect x='90' y='5' width='12' height='7' fill='%23e6e9ef'/>\
+  <polygon points='90,5 96,1 102,5' fill='%23cfd5e3'/>\
+  <rect x='93' y='7' width='3' height='3' fill='%2399a6bf'/>\
+  <rect x='120' y='4' width='14' height='8' fill='%23eaeef5'/>\
+  <polygon points='120,4 127,0 134,4' fill='%23d2d9ea'/>\
+  <rect x='123' y='7' width='3' height='3' fill='%2399a6bf'/>\
+  <rect x='152' y='5' width='10' height='7' fill='%23e6e9ef'/>\
+  <polygon points='152,5 157,2 162,5' fill='%23cfd5e3'/>\
+  <rect x='155' y='7' width='2' height='3' fill='%2399a6bf'/>\
+  <rect x='178' y='4' width='14' height='8' fill='%23eaeef5'/>\
+  <polygon points='178,4 185,0 192,4' fill='%23d2d9ea'/>\
+  <rect x='181' y='7' width='3' height='3' fill='%2399a6bf'/>\
+  <rect x='210' y='5' width='12' height='7' fill='%23e6e9ef'/>\
+  <polygon points='210,5 216,1 222,5' fill='%23cfd5e3'/>\
+  <rect x='213' y='7' width='3' height='3' fill='%2399a6bf'/>\
+</g></svg>");
+}
+
+/* NUEVO: Capa de fábricas / galpones (frente) */
+.bg-industry {
+  bottom: 12px; height: 12px; z-index: 4; opacity: .96; animation-duration: 12s;
+  background-image: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='220' height='12' viewBox='0 0 220 12'>\
+<g fill='%23d9dde6'>\
+  <!-- Nave con chimenea -->\
+  <rect x='6'  y='6' width='26' height='6'/>\
+  <rect x='28' y='2' width='4'  height='10' fill='%23c7ccd8'/>\
+  <!-- Galpón escalonado -->\
+  <rect x='48' y='7' width='22' height='5'/>\
+  <rect x='48' y='5' width='12' height='2' fill='%23c7ccd8'/>\
+  <!-- Planta baja + tanque -->\
+  <rect x='80' y='6' width='24' height='6'/>\
+  <circle cx='100' cy='4' r='2' fill='%23c7ccd8'/>\
+  <!-- Repetición ligera -->\
+  <rect x='112' y='6' width='26' height='6'/>\
+  <rect x='134' y='2' width='4'  height='10' fill='%23c7ccd8'/>\
+  <rect x='154' y='7' width='22' height='5'/>\
+  <rect x='154' y='5' width='12' height='2' fill='%23c7ccd8'/>\
+  <rect x='186' y='6' width='24' height='6'/>\
+  <circle cx='205' cy='4' r='2' fill='%23c7ccd8'/>\
+</g></svg>");
+}
+
+/* Primer plano: árboles */
 .bg-trees {
-  bottom: 12px; height: 14px; z-index: 3; opacity: 0.95; animation-duration: 12s;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='14' viewBox='0 0 160 14'><g><rect x='6' y='10' width='2' height='4' fill='%23704c2b'/><circle cx='7' cy='8' r='4' fill='%2380c572'/></g><g><rect x='38' y='9' width='2' height='5' fill='%23704c2b'/><circle cx='39' cy='7' r='5' fill='%2388cf78'/></g><g><rect x='74' y='10' width='2' height='4' fill='%23704c2b'/><circle cx='75' cy='8' r='4' fill='%2380c572'/></g><g><rect x='106' y='9' width='2' height='5' fill='%23704c2b'/><circle cx='107' cy='7' r='5' fill='%2388cf78'/></g><g><rect x='138' y='10' width='2' height='4' fill='%23704c2b'/><circle cx='139' cy='8' r='4' fill='%2380c572'/></g></svg>");
+  bottom: 11px; height: 14px; z-index: 5; opacity: 0.98; animation-duration: 10s; /* un poco más “rápido” */
+  background-image: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='160' height='14' viewBox='0 0 160 14'>\
+<g><rect x='6' y='10' width='2' height='4' fill='%23704c2b'/><circle cx='7' cy='8' r='4' fill='%2380c572'/></g>\
+<g><rect x='38' y='9' width='2' height='5' fill='%23704c2b'/><circle cx='39' cy='7' r='5' fill='%2388cf78'/></g>\
+<g><rect x='74' y='10' width='2' height='4' fill='%23704c2b'/><circle cx='75' cy='8' r='4' fill='%2380c572'/></g>\
+<g><rect x='106' y='9' width='2' height='5' fill='%23704c2b'/><circle cx='107' cy='7' r='5' fill='%2388cf78'/></g>\
+<g><rect x='138' y='10' width='2' height='4' fill='%23704c2b'/><circle cx='139' cy='8' r='4' fill='%2380c572'/></g>\
+</svg>");
 }
+
 @keyframes scenery-move { 0% { background-position-x: 0; } 100% { background-position-x: -480px; } }
-.truck-lane { position: absolute; inset: 0; z-index: 5; }
+
+/* Pista + camión (ajuste de altura) */
+.truck-lane { position: absolute; inset: 0; z-index: 8; }
 .truck-road {
-  position: absolute; bottom: 4px; left: 0; right: 0; height: 3px;
+  position: absolute; bottom: 5px; left: 0; right: 0; height: 3px;   /* subí 1px la pista */
   background: #bbb; overflow: hidden;
 }
-.truck-road::before { content: ""; position: absolute; left: 0; top: 0; height: 100%; width: 60px; background: linear-gradient(90deg, transparent 0 28px, #888 28px 32px, transparent 32px 60px); animation: road-move 0.85s linear infinite; }
+.truck-road::before {
+  content: ""; position: absolute; left: 0; top: 0; height: 100%; width: 60px;
+  background: linear-gradient(90deg, transparent 0 28px, #888 28px 32px, transparent 32px 60px);
+  animation: road-move 0.85s linear infinite;
+}
 @keyframes road-move { from { transform: translateX(100%); } to { transform: translateX(-60px); } }
-.truck-emoji { position: absolute; bottom: 8px; left: -40px; }
+
+.truck-emoji { position: absolute; bottom: 6px; left: -40px; }  /* ↓ bajé el camión de 8px a 6px */
 .truck-emoji-run { display: inline-block; transform: scaleX(-1); }
 @keyframes truck-drive { 0% { left: -40px; opacity: 0; } 10% { opacity: 1; } 85% { left: 110%; opacity: 1; } 100% { left: 130%; opacity: 0; } }
 .truck-emoji { animation: truck-drive 6s linear infinite; }
@@ -136,7 +253,7 @@ body {
 .page-section { margin-top: 4px; }
 
 /* ===================== */
-/* AGENDA – CARD + FILTROS + TABLA */
+/* AGENDA – CARD + FILTROS + TABLA (idéntico a tu última versión funcional) */
 /* ===================== */
 .agenda-card { background: var(--surface); border-radius: var(--border-radius); box-shadow: var(--shadow-elevated); padding: 14px 18px; }
 .agenda-filters { display: flex; align-items: center; flex-wrap: nowrap; margin-bottom: 10px; }
@@ -146,8 +263,13 @@ body {
 .agenda-filters__group { display: flex; flex-direction: column; min-width: 200px; }
 .agenda-filters__group label { display: none; }
 .agenda-filters__group select {
-  height: var(--agenda-control-height); padding: 0 12px; border-radius: var(--agenda-radius-pill);
-  border: var(--agenda-border); background: #fff; font: inherit; font-size: 0.84rem; display: inline-block;
+  height: var(--agenda-control-height);
+  padding: 0 12px;
+  border-radius: var(--agenda-radius-pill);
+  border: var(--agenda-border);
+  background: #fff;
+  font: inherit; font-size: 0.84rem;
+  display: inline-block;
   line-height: calc(var(--agenda-control-height) - 6px);
 }
 
@@ -180,11 +302,9 @@ body {
 .agenda-map-icon:hover { transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.25); }
 
 /* ===================== */
-/* MAPA / PLANOS (toolbar) */
+/* MAPA / PLANOS – toolbar (igual a versión previa funcional) */
 /* ===================== */
 .leaflet-container { z-index: 0; }
-
-/* Toolbar: botón + filtros al costado (no superpuesto) */
 .map-toolbar { position: absolute; top: 12px; left: 12px; right: 12px; z-index: 1000; display: flex; align-items: center; gap: 8px; }
 .map-toolbar .btn-small-icon { border: none; border-radius: 999px; padding: 6px; font-size: 0.8rem; cursor: pointer; background: rgba(255,255,255,0.96); color: var(--text-main); display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.25); }
 .map-toolbar .btn-small-icon .material-icons { font-size: 20px; transition: transform 0.2s ease; }
@@ -203,18 +323,11 @@ body {
 @media (max-width: 920px) {
   .app-shell { flex-direction: column; }
   .icon-button--menu { display: inline-flex; }
-  .sidebar {
-    position: fixed; top: 64px; left: 0; bottom: 0; width: 240px; background: var(--surface);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.25); transform: translateX(-100%); transition: transform 0.25s ease; z-index: 2000;
-  }
+  .sidebar { position: fixed; top: 64px; left: 0; bottom: 0; width: 240px; background: var(--surface); box-shadow: 0 4px 16px rgba(0,0,0,0.25); transform: translateX(-100%); transition: transform 0.25s ease; z-index: 2000; }
   .sidebar--open { transform: translateX(0); }
-  .topbar__right { display: none; }              /* oculta fecha en móvil */
-  .content { padding: 8px 0 16px; }              /* casi full-bleed: deja el gris como línea lateral */
-  .agenda-card {
-    border-radius: 0; box-shadow: none;
-    border-top: 1px solid #ececec; border-bottom: 1px solid #ececec;
-    padding: 12px 8px;
-  }
+  .topbar__right { display: none; }
+  .content { padding: 8px 0 16px; }
+  .agenda-card { border-radius: 0; box-shadow: none; border-top: 1px solid #ececec; border-bottom: 1px solid #ececec; padding: 12px 8px; }
   #map { height: 720px; }
 }
 @media (max-width: 560px) {
