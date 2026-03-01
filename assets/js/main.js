@@ -1,6 +1,6 @@
 // assets/js/main.js
 (() => {
-  // Config global única (evita dobles declaraciones y choques)
+  // Config global única (evita choques y dobles declaraciones)
   window.RoadMapConfig = window.RoadMapConfig || {};
   RoadMapConfig.CSV_URL =
     RoadMapConfig.CSV_URL ||
@@ -44,15 +44,13 @@
       // Fecha en header
       initTopbarFecha();
 
-      // Fallback: si por alguna razón a los 500 ms #topbarFecha sigue vacío, coloca hora local
+      // Fallback: si a los 500 ms #topbarFecha sigue vacío, coloca hora local
       setTimeout(() => {
         const el = document.getElementById('topbarFecha');
-        if (el && !el.textContent.trim()) {
-          el.textContent = getLocalNow();
-        }
+        if (el && !el.textContent.trim()) el.textContent = getLocalNow();
       }, 500);
 
-      // Evento opcional para que las páginas sepan que el header está listo
+      // Evento opcional para que páginas escuchen cuando el header está listo
       document.dispatchEvent(new CustomEvent('header:ready'));
     } catch (e) {
       console.error('No se pudo montar el header:', e);
@@ -104,7 +102,5 @@
     }
   }
 
-  // Espera DOM y monta el header
   document.addEventListener('DOMContentLoaded', mountHeader);
 })();
-``
