@@ -4,19 +4,8 @@
   <meta charset="UTF-8">
   <title>RoadMap | Agenda</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/apple-touch-icon.png">
-
-  <!-- Roboto + Material Icons -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
-  <!-- Estilos globales -->
   <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body>
@@ -28,61 +17,61 @@
       <nav class="sidebar__nav">
         <a href="index.html" class="nav-item">
           <span class="nav-item__icon material-icons">home</span>
-          <span class="nav-item__label">Inicio</span>
+          <span>Inicio</span>
         </a>
         <a href="agenda.html" class="nav-item nav-item--active">
           <span class="nav-item__icon material-icons">event</span>
-          <span class="nav-item__label">Agenda</span>
+          <span>Agenda</span>
         </a>
         <a href="dashboard.html" class="nav-item">
           <span class="nav-item__icon material-icons">dashboard</span>
-          <span class="nav-item__label">Dashboard</span>
+          <span>Dashboard</span>
         </a>
         <a href="planif.html" class="nav-item">
           <span class="nav-item__icon material-icons">timeline</span>
-          <span class="nav-item__label">Planificación</span>
+          <span>Planificación</span>
         </a>
         <a href="planos.html" class="nav-item">
           <span class="nav-item__icon material-icons">map</span>
-          <span class="nav-item__label">Planos</span>
+          <span>Planos</span>
         </a>
         <a href="program.html" class="nav-item">
           <span class="nav-item__icon material-icons">view_week</span>
-          <span class="nav-item__label">Programación</span>
+          <span>Programación</span>
         </a>
         <a href="ubicame.html" class="nav-item">
           <span class="nav-item__icon material-icons">my_location</span>
-          <span class="nav-item__label">Ubícame</span>
+          <span>Ubícame</span>
         </a>
       </nav>
     </aside>
 
     <div class="main-layout">
       <header class="topbar">
-  <div class="topbar__title">
-    <button class="icon-button icon-button--menu" aria-label="Menú" id="menuToggle">
-      <span class="material-icons">menu</span>
-    </button>
-    <h1>Agenda</h1>
-  </div>
+        <div class="topbar__title">
+          <button class="icon-button icon-button--menu" aria-label="Menú" id="menuToggle">
+            <span class="material-icons">menu</span>
+          </button>
+          <h1>Agenda</h1>
+        </div>
 
-  <div class="truck-animation">
-    <div class="truck-animation-inner">
-      <div id="topbarFecha" style="position:absolute; left:0; top:2px; font-size:0.85rem; font-weight:500;"></div>
-      <span class="truck-emoji">🚚</span>
-      <div class="truck-road"></div>
-    </div>
-  </div>
+        <div class="truck-animation">
+          <div class="truck-animation-inner">
+            <div id="topbarFecha" style="position:absolute; left:0; top:2px; font-size:0.85rem; font-weight:500;"></div>
+            <span class="truck-emoji">🚚</span>
+            <div class="truck-road"></div>
+          </div>
+        </div>
 
-  <div class="topbar__actions">
-    <button class="icon-button" aria-label="Notificaciones">
-      <span class="material-icons">notifications</span>
-    </button>
-    <button class="icon-button" aria-label="Perfil">
-      <span class="material-icons">account_circle</span>
-    </button>
-  </div>
-</header>
+        <div class="topbar__actions">
+          <button class="icon-button" aria-label="Notificaciones">
+            <span class="material-icons">notifications</span>
+          </button>
+          <button class="icon-button" aria-label="Perfil">
+            <span class="material-icons">account_circle</span>
+          </button>
+        </div>
+      </header>
 
       <main class="content">
         <section class="page-section">
@@ -115,34 +104,13 @@
               <table id="agendaTable" class="agenda-table">
                 <thead>
                   <tr>
-                    <th>
-                      <span class="material-icons agenda-th-icon">local_shipping</span>
-                      Placa
-                    </th>
-                    <th>
-                      <span class="material-icons agenda-th-icon">badge</span>
-                      Cliente
-                    </th>
-                    <th>
-                      <span class="material-icons agenda-th-icon">person</span>
-                      Nombre
-                    </th>
-                    <th>
-                      <span class="material-icons agenda-th-icon">schedule</span>
-                      VH
-                    </th>
-                    <th>
-                      <span class="material-icons agenda-th-icon">business_center</span>
-                      Ruta
-                    </th>
-                    <th>
-                      <span class="material-icons agenda-th-icon">group</span>
-                      Auxiliar
-                    </th>
-                    <th>
-                      <span class="material-icons agenda-th-icon">phone</span>
-                      Teléfono
-                    </th>
+                    <th><span class="material-icons agenda-th-icon">local_shipping</span>Placa</th>
+                    <th><span class="material-icons agenda-th-icon">badge</span>Cliente</th>
+                    <th><span class="material-icons agenda-th-icon">person</span>Nombre</th>
+                    <th><span class="material-icons agenda-th-icon">schedule</span>VH</th>
+                    <th><span class="material-icons agenda-th-icon">business_center</span>Ruta</th>
+                    <th><span class="material-icons agenda-th-icon">group</span>Auxiliar</th>
+                    <th><span class="material-icons agenda-th-icon">phone</span>Teléfono</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -161,23 +129,6 @@
   <script>
     const CSV_URL = "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
 
-    // Índices RoadMap:
-    // 1: Centro
-    // 2: Placa
-    // 3: Cliente (código)
-    // 4: Nombre
-    // 5: Detalle nombre
-    // 6: Ruta
-    // 10: Peso
-    // 12: Auxiliar
-    // 13: Teléfono
-    // 14: complemento dirección
-    // 15: dirección
-    // 16: Latitud
-    // 17: Longitud
-    // 18: VH
-    // 19: detalle ruta
-
     let agendaRows = [];
     let centrosAgenda = [];
     let hasSearched = false;
@@ -190,7 +141,9 @@
     const agendaResults = document.getElementById("agendaResults");
 
     function parseCSV(text) {
-      const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
+      const lines = text.split(/
+?
+/).filter(l => l.trim() !== "");
       if (lines.length === 0) return { header: [], rows: [] };
       const header = lines[0].split(",");
       const dataLines = lines.slice(1);
@@ -353,21 +306,18 @@
         tr.appendChild(td(placa, "Placa"));
         tr.appendChild(td(cliente, "Cliente"));
 
-        // Nombre + icono de Maps (tooltip con dirección)
         const tdNombre = document.createElement("td");
         tdNombre.setAttribute("data-label", "Nombre");
-
         const spanNombre = document.createElement("span");
         spanNombre.className = "agenda-name";
         const textoNombre = document.createElement("span");
         textoNombre.textContent = nombre || "-";
         spanNombre.appendChild(textoNombre);
-
         if (mapsUrl) {
           const btnMap = document.createElement("button");
           btnMap.type = "button";
           btnMap.className = "agenda-map-icon";
-          btnMap.title = dirTexto || "Ver dirección"; // tooltip nativo
+          btnMap.title = dirTexto || "Ver dirección";
           btnMap.onclick = (e) => {
             e.stopPropagation();
             window.open(mapsUrl, "_blank");
@@ -378,7 +328,6 @@
           btnMap.appendChild(icon);
           spanNombre.appendChild(btnMap);
         }
-
         tdNombre.appendChild(spanNombre);
         tr.appendChild(tdNombre);
 
@@ -386,7 +335,6 @@
         tr.appendChild(td(ruta, "Ruta"));
         tr.appendChild(td(auxiliar, "Auxiliar"));
 
-        // Teléfono + WhatsApp
         const tdTel = document.createElement("td");
         tdTel.setAttribute("data-label", "Teléfono");
         tdTel.textContent = telefono || "-";
