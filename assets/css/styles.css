@@ -108,10 +108,9 @@ body {
   position:absolute; left:0; top:2px; font-size:0.85rem; font-weight:500; color: var(--text-main);
 }
 
-/* Truco para "mirar a la derecha": se fija el flip y
-   la animación mueve con LEFT (no con transform) */
+/* Flip fijo + animación con LEFT */
 .truck-emoji { position: absolute; top: 0; left: -40px; }
-.truck-emoji-run { display:inline-block; transform: scaleX(-1); } /* flip a derecha */
+.truck-emoji-run { display:inline-block; transform: scaleX(-1); } /* mira a la derecha */
 .truck-road {
   position: absolute; bottom: 3px; left: 0; right: 0; height: 2px;
   background: rgba(0,0,0,0.12); overflow: hidden;
@@ -120,7 +119,6 @@ body {
   content: ""; position: absolute; width: 40px; height: 100%;
   background: rgba(0,0,0,0.28); left: 0; animation: truck-road-move 1s linear infinite;
 }
-/* Animación con LEFT (no transform) para no romper el flip */
 @keyframes truck-drive {
   0%   { left: -40px; opacity: 0; }
   10%  { opacity: 1; }
@@ -128,7 +126,6 @@ body {
   100% { left: 130%; opacity: 0; }
 }
 .truck-emoji { animation: truck-drive 6s linear infinite; }
-
 @keyframes truck-road-move {
   0% { transform: translateX(100%); }
   100% { transform: translateX(-40px); }
