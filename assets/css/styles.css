@@ -14,7 +14,6 @@
   --border-radius: 12px;
   --shadow-elevated: 0 4px 12px rgba(0,0,0,0.08);
 
-  /* altura unificada de controles en Agenda */
   --agenda-control-height: 30px;
 }
 
@@ -167,7 +166,7 @@ body {
 /* ===================== */
 
 .content {
-  padding: 8px 24px 24px; /* menos espacio gris arriba */
+  padding: 8px 24px 24px;
 }
 
 .page-section {
@@ -233,14 +232,9 @@ body {
 }
 
 /* ===================== */
-/* MAPA / PLANOS         */
+/* CAMIONCITO + FECHA    */
 /* ===================== */
 
-.leaflet-container {
-  z-index: 0;
-}
-
-/* Camioncito animado en el header (emoji) */
 .truck-animation {
   position: relative;
   margin-left: 24px;
@@ -296,6 +290,20 @@ body {
 @keyframes truck-road-move {
   0%   { transform: translateX(100%); }
   100% { transform: translateX(-40px); }
+}
+
+@media (max-width: 600px) {
+  .truck-animation {
+    display: none;
+  }
+}
+
+/* ===================== */
+/* MAPA / PLANOS         */
+/* ===================== */
+
+.leaflet-container {
+  z-index: 0;
 }
 
 /* Botón de filtros del mapa (solo icono) */
@@ -389,7 +397,9 @@ body {
   width: 100%;
 }
 
-/* Responsive general */
+/* ===================== */
+/* RESPONSIVE GENERAL    */
+/* ===================== */
 
 @media (max-width: 920px) {
   .app-shell {
@@ -443,12 +453,6 @@ body {
   }
 }
 
-@media (max-width: 600px) {
-  .truck-animation {
-    display: none;
-  }
-}
-
 /* ===================== */
 /* AGENDA                */
 /* ===================== */
@@ -460,7 +464,7 @@ body {
   padding: 14px 18px;
 }
 
-/* Filtros + búsqueda en una sola línea, alineados */
+/* Filtros + búsqueda */
 .agenda-filters {
   display: flex;
   flex-wrap: nowrap;
@@ -475,7 +479,6 @@ body {
   gap: 10px;
 }
 
-/* Grupo Centro */
 .agenda-filters__group {
   display: flex;
   flex-direction: column;
@@ -488,11 +491,10 @@ body {
   margin-bottom: 2px;
 }
 
-/* Misma “caja” para select, input y botón → alineación perfecta */
+/* Misma caja para select + input + botón [web:277][web:294] */
 .agenda-filters__group select,
 .agenda-search-input,
 .agenda-search-toggle {
-  height: var(--agenda-control-height);
   padding: 0 10px;
   border-radius: 999px;
   border: 1px solid rgba(0,0,0,0.2);
@@ -501,12 +503,20 @@ body {
   box-sizing: border-box;
 }
 
-/* Sobrescribir botón lupa (mismo alto, sin borde) */
+/* Altura usando padding, no height */
+.agenda-filters__group select,
+.agenda-search-input {
+  height: auto;
+  line-height: 1.2;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+/* Botón lupa */
 .agenda-search-toggle {
-  width: var(--agenda-control-height);
-  padding: 0;
+  padding: 6px;
+  border-radius: 50%;
   border: none;
-  cursor: pointer;
   background-color: var(--primary);
   color: #fff;
   display: inline-flex;
@@ -518,7 +528,7 @@ body {
   font-size: 18px;
 }
 
-/* Lupa + barra, alineados a la derecha */
+/* Contenedor búsqueda */
 .agenda-search-box {
   display: flex;
   align-items: center;
@@ -526,14 +536,12 @@ body {
   margin-left: auto;
 }
 
-/* Barra que se expande desde la lupa hacia la izquierda */
 .agenda-search-bar {
   position: relative;
   overflow: hidden;
   max-width: 0;
   opacity: 0;
   transition: max-width 0.3s ease, opacity 0.25s ease;
-  height: var(--agenda-control-height);
   display: flex;
   align-items: center;
 }
@@ -547,22 +555,7 @@ body {
   width: 220px;
 }
 
-/* Ajuste en móvil: barra más corta pero alineada */
-@media (max-width: 800px) {
-  .agenda-filters__group {
-    min-width: 140px;
-  }
-
-  .agenda-search-bar--open {
-    max-width: 150px;
-  }
-
-  .agenda-search-input {
-    width: 150px;
-  }
-}
-
-/* Tabla / cards */
+/* Tabla */
 .agenda-table-wrapper {
   margin-top: 8px;
   overflow-x: auto;
@@ -574,7 +567,6 @@ body {
   font-size: 0.76rem;
 }
 
-/* Cabecera morada con iconos claros, compacta */
 .agenda-table thead {
   background: var(--primary-dark);
   color: #FFFFFF;
@@ -600,14 +592,13 @@ body {
   color: var(--primary-light);
 }
 
-/* Cuerpo pequeño en desktop */
 @media (min-width: 801px) {
   .agenda-table td {
     font-size: 0.64rem;
   }
 }
 
-/* Links e iconos dentro de Nombre */
+/* Nombre + iconos */
 .agenda-name {
   display: inline-flex;
   align-items: center;
@@ -650,7 +641,7 @@ body {
   display: block;
 }
 
-/* Móvil: tabla → cards */
+/* Agenda móvil: tabla → cards */
 @media (max-width: 800px) {
   .agenda-table thead {
     display: none;
