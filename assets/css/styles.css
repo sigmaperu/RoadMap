@@ -167,7 +167,7 @@ body {
 /* ===================== */
 
 .content {
-  padding: 8px 24px 24px; /* menos espacio gris arriba */
+  padding: 8px 24px 24px;
 }
 
 .page-section {
@@ -236,12 +236,11 @@ body {
 /* MAPA / PLANOS         */
 /* ===================== */
 
-/* Leaflet: bajar el mapa en la pila para que sidebar y overlays lo superen */
 .leaflet-container {
   z-index: 0;
 }
 
-/* Camioncito animado en el header (emoji) */
+/* Camioncito (Planos y Agenda) */
 .truck-animation {
   position: relative;
   margin-left: 24px;
@@ -259,16 +258,14 @@ body {
   height: 100%;
 }
 
-/* Emoji del camión */
 .truck-emoji {
   position: absolute;
   font-size: 20px;
   top: 0;
-  left: -30px;                 /* arranca fuera de la vista */
-  animation: truck-drive 4s linear infinite;
+  left: -40px;
+  animation: truck-drive 6s linear infinite;
 }
 
-/* Línea de carretera */
 .truck-road {
   position: absolute;
   bottom: 3px;
@@ -286,24 +283,23 @@ body {
   height: 100%;
   background: rgba(0,0,0,0.28);
   left: 0;
-  animation: truck-road-move 0.8s linear infinite;
+  animation: truck-road-move 1s linear infinite;
 }
 
-/* Camión va de izquierda a derecha */
+/* izquierda → derecha, más tiempo en pantalla */
 @keyframes truck-drive {
   0%   { transform: translateX(0); opacity: 0; }
   10%  { opacity: 1; }
-  80%  { transform: translateX(100%); opacity: 1; }
+  85%  { transform: translateX(110%); opacity: 1; }
   100% { transform: translateX(130%); opacity: 0; }
 }
 
-/* Carretera se mueve de derecha a izquierda */
 @keyframes truck-road-move {
   0%   { transform: translateX(100%); }
   100% { transform: translateX(-40px); }
 }
 
-/* Botón de filtros del mapa (solo icono) */
+/* Botón de filtros del mapa */
 .btn-small-icon {
   border: none;
   border-radius: 999px;
@@ -339,7 +335,7 @@ body {
   z-index: 1100;
 }
 
-/* Panel flotante de filtros (mapa) */
+/* Panel flotante de filtros */
 .filters-floating {
   position: absolute;
   top: 12px;
@@ -461,7 +457,6 @@ body {
 /* AGENDA                */
 /* ===================== */
 
-/* Card contenedora */
 .agenda-card {
   background-color: var(--surface);
   border-radius: var(--border-radius);
@@ -473,7 +468,7 @@ body {
 .agenda-filters {
   display: flex;
   flex-wrap: nowrap;
-  align-items: center;      /* alinea verticalmente todo */
+  align-items: center;
   margin-bottom: 8px;
 }
 
@@ -507,7 +502,7 @@ body {
   box-sizing: border-box;
 }
 
-/* Lupa + barra, alineados a la derecha */
+/* Lupa + barra */
 .agenda-search-box {
   display: flex;
   align-items: center;
@@ -515,7 +510,6 @@ body {
   margin-left: auto;
 }
 
-/* Botón lupa */
 .agenda-search-toggle {
   border: none;
   border-radius: 999px;
@@ -533,7 +527,6 @@ body {
   font-size: 18px;
 }
 
-/* Barra que se expande desde la lupa hacia la izquierda */
 .agenda-search-bar {
   position: relative;
   overflow: hidden;
@@ -561,7 +554,6 @@ body {
   box-sizing: border-box;
 }
 
-/* Ajuste en móvil: barra más corta pero alineada */
 @media (max-width: 800px) {
   .agenda-filters__group {
     min-width: 140px;
@@ -588,7 +580,6 @@ body {
   font-size: 0.76rem;
 }
 
-/* Cabecera morada con iconos claros, compacta */
 .agenda-table thead {
   background: var(--primary-dark);
   color: #FFFFFF;
@@ -596,7 +587,7 @@ body {
 
 .agenda-table th,
 .agenda-table td {
-  padding: 4px 6px;                /* filas bajas */
+  padding: 4px 6px;
   border-bottom: 1px solid #E0E0E0;
   text-align: left;
 }
@@ -614,21 +605,16 @@ body {
   color: var(--primary-light);
 }
 
-/* Cuerpo pequeño en desktop */
 @media (min-width: 801px) {
   .agenda-table td {
     font-size: 0.64rem;
   }
 }
 
-/* Links de dirección */
-.agenda-link {
-  color: var(--primary-dark);
-  text-decoration: none;
-}
-
-.agenda-link:hover {
-  text-decoration: underline;
+.agenda-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 /* Botón WhatsApp */
