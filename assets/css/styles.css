@@ -476,13 +476,15 @@ body {
   display: flex;
   flex: 1;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
+/* Columna Centro */
 .agenda-filters__group {
   display: flex;
   flex-direction: column;
-  min-width: 160px;
+  flex: 0 0 40%;
+  max-width: 220px;
 }
 
 .agenda-filters__group label {
@@ -491,7 +493,7 @@ body {
   margin-bottom: 2px;
 }
 
-/* Misma caja para select + input + botón [web:277][web:294] */
+/* Misma caja para select, input y botón [web:277][web:294] */
 .agenda-filters__group select,
 .agenda-search-input,
 .agenda-search-toggle {
@@ -503,7 +505,7 @@ body {
   box-sizing: border-box;
 }
 
-/* Altura usando padding, no height */
+/* Altura visual usando padding, no height */
 .agenda-filters__group select,
 .agenda-search-input {
   height: auto;
@@ -512,7 +514,7 @@ body {
   padding-bottom: 6px;
 }
 
-/* Botón lupa */
+/* Lupa */
 .agenda-search-toggle {
   padding: 6px;
   border-radius: 50%;
@@ -524,18 +526,16 @@ body {
   justify-content: center;
 }
 
-.agenda-search-toggle .material-icons {
-  font-size: 18px;
-}
-
-/* Contenedor búsqueda */
+/* Contenedor búsqueda (ocupa el resto) */
 .agenda-search-box {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-left: auto;
+  flex: 1;
+  justify-content: flex-end;
 }
 
+/* Barra expansible */
 .agenda-search-bar {
   position: relative;
   overflow: hidden;
@@ -547,141 +547,42 @@ body {
 }
 
 .agenda-search-bar--open {
-  max-width: 220px;
+  max-width: 260px;
   opacity: 1;
 }
 
 .agenda-search-input {
-  width: 220px;
-}
-
-/* Tabla */
-.agenda-table-wrapper {
-  margin-top: 8px;
-  overflow-x: auto;
-}
-
-.agenda-table {
   width: 100%;
-  border-collapse: collapse;
-  font-size: 0.76rem;
 }
 
-.agenda-table thead {
-  background: var(--primary-dark);
-  color: #FFFFFF;
-}
-
-.agenda-table th,
-.agenda-table td {
-  padding: 4px 6px;
-  border-bottom: 1px solid #E0E0E0;
-  text-align: left;
-}
-
-.agenda-table th {
-  font-weight: 500;
-  white-space: nowrap;
-  font-size: 0.7rem;
-}
-
-.agenda-th-icon {
-  font-size: 14px;
-  vertical-align: middle;
-  margin-right: 4px;
-  color: var(--primary-light);
-}
-
+/* Desktop: que no desborde */
 @media (min-width: 801px) {
-  .agenda-table td {
-    font-size: 0.64rem;
+  .agenda-filters-inner {
+    gap: 12px;
   }
 }
 
-/* Nombre + iconos */
-.agenda-name {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.agenda-map-icon {
-  border: none;
-  background: transparent;
-  padding: 0;
-  cursor: pointer;
-  color: #1976D2;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.agenda-map-icon .material-icons {
-  font-size: 16px;
-}
-
-/* Botón WhatsApp */
-.agenda-whatsapp-btn {
-  border: none;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-  background-color: #25D366;
-  color: #fff;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 4px;
-}
-
-.agenda-whatsapp-btn svg {
-  width: 12px;
-  height: 12px;
-  display: block;
-}
-
-/* Agenda móvil: tabla → cards */
+/* Móvil: ponerlos en dos filas ordenadas para que no desborde */
 @media (max-width: 800px) {
-  .agenda-table thead {
-    display: none;
+  .agenda-filters {
+    flex-wrap: wrap;
   }
 
-  .agenda-table,
-  .agenda-table tbody,
-  .agenda-table tr,
-  .agenda-table td {
-    display: block;
-    width: 100%;
+  .agenda-filters-inner {
+    flex-direction: column;
+    align-items: stretch;
   }
 
-  .agenda-table tr {
-    margin-bottom: 10px;
-    border-radius: 10px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-    background-color: #FFFFFF;
-    padding: 8px 10px;
+  .agenda-filters__group {
+    flex: 1 1 auto;
+    max-width: none;
   }
 
-  .agenda-table td {
-    border-bottom: none;
-    padding: 4px 0;
-    font-size: 0.78rem;
+  .agenda-search-box {
+    justify-content: flex-start;
   }
 
-  .agenda-table td::before {
-    content: attr(data-label);
-    display: block;
-    font-size: 0.74rem;
-    color: var(--text-muted);
-    margin-bottom: 1px;
-  }
-
-  .agenda-table td:last-child {
-    margin-bottom: 4px;
-  }
-
-  .agenda-card {
-    padding: 12px 10px;
+  .agenda-search-bar--open {
+    max-width: 100%;
   }
 }
