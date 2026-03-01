@@ -59,21 +59,30 @@
 
     <div class="main-layout">
       <header class="topbar">
-        <div class="topbar__title">
-          <button class="icon-button icon-button--menu" aria-label="Menú" id="menuToggle">
-            <span class="material-icons">menu</span>
-          </button>
-          <h1>Agenda</h1>
-        </div>
-        <div class="topbar__actions">
-          <button class="icon-button" aria-label="Notificaciones">
-            <span class="material-icons">notifications</span>
-          </button>
-          <button class="icon-button" aria-label="Perfil">
-            <span class="material-icons">account_circle</span>
-          </button>
-        </div>
-      </header>
+  <div class="topbar__title">
+    <button class="icon-button icon-button--menu" aria-label="Menú" id="menuToggle">
+      <span class="material-icons">menu</span>
+    </button>
+    <h1>Agenda</h1> <!-- pon el título que corresponda -->
+  </div>
+
+  <div class="truck-animation">
+    <div class="truck-animation-inner">
+      <div id="topbarFecha" style="position:absolute; left:0; top:2px; font-size:0.85rem; font-weight:500;"></div>
+      <span class="truck-emoji">🚚</span>
+      <div class="truck-road"></div>
+    </div>
+  </div>
+
+  <div class="topbar__actions">
+    <button class="icon-button" aria-label="Notificaciones">
+      <span class="material-icons">notifications</span>
+    </button>
+    <button class="icon-button" aria-label="Perfil">
+      <span class="material-icons">account_circle</span>
+    </button>
+  </div>
+</header>
 
       <main class="content">
         <section class="page-section">
