@@ -156,7 +156,7 @@ body {
 }
 
 /* ===================== */
-/* CONTENIDO             */
+/* CONTENIDO GENERAL     */
 /* ===================== */
 
 .content {
@@ -190,7 +190,7 @@ body {
 }
 
 /* ===================== */
-/* CAMIONCITO + FECHA    */
+/* CAMIONCITO (Planos)   */
 /* ===================== */
 
 .truck-animation {
@@ -254,6 +254,111 @@ body {
   .truck-animation {
     display: none;
   }
+}
+
+/* ===================== */
+/* MAPA / PLANOS         */
+/* ===================== */
+
+.map-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.leaflet-container {
+  z-index: 0;
+}
+
+/* Botón flotante estilo material para filtros */
+.btn-small-icon {
+  border: none;
+  border-radius: 999px;
+  padding: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  background-color: rgba(255,255,255,0.96);
+  color: var(--text-main);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  transition: background-color 0.15s ease, transform 0.2s ease;
+}
+
+.btn-small-icon .material-icons {
+  font-size: 20px;
+  transition: transform 0.2s ease;
+}
+
+.btn-small-icon--open .material-icons {
+  transform: rotate(180deg);
+}
+
+.btn-small-icon:hover {
+  background-color: #FFFFFF;
+}
+
+.filters-toggle-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 1100;
+}
+
+/* Panel flotante Material para filtros */
+.filters-floating {
+  position: absolute;
+  top: 12px;
+  right: 56px;
+  left: 12px;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(4px);
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transform-origin: top right;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.filters-floating--collapsed {
+  transform: scale(0.8) translateY(-40%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.filters-floating__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+  align-items: center;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 120px;
+}
+
+.filter-group label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.filter-group select {
+  padding: 4px 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.2);
+  font-family: inherit;
+  font-size: 0.85rem;
+  background-color: #fff;
+  width: 100%;
 }
 
 /* ===================== */
@@ -349,7 +454,7 @@ body {
   box-sizing: border-box;
 }
 
-/* Altura mediante padding, sin height fijo → evita desalineos [web:277] */
+/* Altura con padding, sin height fijo → misma altura visual [web:277] */
 .agenda-filters__group select,
 .agenda-search-input {
   height: auto;
@@ -383,7 +488,7 @@ body {
   justify-content: flex-end;
 }
 
-/* Barra que se expande */
+/* Barra expansible */
 .agenda-search-bar {
   position: relative;
   overflow: hidden;
@@ -403,7 +508,7 @@ body {
   width: 100%;
 }
 
-/* Tabla */
+/* Tabla Agenda */
 .agenda-table-wrapper {
   margin-top: 8px;
   overflow-x: auto;
