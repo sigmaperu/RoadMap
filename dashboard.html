@@ -6,11 +6,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Fuentes + Material Icons + Estilos (igual que agenda.html) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+  <link rel="stylesheet" href="assets/css/styles.css"/>
+
   <!-- Header global y configuración -->
   <script defer src="assets/js/main.js"></script>
 
@@ -27,112 +28,89 @@
       --badge-bg:#eef2ff;
       --badge-shadow:0 6px 14px rgba(0,0,0,.12);
       --card-shadow:0 1px 3px rgba(0,0,0,.1);
-      --side-w: 240px; /* ancho de cards de segmentación */
-      --gap-rows: 16px; /* separación entre filas */
-      --gap-cards: 14px; /* separación entre cards en una misma fila */
+      --side-w: 240px;       /* ancho de cards de segmentación */
+      --gap-rows: 16px;      /* separación entre filas */
+      --gap-cards: 14px;     /* separación entre cards de una fila */
     }
     .icon--blue{ color: var(--icon-blue); }
     .icon--green{ color: var(--icon-green); }
     .icon--gold{ color: var(--icon-gold); }
     .icon--slate{ color: var(--icon-slate); }
 
-    /* Panel base con más aire vertical */
-    .panel {
-      background: var(--surface, #fff);
-      border-radius: 12px;
-      box-shadow: var(--card-shadow);
-    }
-    .panel__body { padding: 16px 16px; }
+    /* Panel base con aire vertical */
+    .panel { background:#fff; border-radius:12px; box-shadow:var(--card-shadow); }
+    .panel__body { padding:16px; }
 
-    /* ======= Disposición (lado-izq: segmentación / lado-der: contenido) ======= */
+    /* ======= Disposición (izq: segmentación / der: contenido) ======= */
     .row {
-      display: grid;
-      grid-template-columns: minmax(200px, var(--side-w)) 1fr;
-      gap: var(--gap-cards);
-      align-items: stretch;
-      margin-bottom: var(--gap-rows);
+      display:grid;
+      grid-template-columns:minmax(200px, var(--side-w)) 1fr;
+      gap:var(--gap-cards);
+      align-items:stretch;
+      margin-bottom:var(--gap-rows);
     }
-    .row--flush-next{ margin-bottom: 6px; } /* reduce hueco solo entre PIs y los 2 gráficos */
-    @media (max-width: 1024px){
-      .row { grid-template-columns: 1fr; }
-    }
+    .row--flush-next{ margin-bottom:6px; } /* pegado PIs -> gráficos 1 y 2 */
+    @media (max-width:1024px){ .row { grid-template-columns:1fr; } }
 
     /* ======= Segmentaciones compactas ======= */
-    .seg-card { padding: 12px 14px; display:flex; flex-direction:column; }
+    .seg-card { padding:12px 14px; display:flex; flex-direction:column; }
     .seg__label{ font-size:.8rem; color:#6b7280; font-weight:700; letter-spacing:.02em; margin-bottom:10px; }
-    /* Centro -> filtro select compacto */
     .seg__select{
-      height: 38px; padding: 0 12px;
-      border: 1px solid var(--chip-border); border-radius: 10px;
-      background: var(--chip-bg); color:#111827; font-weight:600; font-size:.86rem; width:100%;
+      height:38px; padding:0 12px; border:1px solid var(--chip-border); border-radius:10px;
+      background:var(--chip-bg); color:#111827; font-weight:600; font-size:.86rem; width:100%;
     }
-    /* Canal y Métrica -> chips 1 columna */
     .seg__items{ display:flex; flex-direction:column; gap:8px; align-items:stretch; flex:1; overflow:auto; }
     .seg__chip{
       appearance:none; border:1px solid var(--chip-border); background:var(--chip-bg);
       color:#374151; border-radius:10px; padding:8px 10px; cursor:pointer; font-weight:700;
-      font-size:.82rem; transition: all .15s ease; text-align:left;
+      font-size:.82rem; transition:all .15s ease; text-align:left;
     }
-    .seg__chip:hover{ transform: translateY(-1px); box-shadow: var(--badge-shadow); }
-    .seg__chip[aria-pressed="true"]{ color: var(--chip-active); background: var(--chip-active-bg); border-color:#c7d2fe; }
+    .seg__chip:hover{ transform:translateY(-1px); box-shadow:var(--badge-shadow); }
+    .seg__chip[aria-pressed="true"]{ color:var(--chip-active); background:var(--chip-active-bg); border-color:#c7d2fe; }
 
     /* ======= KPIs ======= */
     .kpi-row {
-      display:grid;
-      grid-template-columns: repeat(5, minmax(0,1fr));
-      gap: var(--gap-cards);
-      align-items: stretch;
+      display:grid; grid-template-columns:repeat(5, minmax(0,1fr));
+      gap:var(--gap-cards); align-items:stretch;
     }
-    @media (max-width: 1024px){
-      .kpi-row { grid-template-columns: repeat(2, minmax(0,1fr)); }
-    }
-    .kpi-card{
-      background: var(--surface, #fff); border-radius: 14px; box-shadow: var(--card-shadow);
-      padding: 16px; display:flex; flex-direction:column; position:relative; overflow:hidden;
-    }
-    .kpi-card__label{
-      font-size:.9rem; color:#374151; display:flex; align-items:center; gap:8px; font-weight:800;
-      margin-bottom: 6px;
-    }
-    .kpi-icon-badge{
-      width:26px; height:26px; border-radius:8px; display:grid; place-items:center; background: var(--badge-bg);
-    }
+    @media (max-width:1024px){ .kpi-row { grid-template-columns:repeat(2, minmax(0,1fr)); } }
+    .kpi-card{ background:#fff; border-radius:14px; box-shadow:var(--card-shadow); padding:16px; display:flex; flex-direction:column; }
+    .kpi-card__label{ font-size:.9rem; color:#374151; display:flex; align-items:center; gap:8px; font-weight:800; margin-bottom:6px; }
+    .kpi-icon-badge{ width:26px; height:26px; border-radius:8px; display:grid; place-items:center; background:var(--badge-bg); }
     .kpi-card__value{
-      font-size: clamp(1rem, 1.6vw, 1.35rem);
-      font-weight:800; line-height:1.15; letter-spacing:.2px;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-      padding-top: 2px; padding-bottom: 2px;
+      font-size:clamp(1rem, 1.6vw, 1.35rem); font-weight:800; line-height:1.15; letter-spacing:.2px;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:2px 0;
     }
 
-    /* ======= PI card ======= */
-    .pi-card{ padding: 14px 16px; height: auto; } /* altura al contenido */
-    .pi-card .pi-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-top:8px; }
-    @media (max-width: 1024px){ .pi-card .pi-grid{ grid-template-columns: 1fr; } }
+    /* ======= PIs ======= */
+    .pi-card{ padding:16px; height:auto; }
+    .pi-card .pi-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:8px; }
+    @media (max-width:1024px){ .pi-card .pi-grid{ grid-template-columns:1fr; } }
     .pi-item{ background:#f9fafb; border:1px solid #eef2f7; border-radius:10px; padding:12px; display:flex; flex-direction:column; gap:4px; }
     .pi-item__label{ font-size:.78rem; color:#6b7280; display:flex; align-items:center; gap:6px; font-weight:800; letter-spacing:.02em; }
-    .pi-item__value{ font-size: clamp(1rem, 1.5vw, 1.25rem); font-weight:800; color:#111827; }
+    .pi-item__value{ font-size:clamp(1rem, 1.5vw, 1.25rem); font-weight:800; color:#111827; }
 
     /* ======= Gráficos ======= */
-    .charts-2col{ display:grid; grid-template-columns: 1fr 1fr; gap: var(--gap-cards); }
-    @media (max-width: 1200px){ .charts-2col{ grid-template-columns: 1fr; } }
-    .chart-title{ font-size:.95rem; font-weight:900; color:#374151; margin: 6px 10px 2px 10px; display:flex; align-items:center; gap:6px; }
-    .chart-box{
-      width:100%; min-height:340px; overflow:hidden; padding:10px; text-align:left;
-      display:block;
+    .charts-2col{ display:grid; grid-template-columns:1fr 1fr; gap:var(--gap-cards); }
+    @media (max-width:1200px){ .charts-2col{ grid-template-columns:1fr; } }
+    .chart-title{
+      font-size:.95rem; font-weight:900; color:#374151; margin:6px 10px 2px 10px;
+      display:flex; align-items:center; gap:6px;
     }
-    .nodata{ padding: 12px; color:#6b7280; font-size:.9rem; }
+    .chart-title__text{ /* wrapper para medir la “T” (ancla) */ display:inline-block; }
+    .chart-box{ width:100%; min-height:340px; overflow:hidden; padding:10px; text-align:left; display:block; }
+    .nodata{ padding:12px; color:#6b7280; font-size:.9rem; }
 
-    /* Grillas inferiores (4 gráficos horizontales) */
-    .chart-grid-lower{ display:grid; grid-template-columns: 1fr 1fr; gap: var(--gap-cards); margin-top: var(--gap-rows); }
-    @media (max-width: 1200px){ .chart-grid-lower{ grid-template-columns: 1fr; } }
+    .chart-grid-lower{ display:grid; grid-template-columns:1fr 1fr; gap:var(--gap-cards); margin-top:var(--gap-rows); }
+    @media (max-width:1200px){ .chart-grid-lower{ grid-template-columns:1fr; } }
 
-    .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
   </style>
 </head>
 <body data-title="Dashboard">
   <div class="app-shell">
     <aside class="sidebar">
-      <div class="sidebar__logo"><img src="assets/img/logotipo.png" alt="RoadMap"></div>
+      <div class="sidebar__logo"><img src="assets/img/logotipo.png" alt="RoadMap"/></div>
       <nav class="sidebar__nav">
         <a href="index.html" class="nav-item"><span class="nav-item__icon material-icons">home</span><span>Inicio</span></a>
         <a href="agenda.html" class="nav-item"><span class="nav-item__icon material-icons">event</span><span>Agenda</span></a>
@@ -145,13 +123,12 @@
     </aside>
 
     <div class="main-layout">
-      <!-- Header global -->
       <div id="app-header"></div>
 
       <main class="content">
         <section class="page-section">
 
-          <!-- Row 1: Filtro Centro + KPIs a la derecha -->
+          <!-- Row 1: Filtro Centro + KPIs -->
           <div class="row row--flush-next">
             <div class="panel seg-card">
               <div class="seg__label">Centro</div>
@@ -191,14 +168,14 @@
             </div>
           </div>
 
-          <!-- Row 2: Segmentación Canal + PIs a la derecha (pegado con la Row 3) -->
+          <!-- Row 2: Canal + PIs -->
           <div class="row row--flush-next">
             <div class="panel seg-card">
               <div class="seg__label">Canal</div>
               <div id="segCanal" class="seg__items" role="group" aria-label="Segmentación por Canal"></div>
             </div>
 
-            <div class="panel kpi-card pi-card">
+            <div class="panel pi-card">
               <div class="kpi-card__label"><span class="kpi-icon-badge"><span class="material-icons icon--slate">insights</span></span> Indicadores (PIs)</div>
               <div class="pi-grid">
                 <div class="pi-item"><div class="pi-item__label"><span class="material-icons icon--green">balance</span> Kg/Camión</div><div id="piKgCamion" class="pi-item__value">–</div></div>
@@ -208,41 +185,41 @@
             </div>
           </div>
 
-          <!-- Row 3: Segmentación Métrica + Gráficos Centros/Canal a la derecha -->
+          <!-- Row 3: Métrica + Gráficos Centros/Canal -->
           <div class="row">
-            <div class="panel seg-card" style="min-height: 100%;">
+            <div class="panel seg-card">
               <div class="seg__label">Métrica (para gráficos)</div>
               <div id="segMetrica" class="seg__items" role="group" aria-label="Métrica de gráficos"></div>
             </div>
 
             <div class="charts-2col">
               <div class="panel">
-                <div class="chart-title"><span class="material-icons icon--blue">bar_chart</span> Centros</div>
+                <div class="chart-title"><span class="material-icons icon--blue">bar_chart</span><span class="chart-title__text">Centros</span></div>
                 <div class="panel__body"><div id="chartCentrosV" class="chart-box" role="img" aria-label="Centros (barras verticales)"></div></div>
               </div>
               <div class="panel">
-                <div class="chart-title"><span class="material-icons icon--gold">stacked_bar_chart</span> Canal</div>
+                <div class="chart-title"><span class="material-icons icon--gold">stacked_bar_chart</span><span class="chart-title__text">Canal</span></div>
                 <div class="panel__body"><div id="chartCanalV" class="chart-box" role="img" aria-label="Canal (barras verticales)"></div></div>
               </div>
             </div>
           </div>
 
-          <!-- Gráficos inferiores (alineados a la izquierda, etiquetas sin paréntesis) -->
+          <!-- Gráficos inferiores -->
           <div class="chart-grid-lower">
             <div class="panel">
-              <div class="chart-title"><span class="material-icons icon--green">trending_up</span> Top 10 Performer – Camiones</div>
+              <div class="chart-title"><span class="material-icons icon--green">trending_up</span><span class="chart-title__text">Top 10 Performer – Camiones</span></div>
               <div class="panel__body"><div id="chartTruckBest" class="chart-box" role="img" aria-label="Top 10 performer camiones"></div></div>
             </div>
             <div class="panel">
-              <div class="chart-title"><span class="material-icons icon--slate">trending_down</span> Top 10 Offender – Camiones</div>
+              <div class="chart-title"><span class="material-icons icon--slate">trending_down</span><span class="chart-title__text">Top 10 Offender – Camiones</span></div>
               <div class="panel__body"><div id="chartTruckWorst" class="chart-box" role="img" aria-label="Top 10 offender camiones"></div></div>
             </div>
             <div class="panel">
-              <div class="chart-title"><span class="material-icons icon--green">leaderboard</span> Top 10 Performer – Rutas</div>
+              <div class="chart-title"><span class="material-icons icon--green">leaderboard</span><span class="chart-title__text">Top 10 Performer – Rutas</span></div>
               <div class="panel__body"><div id="chartRutaBest" class="chart-box" role="img" aria-label="Top 10 performer rutas"></div></div>
             </div>
             <div class="panel">
-              <div class="chart-title"><span class="material-icons icon--slate">bar_chart</span> Top 10 Offender – Rutas</div>
+              <div class="chart-title"><span class="material-icons icon--slate">bar_chart</span><span class="chart-title__text">Top 10 Offender – Rutas</span></div>
               <div class="panel__body"><div id="chartRutaWorst" class="chart-box" role="img" aria-label="Top 10 offender rutas"></div></div>
             </div>
           </div>
@@ -252,80 +229,65 @@
     </div>
   </div>
 
-  <!-- JS específico del Dashboard -->
   <script>
     (() => {
-      // === Config de data ===
+      // === Configuración ===
       const CSV_URL =
         (window.RoadMapConfig && window.RoadMapConfig.CSV_URL)
         || "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
 
-      // Índices (según agenda.html)
-      const IDX = {
-        CENTRO: 1,
-        PLACA: 2,
-        CLIENTE: 3,
-        RUTA: 6,
-        PEDIDO: 7,
-        KG: 10,
-        SOLES: 11,
-        CANAL: 19
-      };
-
-      // Exclusiones
+      const IDX = { CENTRO:1, PLACA:2, CLIENTE:3, RUTA:6, PEDIDO:7, KG:10, SOLES:11, CANAL:19 };
       const EXCLUDE_FRT = "FRT-001";
-      const TRUCKS_EXCLUDED = new Set(["FRT-001", "RES-CLI"]); // KPI Camiones y denominadores con camiones
+      const TRUCKS_EXCLUDED = new Set(["FRT-001", "RES-CLI"]); // para KPI Camiones y denominadores con camiones
       const isFRT = r => (String(r[IDX.PLACA] || "").trim().toUpperCase() === EXCLUDE_FRT);
       const isTruckExcluded = r => TRUCKS_EXCLUDED.has(String(r[IDX.PLACA] || "").trim().toUpperCase());
 
-      // Utils
-      function parseCSV(text) {
+      // === Utils ===
+      function parseCSV(text){
         const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
-        if (lines.length === 0) return { header: [], rows: [] };
+        if (!lines.length) return { header:[], rows:[] };
         const header = lines[0].split(",");
-        const dataLines = lines.slice(1);
-        const rows = dataLines.map(line => {
-          const result = []; let current = ""; let inQuotes = false;
-          for (let i = 0; i < line.length; i++) {
-            const ch = line[i];
-            if (ch === '"') { if (inQuotes && line[i+1] === '"') { current += '"'; i++; } else { inQuotes = !inQuotes; } }
-            else if (ch === "," && !inQuotes) { result.push(current); current = ""; }
-            else { current += ch; }
+        const rows = lines.slice(1).map(line => {
+          const out=[]; let cur="", q=false;
+          for (let i=0;i<line.length;i++){
+            const c=line[i];
+            if (c==='\"'){ if(q && line[i+1]==='\"'){cur+='\"'; i++;} else q=!q; }
+            else if(c===',' && !q){ out.push(cur); cur=""; }
+            else cur+=c;
           }
-          result.push(current);
-          return result;
+          out.push(cur);
+          return out;
         });
         return { header, rows };
       }
       const unique = arr => Array.from(new Set(arr.filter(v => v !== "" && v != null)));
-      const toNum = v => { const n = parseFloat(String(v ?? "0").toString().replace(",", ".")); return isNaN(n) ? 0 : n; };
+      const toNum = v => { const n = parseFloat(String(v ?? "0").replace(",", ".")); return isNaN(n)?0:n; };
       const stripParens = s => String(s || "").replace(/\s*\([^)]*\)/g, "");
 
-      // Estado
+      // === Estado ===
       let allRows = [];
       let selectedCentro = "Todos";
       let selectedCanales = new Set(["Todos"]);
-      let selectedMetrica = "Pedidos"; // solo afecta gráficos
+      let selectedMetrica = "Pedidos"; // para gráficos
 
-      // DOM
+      // === DOM ===
       const filterCentro = document.getElementById("filterCentro");
       const segCanal  = document.getElementById("segCanal");
       const segMetrica= document.getElementById("segMetrica");
 
-      // Cards
       const kpiClientes = document.getElementById("kpiClientes");
       const kpiPedidos  = document.getElementById("kpiPedidos");
       const kpiKg       = document.getElementById("kpiKg");
       const kpiSoles    = document.getElementById("kpiSoles");
       const kpiCamiones = document.getElementById("kpiCamiones");
-      // PIs
+
       const piKgCamion = document.getElementById("piKgCamion");
       const piKgCliente = document.getElementById("piKgCliente");
       const piClientesCamion = document.getElementById("piClientesCamion");
 
-      // Inicialización
-      async function init() {
-        try {
+      // === Init ===
+      async function init(){
+        try{
           const resp = await fetch(CSV_URL);
           const text = await resp.text();
           const { rows } = parseCSV(text);
@@ -337,47 +299,42 @@
 
           render();
           window.addEventListener("resize", renderCharts);
-        } catch (err) {
-          console.error("Error cargando RoadMap.csv en Dashboard:", err);
+        }catch(err){
+          console.error("Error cargando RoadMap.csv:", err);
           alert("No se pudo cargar RoadMap.csv para Dashboard");
         }
       }
 
-      // ======= Segmentaciones =======
-      function buildCentroFilter() {
+      // === Segmentaciones ===
+      function buildCentroFilter(){
         const centros = ["Todos", ...unique(allRows.map(r => r[IDX.CENTRO] || "")).sort()];
         filterCentro.innerHTML = centros.map(c => `<option value="${c}">${c}</option>`).join("");
         filterCentro.value = selectedCentro;
-        filterCentro.addEventListener("change", () => {
-          selectedCentro = filterCentro.value;
-          render();
-        });
+        filterCentro.addEventListener("change", () => { selectedCentro = filterCentro.value; render(); });
       }
 
-      function makeChip(label, active, onClick) {
+      function makeChip(label, active, onClick){
         const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "seg__chip";
+        btn.type="button"; btn.className="seg__chip";
         btn.textContent = label;
         btn.setAttribute("aria-pressed", active ? "true" : "false");
         btn.addEventListener("click", () => onClick(btn, label));
         return btn;
       }
 
-      function buildCanalSeg() {
+      function buildCanalSeg(){
         segCanal.innerHTML = "";
         const canales = ["Todos", ...unique(allRows.map(r => r[IDX.CANAL] || "")).sort()];
         canales.forEach(c => {
           const chip = makeChip(c, selectedCanales.has(c), (btn, value) => {
-            if (value === "Todos") {
+            if (value === "Todos"){
               selectedCanales = new Set(["Todos"]);
-              [...segCanal.querySelectorAll(".seg__chip")].forEach(el => el.setAttribute("aria-pressed", el.textContent === "Todos" ? "true" : "false"));
-            } else {
+              [...segCanal.querySelectorAll(".seg__chip")].forEach(el => el.setAttribute("aria-pressed", el.textContent==="Todos" ? "true":"false"));
+            }else{
               if (selectedCanales.has("Todos")) selectedCanales.delete("Todos");
-              if (selectedCanales.has(value)) selectedCanales.delete(value);
-              else selectedCanales.add(value);
-              if (selectedCanales.size === 0) selectedCanales.add("Todos");
-              [...segCanal.querySelectorAll(".seg__chip")].forEach(el => el.setAttribute("aria-pressed", selectedCanales.has(el.textContent) ? "true" : "false"));
+              if (selectedCanales.has(value)) selectedCanales.delete(value); else selectedCanales.add(value);
+              if (selectedCanales.size===0) selectedCanales.add("Todos");
+              [...segCanal.querySelectorAll(".seg__chip")].forEach(el => el.setAttribute("aria-pressed", selectedCanales.has(el.textContent) ? "true":"false"));
             }
             render();
           });
@@ -385,22 +342,21 @@
         });
       }
 
-      function buildMetricaSeg() {
+      function buildMetricaSeg(){
         segMetrica.innerHTML = "";
         const metricas = ["Clientes","Pedidos","Kilogramos","Soles","Camiones","Kg/Camión","Kg/Cliente","Clientes/Camión"];
         metricas.forEach(m => {
-          const chip = makeChip(m, m === selectedMetrica, (btn, value) => {
+          const chip = makeChip(m, m===selectedMetrica, (btn, value) => {
             selectedMetrica = value;
-            [...segMetrica.querySelectorAll(".seg__chip")].forEach(el => el.setAttribute("aria-pressed", el === btn ? "true" : "false"));
+            [...segMetrica.querySelectorAll(".seg__chip")].forEach(el => el.setAttribute("aria-pressed", el===btn ? "true":"false"));
             renderCharts(); // solo gráficos
           });
           segMetrica.appendChild(chip);
         });
       }
 
-      // ======= Filtros de datos =======
+      // === Filtros de datos ===
       function applyFiltersForCards(rows){
-        // Aplica Centro + Canales
         const canalesAll = selectedCanales.has("Todos");
         return rows.filter(r => {
           const okC = (selectedCentro === "Todos" || (r[IDX.CENTRO] || "") === selectedCentro);
@@ -409,33 +365,27 @@
         });
       }
       function rowsForCentroChart(){
-        // NO afecta Centro; SÍ afecta Canales (comparativo entre centros)
+        // NO filtra centro; SÍ filtra canales
         const canalesAll = selectedCanales.has("Todos");
         return allRows.filter(r => (canalesAll || selectedCanales.has(r[IDX.CANAL] || "")));
       }
       function rowsForCanalChart(){
-        // NO afecta Canales; SÍ afecta Centro
+        // NO filtra canales; SÍ filtra centro
         return allRows.filter(r => (selectedCentro === "Todos" || (r[IDX.CENTRO] || "") === selectedCentro));
       }
-      function rowsForOthers(){
-        // Afecta ambos (Centro + Canales)
-        return applyFiltersForCards(allRows);
-      }
+      function rowsForOthers(){ return applyFiltersForCards(allRows); }
 
-      // ======= Agregadores base =======
+      // === Agregadores ===
       const countClientes = rows => unique(rows.filter(r => !isFRT(r)).map(r => r[IDX.CLIENTE] || "")).length;
       const countPedidos  = rows => unique(rows.filter(r => !isFRT(r)).map(r => r[IDX.PEDIDO]  || "")).length;
-      const sumKg         = rows => rows.filter(r => !isFRT(r)).reduce((a, r) => a + toNum(r[IDX.KG]), 0);
-      const sumSoles      = rows => rows.filter(r => !isFRT(r)).reduce((a, r) => a + toNum(r[IDX.SOLES]), 0);
+      const sumKg         = rows => rows.filter(r => !isFRT(r)).reduce((a,r)=>a+toNum(r[IDX.KG]),0);
+      const sumSoles      = rows => rows.filter(r => !isFRT(r)).reduce((a,r)=>a+toNum(r[IDX.SOLES]),0);
       const countTrucks   = rows => unique(rows.filter(r => !isTruckExcluded(r)).map(r => r[IDX.PLACA] || "")).length;
 
-      // ======= KPIs + PIs =======
-      function formatK(value){
-        const k = value / 1000;
-        return `S/ ${k.toLocaleString('en-US', { maximumFractionDigits: 1 })}K`; // “S/ 12.3K”
-      }
+      // === KPIs + PIs ===
+      function formatK(value){ return `S/ ${(value/1000).toLocaleString('en-US',{maximumFractionDigits:1})}K`; }
 
-      function renderKPIs() {
+      function renderKPIs(){
         const rows = rowsForOthers();
         const clientes = countClientes(rows);
         const pedidos  = countPedidos(rows);
@@ -445,145 +395,161 @@
 
         kpiClientes.textContent = clientes.toLocaleString("es-PE");
         kpiPedidos.textContent  = pedidos.toLocaleString("es-PE");
-        kpiKg.textContent       = kg.toLocaleString("es-PE", { maximumFractionDigits: 2 });
-        kpiSoles.textContent    = formatK(soles); // *** SOLO el card en K ***
+        kpiKg.textContent       = kg.toLocaleString("es-PE",{maximumFractionDigits:2});
+        kpiSoles.textContent    = formatK(soles);        // SOLO el card en K
         kpiCamiones.textContent = camiones.toLocaleString("es-PE");
 
-        // PIs
         const piKgCam = camiones ? (kg / camiones) : 0;
         const piKgCli = clientes ? (kg / clientes) : 0;
         const piCliCam= camiones ? (clientes / camiones) : 0;
-        piKgCamion.textContent       = piKgCam.toLocaleString("es-PE", { maximumFractionDigits: 2 });
-        piKgCliente.textContent      = piKgCli.toLocaleString("es-PE", { maximumFractionDigits: 2 });
-        piClientesCamion.textContent = piCliCam.toLocaleString("es-PE", { maximumFractionDigits: 2 });
+        piKgCamion.textContent       = piKgCam.toLocaleString("es-PE",{maximumFractionDigits:2});
+        piKgCliente.textContent      = piKgCli.toLocaleString("es-PE",{maximumFractionDigits:2});
+        piClientesCamion.textContent = piCliCam.toLocaleString("es-PE",{maximumFractionDigits:2});
       }
 
-      // ======= Métricas para gráficos (según chip Métrica) =======
+      // === Métricas para gráficos ===
       const metricValue = {
         "Clientes": rows => countClientes(rows),
         "Pedidos":  rows => countPedidos(rows),
         "Kilogramos": rows => sumKg(rows),
         "Soles": rows => sumSoles(rows),
         "Camiones": rows => countTrucks(rows),
-        "Kg/Camión": rows => { const kg = sumKg(rows), cam = countTrucks(rows); return cam ? kg / cam : 0; },
-        "Kg/Cliente": rows => { const kg = sumKg(rows), cli = countClientes(rows); return cli ? kg / cli : 0; },
-        "Clientes/Camión": rows => { const cli = countClientes(rows), cam = countTrucks(rows); return cam ? cli / cam : 0; }
+        "Kg/Camión": rows => { const kg=sumKg(rows), cam=countTrucks(rows); return cam?kg/cam:0; },
+        "Kg/Cliente": rows => { const kg=sumKg(rows), cli=countClientes(rows); return cli?kg/cli:0; },
+        "Clientes/Camión": rows => { const cli=countClientes(rows), cam=countTrucks(rows); return cam?cli/cam:0; }
       };
 
-      // ======= Gráficos SVG =======
-      function chartH(containerId, series, { barColor="#2563eb", valueFmt } = {}) {
-        // Barras horizontales alineadas a la izquierda (valores visibles completos)
+      // === Util: obtener la X donde inicia el texto del título (ancla) ===
+      function getTitleAnchorLeft(panel){
+        const titleText = panel.querySelector(".chart-title__text");
+        const body = panel.querySelector(".panel__body");
+        if (!titleText || !body) return 180; // fallback
+        const rectText = titleText.getBoundingClientRect();
+        const rectBody = body.getBoundingClientRect();
+        // distancia desde el borde izquierdo del body hasta el inicio del texto del título
+        return Math.max(140, Math.round(rectText.left - rectBody.left));
+      }
+
+      // === Gráficos SVG ===
+      function chartH(containerId, series, { barColor="#2563eb", valueFmt, anchorLeft=180 } = {}){
+        // Barras horizontales alineadas a la izquierda EXACTAMENTE bajo la “T” del título
         const container = document.getElementById(containerId);
         container.innerHTML = "";
-        if (!series || series.length === 0) { container.innerHTML = '<div class="nodata">Sin datos</div>'; return; }
+        if (!series || series.length===0){ container.innerHTML='<div class="nodata">Sin datos</div>'; return; }
 
         const width = container.clientWidth || 700;
         const height = Math.max(260, 20 + series.length * 26);
-        const padding = { top: 10, right: 24, bottom: 10, left: 200 };
+        const padding = { top:10, right:24, bottom:10, left: Math.max(180, anchorLeft) };
 
-        const maxVal = Math.max(1, ...series.map(d => d.value));
-        const barH = Math.max(12, (height - padding.top - padding.bottom) / Math.max(1, series.length) - 6);
+        const maxVal = Math.max(1, ...series.map(d=>d.value));
+        const barH = Math.max(12, (height - padding.top - padding.bottom)/Math.max(1,series.length) - 6);
         const barGap = 6;
         const plotH = series.length * (barH + barGap);
 
         const svgNS = "http://www.w3.org/2000/svg";
-        const svg = document.createElementNS(svgNS, "svg");
+        const svg = document.createElementNS(svgNS,"svg");
         svg.setAttribute("viewBox", `0 0 ${width} ${Math.max(height, padding.top + plotH + padding.bottom)}`);
-        svg.setAttribute("width", "100%");
-        svg.setAttribute("height", "100%");
+        svg.setAttribute("width","100%"); svg.setAttribute("height","100%");
 
-        series.forEach((d, i) => {
+        series.forEach((d,i)=>{
           const y = padding.top + i * (barH + barGap);
           const w = ((width - padding.left - padding.right) * d.value) / maxVal;
 
-          const rect = document.createElementNS(svgNS, "rect");
+          const rect = document.createElementNS(svgNS,"rect");
           rect.setAttribute("x", padding.left);
           rect.setAttribute("y", y);
-          rect.setAttribute("width", Math.max(2, w));
+          rect.setAttribute("width", Math.max(2,w));
           rect.setAttribute("height", barH);
-          rect.setAttribute("rx", "4");
+          rect.setAttribute("rx","4");
           rect.setAttribute("fill", barColor);
           svg.appendChild(rect);
 
-          const label = document.createElementNS(svgNS, "text");
+          const label = document.createElementNS(svgNS,"text");
           label.setAttribute("x", padding.left - 14);
           label.setAttribute("y", y + barH * 0.75);
-          label.setAttribute("text-anchor", "end");
-          label.setAttribute("font-size", "12");
-          label.setAttribute("fill", "#374151");
+          label.setAttribute("text-anchor","end");
+          label.setAttribute("font-size","12");
+          label.setAttribute("fill","#374151");
           label.textContent = d.label;
           svg.appendChild(label);
 
-          const val = document.createElementNS(svgNS, "text");
-          const xVal = Math.min(padding.left + w + 8, width - padding.right - 2); // evita recorte
+          const val = document.createElementNS(svgNS,"text");
+          const xVal = Math.min(padding.left + w + 8, width - padding.right - 2);
           val.setAttribute("x", xVal);
           val.setAttribute("y", y + barH * 0.75);
-          val.setAttribute("font-size", "12");
-          val.setAttribute("fill", "#111827");
-          val.textContent = valueFmt ? valueFmt(d.value) : d.value.toLocaleString("es-PE", { maximumFractionDigits: 2 });
+          val.setAttribute("font-size","12");
+          val.setAttribute("fill","#111827");
+          val.textContent = valueFmt ? valueFmt(d.value) : d.value.toLocaleString("es-PE",{maximumFractionDigits:2});
           svg.appendChild(val);
         });
 
         container.appendChild(svg);
       }
 
-      function chartV_Centros_Rotated(containerId, series, { barColor="#2563eb", valueFmt } = {}) {
-        // Barras verticales (Centros) con etiquetas 90° (verticales) y legibles
+      function chartV_Centros_VLabels(containerId, series, { barColor="#2563eb", valueFmt } = {}){
+        // Barras verticales con etiquetas VERTICALES (-90°) y padding inferior dinámico para que se vean completas
         const container = document.getElementById(containerId);
         container.innerHTML = "";
-        if (!series || series.length === 0) { container.innerHTML = '<div class="nodata">Sin datos</div>'; return; }
+        if (!series || series.length===0){ container.innerHTML='<div class="nodata">Sin datos</div>'; return; }
 
         const width = container.clientWidth || 760;
-        const height = Math.max(360, 340);
-        const padding = { top: 22, right: 18, bottom: 160, left: 50 }; /* bottom amplio p/ etiquetas verticales */
+
+        // Ajustes según cantidad y longitud de etiquetas
+        const maxLen = Math.max(0, ...series.map(d => String(d.label).length));
         const n = series.length;
+
+        // Fuente más pequeña si hay muchos centros o nombres largos
+        const fontSize = n > 14 ? 10 : (n > 9 || maxLen > 12 ? 11 : 12);
+
+        // Padding inferior suficiente para la altura del texto rotado
+        const bottomPad = Math.max(150, Math.round(fontSize * (maxLen * 0.68) + 24));
+
+        const baseHeight = 340;
+        const height = baseHeight + (bottomPad - 120); // crece si se necesita más espacio
+        const padding = { top:22, right:18, bottom: bottomPad, left:50 };
+
         const plotW = width - padding.left - padding.right;
         const plotH = height - padding.top - padding.bottom;
         const gap = 12;
         const barW = Math.max(16, Math.min(50, (plotW - gap * (n - 1)) / n));
         const maxVal = Math.max(1, ...series.map(d => d.value));
 
-        // tamaño de letra adaptable según la cantidad de centros
-        const fontSize = n > 12 ? 10 : 12;
-
         const svgNS = "http://www.w3.org/2000/svg";
-        const svg = document.createElementNS(svgNS, "svg");
+        const svg = document.createElementNS(svgNS,"svg");
         svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-        svg.setAttribute("width", "100%");
-        svg.setAttribute("height", "100%");
+        svg.setAttribute("width","100%"); svg.setAttribute("height","100%");
 
-        series.forEach((d, i) => {
+        series.forEach((d,i)=>{
           const x = padding.left + i * (barW + gap);
           const h = (plotH * d.value) / maxVal;
           const y = padding.top + (plotH - h);
 
-          const rect = document.createElementNS(svgNS, "rect");
+          const rect = document.createElementNS(svgNS,"rect");
           rect.setAttribute("x", x);
           rect.setAttribute("y", y);
           rect.setAttribute("width", barW);
-          rect.setAttribute("height", Math.max(2, h));
-          rect.setAttribute("rx", "4");
+          rect.setAttribute("height", Math.max(2,h));
+          rect.setAttribute("rx","4");
           rect.setAttribute("fill", barColor);
           svg.appendChild(rect);
 
-          // valor encima de cada barra
-          const val = document.createElementNS(svgNS, "text");
-          val.setAttribute("x", x + barW / 2);
+          const val = document.createElementNS(svgNS,"text");
+          val.setAttribute("x", x + barW/2);
           val.setAttribute("y", Math.max(12, y - 6));
-          val.setAttribute("text-anchor", "middle");
-          val.setAttribute("font-size", "11");
-          val.setAttribute("fill", "#111827");
-          val.textContent = valueFmt ? valueFmt(d.value) : d.value.toLocaleString("es-PE", { maximumFractionDigits: 2 });
+          val.setAttribute("text-anchor","middle");
+          val.setAttribute("font-size","11");
+          val.setAttribute("fill","#111827");
+          val.textContent = valueFmt ? valueFmt(d.value) : d.value.toLocaleString("es-PE",{maximumFractionDigits:2});
           svg.appendChild(val);
 
-          // etiqueta vertical (-90°) bien visible
-          const label = document.createElementNS(svgNS, "text");
-          const lx = x + barW / 2;
-          const ly = height - 10;
+          // Etiqueta vertical (-90°), bien visible
+          const label = document.createElementNS(svgNS,"text");
+          const lx = x + barW/2;
+          const ly = height - 8;
           label.setAttribute("transform", `translate(${lx},${ly}) rotate(-90)`);
-          label.setAttribute("text-anchor", "end");
+          label.setAttribute("text-anchor","end");
           label.setAttribute("font-size", String(fontSize));
-          label.setAttribute("fill", "#374151");
+          label.setAttribute("fill","#374151");
           label.textContent = d.label;
           svg.appendChild(label);
         });
@@ -591,57 +557,47 @@
         container.appendChild(svg);
       }
 
-      function chartV_Canal_HLabels(containerId, series, { barColor="#b45309", valueFmt } = {}) {
+      function chartV_Canal_HLabels(containerId, series, { barColor="#b45309", valueFmt } = {}){
         // Barras verticales (Canal) con etiquetas horizontales
-        const container = document.getElementById(containerId);
-        container.innerHTML = "";
-        if (!series || series.length === 0) { container.innerHTML = '<div class="nodata">Sin datos</div>'; return; }
-
-        const width = container.clientWidth || 760;
-        const height = Math.max(340, 320);
-        const padding = { top: 22, right: 18, bottom: 70, left: 50 };
-        const n = series.length;
-        const plotW = width - padding.left - padding.right;
-        const plotH = height - padding.top - padding.bottom;
+        const container = document.getElementByIdtH = height - padding.top - padding.bottom;
         const gap = 14;
-        const barW = Math.max(18, Math.min(52, (plotW - gap * (n - 1)) / n));
+        const barW = Math.max(18, Math.min(52, (plotW - gap*(n-1)) / n));
         const maxVal = Math.max(1, ...series.map(d => d.value));
 
         const svgNS = "http://www.w3.org/2000/svg";
-        const svg = document.createElementNS(svgNS, "svg");
+        const svg = document.createElementNS(svgNS,"svg");
         svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-        svg.setAttribute("width", "100%");
-        svg.setAttribute("height", "100%");
+        svg.setAttribute("width","100%"); svg.setAttribute("height","100%");
 
-        series.forEach((d, i) => {
+        series.forEach((d,i)=>{
           const x = padding.left + i * (barW + gap);
           const h = (plotH * d.value) / maxVal;
           const y = padding.top + (plotH - h);
 
-        const rect = document.createElementNS(svgNS, "rect");
+          const rect = document.createElementNS(svgNS,"rect");
           rect.setAttribute("x", x);
           rect.setAttribute("y", y);
           rect.setAttribute("width", barW);
-          rect.setAttribute("height", Math.max(2, h));
-          rect.setAttribute("rx", "4");
+          rect.setAttribute("height", Math.max(2,h));
+          rect.setAttribute("rx","4");
           rect.setAttribute("fill", barColor);
           svg.appendChild(rect);
 
-          const val = document.createElementNS(svgNS, "text");
-          val.setAttribute("x", x + barW / 2);
+          const val = document.createElementNS(svgNS,"text");
+          val.setAttribute("x", x + barW/2);
           val.setAttribute("y", Math.max(12, y - 6));
-          val.setAttribute("text-anchor", "middle");
-          val.setAttribute("font-size", "11");
-          val.setAttribute("fill", "#111827");
-          val.textContent = valueFmt ? valueFmt(d.value) : d.value.toLocaleString("es-PE", { maximumFractionDigits: 2 });
+          val.setAttribute("text-anchor","middle");
+          val.setAttribute("font-size","11");
+          val.setAttribute("fill","#111827");
+          val.textContent = valueFmt ? valueFmt(d.value) : d.value.toLocaleString("es-PE",{maximumFractionDigits:2});
           svg.appendChild(val);
 
-          const label = document.createElementNS(svgNS, "text");
-          label.setAttribute("x", x + barW / 2);
+          const label = document.createElementNS(svgNS,"text");
+          label.setAttribute("x", x + barW/2);
           label.setAttribute("y", height - 12);
-          label.setAttribute("text-anchor", "middle");
-          label.setAttribute("font-size", "12");
-          label.setAttribute("fill", "#374151");
+          label.setAttribute("text-anchor","middle");
+          label.setAttribute("font-size","12");
+          label.setAttribute("fill","#374151");
           label.textContent = d.label;
           svg.appendChild(label);
         });
@@ -649,11 +605,11 @@
         container.appendChild(svg);
       }
 
-      const topN = (arr, n=10) => [...arr].sort((a,b)=>b.value-a.value).slice(0,n);
-      const bottomN = (arr, n=10) => [...arr].sort((a,b)=>a.value-b.value).slice(0,n);
+      const topN = (arr,n=10)=>[...arr].sort((a,b)=>b.value-a.value).slice(0,n);
+      const bottomN = (arr,n=10)=>[...arr].sort((a,b)=>a.value-b.value).slice(0,n);
 
-      // ======= Render de gráficos =======
-      function renderCharts() {
+      // === Render ===
+      function renderCharts(){
         const metricName = selectedMetrica;
         const calc = metricValue[metricName];
         const isMoney = (metricName === "Soles");
@@ -661,103 +617,77 @@
           ? new Intl.NumberFormat("es-PE",{style:"currency",currency:"PEN",maximumFractionDigits:2}).format(v)
           : v.toLocaleString("es-PE",{maximumFractionDigits:2});
 
-        // 1) Centros (vertical, etiquetas verticales) – NO filtra Centro; SÍ filtra Canales
+        // 1) Centros (vertical con etiquetas verticales) – NO filtra Centro; SÍ filtra Canales
         {
           const rows = rowsForCentroChart();
-          const map = new Map(); // centro -> rows[]
-          rows.forEach(r => { const k = r[IDX.CENTRO] || ""; if(!k) return; if(!map.has(k)) map.set(k, []); map.get(k).push(r); });
-          const serie = Array.from(map.entries()).map(([label, group]) => ({ label, value: calc(group) }));
-          chartV_Centros_Rotated("chartCentrosV", topN(serie, 10), { barColor:"#2563eb", valueFmt });
+          const map = new Map();
+          rows.forEach(r => { const k=r[IDX.CENTRO] || ""; if(!k) return; if(!map.has(k)) map.set(k,[]); map.get(k).push(r); });
+          const serie = Array.from(map.entries()).map(([label,group]) => ({ label, value: calc(group) }));
+          chartV_Centros_VLabels("chartCentrosV", topN(serie, 10), { barColor:"#2563eb", valueFmt });
         }
 
-        // 2) Canal (vertical, etiquetas horizontales) – NO filtra Canales; SÍ filtra Centro
+        // 2) Canal (vertical con etiquetas horizontales) – NO filtra Canales; SÍ filtra Centro
         {
           const rows = rowsForCanalChart();
-          const map = new Map(); // canal -> rows[]
-          rows.forEach(r => { const k = r[IDX.CANAL] || ""; if(!k) return; if(!map.has(k)) map.set(k, []); map.get(k).push(r); });
-          const serie = Array.from(map.entries()).map(([label, group]) => ({ label, value: calc(group) }));
+          const map = new Map();
+          rows.forEach(r => { const k=r[IDX.CANAL] || ""; if(!k) return; if(!map.has(k)) map.set(k,[]); map.get(k).push(r); });
+          const serie = Array.from(map.entries()).map(([label,group]) => ({ label, value: calc(group) }));
           chartV_Canal_HLabels("chartCanalV", topN(serie, 10), { barColor:"#b45309", valueFmt });
         }
 
-        // 3) Top 10 Performer – Camiones (horizontal, KG), etiquetas sin paréntesis
-        {
-          const rows = rowsForOthers().filter(r => !isTruckExcluded(r)); // ranking: excluye FRT-001 y RES-CLI
-          const map = new Map(); // placa -> kg sum
-          rows.forEach(r => {
-            const placa = r[IDX.PLACA] || "";
-            if (!placa) return;
-            const kg = isFRT(r) ? 0 : toNum(r[IDX.KG]); // kg: excluye FRT como regla
-            map.set(placa, (map.get(placa) || 0) + kg);
-          });
-          const serie = Array.from(map.entries()).map(([label, value]) => ({ label: stripParens(label), value }));
-          chartH("chartTruckBest", topN(serie, 10), { barColor:"#16a34a" });
-        }
-
-        // 4) Top 10 Offender – Camiones (horizontal, KG), etiquetas sin paréntesis
-        {
-          const rows = rowsForOthers().filter(r => !isTruckExcluded(r));
-          const map = new Map();
-          rows.forEach(r => {
-            const placa = r[IDX.PLACA] || "";
-            if (!placa) return;
-            const kg = isFRT(r) ? 0 : toNum(r[IDX.KG]);
-            map.set(placa, (map.get(placa) || 0) + kg);
-          });
-          const serie = Array.from(map.entries()).map(([label, value]) => ({ label: stripParens(label), value }))
-                             .filter(d => d.value > 0);
-          chartH("chartTruckWorst", bottomN(serie, 10), { barColor:"#9ca3af" });
-        }
-
-        // 5) Top 10 Performer – Rutas (horizontal, KG/Camión), etiquetas sin paréntesis
-        {
-          const rows = rowsForOthers();
-          const map = new Map(); // ruta -> { kg, trucks:Set }
-          rows.forEach(r => {
-            const ruta = r[IDX.RUTA] || "";
-            if (!ruta) return;
-            const kg = isFRT(r) ? 0 : toNum(r[IDX.KG]); // kg excluye FRT
-            const placa = (isTruckExcluded(r)) ? null : (r[IDX.PLACA] || "");
-            if (!map.has(ruta)) map.set(ruta, { kg:0, trucks:new Set() });
-            const b = map.get(ruta);
-            b.kg += kg;
-            if (placa) b.trucks.add(placa);
-          });
-          const serie = Array.from(map.entries()).map(([ruta, {kg, trucks}]) => {
-            const denom = trucks.size;
-            const val = denom ? (kg / denom) : 0;
-            return { label: stripParens(ruta), value: val };
-          }).filter(d => d.value > 0);
-          chartH("chartRutaBest", topN(serie, 10), { barColor:"#22c55e" });
-        }
-
-        // 6) Top 10 Offender – Rutas (horizontal, KG/Camión), etiquetas sin paréntesis
-        {
-          const rows = rowsForOthers();
-          const map = new Map();
-          rows.forEach(r => {
-            const ruta = r[IDX.RUTA] || "";
-            if (!ruta) return;
-            const kg = isFRT(r) ? 0 : toNum(r[IDX.KG]);
-            const placa = (isTruckExcluded(r)) ? null : (r[IDX.PLACA] || "");
-            if (!map.has(ruta)) map.set(ruta, { kg:0, trucks:new Set() });
-            const b = map.get(ruta);
-            b.kg += kg;
-            if (placa) b.trucks.add(placa);
-          });
-          const serie = Array.from(map.entries()).map(([ruta, {kg, trucks}]) => {
-            const denom = trucks.size;
-            const val = denom ? (kg / denom) : 0;
-            return { label: stripParens(ruta), value: val };
-          }).filter(d => d.value > 0);
-          chartH("chartRutaWorst", bottomN(serie, 10), { barColor:"#f59e0b" });
-        }
+        // Para los 4 gráficos horizontales, calculamos la X del texto del título como ancla
+        // (bajo la “T”) y alineamos la pared izquierda de las barras a esa X.
+        const panelsH = [
+          { panelSel: '#chartTruckBest',  color:'#16a34a', data: getTrucks(true)  }, // best
+          { panelSel: '#chartTruckWorst', color:'#9ca3af', data: getTrucks(false) }, // worst
+          { panelSel: '#chartRutaBest',   color:'#22c55e', data: getRutas(true)   }, // best rutas
+          { panelSel: '#chartRutaWorst',  color:'#f59e0b', data: getRutas(false)  }  // worst rutas
+        ];
+        panelsH.forEach(({panelSel, color, data})=>{
+          const box = document.querySelector(panelSel);
+          const panel = box.closest('.panel');
+          const anchorLeft = getTitleAnchorLeft(panel);
+          chartH(panelSel.substring(1), data.series, { barColor: color, anchorLeft });
+        });
       }
 
-      function render() {
-        renderKPIs();
-        renderCharts();
+      function getTrucks(best=true){
+        const rows = rowsForOthers().filter(r => !isTruckExcluded(r)); // ranking excluye FRT-001 y RES-CLI
+        const map = new Map(); // placa -> kg
+        rows.forEach(r => {
+          const placa = r[IDX.PLACA] || "";
+          if (!placa) return;
+          const kg = isFRT(r) ? 0 : toNum(r[IDX.KG]);
+          map.set(placa, (map.get(placa)||0) + kg);
+        });
+        let series = Array.from(map.entries()).map(([label,value]) => ({ label: stripParens(label), value }));
+        series = best ? topN(series,10) : bottomN(series.filter(d=>d.value>0),10);
+        return { series };
       }
 
+      function getRutas(best=true){
+        const rows = rowsForOthers();
+        const map = new Map(); // ruta -> { kg, trucks:Set }
+        rows.forEach(r => {
+          const ruta = r[IDX.RUTA] || "";
+          if (!ruta) return;
+          const kg = isFRT(r) ? 0 : toNum(r[IDX.KG]);
+          const placa = (isTruckExcluded(r)) ? null : (r[IDX.PLACA] || "");
+          if (!map.has(ruta)) map.set(ruta, { kg:0, trucks:new Set() });
+          const b = map.get(ruta);
+          b.kg += kg;
+          if (placa) b.trucks.add(placa);
+        });
+        let series = Array.from(map.entries()).map(([ruta, {kg, trucks}]) => {
+          const denom = trucks.size;
+          const val = denom ? (kg / denom) : 0;        // Kg/Camión
+          return { label: stripParens(ruta), value: val };
+        }).filter(d => d.value > 0);
+        series = best ? topN(series,10) : bottomN(series,10);
+        return { series };
+      }
+
+      function render(){ renderKPIs(); renderCharts(); }
       document.addEventListener("DOMContentLoaded", init);
     })();
   </script>
