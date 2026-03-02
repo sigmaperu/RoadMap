@@ -1,100 +1,437 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>RoadMap | Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/apple-touch-icon.png">
+  <meta charset="UTF-8" />
+  <title>RoadMap – Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Fuentes + Material Icons + Estilos (mismos que agenda.html) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/styles.css">
+  <!-- Header global y configuración -->
+  <script defer src="assets/js/main.js"></script>
+
+  <style>
+    /* Ajustes mínimos para las tarjetas y gráficos del dashboard
+       (puedes mover esto a assets/css/styles.css si prefieres) */
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    @media (min-width: 900px) {
+      .dashboard {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    @media (min-width: 700px) {
+      .kpi-grid {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 16px;
+      }
+    }
+    .kpi-card {
+      background: var(--surface, #fff);
+      border-radius: 10px;
+      padding: 14px 16px;
+      box-shadow: var(--shadow-1, 0 1px 3px rgba(0,0,0,.1));
+      display: flex;
+      flex-direction: column;
+      min-height: 88px;
+    }
+    .kpi-card__label {
+      font-size: .85rem;
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .kpi-card__value {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+
+    .panel {
+      background: var(--surface, #fff);
+      border-radius: 10px;
+      box-shadow: var(--shadow-1, 0 1px 3px rgba(0,0,0,.1));
+    }
+    .panel__header {
+      padding: 12px 16px;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      justify-content: space-between;
+    }
+    .panel__title {
+      font-weight: 600;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .panel__body {
+      padding: 8px 8px 16px 8px;
+    }
+
+    .chart-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    @media (min-width: 1000px) {
+      .chart-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    /* Contenedor para el SVG responsivo */
+    .chart-box {
+      width: 100%;
+      min-height: 300px;
+      overflow: hidden;
+      padding: 8px;
+    }
+    .chart-legend {
+      font-size: .8rem;
+      color: #6b7280;
+      padding: 0 12px 12px 12px;
+    }
+
+    /* Filtro compacto */
+    .dash-filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      padding: 8px 16px 0 16px;
+    }
+    .dash-select {
+      height: 36px;
+      padding: 0 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      background: #fff;
+      color: #111827;
+    }
+  </style>
 </head>
-<body>
+<body data-title="Dashboard">
   <div class="app-shell">
     <aside class="sidebar">
-      <div class="sidebar__logo">
-        <img src="assets/img/logotipo.png" alt="RoadMap">
-      </div>
+      <div class="sidebar__logo"><img src="assets/img/logotipo.png" alt="RoadMap"></div>
       <nav class="sidebar__nav">
-        <a href="index.html" class="nav-item">
-          <span class="nav-item__icon material-icons">home</span>
-          <span class="nav-item__label">Inicio</span>
-        </a>
-        <a href="agenda.html" class="nav-item">
-          <span class="nav-item__icon material-icons">event</span>
-          <span class="nav-item__label">Agenda</span>
-        </a>
-        <a href="dashboard.html" class="nav-item nav-item--active">
-          <span class="nav-item__icon material-icons">dashboard</span>
-          <span class="nav-item__label">Dashboard</span>
-        </a>
-        <a href="planif.html" class="nav-item">
-          <span class="nav-item__icon material-icons">timeline</span>
-          <span class="nav-item__label">Planificación</span>
-        </a>
-        <a href="planos.html" class="nav-item">
-          <span class="nav-item__icon material-icons">map</span>
-          <span class="nav-item__label">Planos</span>
-        </a>
-        <a href="program.html" class="nav-item">
-          <span class="nav-item__icon material-icons">view_week</span>
-          <span class="nav-item__label">Programación</span>
-        </a>
-        <a href="ubicame.html" class="nav-item">
-          <span class="nav-item__icon material-icons">my_location</span>
-          <span class="nav-item__label">Ubícame</span>
-        </a>
+        <a href="index.html" class="nav-item"><span class="nav-item__icon material-icons">home</span><span>Inicio</span></a>
+        <a href="agenda.html" class="nav-item"><span class="nav-item__icon material-icons">event</span><span>Agenda</span></a>
+        <a href="dashboard.html" class="nav-item nav-item--active"><span class="nav-item__icon material-icons">dashboard</span><span>Dashboard</span></a>
+        <a href="planif.html" class="nav-item"><span class="nav-item__icon material-icons">timeline</span><span>Planificación</span></a>
+        <a href="planos.html" class="nav-item"><span class="nav-item__icon material-icons">map</span><span>Planos</span></a>
+        <a href="program.html" class="nav-item"><span class="nav-item__icon material-icons">view_week</span><span>Programación</span></a>
+        <a href="ubicame.html" class="nav-item"><span class="nav-item__icon material-icons">my_location</span><span>Ubícame</span></a>
       </nav>
     </aside>
 
     <div class="main-layout">
-      <header class="topbar">
-        <div class="topbar__title">
-          <button class="icon-button icon-button--menu" aria-label="Menú" id="menuToggle">
-            <span class="material-icons">menu</span>
-          </button>
-          <h1>Dashboard</h1>
-        </div>
-        <div class="topbar__actions">
-          <button class="icon-button" aria-label="Notificaciones">
-            <span class="material-icons">notifications</span>
-          </button>
-          <button class="icon-button" aria-label="Perfil">
-            <span class="material-icons">account_circle</span>
-          </button>
-        </div>
-      </header>
+      <!-- Header global -->
+      <div id="app-header"></div>
 
       <main class="content">
         <section class="page-section">
-          <h2 class="page-section__title">Panel de control</h2>
-          <p class="page-section__subtitle">
-            Visualiza el estado general de tus proyectos y sus principales indicadores.
-          </p>
+          <!-- Filtros -->
+          <div class="panel">
+            <div class="panel__header">
+              <div class="panel__title">
+                <span class="material-icons">tune</span> Filtros
+              </div>
+            </div>
+            <div class="dash-filters">
+              <!-- Combo Centro sin label (siguiendo tu regla) -->
+              <select id="dashCentro" class="dash-select"></select>
+            </div>
+          </div>
 
-          <div class="grid">
-            <article class="card">
-              <h3 class="card__title">Progreso de proyectos</h3>
-              <p class="card__text">Zona para gráficos de avance por proyecto.</p>
-            </article>
-            <article class="card">
-              <h3 class="card__title">Estado de hitos</h3>
-              <p class="card__text">Resumen de hitos completados, en riesgo y retrasados.</p>
-            </article>
-            <article class="card">
-              <h3 class="card__title">Alertas</h3>
-              <p class="card__text">Listado de alertas críticas y recomendaciones.</p>
-            </article>
+          <!-- KPIs -->
+          <div class="kpi-grid" style="margin-top: 12px;">
+            <div class="kpi-card">
+              <div class="kpi-card__label"><span class="material-icons">assignment</span>Pedidos</div>
+              <div id="kpiPedidos" class="kpi-card__value">–</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-card__label"><span class="material-icons">local_shipping</span>Camiones</div>
+              <div id="kpiCamiones" class="kpi-card__value">–</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-card__label"><span class="material-icons">group</span>Auxiliares</div>
+              <div id="kpiAuxiliares" class="kpi-card__value">–</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-card__label"><span class="material-icons">apartment</span>Centros</div>
+              <div id="kpiCentros" class="kpi-card__value">–</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-card__label"><span class="material-icons">schedule</span>VH (Σ)</div>
+              <div id="kpiVH" class="kpi-card__value">–</div>
+            </div>
+          </div>
+
+          <!-- Gráficos -->
+          <div class="chart-grid" style="margin-top: 12px;">
+            <div class="panel">
+              <div class="panel__header">
+                <div class="panel__title">
+                  <span class="material-icons">bar_chart</span> Pedidos por Centro (Top 10)
+                </div>
+              </div>
+              <div class="panel__body">
+                <div id="chartCentro" class="chart-box" role="img" aria-label="Barras de pedidos por centro"></div>
+                <div class="chart-legend">Cantidad de pedidos únicos (clientes) por Centro.</div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel__header">
+                <div class="panel__title">
+                  <span class="material-icons">stacked_bar_chart</span> Pedidos por Ruta (Top 10)
+                </div>
+              </div>
+              <div class="panel__body">
+                <div id="chartRuta" class="chart-box" role="img" aria-label="Barras de pedidos por ruta"></div>
+                <div class="chart-legend">Cantidad de pedidos únicos (clientes) por Ruta.</div>
+              </div>
+            </div>
           </div>
         </section>
       </main>
     </div>
   </div>
 
-  <script src="assets/js/main.js"></script>
+  <!-- JS específico del Dashboard -->
+  <script>
+    (() => {
+      // === Configuración de datos (igual que Agenda) ===
+      const CSV_URL =
+        (window.RoadMapConfig && window.RoadMapConfig.CSV_URL)
+        || "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
+
+      // Reutilizamos un parser CSV robusto (mismo de agenda.html)
+      function parseCSV(text) {
+        const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
+        if (lines.length === 0) return { header: [], rows: [] };
+        const header = lines[0].split(",");
+        const dataLines = lines.slice(1);
+        const rows = dataLines.map(line => {
+          const result = []; let current = ""; let inQuotes = false;
+          for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            if (char === '"') {
+              if (inQuotes && line[i + 1] === '"') { current += '"'; i++; }
+              else { inQuotes = !inQuotes; }
+            } else if (char === "," && !inQuotes) { result.push(current); current = ""; }
+            else { current += char; }
+          }
+          result.push(current);
+          return result;
+        });
+        return { header, rows };
+      }
+
+      // === Helpers de negocio (índices siguiendo agenda.html) ===
+      // Centro: [1], Placa: [2], Cliente: [3], Nombre A/B: [4]/[5]
+      // Ruta A/B: [6]/[19], Auxiliar: [12], Teléfono:[13], Dir A/B:[15]/[14], Lat:[16], Lon:[17], VH:[18]
+      const buildNombre = r => {
+        const a = r[4] || "", b = r[5] || "";
+        return (b && b !== "0" && b.toLowerCase() !== "error") ? (a ? `${a} - ${b}` : b) : a;
+      };
+      const buildRuta = r => {
+        const a = r[6] || "", b = r[19] || "";
+        return (b && b !== "0" && b.toLowerCase() !== "error") ? (a ? `${a} - ${b}` : b) : a;
+      };
+
+      const unique = arr => Array.from(new Set(arr.filter(v => v !== "" && v != null)));
+
+      // === Estado ===
+      let allRows = [];
+      let centros = [];
+      const selCentro = document.getElementById("dashCentro");
+
+      // === KPIs DOM ===
+      const kpiPedidos = document.getElementById("kpiPedidos");
+      const kpiCamiones = document.getElementById("kpiCamiones");
+      const kpiAuxiliares = document.getElementById("kpiAuxiliares");
+      const kpiCentros = document.getElementById("kpiCentros");
+      const kpiVH = document.getElementById("kpiVH");
+
+      // === Carga y filtro ===
+      async function init() {
+        try {
+          const resp = await fetch(CSV_URL);
+          const text = await resp.text();
+          const { rows } = parseCSV(text);
+          allRows = rows;
+
+          // Centos únicos (orden alfabético)
+          centros = unique(allRows.map(r => r[1] || "")).sort();
+          selCentro.innerHTML = "";
+          centros.forEach(c => {
+            const opt = document.createElement("option");
+            opt.value = c; opt.textContent = c;
+            selCentro.appendChild(opt);
+          });
+          if (centros.length > 0) selCentro.value = centros[0];
+
+          render();
+          selCentro.addEventListener("change", render);
+        } catch (err) {
+          console.error("Error cargando RoadMap.csv en Dashboard:", err);
+          alert("No se pudo cargar RoadMap.csv para Dashboard");
+        }
+      }
+
+      function getFilteredRows() {
+        const cSel = selCentro.value || "";
+        return allRows.filter(r => (r[1] || "") === cSel);
+      }
+
+      // === KPIs ===
+      function renderKPIs(rows) {
+        const clientesUnicos = unique(rows.map(r => r[3] || ""));
+        const camionesUnicos = unique(rows.map(r => r[2] || ""));
+        const auxiliaresUnicos = unique(rows.map(r => r[12] || ""));
+        const centrosUnicos = unique(rows.map(r => r[1] || ""));
+        const vhSum = rows.reduce((acc, r) => {
+          const v = parseFloat(String(r[18] || "0").replace(",", "."));
+          return acc + (isNaN(v) ? 0 : v);
+        }, 0);
+
+        // Pedidos = clientes únicos (puedes cambiar la métrica si lo deseas)
+        kpiPedidos.textContent = clientesUnicos.length.toLocaleString();
+        kpiCamiones.textContent = camionesUnicos.length.toLocaleString();
+        kpiAuxiliares.textContent = auxiliaresUnicos.length.toLocaleString();
+        kpiCentros.textContent = centrosUnicos.length.toLocaleString();
+        kpiVH.textContent = vhSum.toLocaleString(undefined, { maximumFractionDigits: 2 });
+      }
+
+      // === Gráficos SVG simples ===
+      function mountBarChartSVG(containerId, series, options = {}) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = "";
+        const width = container.clientWidth || 600;
+        const height = Math.max(260, 24 + series.length * 24);
+        const padding = { top: 24, right: 24, bottom: 36, left: 140 };
+
+        const maxVal = Math.max(1, ...series.map(d => d.value));
+        const barH = Math.max(14, (height - padding.top - padding.bottom) / Math.max(1, series.length) - 6);
+        const barGap = 6;
+        const plotH = series.length * (barH + barGap);
+
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("viewBox", `0 0 ${width} ${Math.max(height, padding.top + plotH + padding.bottom)}`);
+        svg.setAttribute("width", "100%");
+        svg.setAttribute("height", "100%");
+
+        // Ejes mínimos
+        const axisY = document.createElementNS(svg.namespaceURI, "line");
+        axisY.setAttribute("x1", padding.left); axisY.setAttribute("y1", padding.top - 6);
+        axisY.setAttribute("x2", padding.left); axisY.setAttribute("y2", padding.top + plotH + 6);
+        axisY.setAttribute("stroke", "#e5e7eb"); axisY.setAttribute("stroke-width", "1");
+        svg.appendChild(axisY);
+
+        // Barras + etiquetas
+        series.forEach((d, i) => {
+          const y = padding.top + i * (barH + barGap);
+          const w = ((width - padding.left - padding.right) * d.value) / maxVal;
+
+          const rect = document.createElementNS(svg.namespaceURI, "rect");
+          rect.setAttribute("x", padding.left);
+          rect.setAttribute("y", y);
+          rect.setAttribute("width", Math.max(2, w));
+          rect.setAttribute("height", barH);
+          rect.setAttribute("rx", "4");
+          rect.setAttribute("fill", options.barColor || "#2563eb");
+          svg.appendChild(rect);
+
+          const label = document.createElementNS(svg.namespaceURI, "text");
+          label.setAttribute("x", padding.left - 8);
+          label.setAttribute("y", y + barH * 0.65);
+          label.setAttribute("text-anchor", "end");
+          label.setAttribute("font-size", "12");
+          label.setAttribute("fill", "#374151");
+          label.textContent = d.label;
+          svg.appendChild(label);
+
+          const val = document.createElementNS(svg.namespaceURI, "text");
+          val.setAttribute("x", padding.left + w + 6);
+          val.setAttribute("y", y + barH * 0.65);
+          val.setAttribute("font-size", "12");
+          val.setAttribute("fill", "#111827");
+          val.textContent = d.value.toLocaleString();
+          svg.appendChild(val);
+        });
+
+        // Ticks X (0, 50%, 100%)
+        const ticks = [0, 0.5, 1].map(t => Math.round(t * maxVal));
+        ticks.forEach(t => {
+          const x = padding.left + (width - padding.left - padding.right) * (t / maxVal);
+          const tick = document.createElementNS(svg.namespaceURI, "line");
+          tick.setAttribute("x1", x); tick.setAttribute("y1", padding.top + plotH + 4);
+          tick.setAttribute("x2", x); tick.setAttribute("y2", padding.top + plotH + 8);
+          tick.setAttribute("stroke", "#9ca3af");
+          svg.appendChild(tick);
+
+          const tLabel = document.createElementNS(svg.namespaceURI, "text");
+          tLabel.setAttribute("x", x); tLabel.setAttribute("y", padding.top + plotH + 22);
+          tLabel.setAttribute("text-anchor", "middle");
+          tLabel.setAttribute("font-size", "11");
+          tLabel.setAttribute("fill", "#6b7280");
+          tLabel.textContent = t.toLocaleString();
+          svg.appendChild(tLabel);
+        });
+
+        container.appendChild(svg);
+      }
+
+      function groupCount(rows, keyFn) {
+        const map = new Map();
+        rows.forEach(r => {
+          const k = keyFn(r);
+          if (!k) return;
+          map.set(k, (map.get(k) || 0) + 1);
+        });
+        return Array.from(map.entries()).map(([label, value]) => ({ label, value }));
+      }
+
+      function topN(list, n = 10) {
+        return list.sort((a, b) => b.value - a.value).slice(0, n);
+      }
+
+      // === Render ===
+      function render() {
+        const rows = getFilteredRows();
+
+        // KPIs
+        renderKPIs(rows);
+
+        // Gráfico por Centro (usa todas las filas para una visión global o filtra por centro si prefieres)
+        const centroCounts = groupCount(allRows, r => (r[1] || "")); // global
+        const centroTop = topN(centroCounts, 10);
+        mountBarChartSVG("chartCentro", centroTop, { barColor: "#2563eb" });
+
+        // Gráfico por Ruta (dependiente del Centro seleccionado)
+        const rutaCounts = groupCount(rows, r => ( ( (r[6]||"") + (r[19] ? ` - ${r[19]}` : "") ).trim() || "" ));
+        const rutaTop = topN(rutaCounts, 10);
+        mountBarChartSVG("chartRuta", rutaTop, { barColor: "#16a34a" });
+      }
+
+      document.addEventListener("DOMContentLoaded", init);
+    })();
+  </script>
 </body>
 </html>
