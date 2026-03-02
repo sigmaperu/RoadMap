@@ -28,7 +28,7 @@
       --badge-bg:#eef2ff;
       --badge-shadow:0 6px 14px rgba(0,0,0,.12);
       --card-shadow:0 1px 3px rgba(0,0,0,.1);
-      --side-w: 260px;
+      --side-w: 240px; /* ancho de cards de segmentación */
     }
     .icon--blue{ color: var(--icon-blue); }
     .icon--green{ color: var(--icon-green); }
@@ -43,20 +43,21 @@
     }
     .panel__body { padding: 10px 12px; }
 
-    /* ======= Disposición por filas (lado-izq: segmentación / lado-der: contenido) ======= */
+    /* ======= Disposición (lado-izq: segmentación / lado-der: contenido) ======= */
     .row {
       display: grid;
       grid-template-columns: minmax(200px, var(--side-w)) 1fr;
       gap: 10px;
-      align-items: start;
+      align-items: stretch; /* estira para igualar alturas */
       margin-bottom: 10px;
     }
+    .row--flush-next{ margin-bottom: 0; } /* sin hueco con la fila siguiente */
     @media (max-width: 1024px){
       .row { grid-template-columns: 1fr; }
     }
 
     /* ======= Segmentaciones compactas ======= */
-    .seg-card { padding: 8px 12px; }
+    .seg-card { padding: 8px 12px; display:flex; flex-direction:column; }
     .seg__label{ font-size:.76rem; color:#6b7280; font-weight:700; letter-spacing:.02em; margin-bottom:6px; }
     /* Centro -> filtro select compacto */
     .seg__select{
@@ -64,17 +65,15 @@
       border: 1px solid var(--chip-border); border-radius: 10px;
       background: var(--chip-bg); color:#111827; font-weight:600; font-size:.82rem; width:100%;
     }
-    /* Canal y Métrica -> chips de 1 columna, angostos */
-    .seg__items{ display:flex; flex-direction:column; gap:6px; align-items:stretch; max-height: 220px; overflow:auto; }
+    /* Canal y Métrica -> chips 1 columna */
+    .seg__items{ display:flex; flex-direction:column; gap:6px; align-items:stretch; flex:1; overflow:auto; }
     .seg__chip{
       appearance:none; border:1px solid var(--chip-border); background:var(--chip-bg);
-      color:#374151; border-radius:10px; padding:6px 10px; cursor:pointer; font-weight:600;
+      color:#374151; border-radius:10px; padding:6px 10px; cursor:pointer; font-weight:700;
       font-size:.8rem; transition: all .15s ease; text-align:left;
     }
     .seg__chip:hover{ transform: translateY(-1px); box-shadow: var(--badge-shadow); }
-    .seg__chip[aria-pressed="true"]{
-      color: var(--chip-active); background: var(--chip-active-bg); border-color:#c7d2fe;
-    }
+    .seg__chip[aria-pressed="true"]{ color: var(--chip-active); background: var(--chip-active-bg); border-color:#c7d2fe; }
 
     /* ======= KPIs ======= */
     .kpi-row {
@@ -113,7 +112,7 @@
     .charts-2col{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     @media (max-width: 1200px){ .charts-2col{ grid-template-columns: 1fr; } }
     .chart-title{ font-size:.88rem; font-weight:900; color:#374151; margin: 2px 6px 0 6px; display:flex; align-items:center; gap:6px; }
-    .chart-box{ width:100%; min-height:300px; overflow:hidden; padding:8px; }
+    .chart-box{ width:100%; min-height:300px; overflow:hidden; padding:8px; text-align:left; } /* aseguramos alineación izquierda */
     .nodata{ padding: 12px; color:#6b7280; font-size:.9rem; }
 
     /* Grillas inferiores (4 gráficos) */
@@ -145,8 +144,8 @@
       <main class="content">
         <section class="page-section">
 
-          <!-- Row 1: Filtro Centro (card angosto) + KPIs (a la derecha, 1 línea) -->
-          <div class="row">
+          <!-- Row 1: Filtro Centro + KPIs a la derecha (en una sola línea) -->
+          <div class="row row--flush-next">
             <div class="panel seg-card">
               <div class="seg__label">Centro</div>
               <select id="filterCentro" class="seg__select"></select>
@@ -185,8 +184,8 @@
             </div>
           </div>
 
-          <!-- Row 2: Segmentación Canal + PIs a la derecha -->
-          <div class="row">
+          <!-- Row 2: Segmentación Canal + PIs a la derecha (sin espacio con la siguiente fila) -->
+          <div class="row row--flush-next">
             <div class="panel seg-card">
               <div class="seg__label">Canal</div>
               <div id="segCanal" class="seg__items" role="group" aria-label="Segmentación por Canal"></div>
@@ -202,9 +201,9 @@
             </div>
           </div>
 
-          <!-- Row 3: Segmentación Métrica + Gráficos 1 y 2 a la derecha -->
+          <!-- Row 3: Segmentación Métrica (expandida) + Gráficos Centros/Canal a la derecha -->
           <div class="row">
-            <div class="panel seg-card">
+            <div class="panel seg-card" style="min-height: 100%;">
               <div class="seg__label">Métrica (para gráficos)</div>
               <div id="segMetrica" class="seg__items" role="group" aria-label="Métrica de gráficos"></div>
             </div>
@@ -435,10 +434,15 @@
         kpiClientes.textContent = clientes.toLocaleString("es-PE");
         kpiPedidos.textContent  = pedidos.toLocaleString("es-PE");
         kpiKg.textContent       = kg.toLocaleString("es-PE", { maximumFractionDigits: 2 });
-        kpiSoles.textContent    = new Intl.NumberFormat("es-PE", { style:"currency", currency:"PEN", maximumFractionDigits:2 }).format(soles);
+
+        // --- SOLO el card de Soles en miles (no afecta PIs) ---
+        const miles = soles / 1000;
+        const milesFmt = new Intl.NumberFormat("es-PE", { maximumFractionDigits: 2 }).format(miles);
+        kpiSoles.textContent    = `S/ ${milesFmt} mil`;
+
         kpiCamiones.textContent = camiones.toLocaleString("es-PE");
 
-        // PIs
+        // PIs (mismas reglas de exclusión)
         const piKgCam = camiones ? (kg / camiones) : 0;
         const piKgCli = clientes ? (kg / clientes) : 0;
         const piCliCam= camiones ? (clientes / camiones) : 0;
@@ -450,7 +454,7 @@
       // ======= Métricas para gráficos (según chip Métrica) =======
       const metricValue = {
         "Clientes": rows => countClientes(rows),
-        "Pedidos": rows => countPedidos(rows),
+        "Pedidos":  rows => countPedidos(rows),
         "Kilogramos": rows => sumKg(rows),
         "Soles": rows => sumSoles(rows),
         "Camiones": rows => countTrucks(rows),
@@ -461,14 +465,14 @@
 
       // ======= Gráficos SVG =======
       function chartH(containerId, series, { barColor="#2563eb", valueFmt } = {}) {
-        // Barras horizontales (alineadas a la izquierda)
+        // Barras horizontales alineadas a la izquierda
         const container = document.getElementById(containerId);
         container.innerHTML = "";
         if (!series || series.length === 0) { container.innerHTML = '<div class="nodata">Sin datos</div>'; return; }
 
         const width = container.clientWidth || 600;
         const height = Math.max(220, 18 + series.length * 22);
-        const padding = { top: 6, right: 18, bottom: 6, left: 170 };
+        const padding = { top: 6, right: 18, bottom: 6, left: 180 };
 
         const maxVal = Math.max(1, ...series.map(d => d.value));
         const barH = Math.max(12, (height - padding.top - padding.bottom) / Math.max(1, series.length) - 6);
@@ -495,7 +499,7 @@
           svg.appendChild(rect);
 
           const label = document.createElementNS(svgNS, "text");
-          label.setAttribute("x", padding.left - 8);
+          label.setAttribute("x", padding.left - 10);
           label.setAttribute("y", y + barH * 0.72);
           label.setAttribute("text-anchor", "end");
           label.setAttribute("font-size", "12");
@@ -516,19 +520,19 @@
       }
 
       function chartV_withRotatedLabels(containerId, series, { barColor="#2563eb", valueFmt } = {}) {
-        // Barras verticales con etiquetas rotadas (para Centros/Canal)
+        // Barras verticales con etiquetas rotadas y legibles (Centros/Canal)
         const container = document.getElementById(containerId);
         container.innerHTML = "";
         if (!series || series.length === 0) { container.innerHTML = '<div class="nodata">Sin datos</div>'; return; }
 
-        const width = container.clientWidth || 700;
-        const height = Math.max(280, 240);
-        const padding = { top: 20, right: 16, bottom: 90, left: 40 };
+        const width = container.clientWidth || 720;
+        const height = Math.max(320, 300);
+        const padding = { top: 20, right: 16, bottom: 120, left: 44 }; /* más bottom para que no se corte */
         const n = series.length;
         const plotW = width - padding.left - padding.right;
         const plotH = height - padding.top - padding.bottom;
         const gap = 10;
-        const barW = Math.max(16, Math.min(40, (plotW - gap * (n - 1)) / n));
+        const barW = Math.max(16, Math.min(42, (plotW - gap * (n - 1)) / n));
         const maxVal = Math.max(1, ...series.map(d => d.value));
 
         const svgNS = "http://www.w3.org/2000/svg";
@@ -555,18 +559,18 @@
           // valor encima
           const val = document.createElementNS(svgNS, "text");
           val.setAttribute("x", x + barW / 2);
-          val.setAttribute("y", y - 4);
+          val.setAttribute("y", Math.max(12, y - 4));
           val.setAttribute("text-anchor", "middle");
           val.setAttribute("font-size", "11");
           val.setAttribute("fill", "#111827");
           val.textContent = valueFmt ? valueFmt(d.value) : d.value.toLocaleString("es-PE", { maximumFractionDigits: 2 });
           svg.appendChild(val);
 
-          // etiqueta rotada (90°) para que no se superponga
+          // etiqueta rotada (-60°) para mejor lectura
           const label = document.createElementNS(svgNS, "text");
           const lx = x + barW / 2;
-          const ly = height - 10;
-          label.setAttribute("transform", `translate(${lx},${ly}) rotate(-90)`);
+          const ly = height - 6;
+          label.setAttribute("transform", `translate(${lx},${ly}) rotate(-60)`);
           label.setAttribute("text-anchor", "end");
           label.setAttribute("font-size", "11");
           label.setAttribute("fill", "#374151");
