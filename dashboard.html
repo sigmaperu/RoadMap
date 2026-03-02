@@ -5,14 +5,14 @@
   <title>RoadMap – Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Fuentes + Material Icons + Estilos -->
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;800&display=swap" rel="stylesheet"/>
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
-  <link rel="stylesheet" href="assets/css/styles.css"/>
+  <!-- Fuentes + Material Icons + Estilos (correctos) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
 
-  <!-- Header global y configuración -->
+  <!-- Header global e inyección del header animado -->
   <script defer src="assets/js/main.js"></script>
 
   <style>
@@ -111,7 +111,7 @@
 <body data-title="Dashboard">
   <div class="app-shell">
     <aside class="sidebar">
-      <div class="sidebar__logo"><img src="assets/img/logotipo.png" alt="RoadMap"/></div>
+      <div class="sidebar__logo"><img src="assets/img/logotipo.png" alt="RoadMap"></div>
       <nav class="sidebar__nav">
         <a href="index.html" class="nav-item"><span class="nav-item__icon material-icons">home</span><span>Inicio</span></a>
         <a href="agenda.html" class="nav-item"><span class="nav-item__icon material-icons">event</span><span>Agenda</span></a>
@@ -124,7 +124,7 @@
     </aside>
 
     <div class="main-layout">
-      <!-- Header global (inyectado por main.js) -->
+      <!-- Header global -->
       <div id="app-header"></div>
 
       <main class="content">
@@ -149,6 +149,7 @@
               <div class="kpi-card">
                 <div class="kpi-card__label">
                   <span class="kpi-icon-badge">
+                    <!-- Icono "KG" -->
                     <svg viewBox="0 0 32 32" width="20" height="20" aria-hidden="true" class="icon--green">
                       <rect x="5" y="10" width="22" height="14" rx="3" fill="currentColor" opacity=".14"></rect>
                       <path fill="currentColor" d="M12 10a4 4 0 1 1 8 0h3.5a3.5 3.5 0 0 1 3.5 3.5V22a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3v-8.5A3.5 3.5 0 0 1 8.5 10H12zm2 0h4a2 2 0 1 0-4 0z"/>
@@ -215,7 +216,7 @@
             </div>
           </div>
 
-          <!-- Gráficos inferiores (alineados a la “T” del título) -->
+          <!-- Gráficos inferiores (alineados a la “T” y afectados por MÉTRICA) -->
           <div class="chart-grid-lower">
             <div class="panel">
               <div class="chart-title">
@@ -255,7 +256,9 @@
   <!-- Script del Dashboard -->
   <script>
     (() => {
-      // ---------- Carga robusta del CSV (fallbacks + anti‑cache + timeout) ----------
+      /* =========================
+         1) CARGA ROBUSTA DEL CSV
+         ========================= */
       const FALLBACKS = [
         window.RoadMapConfig?.CSV_URL,               // si existe en main.js u otro script
         './RoadMap.csv',                             // al lado del HTML
@@ -296,7 +299,9 @@
         throw new Error('Fallaron todas las URLs:\n' + errors.join('\n'));
       }
 
-      // ---------- Parser CSV ----------
+      /* =====================
+         2) PARSER DE CSV
+         ===================== */
       function parseCSV(text){
         const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
         if (!lines.length) return { header:[], rows:[] };
@@ -315,23 +320,26 @@
         return { header, rows };
       }
 
-      // ---------- Índices y reglas ----------
+      /* =====================
+         3) ÍNDICES Y REGLAS
+         ===================== */
       const IDX = { CENTRO:1, PLACA:2, CLIENTE:3, RUTA:6, PEDIDO:7, KG:10, SOLES:11, CANAL:19 };
       const EXCLUDE_FRT = "FRT-001";
-      const TRUCKS_EXCLUDED = new Set(["FRT-001", "RES-CLI"]); // para KPI Camiones y denominadores con camiones
+      const TRUCKS_EXCLUDED = new Set(["FRT-001", "RES-CLI"]); // p/ KPI Camiones y denominadores con camiones
       const isFRT = r => (String(r[IDX.PLACA] || "").trim().toUpperCase() === EXCLUDE_FRT);
       const isTruckExcluded = r => TRUCKS_EXCLUDED.has(String(r[IDX.PLACA] || "").trim().toUpperCase());
       const unique = arr => Array.from(new Set(arr.filter(v => v !== "" && v != null)));
       const toNum = v => { const n = parseFloat(String(v ?? "0").replace(",", ".")); return isNaN(n)?0:n; };
       const stripParens = s => String(s || "").replace(/\s*\([^)]*\)/g, "");
 
-      // ---------- Estado ----------
+      /* =====================
+         4) ESTADO & DOM
+         ===================== */
       let allRows = [];
       let selectedCentro = "Todos";
       let selectedCanales = new Set(["Todos"]);
-      let selectedMetrica = "Pedidos"; // solo afecta gráficos
+      let selectedMetrica = "Pedidos"; // afecta Centros/Canal y ahora también los 4 horizontales
 
-      // ---------- DOM ----------
       const filterCentro = document.getElementById("filterCentro");
       const segCanal  = document.getElementById("segCanal");
       const segMetrica= document.getElementById("segMetrica");
@@ -346,17 +354,14 @@
       const piKgCliente = document.getElementById("piKgCliente");
       const piClientesCamion = document.getElementById("piClientesCamion");
 
-      // ---------- Init ----------
+      /* =====================
+         5) INIT
+         ===================== */
       async function init(){
         try{
           const text = await loadCSVWithFallback();
           const { rows } = parseCSV(text);
           allRows = rows;
-
-          if (!allRows.length) {
-            console.warn('CSV cargado pero sin filas. Revisa separador o contenido.');
-            alert('RoadMap.csv se cargó, pero no tenía registros.');
-          }
 
           buildCentroFilter();
           buildCanalSeg();
@@ -370,7 +375,9 @@
         }
       }
 
-      // ---------- Segmentaciones ----------
+      /* =====================
+         6) SEGMENTACIONES
+         ===================== */
       function buildCentroFilter(){
         const centros = ["Todos", ...unique(allRows.map(r => r[IDX.CENTRO] || "")).sort()];
         filterCentro.innerHTML = centros.map(c => `<option value="${c}">${c}</option>`).join("");
@@ -414,13 +421,15 @@
           const chip = makeChip(m, m===selectedMetrica, (btn, value) => {
             selectedMetrica = value;
             [...segMetrica.querySelectorAll(".seg__chip")].forEach(el => el.setAttribute("aria-pressed", el===btn ? "true":"false"));
-            renderCharts(); // solo gráficos
+            renderCharts(); // ahora también afectará a los 4 horizontales
           });
           segMetrica.appendChild(chip);
         });
       }
 
-      // ---------- Filtros de datos ----------
+      /* =====================
+         7) FILTROS DE DATOS
+         ===================== */
       function applyFiltersForCards(rows){
         const canalesAll = selectedCanales.has("Todos");
         return rows.filter(r => {
@@ -430,22 +439,28 @@
         });
       }
       function rowsForCentroChart(){
+        // NO filtra centro; SÍ filtra canales
         const canalesAll = selectedCanales.has("Todos");
         return allRows.filter(r => (canalesAll || selectedCanales.has(r[IDX.CANAL] || "")));
       }
       function rowsForCanalChart(){
+        // NO filtra canales; SÍ filtra centro
         return allRows.filter(r => (selectedCentro === "Todos" || (r[IDX.CENTRO] || "") === selectedCentro));
       }
       function rowsForOthers(){ return applyFiltersForCards(allRows); }
 
-      // ---------- Agregadores ----------
+      /* =====================
+         8) AGREGADORES
+         ===================== */
       const countClientes = rows => unique(rows.filter(r => !isFRT(r)).map(r => r[IDX.CLIENTE] || "")).length;
       const countPedidos  = rows => unique(rows.filter(r => !isFRT(r)).map(r => r[IDX.PEDIDO]  || "")).length;
       const sumKg         = rows => rows.filter(r => !isFRT(r)).reduce((a,r)=>a+toNum(r[IDX.KG]),0);
       const sumSoles      = rows => rows.filter(r => !isFRT(r)).reduce((a,r)=>a+toNum(r[IDX.SOLES]),0);
       const countTrucks   = rows => unique(rows.filter(r => !isTruckExcluded(r)).map(r => r[IDX.PLACA] || "")).length;
 
-      // ---------- KPIs + PIs ----------
+      /* =====================
+         9) KPIs + PIs
+         ===================== */
       function formatK(value){ return `S/ ${(value/1000).toLocaleString('en-US',{maximumFractionDigits:1})}K`; }
 
       function renderKPIs(){
@@ -470,19 +485,26 @@
         piClientesCamion.textContent = piCliCam.toLocaleString("es-PE",{maximumFractionDigits:2});
       }
 
-      // ---------- Métricas para gráficos ----------
-      const metricValue = {
-        "Clientes": rows => countClientes(rows),
-        "Pedidos":  rows => countPedidos(rows),
-        "Kilogramos": rows => sumKg(rows),
-        "Soles": rows => sumSoles(rows),
-        "Camiones": rows => countTrucks(rows),
-        "Kg/Camión": rows => { const kg=sumKg(rows), cam=countTrucks(rows); return cam?kg/cam:0; },
-        "Kg/Cliente": rows => { const kg=sumKg(rows), cli=countClientes(rows); return cli?kg/cli:0; },
-        "Clientes/Camión": rows => { const cli=countClientes(rows), cam=countTrucks(rows); return cam?cli/cam:0; }
-      };
+      /* =====================
+         10) MÉTRICAS PARA GRÁFICOS
+         ===================== */
+      function metricCalc(rows, metricName){
+        switch (metricName) {
+          case "Clientes":        return countClientes(rows);
+          case "Pedidos":         return countPedidos(rows);
+          case "Kilogramos":      return sumKg(rows);
+          case "Soles":           return sumSoles(rows);
+          case "Camiones":        return countTrucks(rows);
+          case "Kg/Camión": { const kg=sumKg(rows), cam=countTrucks(rows); return cam?kg/cam:0; }
+          case "Kg/Cliente": { const kg=sumKg(rows), cli=countClientes(rows); return cli?kg/cli:0; }
+          case "Clientes/Camión": { const cli=countClientes(rows), cam=countTrucks(rows); return cam?cli/cam:0; }
+          default: return countPedidos(rows);
+        }
+      }
 
-      // ---------- Util: X de ancla bajo la “T” del título ----------
+      /* =====================
+         11) UTIL ANCLA “T” TÍTULO
+         ===================== */
       function getTitleAnchorLeft(panel){
         const titleText = panel.querySelector(".chart-title__text");
         const body = panel.querySelector(".panel__body");
@@ -492,7 +514,9 @@
         return Math.max(140, Math.round(rectText.left - rectBody.left));
       }
 
-      // ---------- Gráficos SVG ----------
+      /* =====================
+         12) GRÁFICOS SVG
+         ===================== */
       function chartH(containerId, series, { barColor="#2563eb", valueFmt, anchorLeft=180 } = {}){
         const container = document.getElementById(containerId);
         container.innerHTML = "";
@@ -668,100 +692,93 @@
       const topN = (arr,n=10)=>[...arr].sort((a,b)=>b.value-a.value).slice(0,n);
       const bottomN = (arr,n=10)=>[...arr].sort((a,b)=>a.value-b.value).slice(0,n);
 
-      // ---------- Helpers de datos para horizontales ----------
-      function getTrucks(best=true){
-        const rows = rowsForOthers().filter(r => !isTruckExcluded(r)); // ranking excluye FRT-001 y RES-CLI
-        const map = new Map();
+      /* =====================
+         13) SERIES PARA HORIZONTALES
+         (ahora usando la MÉTRICA seleccionada)
+         ===================== */
+      function getTrucksSeries(metricName, best=true){
+        // Filtrar por Centro+Canales; excluir del RANKING a FRT-001 y RES-CLI
+        const rows = rowsForOthers().filter(r => !isTruckExcluded(r));
+        const map = new Map(); // placa -> rows[]
         rows.forEach(r => {
           const placa = r[IDX.PLACA] || "";
           if (!placa) return;
-          const kg = isFRT(r) ? 0 : toNum(r[IDX.KG]);
-          map.set(placa, (map.get(placa)||0) + kg);
+          if (!map.has(placa)) map.set(placa, []);
+          map.get(placa).push(r);
         });
-        let series = Array.from(map.entries()).map(([label,value]) => ({ label: stripParens(label), value }));
+        let series = Array.from(map.entries()).map(([placa, groupRows]) => ({
+          label: stripParens(placa),
+          value: metricCalc(groupRows, metricName)  // <-- usa la métrica elegida
+        }));
+        // Quitar ceros para el Offender si quieres (lo dejo solo si >0)
         series = best ? topN(series,10) : bottomN(series.filter(d=>d.value>0),10);
-        return { series };
+        return series;
       }
 
-      function getRutas(best=true){
+      function getRutasSeries(metricName, best=true){
+        // Filtrar por Centro+Canales
         const rows = rowsForOthers();
-        const map = new Map(); // ruta -> {kg, trucks:Set}
+        const map = new Map(); // ruta -> rows[]
         rows.forEach(r => {
           const ruta = r[IDX.RUTA] || "";
           if (!ruta) return;
-          const kg = isFRT(r) ? 0 : toNum(r[IDX.KG]);
-          const placa = (isTruckExcluded(r)) ? null : (r[IDX.PLACA] || "");
-          if (!map.has(ruta)) map.set(ruta, { kg:0, trucks:new Set() });
-          const b = map.get(ruta);
-          b.kg += kg;
-          if (placa) b.trucks.add(placa);
+          if (!map.has(ruta)) map.set(ruta, []);
+          map.get(ruta).push(r);
         });
-        let series = Array.from(map.entries()).map(([ruta,{kg,trucks}]) => {
-          const denom = trucks.size;
-          const val = denom ? (kg/denom) : 0;   // Kg/Camión
-          return { label: stripParens(ruta), value: val };
-        }).filter(d => d.value>0);
+        let series = Array.from(map.entries()).map(([ruta, groupRows]) => ({
+          label: stripParens(ruta),
+          value: metricCalc(groupRows, metricName) // <-- usa la métrica elegida
+        })).filter(d => d.value > 0);
         series = best ? topN(series,10) : bottomN(series,10);
-        return { series };
+        return series;
       }
 
-      // ---------- Render ----------
+      /* =====================
+         14) RENDER
+         ===================== */
       function renderCharts(){
         const metricName = selectedMetrica;
-        const calc = (rows) => {
-          switch (metricName) {
-            case "Clientes": return countClientes(rows);
-            case "Pedidos": return countPedidos(rows);
-            case "Kilogramos": return sumKg(rows);
-            case "Soles": return sumSoles(rows);
-            case "Camiones": return countTrucks(rows);
-            case "Kg/Camión": { const kg=sumKg(rows), cam=countTrucks(rows); return cam?kg/cam:0; }
-            case "Kg/Cliente": { const kg=sumKg(rows), cli=countClientes(rows); return cli?kg/cli:0; }
-            case "Clientes/Camión": { const cli=countClientes(rows), cam=countTrucks(rows); return cam?cli/cam:0; }
-            default: return countPedidos(rows);
-          }
-        };
         const isMoney = (metricName === "Soles");
         const valueFmt = (v) => isMoney
           ? new Intl.NumberFormat("es-PE",{style:"currency",currency:"PEN",maximumFractionDigits:2}).format(v)
           : v.toLocaleString("es-PE",{maximumFractionDigits:2});
 
-        // 1) Centros (vertical con etiquetas verticales) – NO filtra Centro; SÍ Canales
+        // (1) Centros – NO filtra Centro; SÍ Canales
         {
           const rows = rowsForCentroChart();
           const map = new Map();
           rows.forEach(r => { const k=r[IDX.CENTRO] || ""; if(!k) return; if(!map.has(k)) map.set(k,[]); map.get(k).push(r); });
-          const serie = Array.from(map.entries()).map(([label,group]) => ({ label, value: calc(group) }));
+          const serie = Array.from(map.entries()).map(([label,group]) => ({ label, value: metricCalc(group, metricName) }));
           chartV_Centros_VLabels("chartCentrosV", topN(serie, 10), { barColor:"#2563eb", valueFmt });
         }
 
-        // 2) Canal (vertical con etiquetas horizontales) – NO filtra Canales; SÍ Centro
+        // (2) Canal – NO filtra Canales; SÍ Centro
         {
           const rows = rowsForCanalChart();
           const map = new Map();
           rows.forEach(r => { const k=r[IDX.CANAL] || ""; if(!k) return; if(!map.has(k)) map.set(k,[]); map.get(k).push(r); });
-          const serie = Array.from(map.entries()).map(([label,group]) => ({ label, value: calc(group) }));
+          const serie = Array.from(map.entries()).map(([label,group]) => ({ label, value: metricCalc(group, metricName) }));
           chartV_Canal_HLabels("chartCanalV", topN(serie, 10), { barColor:"#b45309", valueFmt });
         }
 
-        // 3-6) Horizontales anclados a la “T” del título
+        // (3–6) Horizontales alineados bajo la “T” y usando MÉTRICA
         const panelsH = [
-          { boxSel:'#chartTruckBest',  color:'#16a34a', data:getTrucks(true)  },
-          { boxSel:'#chartTruckWorst', color:'#9ca3af', data:getTrucks(false) },
-          { boxSel:'#chartRutaBest',   color:'#22c55e', data:getRutas(true)   },
-          { boxSel:'#chartRutaWorst',  color:'#f59e0b', data:getRutas(false)  }
+          { boxSel:'#chartTruckBest',  color:'#16a34a', series:getTrucksSeries(metricName, true)  },
+          { boxSel:'#chartTruckWorst', color:'#9ca3af', series:getTrucksSeries(metricName, false) },
+          { boxSel:'#chartRutaBest',   color:'#22c55e', series:getRutasSeries(metricName, true)   },
+          { boxSel:'#chartRutaWorst',  color:'#f59e0b', series:getRutasSeries(metricName, false)  }
         ];
-        panelsH.forEach(({boxSel, color, data})=>{
+        panelsH.forEach(({boxSel, color, series})=>{
           const box = document.querySelector(boxSel);
           const panel = box.closest('.panel');
-          const anchorLeft = getTitleAnchorLeft(panel);
-          chartH(boxSel.substring(1), data.series, { barColor: color, anchorLeft });
+          const anchorLeft = getTitleAnchorLeft(panel); // alinea a la “T”
+          chartH(boxSel.substring(1), series, { barColor: color, anchorLeft });
         });
       }
 
       function render(){ renderKPIs(); renderCharts(); }
 
-      document.addEventListener("DOMContentLoaded", async () => { await init(); });
+      document.addEventListener("DOMContentLoaded", init);
     })();
   </script>
 </body>
