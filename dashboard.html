@@ -43,27 +43,25 @@
     }
     .panel__body { padding: 10px 12px; }
 
-    /* ===== Segmentaciones (chips, 1 columna, más compactas) ===== */
-    .seg-card { padding: 8px 12px; }
-    .seg__label{ font-size:.78rem; color:#6b7280; font-weight:600; letter-spacing:.02em; margin-bottom:6px; }
-    .seg__items{ display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
-    .seg__chip{
-      appearance:none; border:1px solid var(--chip-border); background:var(--chip-bg);
-      color:#374151; border-radius:999px; padding:4px 10px; cursor:pointer; font-weight:500;
-      font-size:.82rem; transition: all .15s ease; white-space:nowrap;
-    }
-    .seg__chip:hover{ transform: translateY(-1px); box-shadow: var(--badge-shadow); }
-    .seg__chip[aria-pressed="true"]{
-      color: var(--chip-active); background: var(--chip-active-bg); border-color:#c7d2fe;
-    }
-
-    /* ===== Layout superior para segmentaciones (3 columnas en desktop) ===== */
+    /* ===== Segmentaciones (chips en 1 columna) ===== */
     .seg-grid{
       display:grid; gap:10px; margin-bottom: 10px;
       grid-template-columns: 1fr; 
     }
     @media (min-width: 980px){
       .seg-grid{ grid-template-columns: 1fr 1fr 1fr; }
+    }
+    .seg-card { padding: 8px 12px; }
+    .seg__label{ font-size:.78rem; color:#6b7280; font-weight:600; letter-spacing:.02em; margin-bottom:6px; }
+    .seg__items{ display:flex; flex-direction:column; gap:6px; align-items:stretch; }
+    .seg__chip{
+      appearance:none; border:1px solid var(--chip-border); background:var(--chip-bg);
+      color:#374151; border-radius:10px; padding:6px 10px; cursor:pointer; font-weight:600;
+      font-size:.8rem; transition: all .15s ease; text-align:left;
+    }
+    .seg__chip:hover{ transform: translateY(-1px); box-shadow: var(--badge-shadow); }
+    .seg__chip[aria-pressed="true"]{
+      color: var(--chip-active); background: var(--chip-active-bg); border-color:#c7d2fe;
     }
 
     /* ===== KPIs ===== */
@@ -76,7 +74,7 @@
       padding: 12px 14px; display:flex; flex-direction:column; min-height:86px; position:relative; overflow:hidden;
     }
     .kpi-card__label{
-      font-size:.88rem; color:#374151; display:flex; align-items:center; gap:8px; font-weight:600;
+      font-size:.88rem; color:#374151; display:flex; align-items:center; gap:8px; font-weight:700;
     }
     .kpi-icon-badge{
       width:26px; height:26px; border-radius:8px; display:grid; place-items:center;
@@ -84,11 +82,10 @@
     }
     .kpi-card__value{
       /* Más compacto para evitar desbordes (incluye Soles) */
-      font-size: clamp(1rem, 2.0vw, 1.6rem);
+      font-size: clamp(0.95rem, 1.8vw, 1.45rem);
       font-weight:800; margin-top:6px; line-height:1.05; letter-spacing:.2px;
       white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
     }
-    .kpi-card__value--money{ font-size: clamp(0.95rem, 1.8vw, 1.45rem); }
 
     /* ===== PI card ===== */
     .pi-card .pi-grid{ display:grid; grid-template-columns: 1fr; gap:6px; margin-top:4px; }
@@ -98,13 +95,13 @@
       display:flex; flex-direction:column; gap:2px;
     }
     .pi-item__label{ font-size:.74rem; color:#6b7280; display:flex; align-items:center; gap:6px; font-weight:700; letter-spacing:.02em; }
-    .pi-item__value{ font-size: clamp(0.95rem, 1.7vw, 1.25rem); font-weight:800; color:#111827; }
+    .pi-item__value{ font-size: clamp(0.95rem, 1.7vw, 1.2rem); font-weight:800; color:#111827; }
 
     /* ===== Gráficos ===== */
     .chart-grid{ display:grid; grid-template-columns:1fr; gap:12px; margin-top:10px; }
     @media (min-width: 1200px){ .chart-grid{ grid-template-columns: 1fr 1fr; } }
     .chart-box{ width:100%; min-height:300px; overflow:hidden; padding:8px; }
-    .chart-title{ font-size:.9rem; font-weight:700; color:#374151; margin: 4px 6px 0 6px; display:flex; align-items:center; gap:6px; }
+    .chart-title{ font-size:.9rem; font-weight:800; color:#374151; margin: 4px 6px 0 6px; display:flex; align-items:center; gap:6px; }
     .nodata{ padding: 12px; color:#6b7280; font-size:.92rem; }
 
     .sr-only {
@@ -185,7 +182,7 @@
               <div class="kpi-card__label">
                 <span class="kpi-icon-badge"><span class="material-icons icon--gold">paid</span></span> Soles
               </div>
-              <div id="kpiSoles" class="kpi-card__value kpi-card__value--money">–</div>
+              <div id="kpiSoles" class="kpi-card__value">–</div>
             </div>
             <div class="kpi-card">
               <div class="kpi-card__label">
@@ -220,33 +217,33 @@
 
           <!-- === Gráficos === -->
           <div class="chart-grid">
-            <!-- 1) Top 10 por Centro (métrica seleccionada) -->
+            <!-- 1) Centros (barras verticales) -->
             <div class="panel">
-              <div class="chart-title"><span class="material-icons icon--blue">bar_chart</span> Top 10 por Centro</div>
+              <div class="chart-title"><span class="material-icons icon--blue">bar_chart</span> Centros</div>
               <div class="panel__body">
-                <div id="chartCentro" class="chart-box" role="img" aria-label="Top 10 por centro"></div>
+                <div id="chartCentrosV" class="chart-box" role="img" aria-label="Top 10 por centros (vertical)"></div>
               </div>
             </div>
 
-            <!-- 2) Top 10 por Canal (métrica seleccionada) -->
+            <!-- 2) Canal (barras verticales) -->
             <div class="panel">
-              <div class="chart-title"><span class="material-icons icon--gold">stacked_bar_chart</span> Top 10 por Canal</div>
+              <div class="chart-title"><span class="material-icons icon--gold">stacked_bar_chart</span> Canal</div>
               <div class="panel__body">
-                <div id="chartCanal" class="chart-box" role="img" aria-label="Top 10 por canal"></div>
+                <div id="chartCanalV" class="chart-box" role="img" aria-label="Top 10 por canal (vertical)"></div>
               </div>
             </div>
 
-            <!-- 3) Top 10 Performer – Camiones (por Kg) -->
+            <!-- 3) Top 10 Performer – Camiones (Kg) -->
             <div class="panel">
-              <div class="chart-title"><span class="material-icons icon--green">trending_up</span> Top 10 Performer – Camiones (Kg)</div>
+              <div class="chart-title"><span class="material-icons icon--green">trending_up</span> Top 10 Performer – Camiones</div>
               <div class="panel__body">
                 <div id="chartTruckBest" class="chart-box" role="img" aria-label="Top 10 performer camiones"></div>
               </div>
             </div>
 
-            <!-- 4) Top 10 Offender – Camiones (por Kg) -->
+            <!-- 4) Top 10 Offender – Camiones (Kg) -->
             <div class="panel">
-              <div class="chart-title"><span class="material-icons icon--slate">trending_down</span> Top 10 Offender – Camiones (Kg)</div>
+              <div class="chart-title"><span class="material-icons icon--slate">trending_down</span> Top 10 Offender – Camiones</div>
               <div class="panel__body">
                 <div id="chartTruckWorst" class="chart-box" role="img" aria-label="Top 10 offender camiones"></div>
               </div>
@@ -254,7 +251,7 @@
 
             <!-- 5) Top 10 Performer – Rutas (Kg/Camión) -->
             <div class="panel">
-              <div class="chart-title"><span class="material-icons icon--green">leaderboard</span> Top 10 Performer – Rutas (Kg/Camión)</div>
+              <div class="chart-title"><span class="material-icons icon--green">leaderboard</span> Top 10 Performer – Rutas</div>
               <div class="panel__body">
                 <div id="chartRutaBest" class="chart-box" role="img" aria-label="Top 10 performer rutas"></div>
               </div>
@@ -262,7 +259,7 @@
 
             <!-- 6) Top 10 Offender – Rutas (Kg/Camión) -->
             <div class="panel">
-              <div class="chart-title"><span class="material-icons icon--slate">bar_chart</span> Top 10 Offender – Rutas (Kg/Camión)</div>
+              <div class="chart-title"><span class="material-icons icon--slate">bar_chart</span> Top 10 Offender – Rutas</div>
               <div class="panel__body">
                 <div id="chartRutaWorst" class="chart-box" role="img" aria-label="Top 10 offender rutas"></div>
               </div>
@@ -296,7 +293,7 @@
 
       // Reglas de exclusión
       const EXCLUDE_FRT = "FRT-001";
-      const TRUCKS_EXCLUDED = new Set(["FRT-001", "RES-CLI"]); // solo para KPI Camiones y denominadores con camiones
+      const TRUCKS_EXCLUDED = new Set(["FRT-001", "RES-CLI"]); // para KPI Camiones y denominadores con camiones
       const isFRT = r => (String(r[IDX.PLACA] || "").trim().toUpperCase() === EXCLUDE_FRT);
       const isTruckExcluded = r => TRUCKS_EXCLUDED.has(String(r[IDX.PLACA] || "").trim().toUpperCase());
 
@@ -324,12 +321,13 @@
         const n = parseFloat(String(v ?? "0").toString().replace(",", "."));
         return isNaN(n) ? 0 : n;
       };
+      const stripParens = s => String(s || "").replace(/\s*\([^)]*\)/g, ""); // quita ( ... )
 
       // ---- Estado de segmentaciones ----
       let allRows = [];
       let selectedCentro = "Todos";
       let selectedCanales = new Set(["Todos"]);
-      let selectedMetrica = "Pedidos"; // métrica por defecto para gráficos Centro/Canal
+      let selectedMetrica = "Pedidos"; // para gráficos Centros/Canal
 
       // ---- DOM ----
       // Segmentaciones
@@ -367,7 +365,7 @@
         }
       }
 
-      // ---- Construcción de chips ----
+      // ---- Construcción de chips (1 col) ----
       function makeChip(label, active=false, onClick) {
         const btn = document.createElement("button");
         btn.type = "button";
@@ -444,17 +442,23 @@
         });
       }
 
-      // ---- Agregadores para cards ----
-      function kpisFromRows(rows) {
-        const clientes = unique(rows.filter(r => !isFRT(r)).map(r => r[IDX.CLIENTE] || "")).length;
-        const pedidos  = unique(rows.filter(r => !isFRT(r)).map(r => r[IDX.PEDIDO] || "")).length;
-        const kg       = rows.filter(r => !isFRT(r)).reduce((a, r) => a + toNum(r[IDX.KG]), 0);
-        const soles    = rows.filter(r => !isFRT(r)).reduce((a, r) => a + toNum(r[IDX.SOLES]), 0);
-        const camiones = unique(rows.filter(r => !isTruckExcluded(r)).map(r => r[IDX.PLACA] || "")).length;
-        return { clientes, pedidos, kg, soles, camiones };
-      }
+      // ---- Agregadores base ----
+      function countClientes(rows){ return unique(rows.filter(r => !isFRT(r)).map(r => r[IDX.CLIENTE] || "")).length; }
+      function countPedidos(rows){  return unique(rows.filter(r => !isFRT(r)).map(r => r[IDX.PEDIDO] || "")).length; }
+      function sumKg(rows){        return rows.filter(r => !isFRT(r)).reduce((a, r) => a + toNum(r[IDX.KG]), 0); }
+      function sumSoles(rows){     return rows.filter(r => !isFRT(r)).reduce((a, r) => a + toNum(r[IDX.SOLES]), 0); }
+      function countTrucks(rows){  return unique(rows.filter(r => !isTruckExcluded(r)).map(r => r[IDX.PLACA] || "")).length; }
 
       // ---- KPIs + PIs ----
+      function kpisFromRows(rows) {
+        return {
+          clientes: countClientes(rows),
+          pedidos : countPedidos(rows),
+          kg      : sumKg(rows),
+          soles   : sumSoles(rows),
+          camiones: countTrucks(rows),
+        };
+      }
       function renderKPIs() {
         const rows = applySegFilters(allRows, { includeCentro:true, includeCanal:true });
         const { clientes, pedidos, kg, soles, camiones } = kpisFromRows(rows);
@@ -470,45 +474,29 @@
         const piKgCam = camiones ? (kg / camiones) : 0;              // Kg/Camión
         const piKgCli = clientes ? (kg / clientes) : 0;              // Kg/Cliente
         const piCliCam= camiones ? (clientes / camiones) : 0;        // Clientes/Camión
-
         piKgCamion.textContent       = piKgCam.toLocaleString("es-PE", { maximumFractionDigits: 2 });
         piKgCliente.textContent      = piKgCli.toLocaleString("es-PE", { maximumFractionDigits: 2 });
         piClientesCamion.textContent = piCliCam.toLocaleString("es-PE", { maximumFractionDigits: 2 });
       }
 
-      // ---- Métricas para gráficos Centro/Canal (según chip de Métrica) ----
+      // ---- Métricas para gráficos Centros/Canal ----
       const graphicMetric = {
-        "Clientes": (rows) => unique(rows.filter(r => !isFRT(r)).map(r => r[IDX.CLIENTE] || "")).length,
-        "Pedidos":  (rows) => unique(rows.filter(r => !isFRT(r)).map(r => r[IDX.PEDIDO] || "")).length,
-        "Kilogramos": (rows)=> rows.filter(r => !isFRT(r)).reduce((a, r) => a + toNum(r[IDX.KG]), 0),
-        "Soles": (rows)     => rows.filter(r => !isFRT(r)).reduce((a, r) => a + toNum(r[IDX.SOLES]), 0),
-        "Camiones": (rows)  => unique(rows.filter(r => !isTruckExcluded(r)).map(r => r[IDX.PLACA] || "")).length,
-        // Para PIs, calculamos sobre el grupo:
-        "Kg/Camión": (rows) => {
-          const kg = graphicMetric["Kilogramos"](rows);
-          const cam = graphicMetric["Camiones"](rows);
-          return cam ? (kg / cam) : 0;
-        },
-        "Kg/Cliente": (rows) => {
-          const kg = graphicMetric["Kilogramos"](rows);
-          const cli= graphicMetric["Clientes"](rows);
-          return cli ? (kg / cli) : 0;
-        },
-        "Clientes/Camión": (rows) => {
-          const cli= graphicMetric["Clientes"](rows);
-          const cam= graphicMetric["Camiones"](rows);
-          return cam ? (cli / cam) : 0;
-        }
+        "Clientes": rows => countClientes(rows),
+        "Pedidos":  rows => countPedidos(rows),
+        "Kilogramos": rows => sumKg(rows),
+        "Soles": rows => sumSoles(rows),
+        "Camiones": rows => countTrucks(rows),
+        "Kg/Camión": rows => { const kg=sumKg(rows), cam=countTrucks(rows); return cam?kg/cam:0; },
+        "Kg/Cliente": rows => { const kg=sumKg(rows), cli=countClientes(rows); return cli?kg/cli:0; },
+        "Clientes/Camión": rows => { const cli=countClientes(rows), cam=countTrucks(rows); return cam?cli/cam:0; }
       };
 
-      // ---- Gráficos SVG (minimal) ----
-      function mountBarChartSVG(containerId, series, { barColor="#2563eb", valueFmt } = {}) {
+      // ---- Gráficos SVG ----
+      function mountBarChartSVG_H(containerId, series, { barColor="#2563eb", valueFmt } = {}) {
+        // Barras horizontales (alineado izquierda)
         const container = document.getElementById(containerId);
         container.innerHTML = "";
-        if (!series || series.length === 0) {
-          container.innerHTML = '<div class="nodata">Sin datos</div>';
-          return;
-        }
+        if (!series || series.length === 0) { container.innerHTML = '<div class="nodata">Sin datos</div>'; return; }
         const width = container.clientWidth || 600;
         const height = Math.max(220, 18 + series.length * 22);
         const padding = { top: 6, right: 18, bottom: 6, left: 160 };
@@ -557,85 +545,171 @@
 
         container.appendChild(svg);
       }
+
+      function mountBarChartSVG_V(containerId, series, { barColor="#2563eb", valueFmt } = {}) {
+        // Barras verticales para variedad (Centros/Canal)
+        const container = document.getElementById(containerId);
+        container.innerHTML = "";
+        if (!series || series.length === 0) { container.innerHTML = '<div class="nodata">Sin datos</div>'; return; }
+
+        const width = container.clientWidth || 700;
+        const height = Math.max(260, 220);
+        const padding = { top: 20, right: 16, bottom: 60, left: 40 };
+        const n = series.length;
+        const plotW = width - padding.left - padding.right;
+        const plotH = height - padding.top - padding.bottom;
+        const gap = 8;
+        const barW = Math.max(18, Math.min(40, (plotW - gap * (n - 1)) / n));
+        const maxVal = Math.max(1, ...series.map(d => d.value));
+
+        const svgNS = "http://www.w3.org/2000/svg";
+        const svg = document.createElementNS(svgNS, "svg");
+        svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+        svg.setAttribute("width", "100%");
+        svg.setAttribute("height", "100%");
+
+        series.forEach((d, i) => {
+          const x = padding.left + i * (barW + gap);
+          const h = (plotH * d.value) / maxVal;
+          const y = padding.top + (plotH - h);
+
+          const rect = document.createElementNS(svgNS, "rect");
+          rect.setAttribute("x", x);
+          rect.setAttribute("y", y);
+          rect.setAttribute("width", barW);
+          rect.setAttribute("height", Math.max(2, h));
+          rect.setAttribute("rx", "4");
+          rect.setAttribute("fill", barColor);
+          svg.appendChild(rect);
+
+          // valor arriba de la barra
+          const val = document.createElementNS(svgNS, "text");
+          val.setAttribute("x", x + barW / 2);
+          val.setAttribute("y", y - 4);
+          val.setAttribute("text-anchor", "middle");
+          val.setAttribute("font-size", "11");
+          val.setAttribute("fill", "#111827");
+          val.textContent = valueFmt ? valueFmt(d.value) : d.value.toLocaleString("es-PE", { maximumFractionDigits: 2 });
+          svg.appendChild(val);
+
+          // etiqueta abajo
+          const label = document.createElementNS(svgNS, "text");
+          label.setAttribute("x", x + barW / 2);
+          label.setAttribute("y", height - 8);
+          label.setAttribute("text-anchor", "middle");
+          label.setAttribute("font-size", "11");
+          label.setAttribute("fill", "#374151");
+          label.textContent = d.label;
+          svg.appendChild(label);
+        });
+
+        container.appendChild(svg);
+      }
+
       const topN = (arr, n=10) => [...arr].sort((a,b)=>b.value-a.value).slice(0,n);
       const bottomN = (arr, n=10) => [...arr].sort((a,b)=>a.value-b.value).slice(0,n);
 
-      // ---- Render gráficos ----
+      // ---- Render de gráficos ----
       function renderCharts() {
+        // === Métrica (para Centros/Canal) ===
         const metricName = selectedMetrica;
         const metricFn = graphicMetric[metricName];
         const isMoney = (metricName === "Soles");
-        const valueFmt = (v) => {
-          if (isMoney) return new Intl.NumberFormat("es-PE", { style:"currency", currency:"PEN", maximumFractionDigits:2 }).format(v);
-          return v.toLocaleString("es-PE", { maximumFractionDigits: 2 });
-        };
+        const valueFmt = (v) => isMoney
+          ? new Intl.NumberFormat("es-PE",{style:"currency",currency:"PEN",maximumFractionDigits:2}).format(v)
+          : v.toLocaleString("es-PE",{maximumFractionDigits:2});
 
-        // A) Centro (comparativo): filtra SOLO por Canal(es)
+        // 1) Centros (vertical, comparativo por Canal)
         {
-          const rowsCentro = applySegFilters(allRows, { includeCentro:false, includeCanal:true });
-          const mapC = new Map();
-          rowsCentro.forEach(r => {
-            const k = r[IDX.CENTRO] || "";
-            if (!k) return;
-            if (!mapC.has(k)) mapC.set(k, []);
-            mapC.get(k).push(r);
-          });
-          const serieCentro = Array.from(mapC.entries()).map(([label, rows]) => ({ label, value: metricFn(rows) }));
-          mountBarChartSVG("chartCentro", topN(serieCentro, 10), { barColor:"#2563eb", valueFmt });
+          const rows = applySegFilters(allRows, { includeCentro:false, includeCanal:true });
+          const map = new Map(); // centro -> rows
+          rows.forEach(r => { const k = r[IDX.CENTRO] || ""; if(!k) return; if(!map.has(k)) map.set(k, []); map.get(k).push(r); });
+          const serie = Array.from(map.entries()).map(([label, group]) => ({ label, value: metricFn(group) }));
+          mountBarChartSVG_V("chartCentrosV", topN(serie, 10), { barColor:"#2563eb", valueFmt });
         }
 
-        // B) Canal (filtra por Centro y Canal(es) actuales)
-        {
-          const rowsCanal = applySegFilters(allRows, { includeCentro:true, includeCanal:true });
-          const mapK = new Map();
-          rowsCanal.forEach(r => {
-            const k = r[IDX.CANAL] || "";
-            if (!k) return;
-            if (!mapK.has(k)) mapK.set(k, []);
-            mapK.get(k).push(r);
-          });
-          const serieCanal = Array.from(mapK.entries()).map(([label, rows]) => ({ label, value: metricFn(rows) }));
-          mountBarChartSVG("chartCanal", topN(serieCanal, 10), { barColor:"#b45309", valueFmt });
-        }
-
-        // C) Top 10 Performer/Offender – Camiones (por KG)
-        {
-          const rows = applySegFilters(allRows, { includeCentro:true, includeCanal:true })
-                        .filter(r => !isTruckExcluded(r)); // excluye FRT-001 y RES-CLI en ranking de camiones
-          const mapT = new Map(); // placa -> kg acumulado (kg excluye FRT-001 ya que estamos excluyendo camiones en ranking)
-          rows.forEach(r => {
-            // Nota: el kg por registro ya excluye FRT-001 si no procesamos esos registros; como el ranking de camiones excluye esas placas, no sumamos FRT.
-            const placa = r[IDX.PLACA] || "";
-            if (!placa) return;
-            const kg = isFRT(r) ? 0 : toNum(r[IDX.KG]); // seguridad adicional
-            mapT.set(placa, (mapT.get(placa) || 0) + kg);
-          });
-          const serieTrucks = Array.from(mapT.entries()).map(([label, value]) => ({ label, value }));
-          mountBarChartSVG("chartTruckBest", topN(serieTrucks, 10), { barColor:"#16a34a" });
-          mountBarChartSVG("chartTruckWorst", bottomN(serieTrucks.filter(d=>d.value>0), 10), { barColor:"#9ca3af" });
-        }
-
-        // D) Top 10 Performer/Offender – Rutas (por Kg/Camión)
+        // 2) Canal (vertical, respeta Centro + Canal seleccionado)
         {
           const rows = applySegFilters(allRows, { includeCentro:true, includeCanal:true });
-          const mapR = new Map(); // ruta -> {kg, setCamiones}
+          const map = new Map(); // canal -> rows
+          rows.forEach(r => { const k = r[IDX.CANAL] || ""; if(!k) return; if(!map.has(k)) map.set(k, []); map.get(k).push(r); });
+          const serie = Array.from(map.entries()).map(([label, group]) => ({ label, value: metricFn(group) }));
+          mountBarChartSVG_V("chartCanalV", topN(serie, 10), { barColor:"#b45309", valueFmt });
+        }
+
+        // 3) Top 10 Performer – Camiones (horizontal, KG) — sin paréntesis
+        {
+          const rows = applySegFilters(allRows, { includeCentro:true, includeCanal:true })
+                        .filter(r => !isTruckExcluded(r)); // ranking excluye FRT-001 y RES-CLI
+          const map = new Map(); // placa -> kg
+          rows.forEach(r => {
+            const placa = r[IDX.PLACA] || "";
+            if (!placa) return;
+            const kg = isFRT(r) ? 0 : toNum(r[IDX.KG]); // Kg excluye FRT como regla de negocio
+            map.set(placa, (map.get(placa) || 0) + kg);
+          });
+          const serie = Array.from(map.entries()).map(([label, value]) => ({ label: stripParens(label), value }));
+          mountBarChartSVG_H("chartTruckBest", topN(serie, 10), { barColor:"#16a34a" });
+        }
+
+        // 4) Top 10 Offender – Camiones (horizontal, KG) — sin paréntesis
+        {
+          const rows = applySegFilters(allRows, { includeCentro:true, includeCanal:true })
+                        .filter(r => !isTruckExcluded(r));
+          const map = new Map();
+          rows.forEach(r => {
+            const placa = r[IDX.PLACA] || "";
+            if (!placa) return;
+            const kg = isFRT(r) ? 0 : toNum(r[IDX.KG]);
+            map.set(placa, (map.get(placa) || 0) + kg);
+          });
+          const serie = Array.from(map.entries()).map(([label, value]) => ({ label: stripParens(label), value }))
+                            .filter(d => d.value > 0);
+          mountBarChartSVG_H("chartTruckWorst", bottomN(serie, 10), { barColor:"#9ca3af" });
+        }
+
+        // 5) Top 10 Performer – Rutas (horizontal, KG/Camión) — sin paréntesis, usando Ruta [6]
+        {
+          const rows = applySegFilters(allRows, { includeCentro:true, includeCanal:true });
+          const map = new Map(); // ruta -> {kg, trucks}
           rows.forEach(r => {
             const ruta = r[IDX.RUTA] || "";
             if (!ruta) return;
-            const kg = isFRT(r) ? 0 : toNum(r[IDX.KG]);               // kg excluye FRT-001
+            const kg = isFRT(r) ? 0 : toNum(r[IDX.KG]);           // Kg excluye FRT-001
             const placa = (isTruckExcluded(r)) ? null : (r[IDX.PLACA] || ""); // camiones para PI excluyen FRT-001 y RES-CLI
-            if (!mapR.has(ruta)) mapR.set(ruta, { kg:0, trucks:new Set() });
-            const bucket = mapR.get(ruta);
-            bucket.kg += kg;
-            if (placa) bucket.trucks.add(placa);
+            if (!map.has(ruta)) map.set(ruta, { kg:0, trucks:new Set() });
+            const b = map.get(ruta);
+            b.kg += kg;
+            if (placa) b.trucks.add(placa);
           });
-          const serieRuta = Array.from(mapR.entries()).map(([ruta, {kg, trucks}]) => {
+          const serie = Array.from(map.entries()).map(([ruta, {kg, trucks}]) => {
             const denom = trucks.size;
-            const val = denom ? (kg / denom) : 0; // Kg/Camión
-            return { label: ruta, value: val };
+            const val = denom ? (kg / denom) : 0;
+            return { label: stripParens(ruta), value: val };
           }).filter(d => d.value > 0);
-          mountBarChartSVG("chartRutaBest", topN(serieRuta, 10), { barColor:"#22c55e" });
-          mountBarChartSVG("chartRutaWorst", bottomN(serieRuta, 10), { barColor:"#f59e0b" });
+          mountBarChartSVG_H("chartRutaBest", topN(serie, 10), { barColor:"#22c55e" });
+        }
+
+        // 6) Top 10 Offender – Rutas (horizontal, KG/Camión) — sin paréntesis
+        {
+          const rows = applySegFilters(allRows, { includeCentro:true, includeCanal:true });
+          const map = new Map();
+          rows.forEach(r => {
+            const ruta = r[IDX.RUTA] || "";
+            if (!ruta) return;
+            const kg = isFRT(r) ? 0 : toNum(r[IDX.KG]);
+            const placa = (isTruckExcluded(r)) ? null : (r[IDX.PLACA] || "");
+            if (!map.has(ruta)) map.set(ruta, { kg:0, trucks:new Set() });
+            const b = map.get(ruta);
+            b.kg += kg;
+            if (placa) b.trucks.add(placa);
+          });
+          const serie = Array.from(map.entries()).map(([ruta, {kg, trucks}]) => {
+            const denom = trucks.size;
+            const val = denom ? (kg / denom) : 0;
+            return { label: stripParens(ruta), value: val };
+          }).filter(d => d.value > 0);
+          mountBarChartSVG_H("chartRutaWorst", bottomN(serie, 10), { barColor:"#f59e0b" });
         }
       }
 
@@ -649,4 +723,3 @@
   </script>
 </body>
 </html>
-``
