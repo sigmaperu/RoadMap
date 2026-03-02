@@ -8,7 +8,7 @@
   <!-- Fuentes + Material Icons + Estilos (igual que agenda.html) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/styles.css">
   <!-- Header global y configuración -->
@@ -28,48 +28,50 @@
       --badge-shadow:0 6px 14px rgba(0,0,0,.12);
       --card-shadow:0 1px 3px rgba(0,0,0,.1);
       --side-w: 240px; /* ancho de cards de segmentación */
+      --gap-rows: 16px; /* separación entre filas */
+      --gap-cards: 14px; /* separación entre cards en una misma fila */
     }
     .icon--blue{ color: var(--icon-blue); }
     .icon--green{ color: var(--icon-green); }
     .icon--gold{ color: var(--icon-gold); }
     .icon--slate{ color: var(--icon-slate); }
 
-    /* Panel base */
+    /* Panel base con más aire vertical */
     .panel {
       background: var(--surface, #fff);
       border-radius: 12px;
       box-shadow: var(--card-shadow);
     }
-    .panel__body { padding: 14px 14px; } /* + aire vertical */
+    .panel__body { padding: 16px 16px; }
 
     /* ======= Disposición (lado-izq: segmentación / lado-der: contenido) ======= */
     .row {
       display: grid;
       grid-template-columns: minmax(200px, var(--side-w)) 1fr;
-      gap: 10px;
-      align-items: stretch; /* estira para igualar alturas */
-      margin-bottom: 12px;  /* aire entre filas */
+      gap: var(--gap-cards);
+      align-items: stretch;
+      margin-bottom: var(--gap-rows);
     }
-    .row--flush-next{ margin-bottom: 0; } /* sin hueco con la fila siguiente (PIs -> gráficos) */
+    .row--flush-next{ margin-bottom: 6px; } /* reduce hueco solo entre PIs y los 2 gráficos */
     @media (max-width: 1024px){
       .row { grid-template-columns: 1fr; }
     }
 
     /* ======= Segmentaciones compactas ======= */
-    .seg-card { padding: 10px 12px; display:flex; flex-direction:column; }
-    .seg__label{ font-size:.78rem; color:#6b7280; font-weight:700; letter-spacing:.02em; margin-bottom:8px; }
+    .seg-card { padding: 12px 14px; display:flex; flex-direction:column; }
+    .seg__label{ font-size:.8rem; color:#6b7280; font-weight:700; letter-spacing:.02em; margin-bottom:10px; }
     /* Centro -> filtro select compacto */
     .seg__select{
-      height: 36px; padding: 0 10px;
+      height: 38px; padding: 0 12px;
       border: 1px solid var(--chip-border); border-radius: 10px;
-      background: var(--chip-bg); color:#111827; font-weight:600; font-size:.84rem; width:100%;
+      background: var(--chip-bg); color:#111827; font-weight:600; font-size:.86rem; width:100%;
     }
     /* Canal y Métrica -> chips 1 columna */
-    .seg__items{ display:flex; flex-direction:column; gap:6px; align-items:stretch; flex:1; overflow:auto; }
+    .seg__items{ display:flex; flex-direction:column; gap:8px; align-items:stretch; flex:1; overflow:auto; }
     .seg__chip{
       appearance:none; border:1px solid var(--chip-border); background:var(--chip-bg);
-      color:#374151; border-radius:10px; padding:6px 10px; cursor:pointer; font-weight:700;
-      font-size:.8rem; transition: all .15s ease; text-align:left;
+      color:#374151; border-radius:10px; padding:8px 10px; cursor:pointer; font-weight:700;
+      font-size:.82rem; transition: all .15s ease; text-align:left;
     }
     .seg__chip:hover{ transform: translateY(-1px); box-shadow: var(--badge-shadow); }
     .seg__chip[aria-pressed="true"]{ color: var(--chip-active); background: var(--chip-active-bg); border-color:#c7d2fe; }
@@ -78,7 +80,7 @@
     .kpi-row {
       display:grid;
       grid-template-columns: repeat(5, minmax(0,1fr));
-      gap: 12px;
+      gap: var(--gap-cards);
       align-items: stretch;
     }
     @media (max-width: 1024px){
@@ -86,39 +88,42 @@
     }
     .kpi-card{
       background: var(--surface, #fff); border-radius: 14px; box-shadow: var(--card-shadow);
-      padding: 14px; display:flex; flex-direction:column; min-height:84px; position:relative; overflow:hidden; /* + padding vertical */
+      padding: 16px; display:flex; flex-direction:column; position:relative; overflow:hidden;
     }
     .kpi-card__label{
-      font-size:.86rem; color:#374151; display:flex; align-items:center; gap:8px; font-weight:800;
+      font-size:.9rem; color:#374151; display:flex; align-items:center; gap:8px; font-weight:800;
+      margin-bottom: 6px;
     }
     .kpi-icon-badge{
-      width:24px; height:24px; border-radius:8px; display:grid; place-items:center; background: var(--badge-bg);
+      width:26px; height:26px; border-radius:8px; display:grid; place-items:center; background: var(--badge-bg);
     }
     .kpi-card__value{
-      font-size: clamp(0.95rem, 1.55vw, 1.3rem);
-      font-weight:800; margin-top:6px; line-height:1.1; letter-spacing:.2px;
+      font-size: clamp(1rem, 1.6vw, 1.35rem);
+      font-weight:800; line-height:1.15; letter-spacing:.2px;
       white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      padding-top: 2px; padding-bottom: 2px;
     }
 
     /* ======= PI card ======= */
-    .pi-card .pi-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; margin-top:6px; }
+    .pi-card{ padding: 14px 16px; height: auto; } /* altura al contenido */
+    .pi-card .pi-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-top:8px; }
     @media (max-width: 1024px){ .pi-card .pi-grid{ grid-template-columns: 1fr; } }
-    .pi-item{ background:#f9fafb; border:1px solid #eef2f7; border-radius:10px; padding:10px 12px; display:flex; flex-direction:column; gap:2px; }
-    .pi-item__label{ font-size:.74rem; color:#6b7280; display:flex; align-items:center; gap:6px; font-weight:800; letter-spacing:.02em; }
-    .pi-item__value{ font-size: clamp(0.95rem, 1.45vw, 1.2rem); font-weight:800; color:#111827; }
+    .pi-item{ background:#f9fafb; border:1px solid #eef2f7; border-radius:10px; padding:12px; display:flex; flex-direction:column; gap:4px; }
+    .pi-item__label{ font-size:.78rem; color:#6b7280; display:flex; align-items:center; gap:6px; font-weight:800; letter-spacing:.02em; }
+    .pi-item__value{ font-size: clamp(1rem, 1.5vw, 1.25rem); font-weight:800; color:#111827; }
 
     /* ======= Gráficos ======= */
-    .charts-2col{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .charts-2col{ display:grid; grid-template-columns: 1fr 1fr; gap: var(--gap-cards); }
     @media (max-width: 1200px){ .charts-2col{ grid-template-columns: 1fr; } }
-    .chart-title{ font-size:.9rem; font-weight:900; color:#374151; margin: 4px 8px 0 8px; display:flex; align-items:center; gap:6px; }
+    .chart-title{ font-size:.95rem; font-weight:900; color:#374151; margin: 6px 10px 2px 10px; display:flex; align-items:center; gap:6px; }
     .chart-box{
-      width:100%; min-height:320px; overflow:hidden; padding:8px; text-align:left;
-      display:block; /* evita centrado por layouts externos */
+      width:100%; min-height:340px; overflow:hidden; padding:10px; text-align:left;
+      display:block;
     }
     .nodata{ padding: 12px; color:#6b7280; font-size:.9rem; }
 
-    /* Grillas inferiores (4 gráficos) */
-    .chart-grid-lower{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    /* Grillas inferiores (4 gráficos horizontales) */
+    .chart-grid-lower{ display:grid; grid-template-columns: 1fr 1fr; gap: var(--gap-cards); margin-top: var(--gap-rows); }
     @media (max-width: 1200px){ .chart-grid-lower{ grid-template-columns: 1fr; } }
 
     .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
@@ -186,14 +191,14 @@
             </div>
           </div>
 
-          <!-- Row 2: Segmentación Canal + PIs a la derecha (sin hueco con la Row 3) -->
+          <!-- Row 2: Segmentación Canal + PIs a la derecha (pegado con la Row 3) -->
           <div class="row row--flush-next">
             <div class="panel seg-card">
               <div class="seg__label">Canal</div>
               <div id="segCanal" class="seg__items" role="group" aria-label="Segmentación por Canal"></div>
             </div>
 
-            <div class="kpi-card pi-card">
+            <div class="panel kpi-card pi-card">
               <div class="kpi-card__label"><span class="kpi-icon-badge"><span class="material-icons icon--slate">insights</span></span> Indicadores (PIs)</div>
               <div class="pi-grid">
                 <div class="pi-item"><div class="pi-item__label"><span class="material-icons icon--green">balance</span> Kg/Camión</div><div id="piKgCamion" class="pi-item__value">–</div></div>
@@ -269,7 +274,7 @@
 
       // Exclusiones
       const EXCLUDE_FRT = "FRT-001";
-      const TRUCKS_EXCLUDED = new Set(["FRT-001", "RES-CLI"]); // solo para KPI Camiones y denominadores de PIs con camiones
+      const TRUCKS_EXCLUDED = new Set(["FRT-001", "RES-CLI"]); // KPI Camiones y denominadores con camiones
       const isFRT = r => (String(r[IDX.PLACA] || "").trim().toUpperCase() === EXCLUDE_FRT);
       const isTruckExcluded = r => TRUCKS_EXCLUDED.has(String(r[IDX.PLACA] || "").trim().toUpperCase());
 
@@ -467,14 +472,14 @@
 
       // ======= Gráficos SVG =======
       function chartH(containerId, series, { barColor="#2563eb", valueFmt } = {}) {
-        // Barras horizontales alineadas a la izquierda (valores sin cortarse)
+        // Barras horizontales alineadas a la izquierda (valores visibles completos)
         const container = document.getElementById(containerId);
         container.innerHTML = "";
         if (!series || series.length === 0) { container.innerHTML = '<div class="nodata">Sin datos</div>'; return; }
 
-        const width = container.clientWidth || 600;
-        const height = Math.max(240, 18 + series.length * 24);
-        const padding = { top: 8, right: 18, bottom: 8, left: 190 };
+        const width = container.clientWidth || 700;
+        const height = Math.max(260, 20 + series.length * 26);
+        const padding = { top: 10, right: 24, bottom: 10, left: 200 };
 
         const maxVal = Math.max(1, ...series.map(d => d.value));
         const barH = Math.max(12, (height - padding.top - padding.bottom) / Math.max(1, series.length) - 6);
@@ -501,8 +506,8 @@
           svg.appendChild(rect);
 
           const label = document.createElementNS(svgNS, "text");
-          label.setAttribute("x", padding.left - 12);
-          label.setAttribute("y", y + barH * 0.72);
+          label.setAttribute("x", padding.left - 14);
+          label.setAttribute("y", y + barH * 0.75);
           label.setAttribute("text-anchor", "end");
           label.setAttribute("font-size", "12");
           label.setAttribute("fill", "#374151");
@@ -510,9 +515,9 @@
           svg.appendChild(label);
 
           const val = document.createElementNS(svgNS, "text");
-          const xVal = Math.min(padding.left + w + 6, width - padding.right - 2); // *** no se corta ***
+          const xVal = Math.min(padding.left + w + 8, width - padding.right - 2); // evita recorte
           val.setAttribute("x", xVal);
-          val.setAttribute("y", y + barH * 0.72);
+          val.setAttribute("y", y + barH * 0.75);
           val.setAttribute("font-size", "12");
           val.setAttribute("fill", "#111827");
           val.textContent = valueFmt ? valueFmt(d.value) : d.value.toLocaleString("es-PE", { maximumFractionDigits: 2 });
@@ -523,20 +528,23 @@
       }
 
       function chartV_Centros_Rotated(containerId, series, { barColor="#2563eb", valueFmt } = {}) {
-        // Barras verticales (Centros) con etiquetas rotadas y legibles
+        // Barras verticales (Centros) con etiquetas 90° (verticales) y legibles
         const container = document.getElementById(containerId);
         container.innerHTML = "";
         if (!series || series.length === 0) { container.innerHTML = '<div class="nodata">Sin datos</div>'; return; }
 
         const width = container.clientWidth || 760;
-        const height = Math.max(340, 320);
-        const padding = { top: 22, right: 18, bottom: 140, left: 46 }; /* +bottom para que NO se corten */
+        const height = Math.max(360, 340);
+        const padding = { top: 22, right: 18, bottom: 160, left: 50 }; /* bottom amplio p/ etiquetas verticales */
         const n = series.length;
         const plotW = width - padding.left - padding.right;
         const plotH = height - padding.top - padding.bottom;
-        const gap = 10;
-        const barW = Math.max(16, Math.min(44, (plotW - gap * (n - 1)) / n));
+        const gap = 12;
+        const barW = Math.max(16, Math.min(50, (plotW - gap * (n - 1)) / n));
         const maxVal = Math.max(1, ...series.map(d => d.value));
+
+        // tamaño de letra adaptable según la cantidad de centros
+        const fontSize = n > 12 ? 10 : 12;
 
         const svgNS = "http://www.w3.org/2000/svg";
         const svg = document.createElementNS(svgNS, "svg");
@@ -558,23 +566,23 @@
           rect.setAttribute("fill", barColor);
           svg.appendChild(rect);
 
-          // valor encima
+          // valor encima de cada barra
           const val = document.createElementNS(svgNS, "text");
           val.setAttribute("x", x + barW / 2);
-          val.setAttribute("y", Math.max(12, y - 4));
+          val.setAttribute("y", Math.max(12, y - 6));
           val.setAttribute("text-anchor", "middle");
           val.setAttribute("font-size", "11");
           val.setAttribute("fill", "#111827");
           val.textContent = valueFmt ? valueFmt(d.value) : d.value.toLocaleString("es-PE", { maximumFractionDigits: 2 });
           svg.appendChild(val);
 
-          // etiqueta rotada (-60°)
+          // etiqueta vertical (-90°) bien visible
           const label = document.createElementNS(svgNS, "text");
           const lx = x + barW / 2;
-          const ly = height - 8;
-          label.setAttribute("transform", `translate(${lx},${ly}) rotate(-60)`);
+          const ly = height - 10;
+          label.setAttribute("transform", `translate(${lx},${ly}) rotate(-90)`);
           label.setAttribute("text-anchor", "end");
-          label.setAttribute("font-size", "11");
+          label.setAttribute("font-size", String(fontSize));
           label.setAttribute("fill", "#374151");
           label.textContent = d.label;
           svg.appendChild(label);
@@ -584,19 +592,19 @@
       }
 
       function chartV_Canal_HLabels(containerId, series, { barColor="#b45309", valueFmt } = {}) {
-        // Barras verticales (Canal) con etiquetas horizontales (no rotadas)
+        // Barras verticales (Canal) con etiquetas horizontales
         const container = document.getElementById(containerId);
         container.innerHTML = "";
         if (!series || series.length === 0) { container.innerHTML = '<div class="nodata">Sin datos</div>'; return; }
 
         const width = container.clientWidth || 760;
-        const height = Math.max(320, 300);
-        const padding = { top: 22, right: 18, bottom: 64, left: 46 }; /* bottom suficiente p/ texto horizontal */
+        const height = Math.max(340, 320);
+        const padding = { top: 22, right: 18, bottom: 70, left: 50 };
         const n = series.length;
         const plotW = width - padding.left - padding.right;
         const plotH = height - padding.top - padding.bottom;
-        const gap = 12;
-        const barW = Math.max(18, Math.min(48, (plotW - gap * (n - 1)) / n));
+        const gap = 14;
+        const barW = Math.max(18, Math.min(52, (plotW - gap * (n - 1)) / n));
         const maxVal = Math.max(1, ...series.map(d => d.value));
 
         const svgNS = "http://www.w3.org/2000/svg";
@@ -610,7 +618,7 @@
           const h = (plotH * d.value) / maxVal;
           const y = padding.top + (plotH - h);
 
-          const rect = document.createElementNS(svgNS, "rect");
+        const rect = document.createElementNS(svgNS, "rect");
           rect.setAttribute("x", x);
           rect.setAttribute("y", y);
           rect.setAttribute("width", barW);
@@ -619,22 +627,20 @@
           rect.setAttribute("fill", barColor);
           svg.appendChild(rect);
 
-          // valor encima
           const val = document.createElementNS(svgNS, "text");
           val.setAttribute("x", x + barW / 2);
-          val.setAttribute("y", Math.max(12, y - 4));
+          val.setAttribute("y", Math.max(12, y - 6));
           val.setAttribute("text-anchor", "middle");
           val.setAttribute("font-size", "11");
           val.setAttribute("fill", "#111827");
           val.textContent = valueFmt ? valueFmt(d.value) : d.value.toLocaleString("es-PE", { maximumFractionDigits: 2 });
           svg.appendChild(val);
 
-          // etiqueta horizontal
           const label = document.createElementNS(svgNS, "text");
           label.setAttribute("x", x + barW / 2);
-          label.setAttribute("y", height - 10);
+          label.setAttribute("y", height - 12);
           label.setAttribute("text-anchor", "middle");
-          label.setAttribute("font-size", "11");
+          label.setAttribute("font-size", "12");
           label.setAttribute("fill", "#374151");
           label.textContent = d.label;
           svg.appendChild(label);
@@ -655,7 +661,7 @@
           ? new Intl.NumberFormat("es-PE",{style:"currency",currency:"PEN",maximumFractionDigits:2}).format(v)
           : v.toLocaleString("es-PE",{maximumFractionDigits:2});
 
-        // 1) Centros (vertical, etiquetas rotadas) – NO filtra Centro; SÍ filtra Canales
+        // 1) Centros (vertical, etiquetas verticales) – NO filtra Centro; SÍ filtra Canales
         {
           const rows = rowsForCentroChart();
           const map = new Map(); // centro -> rows[]
