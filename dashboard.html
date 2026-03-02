@@ -5,15 +5,15 @@
   <title>RoadMap – Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Fuentes + Material Icons + Estilos (correctos) -->
+  <!-- Fuentes + Material Icons + Estilos -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/styles.css">
 
-  <!-- Header global e inyección del header animado -->
-  <script defer src="assets/js/main.js"></script>
+  <!-- Header global (animación y título) -->
+  <script src="assets/js/main.js" defer></script>
 
   <style>
     :root{
@@ -111,15 +111,15 @@
 <body data-title="Dashboard">
   <div class="app-shell">
     <aside class="sidebar">
-      <div class="sidebar__logo"><img src="assets/img/logotipo.png" alt="RoadMap"></div>
+      <div class="sidebar__logo">assets/img/logotipo.png</div>
       <nav class="sidebar__nav">
-        <a href="index.html" class="nav-item"><span class="nav-item__icon material-icons">home</span><span>Inicio</span></a>
-        <a href="agenda.html" class="nav-item"><span class="nav-item__icon material-icons">event</span><span>Agenda</span></a>
-        <a href="dashboard.html" class="nav-item nav-item--active"><span class="nav-item__icon material-icons">dashboard</span><span>Dashboard</span></a>
-        <a href="planif.html" class="nav-item"><span class="nav-item__icon material-icons">timeline</span><span>Planificación</span></a>
-        <a href="planos.html" class="nav-item"><span class="nav-item__icon material-icons">map</span><span>Planos</span></a>
-        <a href="program.html" class="nav-item"><span class="nav-item__icon material-icons">view_week</span><span>Programación</span></a>
-        <a href="ubicame.html" class="nav-item"><span class="nav-item__icon material-icons">my_location</span><span>Ubícame</span></a>
+        <a href="index.html"><span class="nav-item__icon material-icons">home</span><span>Inicio</span></a>
+        <a href="agenda.html"><span class="nav-item__icon material-icons">event</span><span>Agenda</span></a>
+        <a class="active" href="dashboard.html"><span class="nav-item__icon material-icons">dashboard</span><span>Dashboard</span></a>
+        <a href="planif.html"><span class="nav-item__icon material-icons">timeline</span><span>Planificación</span></a>
+        <a href="planos.html"><span class="nav-item__icon material-icons">map</span><span>Planos</span></a>
+        <a href="program.html"><span class="nav-item__icon material-icons">view_week</span><span>Programación</span></a>
+        <a href="ubicame.html"><span class="nav-item__icon material-icons">my_location</span><span>Ubícame</span></a>
       </nav>
     </aside>
 
@@ -216,7 +216,7 @@
             </div>
           </div>
 
-          <!-- Gráficos inferiores (alineados a la “T” y afectados por MÉTRICA) -->
+          <!-- Gráficos inferiores (placas/rutas alineadas a la “T” del título) -->
           <div class="chart-grid-lower">
             <div class="panel">
               <div class="chart-title">
@@ -260,10 +260,10 @@
          1) CARGA ROBUSTA DEL CSV
          ========================= */
       const FALLBACKS = [
-        window.RoadMapConfig?.CSV_URL,               // si existe en main.js u otro script
-        './RoadMap.csv',                             // al lado del HTML
-        './assets/data/RoadMap.csv',                 // o dentro de assets/data
-        'https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv' // GitHub Raw
+        window.RoadMapConfig?.CSV_URL,
+        './RoadMap.csv',
+        './assets/data/RoadMap.csv',
+        'https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv'
       ].filter(Boolean);
 
       async function fetchWithTimeout(url, ms = 15000) {
@@ -272,29 +272,19 @@
         try {
           const bust = url.includes('?') ? '&' : '?';
           const resp = await fetch(url + bust + 't=' + Date.now(), {
-            mode: 'cors',
-            cache: 'no-store',
-            signal: ctl.signal
+            mode: 'cors', cache: 'no-store', signal: ctl.signal
           });
           if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
           const text = await resp.text();
           if (!text || !text.trim()) throw new Error('archivo vacío');
           return text;
-        } finally {
-          clearTimeout(timer);
-        }
+        } finally { clearTimeout(timer); }
       }
-
       async function loadCSVWithFallback() {
         const errors = [];
         for (const u of FALLBACKS) {
-          try {
-            console.log('[CSV] Intentando:', u);
-            return await fetchWithTimeout(u);
-          } catch (e) {
-            console.warn('[CSV] Falló', u, e);
-            errors.push(`${u} → ${e.message}`);
-          }
+          try { return await fetchWithTimeout(u); }
+          catch (e) { errors.push(`${u} → ${e.message}`); }
         }
         throw new Error('Fallaron todas las URLs:\n' + errors.join('\n'));
       }
@@ -325,7 +315,7 @@
          ===================== */
       const IDX = { CENTRO:1, PLACA:2, CLIENTE:3, RUTA:6, PEDIDO:7, KG:10, SOLES:11, CANAL:19 };
       const EXCLUDE_FRT = "FRT-001";
-      const TRUCKS_EXCLUDED = new Set(["FRT-001", "RES-CLI"]); // p/ KPI Camiones y denominadores con camiones
+      const TRUCKS_EXCLUDED = new Set(["FRT-001", "RES-CLI"]);
       const isFRT = r => (String(r[IDX.PLACA] || "").trim().toUpperCase() === EXCLUDE_FRT);
       const isTruckExcluded = r => TRUCKS_EXCLUDED.has(String(r[IDX.PLACA] || "").trim().toUpperCase());
       const unique = arr => Array.from(new Set(arr.filter(v => v !== "" && v != null)));
@@ -338,7 +328,7 @@
       let allRows = [];
       let selectedCentro = "Todos";
       let selectedCanales = new Set(["Todos"]);
-      let selectedMetrica = "Pedidos"; // afecta Centros/Canal y ahora también los 4 horizontales
+      let selectedMetrica = "Pedidos";
 
       const filterCentro = document.getElementById("filterCentro");
       const segCanal  = document.getElementById("segCanal");
@@ -370,7 +360,7 @@
           render();
           window.addEventListener("resize", renderCharts);
         }catch(err){
-          console.error("Error cargando RoadMap.csv en Dashboard:", err);
+          console.error("Error cargando RoadMap.csv:", err);
           alert("No se pudo cargar RoadMap.csv para Dashboard");
         }
       }
@@ -421,7 +411,7 @@
           const chip = makeChip(m, m===selectedMetrica, (btn, value) => {
             selectedMetrica = value;
             [...segMetrica.querySelectorAll(".seg__chip")].forEach(el => el.setAttribute("aria-pressed", el===btn ? "true":"false"));
-            renderCharts(); // ahora también afectará a los 4 horizontales
+            renderCharts(); // afecta Centros/Canal + los 4 horizontales
           });
           segMetrica.appendChild(chip);
         });
@@ -439,12 +429,10 @@
         });
       }
       function rowsForCentroChart(){
-        // NO filtra centro; SÍ filtra canales
         const canalesAll = selectedCanales.has("Todos");
         return allRows.filter(r => (canalesAll || selectedCanales.has(r[IDX.CANAL] || "")));
       }
       function rowsForCanalChart(){
-        // NO filtra canales; SÍ filtra centro
         return allRows.filter(r => (selectedCentro === "Todos" || (r[IDX.CENTRO] || "") === selectedCentro));
       }
       function rowsForOthers(){ return applyFiltersForCards(allRows); }
@@ -474,7 +462,7 @@
         kpiClientes.textContent = clientes.toLocaleString("es-PE");
         kpiPedidos.textContent  = pedidos.toLocaleString("es-PE");
         kpiKg.textContent       = kg.toLocaleString("es-PE",{maximumFractionDigits:2});
-        kpiSoles.textContent    = formatK(soles);        // SOLO el card en K
+        kpiSoles.textContent    = formatK(soles);
         kpiCamiones.textContent = camiones.toLocaleString("es-PE");
 
         const piKgCam = camiones ? (kg / camiones) : 0;
@@ -486,7 +474,7 @@
       }
 
       /* =====================
-         10) MÉTRICAS PARA GRÁFICOS
+         10) MÉTRICA GENÉRICA
          ===================== */
       function metricCalc(rows, metricName){
         switch (metricName) {
@@ -503,28 +491,36 @@
       }
 
       /* =====================
-         11) UTIL ANCLA “T” TÍTULO
+         11) ANCLA “T” DEL TÍTULO
          ===================== */
-      function getTitleAnchorLeft(panel){
+      function getTitleAnchorLeft(panel, chartBox){
         const titleText = panel.querySelector(".chart-title__text");
-        const body = panel.querySelector(".panel__body");
-        if (!titleText || !body) return 180; // fallback
-        const rectText = titleText.getBoundingClientRect();
-        const rectBody = body.getBoundingClientRect();
-        return Math.max(140, Math.round(rectText.left - rectBody.left));
+        if (!titleText || !chartBox) return 180; // fallback
+        const tRect = titleText.getBoundingClientRect();
+        const cRect = chartBox.getBoundingClientRect();
+        // Coordenada X del inicio del texto del título, medida en el sistema del chart-box
+        return Math.max(140, Math.round(tRect.left - cRect.left));
       }
 
       /* =====================
          12) GRÁFICOS SVG
          ===================== */
-      function chartH(containerId, series, { barColor="#2563eb", valueFmt, anchorLeft=180 } = {}){
+      function chartH(containerId, series, { barColor="#2563eb", valueFmt, anchorLeft=180, labelCol=140 } = {}){
+        // Barras horizontales con:
+        // - Etiquetas (placas/rutas) alineadas EXACTO bajo la “T” (x = anchorLeft)
+        // - Columna de etiquetas de ancho fijo (labelCol), luego comienzan las barras
         const container = document.getElementById(containerId);
         container.innerHTML = "";
         if (!series || series.length===0){ container.innerHTML='<div class="nodata">Sin datos</div>'; return; }
 
-        const width = container.clientWidth || 700;
+        const width = container.clientWidth || 720;
         const height = Math.max(260, 20 + series.length * 26);
-        const padding = { top:10, right:24, bottom:10, left: Math.max(180, anchorLeft) };
+        const padding = {
+          top:10,
+          right:24,
+          bottom:10,
+          left: Math.max(anchorLeft + labelCol, 220)  // barras comienzan después de la columna de etiquetas
+        };
 
         const maxVal = Math.max(1, ...series.map(d=>d.value));
         const barH = Math.max(12, (height - padding.top - padding.bottom)/Math.max(1,series.length) - 6);
@@ -540,6 +536,17 @@
           const y = padding.top + i * (barH + barGap);
           const w = ((width - padding.left - padding.right) * d.value) / maxVal;
 
+          // Etiqueta: alineada exactamente a anchorLeft
+          const lbl = document.createElementNS(svgNS,"text");
+          lbl.setAttribute("x", anchorLeft);
+          lbl.setAttribute("y", y + barH * 0.75);
+          lbl.setAttribute("text-anchor","start"); // comienza en la línea de la “T”
+          lbl.setAttribute("font-size","12");
+          lbl.setAttribute("fill","#374151");
+          lbl.textContent = d.label;
+          svg.appendChild(lbl);
+
+          // Barra
           const rect = document.createElementNS(svgNS,"rect");
           rect.setAttribute("x", padding.left);
           rect.setAttribute("y", y);
@@ -549,15 +556,7 @@
           rect.setAttribute("fill", barColor);
           svg.appendChild(rect);
 
-          const label = document.createElementNS(svgNS,"text");
-          label.setAttribute("x", padding.left - 14);
-          label.setAttribute("y", y + barH * 0.75);
-          label.setAttribute("text-anchor","end");
-          label.setAttribute("font-size","12");
-          label.setAttribute("fill","#374151");
-          label.textContent = d.label;
-          svg.appendChild(label);
-
+          // Valor: al final de la barra (no se corta)
           const val = document.createElementNS(svgNS,"text");
           const xVal = Math.min(padding.left + w + 8, width - padding.right - 2);
           val.setAttribute("x", xVal);
@@ -693,42 +692,30 @@
       const bottomN = (arr,n=10)=>[...arr].sort((a,b)=>a.value-b.value).slice(0,n);
 
       /* =====================
-         13) SERIES PARA HORIZONTALES
-         (ahora usando la MÉTRICA seleccionada)
+         13) SERIES PARA HORIZONTALES (con MÉTRICA)
          ===================== */
-      function getTrucksSeries(metricName, best=true){
-        // Filtrar por Centro+Canales; excluir del RANKING a FRT-001 y RES-CLI
-        const rows = rowsForOthers().filter(r => !isTruckExcluded(r));
-        const map = new Map(); // placa -> rows[]
+      function seriesByGroup(rows, keyFn, metricName){
+        const map = new Map();
         rows.forEach(r => {
-          const placa = r[IDX.PLACA] || "";
-          if (!placa) return;
-          if (!map.has(placa)) map.set(placa, []);
-          map.get(placa).push(r);
+          const k = keyFn(r);
+          if (!k) return;
+          if (!map.has(k)) map.set(k, []);
+          map.get(k).push(r);
         });
-        let series = Array.from(map.entries()).map(([placa, groupRows]) => ({
-          label: stripParens(placa),
-          value: metricCalc(groupRows, metricName)  // <-- usa la métrica elegida
+        return Array.from(map.entries()).map(([label, groupRows]) => ({
+          label: stripParens(label),
+          value: metricCalc(groupRows, metricName)
         }));
-        // Quitar ceros para el Offender si quieres (lo dejo solo si >0)
+      }
+      function getTrucksSeries(metricName, best=true){
+        const rows = rowsForOthers().filter(r => !isTruckExcluded(r)); // ranking excluye FRT-001 y RES-CLI
+        let series = seriesByGroup(rows, r => r[IDX.PLACA] || "", metricName);
         series = best ? topN(series,10) : bottomN(series.filter(d=>d.value>0),10);
         return series;
       }
-
       function getRutasSeries(metricName, best=true){
-        // Filtrar por Centro+Canales
-        const rows = rowsForOthers();
-        const map = new Map(); // ruta -> rows[]
-        rows.forEach(r => {
-          const ruta = r[IDX.RUTA] || "";
-          if (!ruta) return;
-          if (!map.has(ruta)) map.set(ruta, []);
-          map.get(ruta).push(r);
-        });
-        let series = Array.from(map.entries()).map(([ruta, groupRows]) => ({
-          label: stripParens(ruta),
-          value: metricCalc(groupRows, metricName) // <-- usa la métrica elegida
-        })).filter(d => d.value > 0);
+        const rows = rowsForOthers(); // PI/others ya manejan exclusiones internamente en metricCalc
+        let series = seriesByGroup(rows, r => r[IDX.RUTA] || "", metricName).filter(d=>d.value>0);
         series = best ? topN(series,10) : bottomN(series,10);
         return series;
       }
@@ -761,18 +748,18 @@
           chartV_Canal_HLabels("chartCanalV", topN(serie, 10), { barColor:"#b45309", valueFmt });
         }
 
-        // (3–6) Horizontales alineados bajo la “T” y usando MÉTRICA
-        const panelsH = [
-          { boxSel:'#chartTruckBest',  color:'#16a34a', series:getTrucksSeries(metricName, true)  },
-          { boxSel:'#chartTruckWorst', color:'#9ca3af', series:getTrucksSeries(metricName, false) },
-          { boxSel:'#chartRutaBest',   color:'#22c55e', series:getRutasSeries(metricName, true)   },
-          { boxSel:'#chartRutaWorst',  color:'#f59e0b', series:getRutasSeries(metricName, false)  }
+        // (3–6) Horizontales: etiquetas bajo “T”, barras después de la columna fija
+        const configs = [
+          { id:'chartTruckBest',  color:'#16a34a', series:getTrucksSeries(metricName, true)  },
+          { id:'chartTruckWorst', color:'#9ca3af', series:getTrucksSeries(metricName, false) },
+          { id:'chartRutaBest',   color:'#22c55e', series:getRutasSeries(metricName, true)   },
+          { id:'chartRutaWorst',  color:'#f59e0b', series:getRutasSeries(metricName, false)  }
         ];
-        panelsH.forEach(({boxSel, color, series})=>{
-          const box = document.querySelector(boxSel);
-          const panel = box.closest('.panel');
-          const anchorLeft = getTitleAnchorLeft(panel); // alinea a la “T”
-          chartH(boxSel.substring(1), series, { barColor: color, anchorLeft });
+        configs.forEach(({id, color, series})=>{
+          const box  = document.getElementById(id);
+          const panel= box.closest('.panel');
+          const anchorLeft = getTitleAnchorLeft(panel, box); // mide relativo al chart-box
+          chartH(id, series, { barColor: color, valueFmt, anchorLeft, labelCol: 140 });
         });
       }
 
