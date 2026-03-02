@@ -11,7 +11,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/styles.css">
-
   <!-- Header global y configuración -->
   <script defer src="assets/js/main.js"></script>
 
@@ -41,7 +40,7 @@
       border-radius: 12px;
       box-shadow: var(--card-shadow);
     }
-    .panel__body { padding: 10px 12px; }
+    .panel__body { padding: 14px 14px; } /* + aire vertical */
 
     /* ======= Disposición (lado-izq: segmentación / lado-der: contenido) ======= */
     .row {
@@ -49,21 +48,21 @@
       grid-template-columns: minmax(200px, var(--side-w)) 1fr;
       gap: 10px;
       align-items: stretch; /* estira para igualar alturas */
-      margin-bottom: 10px;
+      margin-bottom: 12px;  /* aire entre filas */
     }
-    .row--flush-next{ margin-bottom: 0; } /* sin hueco con la fila siguiente */
+    .row--flush-next{ margin-bottom: 0; } /* sin hueco con la fila siguiente (PIs -> gráficos) */
     @media (max-width: 1024px){
       .row { grid-template-columns: 1fr; }
     }
 
     /* ======= Segmentaciones compactas ======= */
-    .seg-card { padding: 8px 12px; display:flex; flex-direction:column; }
-    .seg__label{ font-size:.76rem; color:#6b7280; font-weight:700; letter-spacing:.02em; margin-bottom:6px; }
+    .seg-card { padding: 10px 12px; display:flex; flex-direction:column; }
+    .seg__label{ font-size:.78rem; color:#6b7280; font-weight:700; letter-spacing:.02em; margin-bottom:8px; }
     /* Centro -> filtro select compacto */
     .seg__select{
-      height: 34px; padding: 0 10px;
+      height: 36px; padding: 0 10px;
       border: 1px solid var(--chip-border); border-radius: 10px;
-      background: var(--chip-bg); color:#111827; font-weight:600; font-size:.82rem; width:100%;
+      background: var(--chip-bg); color:#111827; font-weight:600; font-size:.84rem; width:100%;
     }
     /* Canal y Métrica -> chips 1 columna */
     .seg__items{ display:flex; flex-direction:column; gap:6px; align-items:stretch; flex:1; overflow:auto; }
@@ -79,7 +78,7 @@
     .kpi-row {
       display:grid;
       grid-template-columns: repeat(5, minmax(0,1fr));
-      gap: 10px;
+      gap: 12px;
       align-items: stretch;
     }
     @media (max-width: 1024px){
@@ -87,32 +86,35 @@
     }
     .kpi-card{
       background: var(--surface, #fff); border-radius: 14px; box-shadow: var(--card-shadow);
-      padding: 10px 12px; display:flex; flex-direction:column; min-height:76px; position:relative; overflow:hidden;
+      padding: 14px; display:flex; flex-direction:column; min-height:84px; position:relative; overflow:hidden; /* + padding vertical */
     }
     .kpi-card__label{
-      font-size:.82rem; color:#374151; display:flex; align-items:center; gap:8px; font-weight:800;
+      font-size:.86rem; color:#374151; display:flex; align-items:center; gap:8px; font-weight:800;
     }
     .kpi-icon-badge{
       width:24px; height:24px; border-radius:8px; display:grid; place-items:center; background: var(--badge-bg);
     }
     .kpi-card__value{
-      font-size: clamp(0.9rem, 1.5vw, 1.25rem);
-      font-weight:800; margin-top:4px; line-height:1.05; letter-spacing:.2px;
+      font-size: clamp(0.95rem, 1.55vw, 1.3rem);
+      font-weight:800; margin-top:6px; line-height:1.1; letter-spacing:.2px;
       white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
     }
 
     /* ======= PI card ======= */
-    .pi-card .pi-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap:6px; margin-top:4px; }
+    .pi-card .pi-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; margin-top:6px; }
     @media (max-width: 1024px){ .pi-card .pi-grid{ grid-template-columns: 1fr; } }
-    .pi-item{ background:#f9fafb; border:1px solid #eef2f7; border-radius:10px; padding:8px 10px; display:flex; flex-direction:column; gap:2px; }
-    .pi-item__label{ font-size:.72rem; color:#6b7280; display:flex; align-items:center; gap:6px; font-weight:800; letter-spacing:.02em; }
-    .pi-item__value{ font-size: clamp(0.9rem, 1.4vw, 1.15rem); font-weight:800; color:#111827; }
+    .pi-item{ background:#f9fafb; border:1px solid #eef2f7; border-radius:10px; padding:10px 12px; display:flex; flex-direction:column; gap:2px; }
+    .pi-item__label{ font-size:.74rem; color:#6b7280; display:flex; align-items:center; gap:6px; font-weight:800; letter-spacing:.02em; }
+    .pi-item__value{ font-size: clamp(0.95rem, 1.45vw, 1.2rem); font-weight:800; color:#111827; }
 
     /* ======= Gráficos ======= */
     .charts-2col{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     @media (max-width: 1200px){ .charts-2col{ grid-template-columns: 1fr; } }
-    .chart-title{ font-size:.88rem; font-weight:900; color:#374151; margin: 2px 6px 0 6px; display:flex; align-items:center; gap:6px; }
-    .chart-box{ width:100%; min-height:300px; overflow:hidden; padding:8px; text-align:left; } /* aseguramos alineación izquierda */
+    .chart-title{ font-size:.9rem; font-weight:900; color:#374151; margin: 4px 8px 0 8px; display:flex; align-items:center; gap:6px; }
+    .chart-box{
+      width:100%; min-height:320px; overflow:hidden; padding:8px; text-align:left;
+      display:block; /* evita centrado por layouts externos */
+    }
     .nodata{ padding: 12px; color:#6b7280; font-size:.9rem; }
 
     /* Grillas inferiores (4 gráficos) */
@@ -144,7 +146,7 @@
       <main class="content">
         <section class="page-section">
 
-          <!-- Row 1: Filtro Centro + KPIs a la derecha (en una sola línea) -->
+          <!-- Row 1: Filtro Centro + KPIs a la derecha -->
           <div class="row row--flush-next">
             <div class="panel seg-card">
               <div class="seg__label">Centro</div>
@@ -184,7 +186,7 @@
             </div>
           </div>
 
-          <!-- Row 2: Segmentación Canal + PIs a la derecha (sin espacio con la siguiente fila) -->
+          <!-- Row 2: Segmentación Canal + PIs a la derecha (sin hueco con la Row 3) -->
           <div class="row row--flush-next">
             <div class="panel seg-card">
               <div class="seg__label">Canal</div>
@@ -201,7 +203,7 @@
             </div>
           </div>
 
-          <!-- Row 3: Segmentación Métrica (expandida) + Gráficos Centros/Canal a la derecha -->
+          <!-- Row 3: Segmentación Métrica + Gráficos Centros/Canal a la derecha -->
           <div class="row">
             <div class="panel seg-card" style="min-height: 100%;">
               <div class="seg__label">Métrica (para gráficos)</div>
@@ -423,6 +425,11 @@
       const countTrucks   = rows => unique(rows.filter(r => !isTruckExcluded(r)).map(r => r[IDX.PLACA] || "")).length;
 
       // ======= KPIs + PIs =======
+      function formatK(value){
+        const k = value / 1000;
+        return `S/ ${k.toLocaleString('en-US', { maximumFractionDigits: 1 })}K`; // “S/ 12.3K”
+      }
+
       function renderKPIs() {
         const rows = rowsForOthers();
         const clientes = countClientes(rows);
@@ -434,15 +441,10 @@
         kpiClientes.textContent = clientes.toLocaleString("es-PE");
         kpiPedidos.textContent  = pedidos.toLocaleString("es-PE");
         kpiKg.textContent       = kg.toLocaleString("es-PE", { maximumFractionDigits: 2 });
-
-        // --- SOLO el card de Soles en miles (no afecta PIs) ---
-        const miles = soles / 1000;
-        const milesFmt = new Intl.NumberFormat("es-PE", { maximumFractionDigits: 2 }).format(miles);
-        kpiSoles.textContent    = `S/ ${milesFmt} mil`;
-
+        kpiSoles.textContent    = formatK(soles); // *** SOLO el card en K ***
         kpiCamiones.textContent = camiones.toLocaleString("es-PE");
 
-        // PIs (mismas reglas de exclusión)
+        // PIs
         const piKgCam = camiones ? (kg / camiones) : 0;
         const piKgCli = clientes ? (kg / clientes) : 0;
         const piCliCam= camiones ? (clientes / camiones) : 0;
@@ -465,14 +467,14 @@
 
       // ======= Gráficos SVG =======
       function chartH(containerId, series, { barColor="#2563eb", valueFmt } = {}) {
-        // Barras horizontales alineadas a la izquierda
+        // Barras horizontales alineadas a la izquierda (valores sin cortarse)
         const container = document.getElementById(containerId);
         container.innerHTML = "";
         if (!series || series.length === 0) { container.innerHTML = '<div class="nodata">Sin datos</div>'; return; }
 
         const width = container.clientWidth || 600;
-        const height = Math.max(220, 18 + series.length * 22);
-        const padding = { top: 6, right: 18, bottom: 6, left: 180 };
+        const height = Math.max(240, 18 + series.length * 24);
+        const padding = { top: 8, right: 18, bottom: 8, left: 190 };
 
         const maxVal = Math.max(1, ...series.map(d => d.value));
         const barH = Math.max(12, (height - padding.top - padding.bottom) / Math.max(1, series.length) - 6);
@@ -499,7 +501,7 @@
           svg.appendChild(rect);
 
           const label = document.createElementNS(svgNS, "text");
-          label.setAttribute("x", padding.left - 10);
+          label.setAttribute("x", padding.left - 12);
           label.setAttribute("y", y + barH * 0.72);
           label.setAttribute("text-anchor", "end");
           label.setAttribute("font-size", "12");
@@ -508,7 +510,8 @@
           svg.appendChild(label);
 
           const val = document.createElementNS(svgNS, "text");
-          val.setAttribute("x", padding.left + w + 6);
+          const xVal = Math.min(padding.left + w + 6, width - padding.right - 2); // *** no se corta ***
+          val.setAttribute("x", xVal);
           val.setAttribute("y", y + barH * 0.72);
           val.setAttribute("font-size", "12");
           val.setAttribute("fill", "#111827");
@@ -519,20 +522,20 @@
         container.appendChild(svg);
       }
 
-      function chartV_withRotatedLabels(containerId, series, { barColor="#2563eb", valueFmt } = {}) {
-        // Barras verticales con etiquetas rotadas y legibles (Centros/Canal)
+      function chartV_Centros_Rotated(containerId, series, { barColor="#2563eb", valueFmt } = {}) {
+        // Barras verticales (Centros) con etiquetas rotadas y legibles
         const container = document.getElementById(containerId);
         container.innerHTML = "";
         if (!series || series.length === 0) { container.innerHTML = '<div class="nodata">Sin datos</div>'; return; }
 
-        const width = container.clientWidth || 720;
-        const height = Math.max(320, 300);
-        const padding = { top: 20, right: 16, bottom: 120, left: 44 }; /* más bottom para que no se corte */
+        const width = container.clientWidth || 760;
+        const height = Math.max(340, 320);
+        const padding = { top: 22, right: 18, bottom: 140, left: 46 }; /* +bottom para que NO se corten */
         const n = series.length;
         const plotW = width - padding.left - padding.right;
         const plotH = height - padding.top - padding.bottom;
         const gap = 10;
-        const barW = Math.max(16, Math.min(42, (plotW - gap * (n - 1)) / n));
+        const barW = Math.max(16, Math.min(44, (plotW - gap * (n - 1)) / n));
         const maxVal = Math.max(1, ...series.map(d => d.value));
 
         const svgNS = "http://www.w3.org/2000/svg";
@@ -546,7 +549,6 @@
           const h = (plotH * d.value) / maxVal;
           const y = padding.top + (plotH - h);
 
-          // barra
           const rect = document.createElementNS(svgNS, "rect");
           rect.setAttribute("x", x);
           rect.setAttribute("y", y);
@@ -566,12 +568,72 @@
           val.textContent = valueFmt ? valueFmt(d.value) : d.value.toLocaleString("es-PE", { maximumFractionDigits: 2 });
           svg.appendChild(val);
 
-          // etiqueta rotada (-60°) para mejor lectura
+          // etiqueta rotada (-60°)
           const label = document.createElementNS(svgNS, "text");
           const lx = x + barW / 2;
-          const ly = height - 6;
+          const ly = height - 8;
           label.setAttribute("transform", `translate(${lx},${ly}) rotate(-60)`);
           label.setAttribute("text-anchor", "end");
+          label.setAttribute("font-size", "11");
+          label.setAttribute("fill", "#374151");
+          label.textContent = d.label;
+          svg.appendChild(label);
+        });
+
+        container.appendChild(svg);
+      }
+
+      function chartV_Canal_HLabels(containerId, series, { barColor="#b45309", valueFmt } = {}) {
+        // Barras verticales (Canal) con etiquetas horizontales (no rotadas)
+        const container = document.getElementById(containerId);
+        container.innerHTML = "";
+        if (!series || series.length === 0) { container.innerHTML = '<div class="nodata">Sin datos</div>'; return; }
+
+        const width = container.clientWidth || 760;
+        const height = Math.max(320, 300);
+        const padding = { top: 22, right: 18, bottom: 64, left: 46 }; /* bottom suficiente p/ texto horizontal */
+        const n = series.length;
+        const plotW = width - padding.left - padding.right;
+        const plotH = height - padding.top - padding.bottom;
+        const gap = 12;
+        const barW = Math.max(18, Math.min(48, (plotW - gap * (n - 1)) / n));
+        const maxVal = Math.max(1, ...series.map(d => d.value));
+
+        const svgNS = "http://www.w3.org/2000/svg";
+        const svg = document.createElementNS(svgNS, "svg");
+        svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+        svg.setAttribute("width", "100%");
+        svg.setAttribute("height", "100%");
+
+        series.forEach((d, i) => {
+          const x = padding.left + i * (barW + gap);
+          const h = (plotH * d.value) / maxVal;
+          const y = padding.top + (plotH - h);
+
+          const rect = document.createElementNS(svgNS, "rect");
+          rect.setAttribute("x", x);
+          rect.setAttribute("y", y);
+          rect.setAttribute("width", barW);
+          rect.setAttribute("height", Math.max(2, h));
+          rect.setAttribute("rx", "4");
+          rect.setAttribute("fill", barColor);
+          svg.appendChild(rect);
+
+          // valor encima
+          const val = document.createElementNS(svgNS, "text");
+          val.setAttribute("x", x + barW / 2);
+          val.setAttribute("y", Math.max(12, y - 4));
+          val.setAttribute("text-anchor", "middle");
+          val.setAttribute("font-size", "11");
+          val.setAttribute("fill", "#111827");
+          val.textContent = valueFmt ? valueFmt(d.value) : d.value.toLocaleString("es-PE", { maximumFractionDigits: 2 });
+          svg.appendChild(val);
+
+          // etiqueta horizontal
+          const label = document.createElementNS(svgNS, "text");
+          label.setAttribute("x", x + barW / 2);
+          label.setAttribute("y", height - 10);
+          label.setAttribute("text-anchor", "middle");
           label.setAttribute("font-size", "11");
           label.setAttribute("fill", "#374151");
           label.textContent = d.label;
@@ -593,22 +655,22 @@
           ? new Intl.NumberFormat("es-PE",{style:"currency",currency:"PEN",maximumFractionDigits:2}).format(v)
           : v.toLocaleString("es-PE",{maximumFractionDigits:2});
 
-        // 1) Centros (vertical) – NO filtra Centro; SÍ filtra Canales
+        // 1) Centros (vertical, etiquetas rotadas) – NO filtra Centro; SÍ filtra Canales
         {
           const rows = rowsForCentroChart();
           const map = new Map(); // centro -> rows[]
           rows.forEach(r => { const k = r[IDX.CENTRO] || ""; if(!k) return; if(!map.has(k)) map.set(k, []); map.get(k).push(r); });
           const serie = Array.from(map.entries()).map(([label, group]) => ({ label, value: calc(group) }));
-          chartV_withRotatedLabels("chartCentrosV", topN(serie, 10), { barColor:"#2563eb", valueFmt });
+          chartV_Centros_Rotated("chartCentrosV", topN(serie, 10), { barColor:"#2563eb", valueFmt });
         }
 
-        // 2) Canal (vertical) – NO filtra Canales; SÍ filtra Centro
+        // 2) Canal (vertical, etiquetas horizontales) – NO filtra Canales; SÍ filtra Centro
         {
           const rows = rowsForCanalChart();
           const map = new Map(); // canal -> rows[]
           rows.forEach(r => { const k = r[IDX.CANAL] || ""; if(!k) return; if(!map.has(k)) map.set(k, []); map.get(k).push(r); });
           const serie = Array.from(map.entries()).map(([label, group]) => ({ label, value: calc(group) }));
-          chartV_withRotatedLabels("chartCanalV", topN(serie, 10), { barColor:"#b45309", valueFmt });
+          chartV_Canal_HLabels("chartCanalV", topN(serie, 10), { barColor:"#b45309", valueFmt });
         }
 
         // 3) Top 10 Performer – Camiones (horizontal, KG), etiquetas sin paréntesis
