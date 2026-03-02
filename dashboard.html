@@ -11,52 +11,67 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/styles.css">
+
   <!-- Header global y configuración -->
   <script defer src="assets/js/main.js"></script>
 
   <style>
-    /* Ajustes mínimos para este dashboard (puedes mover a assets/css/styles.css) */
+    /* ===== Paleta para iconos ===== */
+    :root{
+      --icon-blue:#2563eb;  /* pedidos */
+      --icon-green:#16a34a; /* kg */
+      --icon-gold:#b45309;  /* soles */
+      --icon-slate:#334155; /* clientes/camiones */
+    }
+    .icon--blue{ color: var(--icon-blue); }
+    .icon--green{ color: var(--icon-green); }
+    .icon--gold{ color: var(--icon-gold); }
+    .icon--slate{ color: var(--icon-slate); }
+
+    /* ===== Panel genérico ===== */
     .panel {
       background: var(--surface, #fff);
       border-radius: 10px;
       box-shadow: var(--shadow-1, 0 1px 3px rgba(0,0,0,.1));
     }
-    .panel__body { padding: 8px 16px 16px 16px; }
+    .panel__body { padding: 12px 16px; }
 
-    /* Filtros compactos (sin título) */
-    .dash-filters {
-      display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
-      padding: 12px 16px 8px 16px;
-    }
-    .dash-select {
-      height: 36px; padding: 0 10px; border: 1px solid #d1d5db; border-radius: 8px;
-      background: #fff; color: #111827;
+    /* ===== Filtros compactos (con labels) ===== */
+    .dash-filters { display:flex; gap:14px; flex-wrap:wrap; align-items:center; }
+    .dash-field{ display:flex; flex-direction:column; gap:6px; min-width:180px; }
+    .dash-label{ font-size:.82rem; color:#6b7280; font-weight:500; }
+    .dash-select{
+      height: 36px; padding: 0 10px;
+      border: 1px solid #d1d5db; border-radius: 8px;
+      background: #fff; color:#111827; min-width: 160px;
     }
 
-    /* KPIs */
-    .kpi-grid {
-      display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px;
-      margin-top: 12px;
+    /* ===== KPIs ===== */
+    .kpi-grid{
+      display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:12px; margin-top:12px;
     }
-    @media (min-width: 700px) {
-      .kpi-grid { grid-template-columns: repeat(5, minmax(0,1fr)); gap: 16px; }
+    @media (min-width: 760px){
+      .kpi-grid{ grid-template-columns: repeat(5, minmax(0,1fr)); gap:16px; }
     }
-    .kpi-card {
+    .kpi-card{
       background: var(--surface, #fff); border-radius: 10px;
       padding: 14px 16px; box-shadow: var(--shadow-1, 0 1px 3px rgba(0,0,0,.1));
-      display: flex; flex-direction: column; min-height: 88px;
+      display:flex; flex-direction:column; min-height:88px;
     }
-    .kpi-card__label { font-size: .85rem; color: #6b7280; display:flex; align-items:center; gap:6px; }
-    .kpi-card__value { font-size: 1.6rem; font-weight: 700; margin-top: 6px; }
+    .kpi-card__label{ font-size:.9rem; color:#374151; display:flex; align-items:center; gap:8px; }
+    .kpi-card__value{ font-size:1.8rem; font-weight:800; margin-top:4px; }
 
-    /* Gráficos */
-    .chart-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 12px; }
-    @media (min-width: 1000px) { .chart-grid { grid-template-columns: 1fr 1fr; } }
-    .chart-box { width: 100%; min-height: 300px; overflow: hidden; padding: 8px; }
-    .chart-legend { font-size: .8rem; color: #6b7280; padding: 0 12px 12px 12px; }
+    /* ===== Gráficos (layout) ===== */
+    .chart-grid{ display:grid; grid-template-columns:1fr; gap:16px; margin-top:12px; }
+    @media (min-width: 1024px){ .chart-grid{ grid-template-columns: 1fr 1fr; } }
+    .chart-box{ width:100%; min-height:300px; overflow:hidden; padding:8px; }
+    /* SIN leyendas ni textos adicionales */
 
-    /* Accesibilidad */
-    .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    /* ===== Accesibilidad ===== */
+    .sr-only {
+      position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+      overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+    }
   </style>
 </head>
 <body data-title="Dashboard">
@@ -81,14 +96,18 @@
       <main class="content">
         <section class="page-section">
 
-          <!-- Panel de filtros (SIN título) -->
+          <!-- Filtros con labels -->
           <div class="panel">
             <div class="panel__body">
               <div class="dash-filters">
-                <!-- Centro (con 'Todos') -->
-                <select id="dashCentro" class="dash-select" title="Centro"></select>
-                <!-- Canal (con 'Todos') -->
-                <select id="dashCanal" class="dash-select" title="Canal"></select>
+                <div class="dash-field">
+                  <label for="dashCentro" class="dash-label">Centro</label>
+                  <select id="dashCentro" class="dash-select"></select>
+                </div>
+                <div class="dash-field">
+                  <label for="dashCanal" class="dash-label">Canal</label>
+                  <select id="dashCanal" class="dash-select"></select>
+                </div>
               </div>
             </div>
           </div>
@@ -96,41 +115,39 @@
           <!-- KPIs en orden: Clientes, Pedidos, Kilogramos, Soles, Camiones -->
           <div class="kpi-grid">
             <div class="kpi-card">
-              <div class="kpi-card__label"><span class="material-icons">badge</span>Clientes</div>
+              <div class="kpi-card__label"><span class="material-icons icon--slate">badge</span>Clientes</div>
               <div id="kpiClientes" class="kpi-card__value">–</div>
             </div>
             <div class="kpi-card">
-              <div class="kpi-card__label"><span class="material-icons">assignment</span>Pedidos</div>
+              <div class="kpi-card__label"><span class="material-icons icon--blue">assignment</span>Pedidos</div>
               <div id="kpiPedidos" class="kpi-card__value">–</div>
             </div>
             <div class="kpi-card">
-              <div class="kpi-card__label"><span class="material-icons">monitor_weight</span>Kilogramos</div>
+              <div class="kpi-card__label"><span class="material-icons icon--green">monitor_weight</span>Kilogramos</div>
               <div id="kpiKg" class="kpi-card__value">–</div>
             </div>
             <div class="kpi-card">
-              <div class="kpi-card__label"><span class="material-icons">paid</span>Soles</div>
+              <div class="kpi-card__label"><span class="material-icons icon--gold">paid</span>Soles</div>
               <div id="kpiSoles" class="kpi-card__value">–</div>
             </div>
             <div class="kpi-card">
-              <div class="kpi-card__label"><span class="material-icons">local_shipping</span>Camiones</div>
+              <div class="kpi-card__label"><span class="material-icons icon--slate">local_shipping</span>Camiones</div>
               <div id="kpiCamiones" class="kpi-card__value">–</div>
             </div>
           </div>
 
-          <!-- Gráficos -->
+          <!-- Gráficos (sin textos innecesarios) -->
           <div class="chart-grid">
             <div class="panel">
               <div class="panel__body">
                 <h3 class="sr-only">Pedidos por Centro (Top 10)</h3>
                 <div id="chartCentro" class="chart-box" role="img" aria-label="Barras de pedidos por centro"></div>
-                <div class="chart-legend">Pedidos únicos (columna 7) por Centro. Excluye FRT-001. Filtrado por Canal.</div>
               </div>
             </div>
             <div class="panel">
               <div class="panel__body">
                 <h3 class="sr-only">Pedidos por Ruta (Top 10)</h3>
                 <div id="chartRuta" class="chart-box" role="img" aria-label="Barras de pedidos por ruta"></div>
-                <div class="chart-legend">Pedidos únicos (columna 7) por Ruta (Ruta[6] - Canal[19]). Excluye FRT-001. Filtrado por Centro y Canal.</div>
               </div>
             </div>
           </div>
@@ -148,24 +165,24 @@
         (window.RoadMapConfig && window.RoadMapConfig.CSV_URL)
         || "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
 
-      // Índices de columnas (según tu CSV)
+      // Índices de columnas de tu CSV
       const IDX = {
-        CENTRO: 1,   // Centro
-        PLACA: 2,    // Placa
-        CLIENTE: 3,  // Cliente
-        RUTA: 6,     // Ruta (A)
-        PEDIDO: 7,   // Pedido (definición de pedidos)
-        KG: 10,      // Kilogramos
-        SOLES: 11,   // Soles
-        CANAL: 19    // Canal
+        CENTRO: 1,
+        PLACA: 2,
+        CLIENTE: 3,
+        RUTA: 6,
+        PEDIDO: 7,
+        KG: 10,
+        SOLES: 11,
+        CANAL: 19
       };
 
       const EXCLUDE_PLATE = "FRT-001";
-      const EXCLUDE_PLATES_FOR_TRUCKS = new Set(["FRT-001", "RES-CLI"]); // solo para KPI Camiones
+      const EXCLUDE_PLATES_FOR_TRUCKS = new Set(["FRT-001", "RES-CLI"]); // solo KPI Camiones
 
-      // ---- Utilidades ----
+      // -------- Utilidades --------
       function parseCSV(text) {
-        const lines = text.split(/\\r?\\n/).filter(l => l.trim() !== "");
+        const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
         if (lines.length === 0) return { header: [], rows: [] };
         const header = lines[0].split(",");
         const dataLines = lines.slice(1);
@@ -193,12 +210,7 @@
       const isExcludedDefault = r => (String(r[IDX.PLACA] || "").trim().toUpperCase() === EXCLUDE_PLATE);
       const isExcludedForTrucks = r => EXCLUDE_PLATES_FOR_TRUCKS.has(String(r[IDX.PLACA] || "").trim().toUpperCase());
 
-      // ---- Estado ----
-      let allRows = [];
-      let centros = [];
-      let canales = [];
-
-      // ---- DOM ----
+      // -------- Estado DOM --------
       const selCentro = document.getElementById("dashCentro");
       const selCanal  = document.getElementById("dashCanal");
 
@@ -208,6 +220,9 @@
       const kpiSoles    = document.getElementById("kpiSoles");
       const kpiCamiones = document.getElementById("kpiCamiones");
 
+      let allRows = [];
+
+      // -------- Inicio --------
       async function init() {
         try {
           const resp = await fetch(CSV_URL);
@@ -215,38 +230,28 @@
           const { rows } = parseCSV(text);
           allRows = rows;
 
-          // Armar combos (con 'Todos')
-          centros = ["Todos", ...unique(allRows.map(r => r[IDX.CENTRO] || "")).sort()];
-          selCentro.innerHTML = "";
-          centros.forEach(c => {
-            const opt = document.createElement("option");
-            opt.value = c; opt.textContent = c;
-            selCentro.appendChild(opt);
-          });
-
-          canales = ["Todos", ...unique(allRows.map(r => r[IDX.CANAL] || "")).sort()];
-          selCanal.innerHTML = "";
-          canales.forEach(c => {
-            const opt = document.createElement("option");
-            opt.value = c; opt.textContent = c;
-            selCanal.appendChild(opt);
-          });
-
-          // Valores iniciales
+          // Rellenar selects (con 'Todos' al inicio)
+          const centros = ["Todos", ...unique(allRows.map(r => r[IDX.CENTRO] || "")).sort()];
+          selCentro.innerHTML = centros.map(c => `<option value="${c}">${c}</option>`).join("");
           selCentro.value = "Todos";
-          selCanal.value  = "Todos";
 
-          render();
+          const canales = ["Todos", ...unique(allRows.map(r => r[IDX.CANAL] || "")).sort()];
+          selCanal.innerHTML = canales.map(c => `<option value="${c}">${c}</option>`).join("");
+          selCanal.value = "Todos";
+
+          // Listeners
           selCentro.addEventListener("change", render);
           selCanal.addEventListener("change", render);
-          window.addEventListener("resize", () => { renderCharts(); });
+          window.addEventListener("resize", renderCharts);
+
+          render();
         } catch (err) {
           console.error("Error cargando RoadMap.csv en Dashboard:", err);
           alert("No se pudo cargar RoadMap.csv para Dashboard");
         }
       }
 
-      // Filtros (aplica Centro y Canal según flags)
+      // -------- Filtros --------
       function applyFilters(rows, { includeCentro = true, includeCanal = true } = {}) {
         const cSel = selCentro.value || "Todos";
         const canalSel = selCanal.value || "Todos";
@@ -257,19 +262,19 @@
         });
       }
 
-      // ---- KPIs ----
+      // -------- KPIs --------
       function renderKPIs() {
-        const rows = applyFilters(allRows, { includeCentro: true, includeCanal: true });
+        const rows = applyFilters(allRows, { includeCentro:true, includeCanal:true });
 
-        // Clientes (únicos col[3]) EXCLUYENDO FRT-001
+        // Clientes únicos [3] EXCL FRT-001
         const clientes = unique(rows.filter(r => !isExcludedDefault(r)).map(r => r[IDX.CLIENTE] || ""));
-        // Pedidos (únicos col[7]) EXCLUYENDO FRT-001
-        const pedidos = unique(rows.filter(r => !isExcludedDefault(r)).map(r => r[IDX.PEDIDO] || ""));
-        // Kilogramos (suma col[10]) EXCLUYENDO FRT-001
-        const kg = rows.filter(r => !isExcludedDefault(r)).reduce((acc, r) => acc + toNum(r[IDX.KG]), 0);
-        // Soles (suma col[11]) EXCLUYENDO FRT-001
-        const soles = rows.filter(r => !isExcludedDefault(r)).reduce((acc, r) => acc + toNum(r[IDX.SOLES]), 0);
-        // Camiones (únicos col[2]) EXCLUYENDO FRT-001 y RES-CLI (SOLO para este KPI)
+        // Pedidos únicos [7] EXCL FRT-001
+        const pedidos  = unique(rows.filter(r => !isExcludedDefault(r)).map(r => r[IDX.PEDIDO] || ""));
+        // KG suma [10] EXCL FRT-001
+        const kg = rows.filter(r => !isExcludedDefault(r)).reduce((a, r) => a + toNum(r[IDX.KG]), 0);
+        // Soles suma [11] EXCL FRT-001
+        const soles = rows.filter(r => !isExcludedDefault(r)).reduce((a, r) => a + toNum(r[IDX.SOLES]), 0);
+        // Camiones únicos [2] EXCL FRT-001 y RES-CLI (solo este KPI)
         const camiones = unique(rows.filter(r => !isExcludedForTrucks(r)).map(r => r[IDX.PLACA] || ""));
 
         kpiClientes.textContent = clientes.length.toLocaleString();
@@ -279,16 +284,16 @@
         kpiCamiones.textContent = camiones.length.toLocaleString();
       }
 
-      // ---- Gráficos SVG ----
+      // -------- Gráficos SVG minimalistas --------
       function mountBarChartSVG(containerId, series, options = {}) {
         const container = document.getElementById(containerId);
         container.innerHTML = "";
         const width = container.clientWidth || 600;
-        const height = Math.max(260, 24 + series.length * 24);
-        const padding = { top: 24, right: 24, bottom: 36, left: 140 };
+        const height = Math.max(240, 20 + series.length * 22);
+        const padding = { top: 8, right: 18, bottom: 8, left: 140 };
 
         const maxVal = Math.max(1, ...series.map(d => d.value));
-        const barH = Math.max(14, (height - padding.top - padding.bottom) / Math.max(1, series.length) - 6);
+        const barH = Math.max(12, (height - padding.top - padding.bottom) / Math.max(1, series.length) - 6);
         const barGap = 6;
         const plotH = series.length * (barH + barGap);
 
@@ -298,14 +303,7 @@
         svg.setAttribute("width", "100%");
         svg.setAttribute("height", "100%");
 
-        // Eje Y
-        const axisY = document.createElementNS(svgNS, "line");
-        axisY.setAttribute("x1", padding.left); axisY.setAttribute("y1", padding.top - 6);
-        axisY.setAttribute("x2", padding.left); axisY.setAttribute("y2", padding.top + plotH + 6);
-        axisY.setAttribute("stroke", "#e5e7eb"); axisY.setAttribute("stroke-width", "1");
-        svg.appendChild(axisY);
-
-        // Barras + etiquetas
+        // Barras + etiquetas (sin ejes, sin leyendas)
         series.forEach((d, i) => {
           const y = padding.top + i * (barH + barGap);
           const w = ((width - padding.left - padding.right) * d.value) / maxVal;
@@ -321,7 +319,7 @@
 
           const label = document.createElementNS(svgNS, "text");
           label.setAttribute("x", padding.left - 8);
-          label.setAttribute("y", y + barH * 0.65);
+          label.setAttribute("y", y + barH * 0.72);
           label.setAttribute("text-anchor", "end");
           label.setAttribute("font-size", "12");
           label.setAttribute("fill", "#374151");
@@ -330,37 +328,17 @@
 
           const val = document.createElementNS(svgNS, "text");
           val.setAttribute("x", padding.left + w + 6);
-          val.setAttribute("y", y + barH * 0.65);
+          val.setAttribute("y", y + barH * 0.72);
           val.setAttribute("font-size", "12");
           val.setAttribute("fill", "#111827");
           val.textContent = d.value.toLocaleString();
           svg.appendChild(val);
         });
 
-        // Ticks (0, 50%, 100%)
-        const ticks = [0, 0.5, 1].map(t => Math.round(t * maxVal));
-        ticks.forEach(t => {
-          const x = padding.left + (width - padding.left - padding.right) * (t / maxVal);
-          const tick = document.createElementNS(svgNS, "line");
-          tick.setAttribute("x1", x); tick.setAttribute("y1", padding.top + plotH + 4);
-          tick.setAttribute("x2", x); tick.setAttribute("y2", padding.top + plotH + 8);
-          tick.setAttribute("stroke", "#9ca3af");
-          svg.appendChild(tick);
-
-          const tLabel = document.createElementNS(svgNS, "text");
-          tLabel.setAttribute("x", x); tLabel.setAttribute("y", padding.top + plotH + 22);
-          tLabel.setAttribute("text-anchor", "middle");
-          tLabel.setAttribute("font-size", "11");
-          tLabel.setAttribute("fill", "#6b7280");
-          tLabel.textContent = t.toLocaleString();
-          svg.appendChild(tLabel);
-        });
-
         container.appendChild(svg);
       }
 
       function groupUniqueCount(rows, keyFn, uniqueKeyFn) {
-        // Cuenta valores únicos 'uniqueKeyFn' por cada clave 'keyFn'
         const map = new Map(); // key -> Set(unique)
         rows.forEach(r => {
           const key = keyFn(r);
@@ -375,18 +353,17 @@
 
       function renderCharts() {
         // 1) Pedidos por Centro (comparativo): filtra SOLO por Canal; excluye FRT-001
-        const rowsCentro = applyFilters(allRows, { includeCentro: false, includeCanal: true })
+        const rowsCentro = applyFilters(allRows, { includeCentro:false, includeCanal:true })
           .filter(r => !isExcludedDefault(r));
         const porCentro = groupUniqueCount(
           rowsCentro,
           r => r[IDX.CENTRO] || "",
           r => r[IDX.PEDIDO] || ""
         );
-        const centroTop = topN(porCentro, 10);
-        mountBarChartSVG("chartCentro", centroTop, { barColor: "#2563eb" });
+        mountBarChartSVG("chartCentro", topN(porCentro, 10), { barColor: "#2563eb" });
 
-        // 2) Pedidos por Ruta (dependiente del Centro + Canal): excluye FRT-001
-        const rowsRuta = applyFilters(allRows, { includeCentro: true, includeCanal: true })
+        // 2) Pedidos por Ruta: filtra por Centro y Canal; excluye FRT-001
+        const rowsRuta = applyFilters(allRows, { includeCentro:true, includeCanal:true })
           .filter(r => !isExcludedDefault(r));
         const porRuta = groupUniqueCount(
           rowsRuta,
@@ -397,8 +374,7 @@
           },
           r => r[IDX.PEDIDO] || ""
         );
-        const rutaTop = topN(porRuta, 10);
-        mountBarChartSVG("chartRuta", rutaTop, { barColor: "#16a34a" });
+        mountBarChartSVG("chartRuta", topN(porRuta, 10), { barColor: "#16a34a" });
       }
 
       function render() {
@@ -411,3 +387,4 @@
   </script>
 </body>
 </html>
+``
