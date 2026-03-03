@@ -5,7 +5,7 @@
   <title>RoadMap – Planos</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Fuentes + Material Icons + Leaflet + Estilos (ETIQUETAS REALES) -->
+  <!-- Fuentes + Material Icons + Leaflet + Estilos -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -42,7 +42,6 @@
               <button id="btnToggleFilters" class="btn-small-icon" type="button" title="Mostrar/ocultar filtros">
                 <span class="material-icons">tune</span>
               </button>
-
               <div id="filtersPanel" class="filters-floating filters-floating--collapsed">
                 <div class="filters-floating__row">
                   <div class="filter-group">
@@ -54,7 +53,7 @@
                     <select id="filterPlaca"><option value="">Todos</option></select>
                   </div>
                   <div class="filter-group">
-                    <label for="filterCliente">Cliente</label>
+                    <label for="filterCliente">Cliente (CodCliente)</label>
                     <select id="filterCliente"><option value="">Todos</option></select>
                   </div>
                 </div>
@@ -74,20 +73,24 @@
   <!-- JS específico de Planos -->
   <script>
   (() => {
+    // ===== Config CSV =====
     const CSV_URL =
       (window.RoadMapConfig && window.RoadMapConfig.CSV_URL)
       || "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
 
+    // ===== Estado =====
     let allRows = [];
     let leafletMap = null;
     let markersLayer = null;
 
+    // ===== Controles =====
     const filterCentro  = document.getElementById("filterCentro");
     const filterPlaca   = document.getElementById("filterPlaca");
     const filterCliente = document.getElementById("filterCliente");
     const btnToggleFilters = document.getElementById("btnToggleFilters");
-    const filtersPanel = document.getElementById("filtersPanel");
+    const filtersPanel     = document.getElementById("filtersPanel");
 
+    // ===== Iconos =====
     const shadowUrl = "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png";
     const redPin = new L.Icon({
       iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
@@ -102,15 +105,19 @@
       shadowUrl, iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
     });
 
+    // ===== Utilidades =====
     function parseCSV(text) {
       const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
       lines.shift(); // header
       const rows = lines.map(line => {
-        const result = []; let current = ""; let inQuotes = false;
+        const result = [];
+        let current = ""; let inQuotes = false;
         for (let i = 0; i < line.length; i++) {
           const char = line[i];
-          if (char === '"') { if (inQuotes && line[i + 1] === '"') { current += '"'; i++; } else { inQuotes = !inQuotes; } }
-          else if (char === "," && !inQuotes) { result.push(current); current = ""; }
+          if (char === '"') {
+            if (inQuotes && line[i + 1] === '"') { current += '"'; i++; }
+            else { inQuotes = !inQuotes; }
+          } else if (char === "," && !inQuotes) { result.push(current); current = ""; }
           else { current += char; }
         }
         result.push(current);
@@ -118,16 +125,25 @@
       });
       return rows;
     }
-
     const unique = arr => Array.from(new Set(arr.filter(v => v !== "" && v != null)));
+    const toNum  = v => { const n = parseFloat(String(v ?? "0").replace(",", ".")); return isNaN(n)?0:n; };
 
+    // ===== Opciones base =====
     let allCentros = [], allPlacas = [], allClientes = [];
     function populateBaseOptions() {
-      allCentros  = unique(allRows.map(r => r[1] || "")).sort();
-      allPlacas   = unique(allRows.map(r => r[2] || "")).sort();
-      allClientes = unique(allRows.map(r => r[4] || "")).sort();
+      // Centro = índice 1
+      allCentros = unique(allRows.map(r => r[1] ?? "")).sort();
+      // Placa = índice 2
+      allPlacas  = unique(allRows.map(r => r[2] ?? "")).sort();
+      // *** CodCliente = índice 3 (ANTES era 4) ***
+      allClientes = unique(allRows.map(r => r[3] ?? "")).sort();
     }
-    function resetSelect(sel) { sel.innerHTML = ""; const o=document.createElement("option"); o.value=""; o.textContent="Todos"; sel.appendChild(o); }
+    function resetSelect(sel) {
+      sel.innerHTML = "";
+      const o = document.createElement("option");
+      o.value = ""; o.textContent = "Todos";
+      sel.appendChild(o);
+    }
     function refreshCentroOptions() {
       resetSelect(filterCentro);
       allCentros.forEach(c => { const o=document.createElement("option"); o.value=c; o.textContent=c; filterCentro.appendChild(o); });
@@ -135,23 +151,37 @@
     function refreshPlacaOptions(centro) {
       resetSelect(filterPlaca);
       let subset = allRows;
-      if (centro) subset = subset.filter(r => (r[1] || "") === centro);
-      unique(subset.map(r => r[2] || "")).sort()
+      if (centro) subset = subset.filter(r => (r[1] ?? "") === centro);
+      unique(subset.map(r => r[2] ?? "")).sort()
         .forEach(p => { const o=document.createElement("option"); o.value=p; o.textContent=p; filterPlaca.appendChild(o); });
+    }
+    function buildClienteLabelFromRow(r) {
+      const cod = r[3] ?? "";             // CodCliente
+      const nombre = r[4] ?? "";          // Nombre (principal)
+      const secundario = r[5] ?? "";      // Nombre secundario
+      const showSec = (secundario && secundario !== "0" && secundario.toLowerCase() !== "error");
+      const showNom = (nombre && nombre !== "0" && nombre.toLowerCase() !== "error");
+      const displayName = showSec ? secundario : (showNom ? nombre : "");
+      return displayName ? `${cod} - ${displayName}` : cod;
     }
     function refreshClienteOptions(centro, placa) {
       resetSelect(filterCliente);
       let subset = allRows;
-      if (centro) subset = subset.filter(r => (r[1] || "") === centro);
-      if (placa)  subset = subset.filter(r => (r[2] || "") === placa);
-      unique(subset.map(r => r[4] || "")).sort().forEach(cli => {
-        const rowsCli = subset.filter(r => (r[4] || "") === cli);
-        const extra = rowsCli[0] ? (rowsCli[0][5] || "") : "";
-        const label = (extra && extra !== "0" && extra.toLowerCase() !== "error") ? `${cli} - ${extra}` : cli;
-        const o=document.createElement("option"); o.value=cli; o.textContent=label; filterCliente.appendChild(o);
+      if (centro) subset = subset.filter(r => (r[1] ?? "") === centro);
+      if (placa)  subset = subset.filter(r => (r[2] ?? "") === placa);
+      // *** value = CodCliente (idx 3). label = "CodCliente - Nombre/Secundario" ***
+      unique(subset.map(r => r[3] ?? "")).sort().forEach(cod => {
+        // Encuentra una fila representativa de ese cod para construir la etiqueta
+        const rowOne = subset.find(r => (r[3] ?? "") === cod);
+        const label = rowOne ? buildClienteLabelFromRow(rowOne) : cod;
+        const o = document.createElement("option");
+        o.value = cod;
+        o.textContent = label || cod;
+        filterCliente.appendChild(o);
       });
     }
 
+    // ===== Mapa =====
     function initMap() {
       if (leafletMap) return;
       leafletMap = L.map("map", { zoomControl: false }).setView([-9.19, -75.02], 5);
@@ -168,23 +198,20 @@
         const baseIcon = p.pesoTotal >= 100 ? purplePin : redPin;
         const googleUrl = `https://www.google.com/maps?q=${encodeURIComponent(p.lat + "," + p.lng)}`;
         const direccionTexto = p.direccion || "Ver en Google Maps";
-
         const popupHtml = `
           <div style="min-width:220px;">
             <strong>Cliente:</strong> ${p.cliente}<br>
             <strong>Dirección:</strong> <a href="${googleUrl}" target="_blank" rel="noopener noreferrer">${direccionTexto}</a><br>
-            <strong>Ruta:</strong> ${p.ruta || "-"}<br>
-            <strong>VH:</strong> ${p.vh || "-"}<br>
+            <strong>Ruta:</strong> ${p.ruta ?? "-"}<br>
+            <strong>VH:</strong> ${p.vh ?? "-"}<br>
             <label style="margin-top:4px;display:flex;align-items:center;gap:4px;font-size:0.85rem;">
               <input type="checkbox" class="visitado-checkbox"> Visitado
             </label>
           </div>`;
-
         const marker = L.marker([p.lat, p.lng], { icon: baseIcon });
         marker._baseIcon = baseIcon; marker._visitedIcon = blackPin;
         marker.bindPopup(popupHtml); marker.addTo(markersLayer);
         bounds.push([p.lat, p.lng]);
-
         marker.on("popupopen", e => {
           const checkbox = e.popup.getElement().querySelector(".visitado-checkbox");
           if (checkbox) checkbox.addEventListener("change", () => {
@@ -195,35 +222,49 @@
       if (bounds.length > 0) leafletMap.fitBounds(bounds, { padding: [30, 30] }); else leafletMap.setView([-9.19, -75.02], 5);
     }
 
+    // ===== Filtro + Render =====
     function applyFilters() {
-      const centro = filterCentro.value;
-      const placa  = filterPlaca.value;
-      const cliente= filterCliente.value;
+      const centro  = filterCentro.value;
+      const placa   = filterPlaca.value;
+      const codCli  = filterCliente.value; // *** CodCliente ***
 
       let filtered = allRows.slice();
-      if (centro)  filtered = filtered.filter(r => (r[1] || "") === centro);
-      if (placa)   filtered = filtered.filter(r => (r[2] || "") === placa);
-      if (cliente) filtered = filtered.filter(r => (r[4] || "") === cliente);
+      if (centro) filtered = filtered.filter(r => (r[1] ?? "") === centro);
+      if (placa)  filtered = filtered.filter(r => (r[2] ?? "") === placa);
+      if (codCli) filtered = filtered.filter(r => (r[3] ?? "") === codCli); // *** idx 3 ***
 
+      // Agrupar por CodCliente (idx 3) y consolidar peso/coords
       const clientMap = new Map();
       filtered.forEach(r => {
-        const clientKey = r[4] || "";
-        if (!clientKey) return;
-        const lat = parseFloat((r[16] || "").replace(",", ".")); const lng = parseFloat((r[17] || "").replace(",", "."));
+        const cod = r[3] ?? "";                  // *** clave real del cliente ***
+        if (!cod) return;
+
+        const lat = parseFloat((r[16] ?? "").replace(",", "."));
+        const lng = parseFloat((r[17] ?? "").replace(",", "."));
         if (Number.isNaN(lat) || Number.isNaN(lng)) return;
 
-        const extra = r[5] || "", ruta = r[6] || "", rutaExtra = r[19] || "";
-        const dir15 = r[15] || "", dir14 = r[14] || "", vh = r[18] || "";
-        const peso = parseFloat((r[10] || "0").replace(",", "."));
+        const nombre   = r[4] ?? "";
+        const extraNom = r[5] ?? "";
+        const ruta     = r[6] ?? "";
+        const rutaExt  = r[19] ?? "";
+        const dir15    = r[15] ?? "";
+        const dir14    = r[14] ?? "";
+        const vh       = r[18] ?? "";
+        const peso     = toNum(r[10] ?? "0");
 
-        const existing = clientMap.get(clientKey);
+        // Etiquetas amigables
+        const showExtra = (extraNom && extraNom !== "0" && extraNom.toLowerCase() !== "error");
+        const showNom   = (nombre   && nombre   !== "0" && nombre.toLowerCase()   !== "error");
+        const clienteLabel = showExtra ? `${cod} - ${extraNom}` : (showNom ? `${cod} - ${nombre}` : cod);
+
+        const rutaTexto   = (rutaExt && rutaExt !== "0" && rutaExt.toLowerCase() !== "error") ? (ruta ? `${ruta} - ${rutaExt}` : rutaExt) : ruta;
+        const direccion   = (dir14   && dir14   !== "0" && dir14.toLowerCase()   !== "error") ? (dir15 ? `${dir15} - ${dir14}` : dir14) : dir15;
+
+        const existing = clientMap.get(cod);
         if (!existing) {
-          const clienteLabel = (extra && extra !== "0" && extra.toLowerCase() !== "error") ? `${clientKey} - ${extra}` : clientKey;
-          const rutaTexto = (rutaExtra && rutaExtra !== "0" && rutaExtra.toLowerCase() !== "error") ? (ruta ? `${ruta} - ${rutaExtra}` : rutaExtra) : ruta;
-          const direccion = (dir14 && dir14 !== "0" && dir14.toLowerCase() !== "error") ? (dir15 ? `${dir15} - ${dir14}` : dir14) : dir15;
-          clientMap.set(clientKey, { cliente: clienteLabel, lat, lng, direccion, ruta: rutaTexto, vh, pesoTotal: isNaN(peso) ? 0 : peso });
+          clientMap.set(cod, { cliente: clienteLabel, lat, lng, direccion, ruta: rutaTexto, vh, pesoTotal: peso });
         } else {
-          existing.pesoTotal += isNaN(peso) ? 0 : peso;
+          existing.pesoTotal += peso;
         }
       });
 
@@ -231,16 +272,20 @@
     }
 
     function loadFiltersInitial() {
-      populateBaseOptions(); refreshCentroOptions(); refreshPlacaOptions(""); refreshClienteOptions("", "");
+      populateBaseOptions();
+      refreshCentroOptions();
+      refreshPlacaOptions("");
+      refreshClienteOptions("", "");
     }
 
+    // ===== Geolocalización opcional =====
     function locateUserOnLoad() {
       if (!leafletMap || !navigator.geolocation) return;
       navigator.geolocation.getCurrentPosition(
         pos => {
           const { latitude, longitude } = pos.coords;
           L.circleMarker([latitude, longitude], { radius: 2, color: "#000", fillColor: "#000", fillOpacity: 1 })
-            .bindPopup("Mi ubicación").addTo(leafletMap);
+           .bindPopup("Mi ubicación").addTo(leafletMap);
           leafletMap.setView([latitude, longitude], 12);
         },
         () => {},
@@ -248,6 +293,7 @@
       );
     }
 
+    // ===== Init =====
     async function initPlanosPage() {
       initMap();
       try {
@@ -255,17 +301,23 @@
         const text = await resp.text();
         const rows = parseCSV(text);
         allRows = rows;
-        loadFiltersInitial(); applyFilters();
+        loadFiltersInitial();
+        applyFilters();
       } catch (err) {
         console.error("Error cargando CSV:", err);
         alert("No se pudo cargar RoadMap.csv");
       }
 
       filterCentro.addEventListener("change", () => {
-        const c = filterCentro.value; refreshPlacaOptions(c); refreshClienteOptions(c, filterPlaca.value || ""); applyFilters();
+        const c = filterCentro.value;
+        refreshPlacaOptions(c);
+        refreshClienteOptions(c, filterPlaca.value ?? "");
+        applyFilters();
       });
       filterPlaca.addEventListener("change", () => {
-        const c = filterCentro.value; refreshClienteOptions(c, filterPlaca.value); applyFilters();
+        const c = filterCentro.value;
+        refreshClienteOptions(c, filterPlaca.value);
+        applyFilters();
       });
       filterCliente.addEventListener("change", applyFilters);
 
