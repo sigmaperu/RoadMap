@@ -5,12 +5,13 @@
   <title>RoadMap – Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Mismo patrón que Agenda/Planos -->
+  <!-- Fuentes + Material Icons + Estilos (mismo patrón que Agenda/Planos) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/styles.css">
+
   <!-- Header global e inyección del banner/fecha -->
   <script defer src="assets/js/main.js"></script>
 
@@ -277,7 +278,7 @@
           const resp = await fetch(url + bust + 't=' + Date.now(), {
             mode: 'cors', cache: 'no-store', signal: ctl.signal
           });
-          if (!resp.ok) throw new Error(\`HTTP \${resp.status}\`);
+          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
           const text = await resp.text();
           if (!text || !text.trim()) throw new Error('archivo vacío');
           return text;
@@ -295,7 +296,7 @@
          2) PARSER + reglas
          ===================== */
       function parseCSV(text){
-        const lines = text.split(/\\r?\\n/).filter(l => l.trim() !== "");
+        const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
         if (!lines.length) return { header:[], rows:[] };
         const header = lines[0].split(",");
         const rows = lines.slice(1).map(line => {
@@ -321,7 +322,7 @@
       const isTruckExcluded = r => TRUCKS_EXCLUDED.has(String(r[IDX.PLACA] ?? "").trim().toUpperCase());
       const unique = arr => Array.from(new Set(arr.filter(v => v !== "" && v != null)));
       const toNum = v => { const n = parseFloat(String(v ?? "0").replace(",", ".")); return isNaN(n)?0:n; };
-      const stripParens = s => String(s ?? "").replace(/\\s*\\([^)]*\\)/g, "");
+      const stripParens = s => String(s ?? "").replace(/\s*\([^\)]*\)/g, "");
 
       /* =====================
          3) Estado + DOM
@@ -353,9 +354,6 @@
           const text = await loadCSVWithFallback();
           const { rows } = parseCSV(text);
           allRows = rows;
-
-          // Debug opcional:
-          // console.log("Filas cargadas:", allRows.length);
 
           buildCentroFilter();
           buildCanalSeg();
@@ -780,3 +778,4 @@
   </script>
 </body>
 </html>
+``
