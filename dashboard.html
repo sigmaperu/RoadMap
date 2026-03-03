@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="assets/css/styles.css">
 
   <!-- Header global e inyección del banner/fecha -->
-  <script defer src="assets/js/main.js"></script>
+  <script src="assets/js/main.js" defer></script>
 
   <!-- Estilos específicos del Dashboard -->
   <style>
@@ -278,7 +278,7 @@
           const resp = await fetch(url + bust + 't=' + Date.now(), {
             mode: 'cors', cache: 'no-store', signal: ctl.signal
           });
-          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+          if (!resp.ok) throw new Error(\`HTTP \${resp.status}\`);
           const text = await resp.text();
           if (!text || !text.trim()) throw new Error('archivo vacío');
           return text;
@@ -457,13 +457,13 @@
       function renderKPIs(){
         const rows = rowsForOthers();
         const clientes = countClientes(rows);
-        const pedidos  = countPedidos(rows);
+        thePedidos = countPedidos(rows);
         const kg       = sumKg(rows);
         const soles    = sumSoles(rows);
         const camiones = countTrucks(rows);
 
         kpiClientes.textContent = clientes.toLocaleString("es-PE");
-        kpiPedidos.textContent  = pedidos.toLocaleString("es-PE");
+        kpiPedidos.textContent  = thePedidos.toLocaleString("es-PE");
         kpiKg.textContent       = kg.toLocaleString("es-PE",{maximumFractionDigits:2});
         kpiSoles.textContent    = formatK(soles);
         kpiCamiones.textContent = camiones.toLocaleString("es-PE");
@@ -516,7 +516,7 @@
         const width = container.clientWidth || 740;
         const height = Math.max(260, 20 + series.length * 26);
 
-        // Alineación a la “T” con un ligero desplazamiento a la izquierda
+        // Alineación a la “T” con leve desplazamiento a la izquierda
         const leftX = Math.max(anchorLeft, 120); /* mínimo seguro */
         const padding = { top:10, right:24, bottom:10, left: leftX };
 
@@ -568,7 +568,7 @@
         container.appendChild(svg);
       }
 
-      /* Vertical (Centros) con padding inferior dinámico para etiquetas rotadas */
+      /* Vertical (Centros) con labels SUBIDAS y giro a +90° (180° respecto a -90°) */
       function chartV_Centros_VLabels(containerId, series, { barColor="#2563eb", valueFmt } = {}){
         const container = document.getElementById(containerId);
         container.innerHTML = "";
@@ -577,11 +577,12 @@
         const width = container.clientWidth || 760;
         const n = series.length;
 
-        // Tamaño de fuente y estimación de ancho real del texto
+        // Tamaño de fuente y estimación de ancho real del texto para reservar espacio
         const maxLen = Math.max(0, ...series.map(d => String(d.label).length));
         const fontSize = n > 14 ? 10 : (n > 9 || maxLen > 12 ? 11 : 12);
         const charW = fontSize * 0.62;
-        const bottomPad = Math.max(180, Math.min(420, Math.round(charW * maxLen + 48))); // más espacio si el label es largo
+        // Espacio inferior: suficiente para labels giradas, pero sin que queden muy abajo
+        const bottomPad = Math.max(130, Math.min(360, Math.round(charW * maxLen + 36)));
 
         const baseHeight = 340;
         const height = baseHeight + Math.max(0, bottomPad - 120);
@@ -621,11 +622,15 @@
           val.textContent = valueFmt ? valueFmt(d.value) : d.value.toLocaleString("es-PE",{maximumFractionDigits:2});
           svg.appendChild(val);
 
+          /* === Etiqueta EJE X SUBIDA y ROTADA a +90° ===
+             - La subimos (más cerca de las barras) fijando 'ly' por encima del borde inferior.
+             - Cambiamos el giro de -90° a +90° (equivale a 180° respecto a la orientación anterior). */
           const label = document.createElementNS(svgNS,"text");
           const lx = x + barW/2;
-          const ly = height - 8;        // espacio suficiente después del giro
-          label.setAttribute("transform", `translate(${lx},${ly}) rotate(-90)`);
-          label.setAttribute("text-anchor","end");
+          const labelBand = 28;                 // altura visual reservada para las etiquetas
+          const ly = padding.top + plotH + labelBand; // justo por encima del “suelo” del plot
+          label.setAttribute("transform", `translate(${lx},${ly}) rotate(90)`);
+          label.setAttribute("text-anchor","start");  // al rotar 90°, usar start para que suba
           label.setAttribute("font-size", String(fontSize));
           label.setAttribute("fill","#374151");
           label.textContent = d.label;
@@ -778,4 +783,3 @@
   </script>
 </body>
 </html>
-``
