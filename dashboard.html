@@ -5,7 +5,7 @@
   <title>RoadMap – Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Fuentes + Material Icons + Estilos (mismo patrón que Agenda/Planos) -->
+  <!-- Fuentes + Material Icons + Estilos (igual que Agenda/Planos) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;800&display=swap" rel="stylesheet">
@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="assets/css/styles.css">
 
   <!-- Header global e inyección del banner/fecha -->
-  <script src="assets/js/main.js" defer></script>
+  <script defer src="assets/js/main.js"></script>
 
   <!-- Estilos específicos del Dashboard -->
   <style>
@@ -51,7 +51,7 @@
       align-items:stretch;
       margin-bottom:var(--gap-rows);
     }
-    .row--flush-next{ margin-bottom:6px; } /* PIs -> gráficos sin hueco extra */
+    .row--flush-next{ margin-bottom:6px; }
     @media (max-width:1024px){ .row { grid-template-columns:1fr; } }
 
     /* ======= Segmentaciones ======= */
@@ -97,7 +97,7 @@
     .charts-2col{ display:grid; grid-template-columns:1fr 1fr; gap:var(--gap-cards); }
     @media (max-width:1200px){ .charts-2col{ grid-template-columns:1fr; } }
     .chart-title{ font-size:.95rem; font-weight:900; color:#374151; margin:6px 10px 2px 10px; display:flex; align-items:center; gap:6px; }
-    .chart-title__text{ display:inline-block; } /* para medir la X del texto */
+    .chart-title__text{ display:inline-block; }
     .chart-box{ width:100%; min-height:340px; overflow:hidden; padding:10px; text-align:left; display:block; }
     .nodata{ padding:12px; color:#6b7280; font-size:.9rem; }
 
@@ -111,7 +111,7 @@
 <body data-title="Dashboard">
   <div class="app-shell">
     <aside class="sidebar">
-      <div class="sidebar__logo"><img src="assets/img/logotipo.png" alt="RoadMap" style="max-width:100%;height:auto;"></div>
+      <div class="sidebar__logo"><img src="assets/img/logotipo.png" alt="RoadMap"></div>
       <nav class="sidebar__nav">
         <a href="index.html" class="nav-item"><span class="nav-item__icon material-icons">home</span><span>Inicio</span></a>
         <a href="agenda.html" class="nav-item"><span class="nav-item__icon material-icons">event</span><span>Agenda</span></a>
@@ -217,7 +217,7 @@
             </div>
           </div>
 
-          <!-- Gráficos inferiores (alineados a la “T” y afectados por MÉTRICA) -->
+          <!-- Gráficos inferiores -->
           <div class="chart-grid-lower">
             <div class="panel">
               <div class="chart-title">
@@ -278,7 +278,7 @@
           const resp = await fetch(url + bust + 't=' + Date.now(), {
             mode: 'cors', cache: 'no-store', signal: ctl.signal
           });
-          if (!resp.ok) throw new Error(\`HTTP \${resp.status}\`);
+          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
           const text = await resp.text();
           if (!text || !text.trim()) throw new Error('archivo vacío');
           return text;
@@ -354,7 +354,6 @@
           const text = await loadCSVWithFallback();
           const { rows } = parseCSV(text);
           allRows = rows;
-
           buildCentroFilter();
           buildCanalSeg();
           buildMetricaSeg();
@@ -457,13 +456,13 @@
       function renderKPIs(){
         const rows = rowsForOthers();
         const clientes = countClientes(rows);
-        thePedidos = countPedidos(rows);
+        const pedidos  = countPedidos(rows);
         const kg       = sumKg(rows);
         const soles    = sumSoles(rows);
         const camiones = countTrucks(rows);
 
         kpiClientes.textContent = clientes.toLocaleString("es-PE");
-        kpiPedidos.textContent  = thePedidos.toLocaleString("es-PE");
+        kpiPedidos.textContent  = pedidos.toLocaleString("es-PE");
         kpiKg.textContent       = kg.toLocaleString("es-PE",{maximumFractionDigits:2});
         kpiSoles.textContent    = formatK(soles);
         kpiCamiones.textContent = camiones.toLocaleString("es-PE");
@@ -516,8 +515,8 @@
         const width = container.clientWidth || 740;
         const height = Math.max(260, 20 + series.length * 26);
 
-        // Alineación a la “T” con leve desplazamiento a la izquierda
-        const leftX = Math.max(anchorLeft, 120); /* mínimo seguro */
+        // Alineación a la “T”, con leve desplazamiento a la izquierda para los 4 inferiores
+        const leftX = Math.max(anchorLeft, 120);
         const padding = { top:10, right:24, bottom:10, left: leftX };
 
         const maxVal = Math.max(1, ...series.map(d=>d.value));
@@ -568,7 +567,7 @@
         container.appendChild(svg);
       }
 
-      /* Vertical (Centros) con labels SUBIDAS y giro a +90° (180° respecto a -90°) */
+      /* Vertical (Centros): labels SUBIDAS y giro a +90° (180° respecto a -90°) */
       function chartV_Centros_VLabels(containerId, series, { barColor="#2563eb", valueFmt } = {}){
         const container = document.getElementById(containerId);
         container.innerHTML = "";
@@ -581,8 +580,9 @@
         const maxLen = Math.max(0, ...series.map(d => String(d.label).length));
         const fontSize = n > 14 ? 10 : (n > 9 || maxLen > 12 ? 11 : 12);
         const charW = fontSize * 0.62;
-        // Espacio inferior: suficiente para labels giradas, pero sin que queden muy abajo
-        const bottomPad = Math.max(130, Math.min(360, Math.round(charW * maxLen + 36)));
+
+        // Espacio inferior suficiente para las etiquetas rotadas, sin que queden pegadas al borde
+        const bottomPad = Math.max(140, Math.min(380, Math.round(charW * maxLen + 44)));
 
         const baseHeight = 340;
         const height = baseHeight + Math.max(0, bottomPad - 120);
@@ -622,15 +622,16 @@
           val.textContent = valueFmt ? valueFmt(d.value) : d.value.toLocaleString("es-PE",{maximumFractionDigits:2});
           svg.appendChild(val);
 
-          /* === Etiqueta EJE X SUBIDA y ROTADA a +90° ===
-             - La subimos (más cerca de las barras) fijando 'ly' por encima del borde inferior.
-             - Cambiamos el giro de -90° a +90° (equivale a 180° respecto a la orientación anterior). */
+          /* === Etiqueta EJE X SUBIDA y ROTADA a +90° === */
           const label = document.createElementNS(svgNS,"text");
           const lx = x + barW/2;
-          const labelBand = 28;                 // altura visual reservada para las etiquetas
-          const ly = padding.top + plotH + labelBand; // justo por encima del “suelo” del plot
+
+          // La subimos: en vez de pegarla al borde inferior, la colocamos justo por encima de la base del plot
+          const labelBand = 26;                                   // banda de lectura
+          const ly = padding.top + plotH + Math.max(16, labelBand / 2);
+
           label.setAttribute("transform", `translate(${lx},${ly}) rotate(90)`);
-          label.setAttribute("text-anchor","start");  // al rotar 90°, usar start para que suba
+          label.setAttribute("text-anchor","start");
           label.setAttribute("font-size", String(fontSize));
           label.setAttribute("fill","#374151");
           label.textContent = d.label;
@@ -762,7 +763,7 @@
           const el = document.getElementById(panelId);
           const panel = el.closest('.panel');
           const tAnchor = getTitleAnchorLeft(panel, el);
-          const leftShift = 24;                          // desplazamiento adicional solicitado
+          const leftShift = 24;
           const anchorLeft = Math.max(120, tAnchor - leftShift);
           chartH(panelId, series, { barColor: color, valueFmt, anchorLeft });
         }
