@@ -5,15 +5,14 @@
   <title>RoadMap – Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Fuentes + Material Icons + Estilos (correctos) -->
+  <!-- Fuentes + Material Icons + Estilos (CORRECTOS) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/styles.css">
-
-  <!-- Header global (animación y título) -->
-  <script src="assets/js/main.js"></script>
+  <!-- Header global e inyección del banner/fecha -->
+  <script src="assets/js/main.js" defer></script>
 
   <style>
     :root{
@@ -37,11 +36,11 @@
     .icon--gold{ color: var(--icon-gold); }
     .icon--slate{ color: var(--icon-slate); }
 
-    /* Panel */
+    /* Panel base con aire vertical */
     .panel { background:#fff; border-radius:12px; box-shadow:var(--card-shadow); }
     .panel__body { padding:16px; }
 
-    /* Layout (izq segmentación / der contenido) */
+    /* ======= Disposición (izq: segmentación / der: contenido) ======= */
     .row {
       display:grid;
       grid-template-columns:minmax(200px, var(--side-w)) 1fr;
@@ -49,14 +48,15 @@
       align-items:stretch;
       margin-bottom:var(--gap-rows);
     }
-    .row--flush-next{ margin-bottom:6px; }
+    .row--flush-next{ margin-bottom:6px; } /* PIs -> gráficos sin hueco extra */
     @media (max-width:1024px){ .row { grid-template-columns:1fr; } }
 
-    /* Segmentaciones */
+    /* ======= Segmentaciones ======= */
     .seg-card { padding:12px 14px; display:flex; flex-direction:column; }
     .seg__label{ font-size:.8rem; color:#6b7280; font-weight:700; letter-spacing:.02em; margin-bottom:10px; }
     .seg__select{
-      height:38px; padding:0 12px; border:1px solid var(--chip-border); border-radius:10px;
+      height:38px; padding:0 12px;
+      border:1px solid var(--chip-border); border-radius:10px;
       background:var(--chip-bg); color:#111827; font-weight:600; font-size:.86rem; width:100%;
     }
     .seg__items{ display:flex; flex-direction:column; gap:8px; align-items:stretch; flex:1; overflow:auto; }
@@ -68,8 +68,11 @@
     .seg__chip:hover{ transform:translateY(-1px); box-shadow:var(--badge-shadow); }
     .seg__chip[aria-pressed="true"]{ color:var(--chip-active); background:var(--chip-active-bg); border-color:#c7d2fe; }
 
-    /* KPIs */
-    .kpi-row { display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); gap:var(--gap-cards); }
+    /* ======= KPIs ======= */
+    .kpi-row {
+      display:grid; grid-template-columns:repeat(5, minmax(0,1fr));
+      gap:var(--gap-cards); align-items:stretch;
+    }
     @media (max-width:1024px){ .kpi-row { grid-template-columns:repeat(2, minmax(0,1fr)); } }
     .kpi-card{ background:#fff; border-radius:14px; box-shadow:var(--card-shadow); padding:16px; display:flex; flex-direction:column; }
     .kpi-card__label{ font-size:.9rem; color:#374151; display:flex; align-items:center; gap:8px; font-weight:800; margin-bottom:6px; }
@@ -79,7 +82,7 @@
       white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:2px 0;
     }
 
-    /* PIs */
+    /* ======= PIs ======= */
     .pi-card{ padding:16px; height:auto; }
     .pi-card .pi-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:8px; }
     @media (max-width:1024px){ .pi-card .pi-grid{ grid-template-columns:1fr; } }
@@ -87,7 +90,7 @@
     .pi-item__label{ font-size:.78rem; color:#6b7280; display:flex; align-items:center; gap:6px; font-weight:800; letter-spacing:.02em; }
     .pi-item__value{ font-size:clamp(1rem, 1.5vw, 1.25rem); font-weight:800; color:#111827; }
 
-    /* Gráficos */
+    /* ======= Gráficos ======= */
     .charts-2col{ display:grid; grid-template-columns:1fr 1fr; gap:var(--gap-cards); }
     @media (max-width:1200px){ .charts-2col{ grid-template-columns:1fr; } }
     .chart-title{ font-size:.95rem; font-weight:900; color:#374151; margin:6px 10px 2px 10px; display:flex; align-items:center; gap:6px; }
@@ -104,19 +107,20 @@
 <body data-title="Dashboard">
   <div class="app-shell">
     <aside class="sidebar">
-      <div class="sidebar__logo">assets/img/logotipo.png</div>
+      <div class="sidebar__logo"><img src="assets/img/logotipo.png" alt="Logo" style="max-width:100%;height:auto;"></div>
       <nav class="sidebar__nav">
-        <a href="index.html"><span class="nav-item__icon material-icons">home</span><span>Inicio</span></a>
-        <a href="agenda.html"><span class="nav-item__icon material-icons">event</span><span>Agenda</span></a>
-        <a class="active" href="dashboard.html"><span class="nav-item__icon material-icons">dashboard</span><span>Dashboard</span></a>
-        <a href="planif.html"><span class="nav-item__icon material-icons">timeline</span><span>Planificación</span></a>
-        <a href="planos.html"><span class="nav-item__icon material-icons">map</span><span>Planos</span></a>
-        <a href="program.html"><span class="nav-item__icon material-icons">view_week</span><span>Programación</span></a>
-        <a href="ubicame.html"><span class="nav-item__icon material-icons">my_location</span><span>Ubícame</span></a>
+        <a href="index.html" class="nav-item"><span class="nav-item__icon material-icons">home</span><span>Inicio</span></a>
+        <a href="agenda.html" class="nav-item"><span class="nav-item__icon material-icons">event</span><span>Agenda</span></a>
+        <a href="dashboard.html" class="nav-item is-active"><span class="nav-item__icon material-icons">dashboard</span><span>Dashboard</span></a>
+        <a href="planif.html" class="nav-item"><span class="nav-item__icon material-icons">timeline</span><span>Planificación</span></a>
+        <a href="planos.html" class="nav-item"><span class="nav-item__icon material-icons">map</span><span>Planos</span></a>
+        <a href="program.html" class="nav-item"><span class="nav-item__icon material-icons">view_week</span><span>Programación</span></a>
+        <a href="ubicame.html" class="nav-item"><span class="nav-item__icon material-icons">my_location</span><span>Ubícame</span></a>
       </nav>
     </aside>
 
     <div class="main-layout">
+      <!-- Header global -->
       <div id="app-header"></div>
 
       <main class="content">
@@ -141,6 +145,7 @@
               <div class="kpi-card">
                 <div class="kpi-card__label">
                   <span class="kpi-icon-badge">
+                    <!-- Icono "KG" -->
                     <svg viewBox="0 0 32 32" width="20" height="20" aria-hidden="true" class="icon--green">
                       <rect x="5" y="10" width="22" height="14" rx="3" fill="currentColor" opacity=".14"></rect>
                       <path fill="currentColor" d="M12 10a4 4 0 1 1 8 0h3.5a3.5 3.5 0 0 1 3.5 3.5V22a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3v-8.5A3.5 3.5 0 0 1 8.5 10H12zm2 0h4a2 2 0 1 0-4 0z"/>
@@ -247,7 +252,9 @@
   <!-- Script del Dashboard -->
   <script>
     (() => {
-      /* ===== 1) Loader robusto CSV ===== */
+      /* =========================
+         1) CARGA ROBUSTA DEL CSV
+         ========================= */
       const FALLBACKS = [
         window.RoadMapConfig?.CSV_URL,
         './RoadMap.csv',
@@ -276,7 +283,9 @@
         throw new Error('No se pudo cargar RoadMap.csv desde ningún origen.');
       }
 
-      /* ===== 2) Parser + reglas ===== */
+      /* =====================
+         2) PARSER + reglas
+         ===================== */
       function parseCSV(text){
         const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
         if (!lines.length) return { header:[], rows:[] };
@@ -304,7 +313,9 @@
       const toNum = v => { const n = parseFloat(String(v ?? "0").replace(",", ".")); return isNaN(n)?0:n; };
       const stripParens = s => String(s || "").replace(/\s*\([^)]*\)/g, "");
 
-      /* ===== 3) Estado + DOM ===== */
+      /* =====================
+         3) Estado + DOM
+         ===================== */
       let allRows = [];
       let selectedCentro = "Todos";
       let selectedCanales = new Set(["Todos"]);
@@ -324,7 +335,9 @@
       const piKgCliente = document.getElementById("piKgCliente");
       const piClientesCamion = document.getElementById("piClientesCamion");
 
-      /* ===== 4) Init ===== */
+      /* =====================
+         4) Init
+         ===================== */
       async function init(){
         try{
           const text = await loadCSVWithFallback();
@@ -338,7 +351,9 @@
         }
       }
 
-      /* ===== 5) Segmentaciones ===== */
+      /* =====================
+         5) Segmentaciones
+         ===================== */
       function buildCentroFilter(){
         const centros = ["Todos", ...unique(allRows.map(r => r[IDX.CENTRO] || "")).sort()];
         filterCentro.innerHTML = centros.map(c => `<option value="${c}">${c}</option>`).join("");
@@ -385,7 +400,9 @@
         });
       }
 
-      /* ===== 6) Filtros de datos ===== */
+      /* =====================
+         6) Filtros de datos
+         ===================== */
       function applyFiltersForCards(rows){
         const canalesAll = selectedCanales.has("Todos");
         return rows.filter(r => {
@@ -403,14 +420,18 @@
       }
       function rowsForOthers(){ return applyFiltersForCards(allRows); }
 
-      /* ===== 7) Agregadores ===== */
+      /* =====================
+         7) Agregadores
+         ===================== */
       const countClientes = rows => unique(rows.filter(r => !isFRT(r)).map(r => r[IDX.CLIENTE] || "")).length;
       const countPedidos  = rows => unique(rows.filter(r => !isFRT(r)).map(r => r[IDX.PEDIDO]  || "")).length;
       const sumKg         = rows => rows.filter(r => !isFRT(r)).reduce((a,r)=>a+toNum(r[IDX.KG]),0);
       const sumSoles      = rows => rows.filter(r => !isFRT(r)).reduce((a,r)=>a+toNum(r[IDX.SOLES]),0);
       const countTrucks   = rows => unique(rows.filter(r => !isTruckExcluded(r)).map(r => r[IDX.PLACA] || "")).length;
 
-      /* ===== 8) KPIs + PIs ===== */
+      /* =====================
+         8) KPIs + PIs
+         ===================== */
       function formatK(value){ return `S/ ${(value/1000).toLocaleString('en-US',{maximumFractionDigits:1})}K`; }
       function renderKPIs(){
         const rows = rowsForOthers();
@@ -434,7 +455,9 @@
         piClientesCamion.textContent = piCliCam.toLocaleString("es-PE",{maximumFractionDigits:2});
       }
 
-      /* ===== 9) Métrica genérica ===== */
+      /* =====================
+         9) Métrica genérica
+         ===================== */
       function metricCalc(rows, metricName){
         switch (metricName) {
           case "Clientes":        return countClientes(rows);
@@ -449,18 +472,23 @@
         }
       }
 
-      /* ===== 10) Ancla exacta bajo la “T” ===== */
+      /* =====================
+         10) Ancla exacta bajo la “T”
+         ===================== */
       function getTitleAnchorLeft(panel, chartBox){
         const titleText = panel.querySelector(".chart-title__text");
-        if (!titleText || !chartBox) return 160; // fallback
+        if (!titleText || !chartBox) return 160; // fallback seguro
         const tRect = titleText.getBoundingClientRect();
         const cRect = chartBox.getBoundingClientRect();
-        return Math.max(140, Math.round(tRect.left - cRect.left));
+        // Coordenada X (en el sistema del chart-box) donde inicia el texto del título
+        return Math.round(tRect.left - cRect.left);
       }
 
-      /* ===== 11) Gráficos ===== */
+      /* =====================
+         11) Gráficos SVG
+         ===================== */
       function chartH(containerId, series, { barColor="#2563eb", valueFmt, anchorLeft=160 } = {}){
-        // Alinea: etiquetas, COMIENZO de barras y valores a partir de la misma X
+        // ETIQUETA (final), INICIO DE BARRA y VALOR comparten la misma vertical "anchorLeft"
         const container = document.getElementById(containerId);
         container.innerHTML = "";
         if (!series || series.length===0){ container.innerHTML='<div class="nodata">Sin datos</div>'; return; }
@@ -468,8 +496,9 @@
         const width = container.clientWidth || 740;
         const height = Math.max(260, 20 + series.length * 26);
 
-        // >>> Clave: padding.left = anchorLeft (barras arrancan exactamente bajo la “T”)
-        const padding = { top:10, right:24, bottom:10, left: Math.max(anchorLeft, 140) };
+        // Usamos exactamente anchorLeft para que barras y valores arranquen en esa X
+        const leftX = Math.max(anchorLeft, 140);
+        const padding = { top:10, right:24, bottom:10, left: leftX };
 
         const maxVal = Math.max(1, ...series.map(d=>d.value));
         const barH = Math.max(12, (height - padding.top - padding.bottom)/Math.max(1,series.length) - 6);
@@ -485,9 +514,9 @@
           const y = padding.top + i * (barH + barGap);
           const w = ((width - padding.left - padding.right) * d.value) / maxVal;
 
-          // Etiqueta: termina justo en anchorLeft
+          // Etiqueta: termina exactamente en leftX (vertical de la “T”)
           const lbl = document.createElementNS(svgNS,"text");
-          lbl.setAttribute("x", padding.left - 10);
+          lbl.setAttribute("x", leftX - 8);
           lbl.setAttribute("y", y + barH * 0.75);
           lbl.setAttribute("text-anchor","end");
           lbl.setAttribute("font-size","12");
@@ -495,9 +524,9 @@
           lbl.textContent = d.label;
           svg.appendChild(lbl);
 
-          // Barra comienza en esa misma X
+          // BARRA: comienza exactamente en leftX
           const rect = document.createElementNS(svgNS,"rect");
-          rect.setAttribute("x", padding.left);
+          rect.setAttribute("x", leftX);
           rect.setAttribute("y", y);
           rect.setAttribute("width", Math.max(2,w));
           rect.setAttribute("height", barH);
@@ -505,9 +534,9 @@
           rect.setAttribute("fill", barColor);
           svg.appendChild(rect);
 
-          // Valor al final de la barra (sin cortarse)
+          // VALOR: pegado al final de la barra (visible completo)
           const val = document.createElementNS(svgNS,"text");
-          const xVal = Math.min(padding.left + w + 8, width - padding.right - 2);
+          const xVal = Math.min(leftX + w + 8, width - padding.right - 2);
           val.setAttribute("x", xVal);
           val.setAttribute("y", y + barH * 0.75);
           val.setAttribute("font-size","12");
@@ -637,7 +666,9 @@
       const topN = (arr,n=10)=>[...arr].sort((a,b)=>b.value-a.value).slice(0,n);
       const bottomN = (arr,n=10)=>[...arr].sort((a,b)=>a.value-b.value).slice(0,n);
 
-      /* ===== 12) Series por Métrica ===== */
+      /* =====================
+         12) Series por Métrica (Horizontales)
+         ===================== */
       function seriesByGroup(rows, keyFn, metricName){
         const map = new Map();
         rows.forEach(r => {
@@ -651,7 +682,7 @@
         }));
       }
       function getTrucksSeries(metricName, best=true){
-        const rows = rowsForOthers().filter(r => !isTruckExcluded(r));
+        const rows = rowsForOthers().filter(r => !isTruckExcluded(r)); // ranking excluye FRT-001 y RES-CLI
         let series = seriesByGroup(rows, r => r[IDX.PLACA] || "", metricName);
         series = best ? topN(series,10) : bottomN(series.filter(d=>d.value>0),10);
         return series;
@@ -663,10 +694,17 @@
         return series;
       }
 
-      /* ===== 13) Render ===== */
+      /* =====================
+         13) Render
+         ===================== */
       function renderCharts(){
         const metricName = selectedMetrica;
-        const is– NO filtra Centro; SÍ Canales
+        const isMoney = (metricName === "Soles");
+        const valueFmt = (v) => isMoney
+          ? new Intl.NumberFormat("es-PE",{style:"currency",currency:"PEN",maximumFractionDigits:2}).format(v)
+          : v.toLocaleString("es-PE",{maximumFractionDigits:2});
+
+        // (1) Centros – NO filtra Centro; SÍ Canales
         {
           const rows = rowsForCentroChart();
           const map = new Map();
@@ -684,25 +722,13 @@
           chartV_Canal_HLabels("chartCanalV", topN(serie, 10), { barColor:"#b45309", valueFmt });
         }
 
-        // (3–6) Horizontales — Alineados bajo la “T” (etiquetas, barras y valores)
+        // (3–6) Horizontales — TODO alineado a la “T” (mismo leftX)
         const cfgs = [
           { id:'chartTruckBest',  color:'#16a34a', series:getTrucksSeries(metricName, true)  },
           { id:'chartTruckWorst', color:'#9ca3af', series:getTrucksSeries(metricName, false) },
           { id:'chartRutaBest',   color:'#22c55e', series:getRutasSeries(metricName, true)   },
           { id:'chartRutaWorst',  color:'#f59e0b', series:getRutasSeries(metricName, false)  }
         ];
-        cfgs.forEach(({id, color, series})=>{
-          const box   = document.getElementById(id);
-          const panel = box.closest('.panel');
-          const anchorLeft = getTitleAnchorLeft(panel, box); // X exacta de la “T”
-          chartH(id, series, { barColor: color, valueFmt, anchorLeft });
-        });
-      }
-
-      function render(){ renderKPIs(); renderCharts(); }
-
-      document.addEventListener("DOMContentLoaded", init);
-    })();
-  </script>
+        cfg>
 </body>
 </html>
