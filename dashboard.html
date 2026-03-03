@@ -111,7 +111,7 @@
 <body data-title="Dashboard">
   <div class="app-shell">
     <aside class="sidebar">
-      <div class="sidebar__logo"><img src="assets/img/logotipo.png" alt="Logo" style="max-width:100%;height:auto;"></div>
+      <div class="sidebar__logo"><img src="assets/img/logotipo.png" alt="RoadMap"></div>
       <nav class="sidebar__nav">
         <a href="index.html" class="nav-item"><span class="nav-item__icon material-icons">home</span><span>Inicio</span></a>
         <a href="agenda.html" class="nav-item"><span class="nav-item__icon material-icons">event</span><span>Agenda</span></a>
@@ -278,7 +278,7 @@
           const resp = await fetch(url + bust + 't=' + Date.now(), {
             mode: 'cors', cache: 'no-store', signal: ctl.signal
           });
-          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+          if (!resp.ok) throw new Error(\`HTTP \${resp.status}\`);
           const text = await resp.text();
           if (!text || !text.trim()) throw new Error('archivo vacío');
           return text;
@@ -354,8 +354,8 @@
           const text = await loadCSVWithFallback();
           const { rows } = parseCSV(text);
           allRows = rows;
-          buildCentroFilter(); 
-          buildCanalSeg(); 
+          buildCentroFilter();
+          buildCanalSeg();
           buildMetricaSeg();
           render();
           window.addEventListener("resize", renderCharts);
@@ -471,8 +471,8 @@
         const piKgCli = clientes ? (kg / clientes) : 0;
         const piCliCam= camiones ? (clientes / camiones) : 0;
 
-        piKgCamion.textContent     = piKgCam.toLocaleString("es-PE",{maximumFractionDigits:2});
-        piKgCliente.textContent    = piKgCli.toLocaleString("es-PE",{maximumFractionDigits:2});
+        piKgCamion.textContent       = piKgCam.toLocaleString("es-PE",{maximumFractionDigits:2});
+        piKgCliente.textContent      = piKgCli.toLocaleString("es-PE",{maximumFractionDigits:2});
         piClientesCamion.textContent = piCliCam.toLocaleString("es-PE",{maximumFractionDigits:2});
       }
 
@@ -515,8 +515,7 @@
         const width = container.clientWidth || 740;
         const height = Math.max(260, 20 + series.length * 26);
 
-        // Usamos exactamente anchorLeft para que etiquetas, barras y valores se alineen con la “T”
-        const leftX = Math.max(anchorLeft, 140);
+        const leftX = Math.max(anchorLeft, 120);      /* <- límite mínimo seguro */
         const padding = { top:10, right:24, bottom:10, left: leftX };
 
         const maxVal = Math.max(1, ...series.map(d=>d.value));
@@ -533,7 +532,7 @@
           const y = padding.top + i * (barH + barGap);
           const w = ((width - padding.left - padding.right) * d.value) / maxVal;
 
-          // Etiqueta: termina exactamente en leftX
+          // Etiqueta (alineada con la vertical)
           const lbl = document.createElementNS(svgNS,"text");
           lbl.setAttribute("x", leftX - 8);
           lbl.setAttribute("y", y + barH * 0.75);
@@ -543,7 +542,7 @@
           lbl.textContent = d.label;
           svg.appendChild(lbl);
 
-          // Barra: comienza exactamente en leftX
+          // Barra
           const rect = document.createElementNS(svgNS,"rect");
           rect.setAttribute("x", leftX);
           rect.setAttribute("y", y);
@@ -553,7 +552,7 @@
           rect.setAttribute("fill", barColor);
           svg.appendChild(rect);
 
-          // Valor: cerca del final de la barra
+          // Valor
           const val = document.createElementNS(svgNS,"text");
           const xVal = Math.min(leftX + w + 8, width - padding.right - 2);
           val.setAttribute("x", xVal);
@@ -567,18 +566,26 @@
         container.appendChild(svg);
       }
 
+      /* Mejora: más padding inferior para etiquetas rotadas (Centros) */
       function chartV_Centros_VLabels(containerId, series, { barColor="#2563eb", valueFmt } = {}){
         const container = document.getElementById(containerId);
         container.innerHTML = "";
         if (!series || series.length===0){ container.innerHTML='<div class="nodata">Sin datos</div>'; return; }
 
         const width = container.clientWidth || 760;
-        const maxLen = Math.max(0, ...series.map(d => String(d.label).length));
         const n = series.length;
+
+        // Tamaño de fuente dinámico
+        const maxLen = Math.max(0, ...series.map(d => String(d.label).length));
         const fontSize = n > 14 ? 10 : (n > 9 || maxLen > 12 ? 11 : 12);
-        const bottomPad = Math.max(150, Math.round(fontSize * (maxLen * 0.68) + 24));
+
+        // *** Ajuste clave ***
+        // Estimamos el ancho real (antes de girar) y lo usamos como padding inferior
+        const charW = fontSize * 0.62; // aproximación de ancho de carácter
+        const bottomPad = Math.max(180, Math.min(380, Math.round(charW * maxLen + 40)));
+
         const baseHeight = 340;
-        const height = baseHeight + (bottomPad - 120);
+        const height = baseHeight + Math.max(0, bottomPad - 120);
 
         const padding = { top:22, right:18, bottom: bottomPad, left:50 };
         const plotW = width - padding.left - padding.right;
@@ -615,9 +622,10 @@
           val.textContent = valueFmt ? valueFmt(d.value) : d.value.toLocaleString("es-PE",{maximumFractionDigits:2});
           svg.appendChild(val);
 
+          // Etiqueta rotada 90° con espacio suficiente abajo
           const label = document.createElementNS(svgNS,"text");
           const lx = x + barW/2;
-          const ly = height - 8;
+          const ly = height - 8;        // ancla cerca del borde inferior visible
           label.setAttribute("transform", `translate(${lx},${ly}) rotate(-90)`);
           label.setAttribute("text-anchor","end");
           label.setAttribute("font-size", String(fontSize));
@@ -746,11 +754,13 @@
           chartV_Canal_HLabels("chartCanalV", topN(serie, 10), { barColor:"#b45309", valueFmt });
         }
 
-        // (3–6) Horizontales — TODO alineado a la “T” (mismo leftX)
+        // (3–6) Horizontales — Alinear un poco más a la izquierda SOLO las barras/etiquetas/valores
         function renderHChart(panelId, color, series){
           const el = document.getElementById(panelId);
           const panel = el.closest('.panel');
-          const anchorLeft = getTitleAnchorLeft(panel, el);
+          const tAnchor = getTitleAnchorLeft(panel, el);
+          const leftShift = 24;                          // <-- desplazamiento adicional solicitado
+          const anchorLeft = Math.max(120, tAnchor - leftShift);
           chartH(panelId, series, { barColor: color, valueFmt, anchorLeft });
         }
 
