@@ -5,13 +5,12 @@
   <title>RoadMap – Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Fuentes + Material Icons + Estilos (mismo patrón que Agenda/Planos) -->
+  <!-- Mismo patrón que Agenda/Planos -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/styles.css">
-
   <!-- Header global e inyección del banner/fecha -->
   <script defer src="assets/js/main.js"></script>
 
@@ -111,7 +110,7 @@
 <body data-title="Dashboard">
   <div class="app-shell">
     <aside class="sidebar">
-      <div class="sidebar__logo"><img src="assets/img/logotipo.png" alt="RoadMap"></div>
+      <div class="sidebar__logo"><img src="assets/img/logotipo.png" alt="RoadMap" style="max-width:100%;height:auto;"></div>
       <nav class="sidebar__nav">
         <a href="index.html" class="nav-item"><span class="nav-item__icon material-icons">home</span><span>Inicio</span></a>
         <a href="agenda.html" class="nav-item"><span class="nav-item__icon material-icons">event</span><span>Agenda</span></a>
@@ -296,7 +295,7 @@
          2) PARSER + reglas
          ===================== */
       function parseCSV(text){
-        const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
+        const lines = text.split(/\\r?\\n/).filter(l => l.trim() !== "");
         if (!lines.length) return { header:[], rows:[] };
         const header = lines[0].split(",");
         const rows = lines.slice(1).map(line => {
@@ -322,7 +321,7 @@
       const isTruckExcluded = r => TRUCKS_EXCLUDED.has(String(r[IDX.PLACA] ?? "").trim().toUpperCase());
       const unique = arr => Array.from(new Set(arr.filter(v => v !== "" && v != null)));
       const toNum = v => { const n = parseFloat(String(v ?? "0").replace(",", ".")); return isNaN(n)?0:n; };
-      const stripParens = s => String(s ?? "").replace(/\s*\([^\)]*\)/g, "");
+      const stripParens = s => String(s ?? "").replace(/\\s*\\([^)]*\\)/g, "");
 
       /* =====================
          3) Estado + DOM
@@ -354,6 +353,10 @@
           const text = await loadCSVWithFallback();
           const { rows } = parseCSV(text);
           allRows = rows;
+
+          // Debug opcional:
+          // console.log("Filas cargadas:", allRows.length);
+
           buildCentroFilter();
           buildCanalSeg();
           buildMetricaSeg();
@@ -515,7 +518,8 @@
         const width = container.clientWidth || 740;
         const height = Math.max(260, 20 + series.length * 26);
 
-        const leftX = Math.max(anchorLeft, 120);      /* <- límite mínimo seguro */
+        // Alineación a la “T” con un ligero desplazamiento a la izquierda
+        const leftX = Math.max(anchorLeft, 120); /* mínimo seguro */
         const padding = { top:10, right:24, bottom:10, left: leftX };
 
         const maxVal = Math.max(1, ...series.map(d=>d.value));
@@ -532,7 +536,7 @@
           const y = padding.top + i * (barH + barGap);
           const w = ((width - padding.left - padding.right) * d.value) / maxVal;
 
-          // Etiqueta (alineada con la vertical)
+          // Etiqueta
           const lbl = document.createElementNS(svgNS,"text");
           lbl.setAttribute("x", leftX - 8);
           lbl.setAttribute("y", y + barH * 0.75);
@@ -566,7 +570,7 @@
         container.appendChild(svg);
       }
 
-      /* Mejora: más padding inferior para etiquetas rotadas (Centros) */
+      /* Vertical (Centros) con padding inferior dinámico para etiquetas rotadas */
       function chartV_Centros_VLabels(containerId, series, { barColor="#2563eb", valueFmt } = {}){
         const container = document.getElementById(containerId);
         container.innerHTML = "";
@@ -575,14 +579,11 @@
         const width = container.clientWidth || 760;
         const n = series.length;
 
-        // Tamaño de fuente dinámico
+        // Tamaño de fuente y estimación de ancho real del texto
         const maxLen = Math.max(0, ...series.map(d => String(d.label).length));
         const fontSize = n > 14 ? 10 : (n > 9 || maxLen > 12 ? 11 : 12);
-
-        // *** Ajuste clave ***
-        // Estimamos el ancho real (antes de girar) y lo usamos como padding inferior
-        const charW = fontSize * 0.62; // aproximación de ancho de carácter
-        const bottomPad = Math.max(180, Math.min(380, Math.round(charW * maxLen + 40)));
+        const charW = fontSize * 0.62;
+        const bottomPad = Math.max(180, Math.min(420, Math.round(charW * maxLen + 48))); // más espacio si el label es largo
 
         const baseHeight = 340;
         const height = baseHeight + Math.max(0, bottomPad - 120);
@@ -622,10 +623,9 @@
           val.textContent = valueFmt ? valueFmt(d.value) : d.value.toLocaleString("es-PE",{maximumFractionDigits:2});
           svg.appendChild(val);
 
-          // Etiqueta rotada 90° con espacio suficiente abajo
           const label = document.createElementNS(svgNS,"text");
           const lx = x + barW/2;
-          const ly = height - 8;        // ancla cerca del borde inferior visible
+          const ly = height - 8;        // espacio suficiente después del giro
           label.setAttribute("transform", `translate(${lx},${ly}) rotate(-90)`);
           label.setAttribute("text-anchor","end");
           label.setAttribute("font-size", String(fontSize));
@@ -754,12 +754,12 @@
           chartV_Canal_HLabels("chartCanalV", topN(serie, 10), { barColor:"#b45309", valueFmt });
         }
 
-        // (3–6) Horizontales — Alinear un poco más a la izquierda SOLO las barras/etiquetas/valores
+        // (3–6) Horizontales — mover un poco a la izquierda (sin mover títulos)
         function renderHChart(panelId, color, series){
           const el = document.getElementById(panelId);
           const panel = el.closest('.panel');
           const tAnchor = getTitleAnchorLeft(panel, el);
-          const leftShift = 24;                          // <-- desplazamiento adicional solicitado
+          const leftShift = 24;                          // desplazamiento adicional solicitado
           const anchorLeft = Math.max(120, tAnchor - leftShift);
           chartH(panelId, series, { barColor: color, valueFmt, anchorLeft });
         }
