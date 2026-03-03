@@ -266,19 +266,23 @@
 
         const googleUrl = `https://www.google.com/maps?q=${encodeURIComponent(p.lat+","+p.lng)}`;
 
-        const popupHtml=`
-          <div style="min-width:220px;">
-            <strong>Cliente:</strong> ${p.cliente}<br>
-            <strong>Dirección:</strong> 
-              <a href="${googleUrl}" target="_blank">Ver en Google Maps</a><br>
-            <strong>Ruta:</strong> ${p.ruta ?? "-"}<br>
-            <strong>VH:</strong> ${p.vh ?? "-"}<br>
+        const popupHtml = `
+  <div style="min-width:220px;">
+    <strong>Cliente:</strong> ${p.cliente}<br>
 
-            <label style="margin-top:4px;display:flex;gap:5px;font-size:.85rem;">
-              <input type="checkbox" class="visitado-checkbox"/> Visitado
-            </label>
-          </div>
-        `;
+    <strong>Dirección:</strong> ${p.direccion || "-"}<br>
+    ${googleUrl}
+      Ver en Google Maps
+    </a><br>
+
+    <strong>Ruta:</strong> ${p.ruta ?? "-"}<br>
+    <strong>VH:</strong> ${p.vh ?? "-"}<br>
+
+    <label style="margin-top:4px;display:flex;gap:5px;font-size:.85rem;">
+      <input type="checkbox" class="visitado-checkbox"/> Visitado
+    </label>
+  </div>
+`;
 
         const m=L.marker([p.lat,p.lng],{icon});
         m._baseIcon=icon; m._visitedIcon=blackPin;
