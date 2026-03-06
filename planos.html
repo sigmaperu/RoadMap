@@ -12,8 +12,7 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
   <!-- Leaflet -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
 
   <!-- Estilos globales -->
   <link rel="stylesheet" href="assets/css/styles.css">
@@ -28,7 +27,7 @@
     <!-- Sidebar -->
     <aside class="sidebar">
       <div class="sidebar__logo">
-        <img src="assets/img/logotipo.png" alt="RoadMap" />
+        <img src="assets/img/logotipo.png" alt="RoadMap" style="max-width:100%;height:auto;">
       </div>
       <nav class="sidebar__nav">
         <a href="index.html" class="nav-item"><span class="nav-item__icon material-icons">home</span><span>Inicio</span></a>
@@ -88,8 +87,7 @@
   </div>
 
   <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
 
   <!-- Script específico Planos -->
   <script>
@@ -244,8 +242,8 @@
       points.forEach(p=>{
         const icon = p.pesoTotal >= 100 ? purplePin : redPin;
 
-        // ===== Dirección y link a Google Maps (lat,lon) =====
-        const addressText = p.direccion && p.direccion.trim() ? p.direccion.trim() : "-";
+        // Dirección (Col[15] - Col[14]) y link a Google Maps con lat,lon (Col[16],Col[17])
+        const addressText = (p.direccion && p.direccion.trim()) ? p.direccion.trim() : "-";
         const googleUrl = `https://www.google.com/maps?q=${encodeURIComponent(p.lat + "," + p.lng)}`;
 
         const popupHtml=`
@@ -277,6 +275,35 @@
 
       if(bounds.length>0) leafletMap.fitBounds(bounds,{padding:[30,30]});
       else leafletMap.setView([-9.19,-75.02],5);
+    }
+
+    /* =========================
+       GEOLOCALIZACIÓN: puntito negro (Mi ubicación)
+    ========================== */
+    function locateUserOnLoad() {
+      if (!leafletMap || !navigator.geolocation) return;
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude, longitude } = pos.coords;
+          // Puntito negro pequeño
+          L.circleMarker([latitude, longitude], {
+            radius: 2,
+            color: "#000",
+            fillColor: "#000",
+            fillOpacity: 1
+          })
+          .bindPopup("Mi ubicación")
+          .addTo(leafletMap);
+
+          // Si no hay markers aún, centra en mi ubicación (zoom 12)
+          try {
+            const hasData = markersLayer && markersLayer.getLayers().length > 0;
+            if (!hasData) leafletMap.setView([latitude, longitude], 12);
+          } catch(_) {}
+        },
+        () => { /* silencio en error para no interrumpir flujo */ },
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 }
+      );
     }
 
     /* =========================
@@ -322,7 +349,7 @@
           direccion = direccion ? `${direccion} - ${dir14}` : dir14;
         }
 
-        // Ruta como antes (ruta + ruta extra si aplica)
+        // Ruta (ruta + ruta extra si aplica)
         const rutaTexto=(rutaExt && rutaExt!=="0" && rutaExt.toLowerCase()!=="error")
                          ? (ruta ? `${ruta} - ${rutaExt}` : rutaExt)
                          : ruta;
@@ -332,7 +359,7 @@
           clientMap.set(cod,{
             cliente:clienteLabel,
             lat,lng,
-            direccion: direccion,  // <- texto a enlazar
+            direccion: direccion,  // <- texto visible y clickable
             ruta:rutaTexto,
             vh,
             pesoTotal:peso
@@ -364,6 +391,7 @@
         alert("No se pudo cargar RoadMap.csv");
       }
 
+      // Listeners filtros
       filterCentro.addEventListener("change",()=>{
         const c=filterCentro.value;
         refreshPlacaOptions(c);
@@ -377,10 +405,14 @@
       });
       filterCliente.addEventListener("change",applyFilters);
 
+      // Toggle panel filtros
       btnToggleFilters.addEventListener("click",()=>{
         filtersPanel.classList.toggle("filters-floating--collapsed");
         btnToggleFilters.classList.toggle("btn-small-icon--open");
       });
+
+      // === Mi ubicación (puntito negro)
+      locateUserOnLoad();
     }
 
     document.addEventListener("DOMContentLoaded",init);
@@ -389,4 +421,3 @@
 
 </body>
 </html>
-``
