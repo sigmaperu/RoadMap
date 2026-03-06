@@ -150,7 +150,8 @@
       }
       return rows;
     }
-    const unique = arr => [...new Set(arr.filter(v=>v!=="" && v!=null))];
+    const unique = arr => [...new Set(arr.filter(v=>v!==""
+      && v!=null))];
     const toNum  = v => { const n = parseFloat(String(v??"0").replace(",", ".")); return isNaN(n)?0:n; };
 
     /* =========================
@@ -371,6 +372,30 @@
     }
 
     /* =========================
+       PERSISTENCIA DE FILTROS (mínimo y sin tocar diseño)
+    ========================== */
+
+    const LS_KEY = "roadmap.planos.filters.v1";
+    const optionExists = (sel, val) => [...sel.options].some(o => o.value === val);
+
+    function saveFiltersState(){
+      try {
+        localStorage.setItem(LS_KEY, JSON.stringify({
+          centro:  filterCentro.value || "",
+          placa:   filterPlaca.value || "",
+          cliente: filterCliente.value || ""
+        }));
+      } catch(_) {}
+    }
+
+    function loadFiltersState(){
+      try {
+        const raw = localStorage.getItem(LS_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch(_) { return null; }
+    }
+
+    /* =========================
        INIT
     ========================== */
     async function init(){
@@ -385,27 +410,62 @@
         refreshPlacaOptions("");
         refreshClienteOptions("","");
 
+        // --- Restaurar filtros guardados, si existen en el CSV actual ---
+        const st = loadFiltersState();
+        if (st) {
+          // Centro
+          if (st.centro && optionExists(filterCentro, st.centro)) {
+            filterCentro.value = st.centro;
+          } else {
+            filterCentro.value = "";
+          }
+
+          // Placa depende de centro
+          refreshPlacaOptions(filterCentro.value || "");
+          if (st.placa && optionExists(filterPlaca, st.placa)) {
+            filterPlaca.value = st.placa;
+          } else {
+            filterPlaca.value = "";
+          }
+
+          // Cliente depende de centro/placa
+          refreshClienteOptions(filterCentro.value || "", filterPlaca.value || "");
+          if (st.cliente && optionExists(filterCliente, st.cliente)) {
+            filterCliente.value = st.cliente;
+          } else {
+            filterCliente.value = "";
+          }
+        }
+        // ----------------------------------------------------------------
+
         applyFilters();
       }catch(e){
         console.error(e);
         alert("No se pudo cargar RoadMap.csv");
       }
 
-      // Listeners filtros
+      // Listeners filtros (guardan estado al cambiar)
       filterCentro.addEventListener("change",()=>{
         const c=filterCentro.value;
         refreshPlacaOptions(c);
         refreshClienteOptions(c, filterPlaca.value);
         applyFilters();
+        saveFiltersState();
       });
+
       filterPlaca.addEventListener("change",()=>{
         const c=filterCentro.value;
         refreshClienteOptions(c, filterPlaca.value);
         applyFilters();
+        saveFiltersState();
       });
-      filterCliente.addEventListener("change",applyFilters);
 
-      // Toggle panel filtros
+      filterCliente.addEventListener("change",()=>{
+        applyFilters();
+        saveFiltersState();
+      });
+
+      // Toggle panel filtros (sin persistir, tal como pediste)
       btnToggleFilters.addEventListener("click",()=>{
         filtersPanel.classList.toggle("filters-floating--collapsed");
         btnToggleFilters.classList.toggle("btn-small-icon--open");
