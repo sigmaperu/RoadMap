@@ -12,10 +12,15 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
   <!-- Leaflet -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
 
   <!-- Estilos globales -->
-  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/styles.css" />
 
   <!-- Header / config global -->
   <script defer src="assets/js/main.js"></script>
@@ -27,7 +32,7 @@
     <!-- Sidebar -->
     <aside class="sidebar">
       <div class="sidebar__logo">
-        <img src="assets/img/logotipo.png" alt="RoadMap" style="max-width:100%;height:auto;">
+        <img src="assets/img/logotipo.png" alt="RoadMap" />
       </div>
       <nav class="sidebar__nav">
         <a href="index.html" class="nav-item"><span class="nav-item__icon material-icons">home</span><span>Inicio</span></a>
@@ -87,7 +92,11 @@
   </div>
 
   <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
 
   <!-- Script específico Planos -->
   <script>
@@ -98,6 +107,10 @@
     const CSV_URL =
       (window.RoadMapConfig && window.RoadMapConfig.CSV_URL)
       || "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
+
+    // Claves de persistencia (localStorage)
+    const LS_KEY = "roadmap.planos.filters.v1";
+    const LS_PANEL_KEY = "roadmap.planos.filtersPanelOpen.v1";
 
     let allRows = [];
     let leafletMap = null;
@@ -132,7 +145,7 @@
     ========================== */
     function parseCSV(text){
       const lines = text.split(/\r?\n/).filter(l=>l.trim()!=="");
-      lines.shift(); // remove header
+      lines.shift(); // header
       const rows=[];
       for (const line of lines){
         let inQuotes=false, cur="", row=[];
@@ -152,6 +165,31 @@
     }
     const unique = arr => [...new Set(arr.filter(v=>v!=="" && v!=null))];
     const toNum  = v => { const n = parseFloat(String(v??"0").replace(",", ".")); return isNaN(n)?0:n; };
+
+    // Persistencia
+    function saveFiltersState() {
+      try {
+        const state = {
+          centro:  filterCentro.value || "",
+          placa:   filterPlaca.value || "",
+          cliente: filterCliente.value || ""
+        };
+        localStorage.setItem(LS_KEY, JSON.stringify(state));
+      } catch(_) {}
+    }
+    function loadFiltersState() {
+      try {
+        const raw = localStorage.getItem(LS_KEY);
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch(_) { return null; }
+    }
+    function savePanelState(isOpen) {
+      try { localStorage.setItem(LS_PANEL_KEY, isOpen ? "1" : "0"); } catch(_) {}
+    }
+    function loadPanelState() {
+      try { return localStorage.getItem(LS_PANEL_KEY) === "1"; } catch(_) { return false; }
+    }
 
     /* =========================
        ETIQUETA CLIENTE (Col[3]=Cod, Col[4]=Nombre, Col[5]=Sec)
@@ -285,34 +323,7 @@
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           const { latitude, longitude } = pos.coords;
-          // Puntito negro pequeño
-          L.circleMarker([latitude, longitude], {
-            radius: 2,
-            color: "#000",
-            fillColor: "#000",
-            fillOpacity: 1
-          })
-          .bindPopup("Mi ubicación")
-          .addTo(leafletMap);
-
-          // Si no hay markers aún, centra en mi ubicación (zoom 12)
-          try {
-            const hasData = markersLayer && markersLayer.getLayers().length > 0;
-            if (!hasData) leafletMap.setView([latitude, longitude], 12);
-          } catch(_) {}
-        },
-        () => { /* silencio en error para no interrumpir flujo */ },
-        { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 }
-      );
-    }
-
-    /* =========================
-       FILTRO + AGRUPACIÓN (CodCliente = COL[3])
-    ========================== */
-    function applyFilters(){
-      const centro  = filterCentro.value;
-      const placa   = filterPlaca.value;
-      const codCli  = filterCliente.value;
+          L.circleMarker([latitude, longitudeodCli  = filterCliente.value;
 
       let filtered = allRows.slice();
 
@@ -359,7 +370,7 @@
           clientMap.set(cod,{
             cliente:clienteLabel,
             lat,lng,
-            direccion: direccion,  // <- texto visible y clickable
+            direccion: direccion,
             ruta:rutaTexto,
             vh,
             pesoTotal:peso
@@ -368,10 +379,13 @@
       });
 
       renderMarkers([...clientMap.values()]);
+
+      // Guardar filtros tras aplicar (por si se programó desde código)
+      saveFiltersState();
     }
 
     /* =========================
-       INIT
+       INIT + RESTAURACIÓN DE FILTROS
     ========================== */
     async function init(){
       initMap();
@@ -385,33 +399,79 @@
         refreshPlacaOptions("");
         refreshClienteOptions("","");
 
+        // RESTAURAR estado de panel de filtros
+        const wasOpen = loadPanelState();
+        filtersPanel.classList.toggle("filters-floating--collapsed", !wasOpen);
+        btnToggleFilters.classList.toggle("btn-small-icon--open", wasOpen);
+
+        // RESTAURAR filtros seleccionados
+        const st = loadFiltersState();
+        if (st) {
+          // 1) Centro
+          if (st.centro && allCentros.includes(st.centro)) {
+            filterCentro.value = st.centro;
+          } else {
+            filterCentro.value = "";
+          }
+          // 2) Placa (re-llenar basado en centro)
+          refreshPlacaOptions(filterCentro.value || "");
+          if (st.placa && [...filterPlaca.options].some(o => o.value === st.placa)) {
+            filterPlaca.value = st.placa;
+          } else {
+            filterPlaca.value = "";
+          }
+          // 3) Cliente (re-llenar basado en centro/placa)
+          refreshClienteOptions(filterCentro.value || "", filterPlaca.value || "");
+          if (st.cliente && [...filterCliente.options].some(o => o.value === st.cliente)) {
+            filterCliente.value = st.cliente;
+          } else {
+            filterCliente.value = "";
+          }
+        }
+
+        // Render inicial (con lo restaurado)
         applyFilters();
       }catch(e){
         console.error(e);
         alert("No se pudo cargar RoadMap.csv");
       }
 
-      // Listeners filtros
+      // Listeners filtros (guardar en cada cambio)
       filterCentro.addEventListener("change",()=>{
         const c=filterCentro.value;
         refreshPlacaOptions(c);
-        refreshClienteOptions(c, filterPlaca.value);
+        // Si cambia centro, placa previa puede no existir
+        if (![...filterPlaca.options].some(o=>o.value===filterPlaca.value)) {
+          filterPlaca.value = "";
+        }
+        refreshClienteOptions(c, filterPlaca.value || "");
+        if (![...filterCliente.options].some(o=>o.value===filterCliente.value)) {
+          filterCliente.value = "";
+        }
         applyFilters();
       });
+
       filterPlaca.addEventListener("change",()=>{
         const c=filterCentro.value;
-        refreshClienteOptions(c, filterPlaca.value);
+        refreshClienteOptions(c, filterPlaca.value || "");
+        if (![...filterCliente.options].some(o=>o.value===filterCliente.value)) {
+          filterCliente.value = "";
+        }
         applyFilters();
       });
+
       filterCliente.addEventListener("change",applyFilters);
 
-      // Toggle panel filtros
+      // Toggle panel filtros + persistencia
       btnToggleFilters.addEventListener("click",()=>{
-        filtersPanel.classList.toggle("filters-floating--collapsed");
-        btnToggleFilters.classList.toggle("btn-small-icon--open");
+        const opened = filtersPanel.classList.toggle("filters-floating--collapsed");
+        // 'opened' es el estado invertido (toggle devuelve si quedó "true" la clase).
+        const isOpen = !opened;
+        btnToggleFilters.classList.toggle("btn-small-icon--open", isOpen);
+        savePanelState(isOpen);
       });
 
-      // === Mi ubicación (puntito negro)
+      // Mi ubicación
       locateUserOnLoad();
     }
 
