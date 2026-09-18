@@ -1,0 +1,45 @@
+name: Generar RoadMap resumido por Shipment
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "RoadMap.csv"
+      - "scripts/summarize_roadmap.py"
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-summary:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Generar JSON resumido
+        run: python scripts/summarize_roadmap.py
+
+      - name: Guardar JSON generado
+        shell: bash
+        run: |
+          if git diff --quiet -- RoadMap_Shipment.json; then
+            echo "RoadMap_Shipment.json no cambió."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add RoadMap_Shipment.json
+          git commit -m "Actualizar RoadMap resumido por Shipment"
+          git push
