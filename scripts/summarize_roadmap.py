@@ -3,13 +3,14 @@ import json
 from datetime import datetime
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from pathlib import Path
+from typing import Any
 
 
 SOURCE_FILE = Path("RoadMap.csv")
 OUTPUT_FILE = Path("RoadMap_Shipment.json")
 
 
-SOURCE_COLUMNS = {
+COLUMN_MAPPING = {
     "Delivery Date": "DeliveryDate",
     "Location": "Location",
     "Vehicle Key": "VehicleKey",
@@ -29,83 +30,107 @@ SOURCE_COLUMNS = {
 }
 
 
-EMPTY_VALUES = {
+NULL_VALUES = {
     "",
     "none",
     "null",
     "#n/a",
     "#n/d",
     "#na",
+    "nan",
 }
 
 
-def clean_text(value):
+def clean_text(value: Any) -> str:
     if value is None:
         return ""
 
-    clean_value = value.strip()
+    result = str(value).strip()
 
-    if clean_value.lower() in EMPTY_VALUES:
+    if result.lower() in NULL_VALUES:
         return ""
 
-    return clean_value
+    return result
 
 
-def parse_decimal(value):
-    clean_value = clean_text(value).replace(" ", "")
+def normalize_header(value: Any) -> str:
+    return (
+        clean_text(value)
+        .replace("\ufeff", "")
+        .replace("\r", "")
+        .replace("\n", "")
+        .strip()
+    )
 
-    if clean_value == "":
+
+def parse_decimal(value: Any, field_name: str) -> Decimal:
+    cleaned = clean_text(value)
+
+    if cleaned == "":
         return Decimal("0")
 
+    cleaned = cleaned.replace(" ", "")
+
+    # Formato habitual del raw: 1234.56
     try:
-        return Decimal(clean_value)
+        return Decimal(cleaned)
     except InvalidOperation:
-        try:
-            return Decimal(clean_value.replace(",", "."))
-        except InvalidOperation as exc:
-            raise ValueError(
-                f"Weight inválido: {value!r}"
-            ) from exc
+        pass
+
+    # Alternativa: 1234,56
+    try:
+        return Decimal(cleaned.replace(",", "."))
+    except InvalidOperation as exc:
+        raise ValueError(
+            f"Valor numérico inválido en {field_name}: {value!r}"
+        ) from exc
 
 
-def parse_coordinate(value):
-    clean_value = clean_text(value).replace(" ", "")
+def parse_coordinate(value: Any, field_name: str):
+    cleaned = clean_text(value)
 
-    if clean_value == "":
+    if cleaned == "":
         return None
 
+    cleaned = cleaned.replace(" ", "")
+
     try:
-        return float(clean_value)
+        return float(cleaned)
     except ValueError:
-        try:
-            return float(clean_value.replace(",", "."))
-        except ValueError as exc:
-            raise ValueError(
-                f"Coordenada inválida: {value!r}"
-            ) from exc
+        pass
+
+    try:
+        return float(cleaned.replace(",", "."))
+    except ValueError as exc:
+        raise ValueError(
+            f"Coordenada inválida en {field_name}: {value!r}"
+        ) from exc
 
 
-def normalize_date(value):
-    clean_value = clean_text(value)
+def normalize_date(value: Any) -> str:
+    cleaned = clean_text(value)
 
-    if clean_value == "":
+    if cleaned == "":
         return ""
 
-accepted_formats = [
-    "%d/%m/%Y",
-    "%d/%m/%y",
-    "%m/%d/%Y",
-    "%m/%d/%y",
-    "%Y-%m-%d",
-]
-
+    # El raw utiliza principalmente día/mes/año.
+    # También se aceptan formatos alternativos para evitar fallos futuros.
+    accepted_formats = [
+        "%d/%m/%Y",
+        "%d/%m/%y",
+        "%Y-%m-%d",
+        "%m/%d/%Y",
+        "%m/%d/%y",
+    ]
 
     for date_format in accepted_formats:
         try:
-            return datetime.strptime(
-                clean_value,
-                date_format
-            ).date().isoformat()
+            parsed_date = datetime.strptime(
+                cleaned,
+                date_format,
+            ).date()
+
+            return parsed_date.isoformat()
         except ValueError:
             continue
 
@@ -115,27 +140,39 @@ accepted_formats = [
 
 
 def validate_headers(fieldnames):
-    existing_headers = set(fieldnames or [])
+    actual_headers = {
+        normalize_header(header)
+        for header in (fieldnames or [])
+    }
 
-    required_headers = set(SOURCE_COLUMNS.keys()) | {"Weight"}
+    required_headers = set(COLUMN_MAPPING.keys())
+    required_headers.add("Weight")
 
     missing_headers = sorted(
-        required_headers - existing_headers
+        required_headers - actual_headers
     )
 
     if missing_headers:
         raise ValueError(
-            "Faltan columnas obligatorias: "
+            "Faltan columnas obligatorias en RoadMap.csv: "
             + ", ".join(missing_headers)
         )
+
+
+def normalize_row_keys(row):
+    return {
+        normalize_header(key): value
+        for key, value in row.items()
+        if key is not None
+    }
 
 
 def build_base_record(row):
     record = {}
 
-    for source_name, output_name in SOURCE_COLUMNS.items():
-        record[output_name] = clean_text(
-            row.get(source_name)
+    for source_column, output_column in COLUMN_MAPPING.items():
+        record[output_column] = clean_text(
+            row.get(source_column)
         )
 
     record["DeliveryDate"] = normalize_date(
@@ -143,20 +180,26 @@ def build_base_record(row):
     )
 
     record["Latitude"] = parse_coordinate(
-        row.get("Latitude")
+        row.get("Latitude"),
+        "Latitude",
     )
 
     record["Longitude"] = parse_coordinate(
-        row.get("Longitude")
+        row.get("Longitude"),
+        "Longitude",
     )
 
-    # Shipment, cuentas y credenciales se conservan como texto.
-    record["ShipmentCustom"] = clean_text(
-        row.get("Shipment Custom")
+    # Los identificadores se conservan como texto.
+    record["VehicleKey"] = clean_text(
+        row.get("Vehicle Key")
     )
 
     record["CustomerAccount"] = clean_text(
         row.get("Customer Account #")
+    )
+
+    record["ShipmentCustom"] = clean_text(
+        row.get("Shipment Custom")
     )
 
     record["DriverBadge"] = clean_text(
@@ -168,112 +211,157 @@ def build_base_record(row):
     return record
 
 
-def validate_same_shipment(existing, current, row_number):
+def values_are_empty(value):
+    return value is None or value == ""
+
+
+def validate_and_merge_attributes(
+    stored_record,
+    new_record,
+    row_number,
+):
     ignored_fields = {
         "KgPlanificados",
     }
 
-    for field_name in existing:
+    for field_name, new_value in new_record.items():
         if field_name in ignored_fields:
             continue
 
-        existing_value = existing[field_name]
-        current_value = current[field_name]
+        stored_value = stored_record.get(field_name)
 
-        # Un vacío no reemplaza una información ya disponible.
-        if current_value in ("", None):
+        # Si la nueva línea SKU no tiene información,
+        # mantenemos el valor ya obtenido.
+        if values_are_empty(new_value):
             continue
 
-        if existing_value in ("", None):
-            existing[field_name] = current_value
+        # Si el registro almacenado estaba vacío,
+        # completamos con el nuevo valor.
+        if values_are_empty(stored_value):
+            stored_record[field_name] = new_value
             continue
 
-        if existing_value != current_value:
-            shipment = existing["ShipmentCustom"]
+        if stored_value != new_value:
+            shipment = stored_record.get(
+                "ShipmentCustom",
+                "",
+            )
 
             raise ValueError(
                 f"El Shipment {shipment} presenta valores distintos "
-                f"en {field_name}. Fila del CSV: {row_number}. "
-                f"Valores: {existing_value!r} y {current_value!r}"
+                f"en la columna {field_name}. "
+                f"Fila del CSV: {row_number}. "
+                f"Valor inicial: {stored_value!r}. "
+                f"Valor encontrado: {new_value!r}."
             )
+
+
+def create_json_record(record):
+    output_record = dict(record)
+
+    rounded_weight = record[
+        "KgPlanificados"
+    ].quantize(
+        Decimal("0.001"),
+        rounding=ROUND_HALF_UP,
+    )
+
+    output_record["KgPlanificados"] = float(
+        rounded_weight
+    )
+
+    return output_record
 
 
 def main():
     if not SOURCE_FILE.exists():
         raise FileNotFoundError(
-            f"No existe {SOURCE_FILE}"
+            f"No existe el archivo {SOURCE_FILE} "
+            "en la raíz del repositorio."
         )
 
     shipments = {}
+    source_row_count = 0
+    skipped_rows = 0
 
     with SOURCE_FILE.open(
-        "r",
+        mode="r",
         encoding="utf-8-sig",
-        newline=""
+        newline="",
     ) as csv_file:
-
         reader = csv.DictReader(csv_file)
 
         validate_headers(reader.fieldnames)
 
-        for row_number, row in enumerate(reader, start=2):
+        for row_number, original_row in enumerate(
+            reader,
+            start=2,
+        ):
+            source_row_count += 1
+
+            row = normalize_row_keys(original_row)
+
             shipment = clean_text(
                 row.get("Shipment Custom")
             )
 
             if shipment == "":
+                skipped_rows += 1
                 continue
 
             current_record = build_base_record(row)
+
             current_weight = parse_decimal(
-                row.get("Weight")
+                row.get("Weight"),
+                "Weight",
             )
 
             if shipment not in shipments:
                 shipments[shipment] = current_record
             else:
-                validate_same_shipment(
+                validate_and_merge_attributes(
                     shipments[shipment],
                     current_record,
-                    row_number
+                    row_number,
                 )
 
-            shipments[shipment]["KgPlanificados"] += current_weight
+            shipments[shipment][
+                "KgPlanificados"
+            ] += current_weight
 
-    output = []
-
-    for shipment in sorted(shipments):
-        record = shipments[shipment]
-
-        rounded_weight = record[
-            "KgPlanificados"
-        ].quantize(
-            Decimal("0.001"),
-            rounding=ROUND_HALF_UP
-        )
-
-        record["KgPlanificados"] = float(
-            rounded_weight
-        )
-
-        output.append(record)
+    output_records = [
+        create_json_record(shipments[shipment])
+        for shipment in sorted(shipments.keys())
+    ]
 
     with OUTPUT_FILE.open(
-        "w",
+        mode="w",
         encoding="utf-8",
-        newline=""
+        newline="",
     ) as json_file:
-
         json.dump(
-            output,
+            output_records,
             json_file,
             ensure_ascii=False,
-            indent=2
+            indent=2,
         )
 
+        json_file.write("\n")
+
     print(
-        f"Archivo generado: {OUTPUT_FILE} "
-        f"con {len(output)} shipments."
+        f"Filas leídas del CSV: {source_row_count}"
+    )
+
+    print(
+        f"Filas omitidas sin Shipment Custom: {skipped_rows}"
+    )
+
+    print(
+        f"Shipments únicos generados: {len(output_records)}"
+    )
+
+    print(
+        f"Archivo generado correctamente: {OUTPUT_FILE}"
     )
 
 
