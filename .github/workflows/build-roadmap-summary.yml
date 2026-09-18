@@ -7,6 +7,7 @@ on:
     paths:
       - "RoadMap.csv"
       - "scripts/summarize_roadmap.py"
+      - ".github/workflows/build-roadmap-summary.yml"
 
   workflow_dispatch:
 
@@ -15,31 +16,91 @@ permissions:
 
 jobs:
   build-summary:
+    name: build-summary
     runs-on: ubuntu-latest
 
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Configurar Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
+      - name: Mostrar archivos disponibles
+        shell: bash
+        run: |
+          echo "Contenido de la raíz:"
+          ls -la
+
+          echo "Contenido de scripts:"
+          ls -la scripts
+
+      - name: Validar sintaxis del script
+        run: |
+          python -m py_compile scripts/summarize_roadmap.py
+
       - name: Generar JSON resumido
-        run: python scripts/summarize_roadmap.py
+        run: |
+          python scripts/summarize_roadmap.py
+
+      - name: Validar archivo generado
+        shell: bash
+        run: |
+          if [ ! -f "RoadMap_Shipment.json" ]; then
+            echo "No se generó RoadMap_Shipment.json"
+            exit 1
+          fi
+
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          output_file = Path("RoadMap_Shipment.json")
+
+          with output_file.open(
+              "r",
+              encoding="utf-8"
+          ) as file:
+              records = json.load(file)
+
+          if not isinstance(records, list):
+              raise ValueError(
+                  "RoadMap_Shipment.json no contiene un arreglo JSON."
+              )
+
+          if len(records) == 0:
+              raise ValueError(
+                  "RoadMap_Shipment.json está vacío."
+              )
+
+          print(
+              f"JSON válido. Shipments encontrados: {len(records)}"
+          )
+          PY
 
       - name: Guardar JSON generado
         shell: bash
         run: |
-          if git diff --quiet -- RoadMap_Shipment.json; then
-            echo "RoadMap_Shipment.json no cambió."
+          if [ -z "$(git status --porcelain -- RoadMap_Shipment.json)" ]; then
+            echo "RoadMap_Shipment.json no presenta cambios."
             exit 0
           fi
 
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config \
+            user.name \
+            "github-actions[bot]"
+
+          git config \
+            user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
 
           git add RoadMap_Shipment.json
-          git commit -m "Actualizar RoadMap resumido por Shipment"
-          git push
+
+          git commit \
+            -m "Actualizar RoadMap resumido por Shipment"
+
+          git push origin main
