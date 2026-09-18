@@ -91,11 +91,14 @@ def normalize_date(value):
     if clean_value == "":
         return ""
 
-    accepted_formats = [
-        "%m/%d/%Y",
-        "%m/%d/%y",
-        "%Y-%m-%d",
-    ]
+accepted_formats = [
+    "%d/%m/%Y",
+    "%d/%m/%y",
+    "%m/%d/%Y",
+    "%m/%d/%y",
+    "%Y-%m-%d",
+]
+
 
     for date_format in accepted_formats:
         try:
