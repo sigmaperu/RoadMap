@@ -14,12 +14,8 @@ ROADMAP_FILE = Path("RoadMap_Shipment.json")
 OUTPUT_FILE = Path("GreenMile_Estados.json")
 GREENMILE_URL = "https://sigmaperu.greenmile.com/Route/restrictions"
 
-# Las páginas ligeras pueden ser grandes porque no incluyen stops/orders.
 SCAN_PAGE_SIZE = int(os.getenv("GREENMILE_SCAN_PAGE_SIZE", "100"))
-
-# Las páginas detalladas son pequeñas porque stops.orders.* aumenta el volumen.
 DETAIL_PAGE_SIZE = int(os.getenv("GREENMILE_DETAIL_PAGE_SIZE", "10"))
-
 MAX_PAGES = int(os.getenv("GREENMILE_MAX_PAGES", "2000"))
 HTTP_RETRIES = int(os.getenv("GREENMILE_HTTP_RETRIES", "3"))
 
@@ -42,6 +38,16 @@ DETAIL_FIELDS = [
     "stops.key",
     "stops.stopType.id",
     "stops.stopType.key",
+    "stops.latitude",
+    "stops.longitude",
+    "stops.arrivalLatitude",
+    "stops.arrivalLongitude",
+    "stops.departureLatitude",
+    "stops.departureLongitude",
+    "stops.serviceLatitude",
+    "stops.serviceLongitude",
+    "stops.cancellationLatitude",
+    "stops.cancellationLongitude",
     "stops.orders.*",
     "stops.deliveryStatus",
 ]
@@ -55,6 +61,15 @@ def clean_text(value: Any) -> str:
 
 def normalise_status(value: Any) -> str:
     return clean_text(value).upper()
+
+
+def to_number(value: Any) -> Optional[float]:
+    if value is None or value == "":
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
 
 
 def require_environment_variable(name: str) -> str:
@@ -132,20 +147,20 @@ def request_routes_page(
         safe="",
     )
 
-    request = urllib.request.Request(
-        url=f"{GREENMILE_URL}?criteria={encoded_criteria}",
-        data=b"{}",
-        method="POST",
-        headers={
-            "Authorization": authorisation,
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-        },
-    )
-
     latest_error: Optional[Exception] = None
 
     for attempt in range(1, HTTP_RETRIES + 1):
+        request = urllib.request.Request(
+            url=f"{GREENMILE_URL}?criteria={encoded_criteria}",
+            data=b"{}",
+            method="POST",
+            headers={
+                "Authorization": authorisation,
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
+        )
+
         try:
             with urllib.request.urlopen(request, timeout=120) as response:
                 response_text = response.read().decode("utf-8")
@@ -160,9 +175,7 @@ def request_routes_page(
                 ) from error
 
             if not isinstance(data, list):
-                raise RuntimeError(
-                    "La respuesta de GreenMile no es una matriz."
-                )
+                raise RuntimeError("La respuesta de GreenMile no es una matriz.")
 
             return data
 
@@ -247,6 +260,25 @@ def choose_best_record(
     return existing
 
 
+def extract_coordinates(stop: dict[str, Any]) -> tuple[Optional[float], Optional[float], str]:
+    coordinate_pairs = [
+        ("serviceLatitude", "serviceLongitude", "SERVICIO"),
+        ("departureLatitude", "departureLongitude", "PARTIDA"),
+        ("arrivalLatitude", "arrivalLongitude", "LLEGADA"),
+        ("cancellationLatitude", "cancellationLongitude", "CANCELACIÓN"),
+        ("latitude", "longitude", "PARADA"),
+    ]
+
+    for latitude_key, longitude_key, source in coordinate_pairs:
+        latitude = to_number(stop.get(latitude_key))
+        longitude = to_number(stop.get(longitude_key))
+
+        if latitude is not None and longitude is not None:
+            return latitude, longitude, source
+
+    return None, None, ""
+
+
 def create_not_migrated_record(programmed: dict[str, Any]) -> dict[str, Any]:
     return {
         "ShipmentCustom": clean_text(programmed.get("ShipmentCustom")),
@@ -256,6 +288,9 @@ def create_not_migrated_record(programmed: dict[str, Any]) -> dict[str, Any]:
         "EstadoMigracion": "NO MIGRADO",
         "EstadoConexion": "NO APLICA",
         "EstadoEntrega": "SIN INFORMACIÓN",
+        "LatitudActual": None,
+        "LongitudActual": None,
+        "FuenteCoordenada": "",
         "DeliveryStatusRaw": "",
         "EstadoRutaRaw": "",
         "MotivoNoEntrega": "",
@@ -286,10 +321,10 @@ def process_detail_routes(
         location = clean_text(organization.get("key"))
 
         for stop in route.get("stops") or []:
-            delivery_status_raw = normalise_status(
-                stop.get("deliveryStatus")
-            )
+            delivery_status_raw = normalise_status(stop.get("deliveryStatus"))
             observed_delivery_statuses[delivery_status_raw] += 1
+
+            latitude, longitude, coordinate_source = extract_coordinates(stop)
 
             for order in stop.get("orders") or []:
                 shipment_number = clean_text(order.get("number"))
@@ -308,6 +343,9 @@ def process_detail_routes(
                     "EstadoMigracion": "MIGRADO",
                     "EstadoConexion": map_connection_status(route_status_raw),
                     "EstadoEntrega": map_delivery_status(delivery_status_raw),
+                    "LatitudActual": latitude,
+                    "LongitudActual": longitude,
+                    "FuenteCoordenada": coordinate_source,
                     "DeliveryStatusRaw": delivery_status_raw,
                     "EstadoRutaRaw": route_status_raw,
                     "MotivoNoEntrega": "",
@@ -445,12 +483,18 @@ def main() -> None:
         record["EstadoMigracion"] == "MIGRADO"
         for record in output_records
     )
+    coordinates_count = sum(
+        record.get("LatitudActual") is not None
+        and record.get("LongitudActual") is not None
+        for record in output_records
+    )
 
     print("\nRESUMEN")
     print(f"Rutas revisadas: {total_routes_reviewed}")
     print(f"Rutas de fecha operativa: {matching_routes}")
     print(f"Shipments migrados: {migrated_count}")
     print(f"Shipments no migrados: {len(output_records) - migrated_count}")
+    print(f"Shipments con coordenadas: {coordinates_count}")
     print(f"Estados de ruta observados: {dict(observed_route_statuses)}")
     print(f"Estados de entrega observados: {dict(observed_delivery_statuses)}")
     print(f"Archivo generado: {OUTPUT_FILE}")
