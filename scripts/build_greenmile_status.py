@@ -2,6 +2,7 @@ import base64
 import json
 import os
 import sys
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -12,8 +13,15 @@ from typing import Any, Optional
 ROADMAP_FILE = Path("RoadMap_Shipment.json")
 OUTPUT_FILE = Path("GreenMile_Estados.json")
 GREENMILE_URL = "https://sigmaperu.greenmile.com/Route/restrictions"
+
+# Las páginas ligeras pueden ser grandes porque no incluyen stops/orders.
 SCAN_PAGE_SIZE = int(os.getenv("GREENMILE_SCAN_PAGE_SIZE", "100"))
+
+# Las páginas detalladas son pequeñas porque stops.orders.* aumenta el volumen.
+DETAIL_PAGE_SIZE = int(os.getenv("GREENMILE_DETAIL_PAGE_SIZE", "10"))
+
 MAX_PAGES = int(os.getenv("GREENMILE_MAX_PAGES", "2000"))
+HTTP_RETRIES = int(os.getenv("GREENMILE_HTTP_RETRIES", "3"))
 
 LIGHT_FIELDS = [
     "id",
@@ -135,37 +143,68 @@ def request_routes_page(
         },
     )
 
-    try:
-        with urllib.request.urlopen(request, timeout=120) as response:
-            response_text = response.read().decode("utf-8")
-    except urllib.error.HTTPError as error:
-        error_body = error.read().decode("utf-8", errors="replace")
-        raise RuntimeError(
-            f"GreenMile respondió HTTP {error.code}. "
-            f"firstResult={first_result}. Respuesta={error_body[:1000]}"
-        ) from error
-    except urllib.error.URLError as error:
-        raise RuntimeError(
-            f"No fue posible conectar con GreenMile. "
-            f"firstResult={first_result}. Error={error}"
-        ) from error
+    latest_error: Optional[Exception] = None
 
-    try:
-        data = json.loads(response_text)
-    except json.JSONDecodeError as error:
-        raise RuntimeError(
-            f"GreenMile no devolvió JSON válido. "
-            f"firstResult={first_result}. Respuesta={response_text[:1000]}"
-        ) from error
+    for attempt in range(1, HTTP_RETRIES + 1):
+        try:
+            with urllib.request.urlopen(request, timeout=120) as response:
+                response_text = response.read().decode("utf-8")
 
-    if not isinstance(data, list):
-        raise RuntimeError("La respuesta de GreenMile no es una matriz.")
+            try:
+                data = json.loads(response_text)
+            except json.JSONDecodeError as error:
+                raise RuntimeError(
+                    f"GreenMile no devolvió JSON válido. "
+                    f"firstResult={first_result}. "
+                    f"Respuesta={response_text[:1000]}"
+                ) from error
 
-    return data
+            if not isinstance(data, list):
+                raise RuntimeError(
+                    "La respuesta de GreenMile no es una matriz."
+                )
+
+            return data
+
+        except urllib.error.HTTPError as error:
+            error_body = error.read().decode("utf-8", errors="replace")
+            latest_error = RuntimeError(
+                f"GreenMile respondió HTTP {error.code}. "
+                f"firstResult={first_result}, maxResults={max_results}. "
+                f"Respuesta={error_body[:1000]}"
+            )
+
+            if error.code not in {429, 500, 502, 503, 504}:
+                raise latest_error from error
+
+        except urllib.error.URLError as error:
+            latest_error = RuntimeError(
+                f"No fue posible conectar con GreenMile. "
+                f"firstResult={first_result}, maxResults={max_results}. "
+                f"Error={error}"
+            )
+
+        if attempt < HTTP_RETRIES:
+            wait_seconds = attempt * 2
+            print(
+                f"Reintento HTTP {attempt + 1}/{HTTP_RETRIES} "
+                f"en {wait_seconds}s. firstResult={first_result}, "
+                f"maxResults={max_results}"
+            )
+            time.sleep(wait_seconds)
+
+    if latest_error is not None:
+        raise latest_error
+
+    raise RuntimeError("Error HTTP no identificado al consultar GreenMile.")
 
 
-def get_route_ids(routes: list[dict[str, Any]]) -> list[str]:
-    return [clean_text(route.get("id")) for route in routes]
+def get_route_ids(routes: list[dict[str, Any]]) -> set[str]:
+    return {
+        clean_text(route.get("id"))
+        for route in routes
+        if clean_text(route.get("id")) != ""
+    }
 
 
 def map_delivery_status(value: Any) -> str:
@@ -223,6 +262,65 @@ def create_not_migrated_record(programmed: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def process_detail_routes(
+    detail_routes: list[dict[str, Any]],
+    target_dates: set[str],
+    programmed_by_number: dict[str, dict[str, Any]],
+    found_shipments: dict[str, dict[str, Any]],
+    observed_route_statuses: Counter[str],
+    observed_delivery_statuses: Counter[str],
+) -> int:
+    matching_routes = 0
+
+    for route in detail_routes:
+        route_date = clean_text(route.get("date"))
+        if route_date not in target_dates:
+            continue
+
+        matching_routes += 1
+        vehicle_key = clean_text(route.get("key"))
+        route_status_raw = normalise_status(route.get("status"))
+        observed_route_statuses[route_status_raw] += 1
+
+        organization = route.get("organization") or {}
+        location = clean_text(organization.get("key"))
+
+        for stop in route.get("stops") or []:
+            delivery_status_raw = normalise_status(
+                stop.get("deliveryStatus")
+            )
+            observed_delivery_statuses[delivery_status_raw] += 1
+
+            for order in stop.get("orders") or []:
+                shipment_number = clean_text(order.get("number"))
+
+                if (
+                    shipment_number == ""
+                    or shipment_number not in programmed_by_number
+                ):
+                    continue
+
+                candidate = {
+                    "ShipmentCustom": shipment_number,
+                    "VehicleKey": vehicle_key,
+                    "Location": location,
+                    "FechaOperacion": route_date,
+                    "EstadoMigracion": "MIGRADO",
+                    "EstadoConexion": map_connection_status(route_status_raw),
+                    "EstadoEntrega": map_delivery_status(delivery_status_raw),
+                    "DeliveryStatusRaw": delivery_status_raw,
+                    "EstadoRutaRaw": route_status_raw,
+                    "MotivoNoEntrega": "",
+                }
+
+                found_shipments[shipment_number] = choose_best_record(
+                    found_shipments.get(shipment_number),
+                    candidate,
+                )
+
+    return matching_routes
+
+
 def main() -> None:
     username = require_environment_variable("GREENMILE_USERNAME")
     password = require_environment_variable("GREENMILE_PASSWORD")
@@ -245,7 +343,7 @@ def main() -> None:
     page_number = 0
     total_routes_reviewed = 0
     matching_routes = 0
-    previous_page_signature = ""
+    previous_page_signature: Optional[frozenset[str]] = None
 
     while page_number < MAX_PAGES:
         light_routes = request_routes_page(
@@ -260,9 +358,9 @@ def main() -> None:
             print(f"Fin de paginación. firstResult={first_result}")
             break
 
-        current_page_signature = "|".join(get_route_ids(light_routes))
+        current_page_signature = frozenset(get_route_ids(light_routes))
         if (
-            current_page_signature != ""
+            current_page_signature
             and current_page_signature == previous_page_signature
         ):
             raise RuntimeError(
@@ -286,67 +384,44 @@ def main() -> None:
         )
 
         if matching_dates:
-            detail_routes = request_routes_page(
-                fields=DETAIL_FIELDS,
-                first_result=first_result,
-                max_results=len(light_routes),
-                authorisation=authorisation,
-            )
+            light_page_ids = get_route_ids(light_routes)
+            detail_ids_seen: set[str] = set()
 
-            if get_route_ids(light_routes) != get_route_ids(detail_routes):
-                raise RuntimeError(
-                    "El contenido de la página cambió entre la consulta ligera "
-                    f"y la detallada. firstResult={first_result}."
+            for detail_offset in range(0, len(light_routes), DETAIL_PAGE_SIZE):
+                detail_first_result = first_result + detail_offset
+                detail_max_results = min(
+                    DETAIL_PAGE_SIZE,
+                    len(light_routes) - detail_offset,
                 )
 
-            for route in detail_routes:
-                route_date = clean_text(route.get("date"))
-                if route_date not in target_dates:
-                    continue
+                print(
+                    f"  Detalle: firstResult={detail_first_result}, "
+                    f"maxResults={detail_max_results}"
+                )
 
-                matching_routes += 1
-                vehicle_key = clean_text(route.get("key"))
-                route_status_raw = normalise_status(route.get("status"))
-                observed_route_statuses[route_status_raw] += 1
+                detail_routes = request_routes_page(
+                    fields=DETAIL_FIELDS,
+                    first_result=detail_first_result,
+                    max_results=detail_max_results,
+                    authorisation=authorisation,
+                )
 
-                organization = route.get("organization") or {}
-                location = clean_text(organization.get("key"))
+                detail_ids_seen.update(get_route_ids(detail_routes))
+                matching_routes += process_detail_routes(
+                    detail_routes=detail_routes,
+                    target_dates=target_dates,
+                    programmed_by_number=programmed_by_number,
+                    found_shipments=found_shipments,
+                    observed_route_statuses=observed_route_statuses,
+                    observed_delivery_statuses=observed_delivery_statuses,
+                )
 
-                for stop in route.get("stops") or []:
-                    delivery_status_raw = normalise_status(
-                        stop.get("deliveryStatus")
-                    )
-                    observed_delivery_statuses[delivery_status_raw] += 1
-
-                    for order in stop.get("orders") or []:
-                        shipment_number = clean_text(order.get("number"))
-                        if (
-                            shipment_number == ""
-                            or shipment_number not in programmed_by_number
-                        ):
-                            continue
-
-                        candidate = {
-                            "ShipmentCustom": shipment_number,
-                            "VehicleKey": vehicle_key,
-                            "Location": location,
-                            "FechaOperacion": route_date,
-                            "EstadoMigracion": "MIGRADO",
-                            "EstadoConexion": map_connection_status(
-                                route_status_raw
-                            ),
-                            "EstadoEntrega": map_delivery_status(
-                                delivery_status_raw
-                            ),
-                            "DeliveryStatusRaw": delivery_status_raw,
-                            "EstadoRutaRaw": route_status_raw,
-                            "MotivoNoEntrega": "",
-                        }
-
-                        found_shipments[shipment_number] = choose_best_record(
-                            found_shipments.get(shipment_number),
-                            candidate,
-                        )
+            missing_ids = light_page_ids - detail_ids_seen
+            if missing_ids:
+                print(
+                    "ADVERTENCIA: la consulta detallada no devolvió "
+                    f"{len(missing_ids)} rutas de la página ligera."
+                )
 
         first_result += len(light_routes)
     else:
@@ -367,7 +442,8 @@ def main() -> None:
         file.write("\n")
 
     migrated_count = sum(
-        record["EstadoMigracion"] == "MIGRADO" for record in output_records
+        record["EstadoMigracion"] == "MIGRADO"
+        for record in output_records
     )
 
     print("\nRESUMEN")
