@@ -30,9 +30,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -224,7 +224,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -272,7 +272,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -332,7 +332,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -344,7 +344,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -354,9 +354,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -488,7 +488,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -498,9 +498,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "SIN INFORMACIÓN",
+    "DeliveryStatusRaw": "UNDELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -560,7 +560,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -654,9 +654,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -680,7 +680,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -690,9 +690,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -764,7 +764,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -812,7 +812,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -822,9 +822,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -836,7 +836,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -858,9 +858,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -906,8 +906,8 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
     "EstadoRutaRaw": "DEPARTED_ORIGIN",
     "MotivoNoEntrega": ""
   },
@@ -944,7 +944,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -980,7 +980,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -990,9 +990,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -1026,9 +1026,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -1074,9 +1074,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -1112,7 +1112,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -1278,9 +1278,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -1304,7 +1304,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -1422,9 +1422,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -1434,9 +1434,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -1520,7 +1520,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -1544,7 +1544,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -1554,9 +1554,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -1604,7 +1604,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -1614,9 +1614,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -1628,7 +1628,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -1640,7 +1640,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -1662,9 +1662,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -1674,9 +1674,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -1688,7 +1688,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -1700,7 +1700,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -1722,9 +1722,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -1736,7 +1736,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -1746,9 +1746,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -1758,9 +1758,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -2048,7 +2048,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -2072,7 +2072,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -2132,7 +2132,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -2192,7 +2192,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -2226,8 +2226,8 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
+    "EstadoEntrega": "SIN INFORMACIÓN",
+    "DeliveryStatusRaw": "UNDELIVERED",
     "EstadoRutaRaw": "DEPARTED_ORIGIN",
     "MotivoNoEntrega": ""
   },
@@ -2250,9 +2250,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -2264,7 +2264,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -2288,7 +2288,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -2312,7 +2312,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -2334,9 +2334,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -2792,7 +2792,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -2804,7 +2804,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -2840,7 +2840,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -2888,7 +2888,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -2924,7 +2924,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -2936,7 +2936,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -2996,7 +2996,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -3008,7 +3008,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -3030,9 +3030,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -3104,7 +3104,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -3164,7 +3164,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -3176,7 +3176,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -3188,7 +3188,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -3212,7 +3212,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -3296,7 +3296,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -3356,7 +3356,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -3464,7 +3464,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -4040,7 +4040,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -4064,7 +4064,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -4100,7 +4100,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -4112,7 +4112,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -4172,7 +4172,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -4184,7 +4184,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -4208,7 +4208,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -4232,7 +4232,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -4256,7 +4256,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -4268,7 +4268,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -4292,7 +4292,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -4316,7 +4316,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -4376,7 +4376,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -4422,9 +4422,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -4458,9 +4458,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -4484,7 +4484,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -4520,7 +4520,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -4532,7 +4532,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -4604,7 +4604,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -4616,7 +4616,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -4640,7 +4640,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -4722,9 +4722,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -4820,7 +4820,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -4880,7 +4880,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -5022,9 +5022,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -5048,7 +5048,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -5060,7 +5060,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -5082,9 +5082,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -5096,7 +5096,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -5144,7 +5144,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -5238,9 +5238,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -5252,7 +5252,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -5276,7 +5276,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -5322,8 +5322,8 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
     "EstadoRutaRaw": "DEPARTED_ORIGIN",
     "MotivoNoEntrega": ""
   },
@@ -5348,7 +5348,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -5382,8 +5382,8 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
     "EstadoRutaRaw": "DEPARTED_ORIGIN",
     "MotivoNoEntrega": ""
   },
@@ -5456,7 +5456,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -5576,7 +5576,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -5588,7 +5588,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -5624,7 +5624,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -5684,7 +5684,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -5706,9 +5706,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -5720,7 +5720,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -5742,9 +5742,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -5754,9 +5754,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -5768,7 +5768,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -5826,8 +5826,8 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
     "EstadoRutaRaw": "DEPARTED_ORIGIN",
     "MotivoNoEntrega": ""
   },
@@ -5852,7 +5852,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -6152,7 +6152,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -6176,7 +6176,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -6188,7 +6188,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -6212,7 +6212,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -6246,8 +6246,8 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
     "EstadoRutaRaw": "DEPARTED_ORIGIN",
     "MotivoNoEntrega": ""
   },
@@ -6284,7 +6284,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -6294,8 +6294,8 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
     "EstadoRutaRaw": "DEPARTED_ORIGIN",
     "MotivoNoEntrega": ""
   },
@@ -6368,7 +6368,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -6416,7 +6416,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "SIN INFORMACIÓN",
     "DeliveryStatusRaw": "UNDELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -6428,7 +6428,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -6440,7 +6440,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -6486,8 +6486,8 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
     "EstadoRutaRaw": "DEPARTED_ORIGIN",
     "MotivoNoEntrega": ""
   },
@@ -6500,7 +6500,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -6642,9 +6642,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -6678,9 +6678,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -6896,7 +6896,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -6932,7 +6932,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -7016,7 +7016,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -7052,7 +7052,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -7124,7 +7124,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -7148,7 +7148,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -7160,7 +7160,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -7196,7 +7196,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -7208,7 +7208,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -7352,7 +7352,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -7376,7 +7376,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -7554,9 +7554,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -7580,7 +7580,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -7602,9 +7602,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -7626,9 +7626,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -7676,7 +7676,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -7700,7 +7700,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -7806,9 +7806,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -7820,7 +7820,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -7880,7 +7880,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -7892,7 +7892,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -7904,7 +7904,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -7916,7 +7916,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -7952,7 +7952,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "SIN INFORMACIÓN",
     "DeliveryStatusRaw": "UNDELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -7964,7 +7964,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -7974,9 +7974,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -7998,8 +7998,8 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
     "EstadoRutaRaw": "DEPARTED_ORIGIN",
     "MotivoNoEntrega": ""
   },
@@ -8024,7 +8024,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -8060,7 +8060,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -8178,9 +8178,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "SIN INFORMACIÓN",
+    "DeliveryStatusRaw": "UNDELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -8262,8 +8262,8 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
     "EstadoRutaRaw": "DEPARTED_ORIGIN",
     "MotivoNoEntrega": ""
   },
@@ -8288,7 +8288,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -8310,9 +8310,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -8358,9 +8358,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -8370,8 +8370,8 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
     "EstadoRutaRaw": "DEPARTED_ORIGIN",
     "MotivoNoEntrega": ""
   },
@@ -8408,7 +8408,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -8430,8 +8430,8 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
     "EstadoRutaRaw": "DEPARTED_ORIGIN",
     "MotivoNoEntrega": ""
   },
@@ -8480,7 +8480,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -8502,8 +8502,8 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
     "EstadoRutaRaw": "DEPARTED_ORIGIN",
     "MotivoNoEntrega": ""
   },
@@ -8528,7 +8528,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -8540,7 +8540,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -8588,7 +8588,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -8756,7 +8756,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -8768,7 +8768,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -8804,7 +8804,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -8924,7 +8924,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -9020,7 +9020,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -9140,7 +9140,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -9162,9 +9162,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -9176,7 +9176,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -9260,7 +9260,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -9320,7 +9320,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -9392,7 +9392,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -9654,9 +9654,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -9668,7 +9668,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -9776,7 +9776,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -9872,7 +9872,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -9884,7 +9884,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -9968,7 +9968,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -10028,7 +10028,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -10040,7 +10040,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -10050,9 +10050,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -10196,7 +10196,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -10206,8 +10206,8 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
     "EstadoRutaRaw": "DEPARTED_ORIGIN",
     "MotivoNoEntrega": ""
   },
@@ -10268,7 +10268,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -10352,7 +10352,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -10364,7 +10364,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -10604,7 +10604,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -10700,7 +10700,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -10784,7 +10784,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -10796,7 +10796,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -10806,9 +10806,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -10842,8 +10842,8 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
     "EstadoRutaRaw": "DEPARTED_ORIGIN",
     "MotivoNoEntrega": ""
   },
@@ -10868,7 +10868,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -11024,7 +11024,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -11120,7 +11120,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -11144,7 +11144,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -11190,8 +11190,8 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
     "EstadoRutaRaw": "DEPARTED_ORIGIN",
     "MotivoNoEntrega": ""
   },
@@ -11204,7 +11204,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -11216,7 +11216,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -11250,8 +11250,8 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
     "EstadoRutaRaw": "DEPARTED_ORIGIN",
     "MotivoNoEntrega": ""
   },
@@ -11360,7 +11360,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -11420,7 +11420,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -11466,8 +11466,8 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
     "EstadoRutaRaw": "DEPARTED_ORIGIN",
     "MotivoNoEntrega": ""
   },
@@ -11526,9 +11526,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -11684,7 +11684,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -11720,7 +11720,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "SIN INFORMACIÓN",
     "DeliveryStatusRaw": "UNDELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -11754,8 +11754,8 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
     "EstadoRutaRaw": "DEPARTED_ORIGIN",
     "MotivoNoEntrega": ""
   },
@@ -11814,9 +11814,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -11862,9 +11862,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -11948,7 +11948,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -11982,9 +11982,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -12044,7 +12044,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -12056,7 +12056,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -12066,9 +12066,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -12080,7 +12080,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -12104,7 +12104,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "SIN INFORMACIÓN",
     "DeliveryStatusRaw": "UNDELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -12116,7 +12116,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -12150,9 +12150,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -12176,7 +12176,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -12248,7 +12248,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "SIN INFORMACIÓN",
     "DeliveryStatusRaw": "UNDELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -12260,7 +12260,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -12270,9 +12270,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -12404,7 +12404,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -12440,7 +12440,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -12654,9 +12654,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -12680,7 +12680,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -12740,7 +12740,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -12896,7 +12896,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -12906,9 +12906,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -12920,7 +12920,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -12956,7 +12956,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -13014,9 +13014,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -13026,9 +13026,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -13052,7 +13052,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -13146,9 +13146,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -13256,7 +13256,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -13266,9 +13266,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -13362,9 +13362,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -13470,9 +13470,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -13484,7 +13484,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -13508,7 +13508,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -13520,7 +13520,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -13544,7 +13544,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -13568,7 +13568,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -13592,7 +13592,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -13710,9 +13710,9 @@
     "FechaOperacion": "2026-09-19",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
-    "DeliveryStatusRaw": "PENDING",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoEntrega": "ENTREGADO",
+    "DeliveryStatusRaw": "DELIVERED",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
@@ -13736,7 +13736,7 @@
     "EstadoConexion": "CONECTADO",
     "EstadoEntrega": "ENTREGADO",
     "DeliveryStatusRaw": "DELIVERED",
-    "EstadoRutaRaw": "DEPARTED_ORIGIN",
+    "EstadoRutaRaw": "COMPLETED",
     "MotivoNoEntrega": ""
   },
   {
