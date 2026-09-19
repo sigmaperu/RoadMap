@@ -1,0 +1,103 @@
+name: Generar datos Power Apps
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "RoadMap_Shipment.json"
+      - "GreenMile_Estados.json"
+      - "scripts/build_powerapp_data.py"
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-powerapp-data
+  cancel-in-progress: true
+
+jobs:
+  build-powerapp-data:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validar archivos requeridos
+        shell: bash
+        run: |
+          test -f "RoadMap_Shipment.json"
+          test -f "GreenMile_Estados.json"
+          test -f "scripts/build_powerapp_data.py"
+
+      - name: Validar sintaxis
+        run: |
+          python -m py_compile scripts/build_powerapp_data.py
+
+      - name: Generar PowerApp_Data.json
+        run: |
+          python scripts/build_powerapp_data.py
+
+      - name: Validar PowerApp_Data.json
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path("PowerApp_Data.json")
+
+          with path.open("r", encoding="utf-8") as file:
+              records = json.load(file)
+
+          if not isinstance(records, list) or len(records) == 0:
+              raise ValueError("PowerApp_Data.json no contiene datos.")
+
+          required = {
+              "ShipmentCustom",
+              "VehicleKey",
+              "CustomerName",
+              "KgPlanificados",
+              "EstadoMigracion",
+              "EstadoConexion",
+              "EstadoEntrega",
+              "LatitudActual",
+              "LongitudActual",
+              "FuenteCoordenada",
+          }
+
+          for position, record in enumerate(records, start=1):
+              missing = required - set(record)
+              if missing:
+                  raise ValueError(
+                      f"Registro {position} incompleto: {sorted(missing)}"
+                  )
+
+          print(f"JSON final validado. Registros: {len(records)}")
+          PY
+
+      - name: Guardar datos Power Apps
+        shell: bash
+        run: |
+          if [ -z "$(git status --porcelain -- PowerApp_Data.json)" ]; then
+            echo "PowerApp_Data.json no cambió."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add PowerApp_Data.json
+          git commit -m "Actualizar datos Power Apps"
+          git pull --rebase origin main
+          git push origin main
