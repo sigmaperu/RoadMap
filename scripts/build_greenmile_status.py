@@ -13,12 +13,14 @@ from typing import Any, Optional
 
 ROADMAP_FILE = Path("RoadMap_Shipment.json")
 OUTPUT_FILE = Path("GreenMile_Estados.json")
+DEBUG_FILE = Path("GreenMile_Rechazos_Debug.json")
 GREENMILE_URL = "https://sigmaperu.greenmile.com/Route/restrictions"
 
 SCAN_PAGE_SIZE = int(os.getenv("GREENMILE_SCAN_PAGE_SIZE", "100"))
 DETAIL_PAGE_SIZE = int(os.getenv("GREENMILE_DETAIL_PAGE_SIZE", "10"))
 MAX_PAGES = int(os.getenv("GREENMILE_MAX_PAGES", "2000"))
 HTTP_RETRIES = int(os.getenv("GREENMILE_HTTP_RETRIES", "3"))
+MAX_DEBUG_REJECTS = int(os.getenv("GREENMILE_MAX_DEBUG_REJECTS", "100"))
 
 LIGHT_FIELDS = [
     "id",
@@ -28,17 +30,20 @@ LIGHT_FIELDS = [
     "status",
 ]
 
-# stops.* y stops.orders.* permiten revisar recursivamente los campos reales
-# que devuelve el ambiente de GreenMile para rechazo/cancelación.
+# Se pide el objeto completo de paradas y pedidos para descubrir la estructura
+# real de motivos de rechazo/cancelación en este ambiente de GreenMile.
 DETAIL_FIELDS = [
     "id",
-    "organization.key",
+    "organization.*",
     "date",
     "key",
     "status",
-    "driverAssignments.driver.key",
+    "driverAssignments.*",
     "stops.*",
     "stops.orders.*",
+    "canceledStops",
+    "undeliveredStops",
+    "redeliveredStops",
 ]
 
 REJECTED_DELIVERY_STATUSES = {
@@ -50,7 +55,6 @@ REJECTED_DELIVERY_STATUSES = {
     "FAILED",
 }
 
-# Palabras que identifican motivos o razones funcionales.
 REASON_KEY_TOKENS = (
     "reason",
     "razon",
@@ -60,11 +64,19 @@ REASON_KEY_TOKENS = (
     "noentreg",
     "reject",
     "rechaz",
+    "refusal",
+    "refused",
+    "failure",
+    "failed",
+    "exception",
+    "occurrence",
+    "incident",
+    "returnreason",
+    "nonDelivery",
     "cancelreason",
     "cancellationreason",
 )
 
-# Campos técnicos de GPS/calidad/cancelación que no son motivos comerciales.
 TECHNICAL_KEY_TOKENS = (
     "latitude",
     "longitude",
@@ -77,11 +89,8 @@ TECHNICAL_KEY_TOKENS = (
     "actualcancel",
     "timestamp",
     "datetime",
-    "date",
-    "time",
 )
 
-# Valores técnicos que tampoco deben convertirse en motivos.
 TECHNICAL_VALUES = {
     "DRIVER_ENTERED",
     "ROUTER_INFERRED",
@@ -239,10 +248,7 @@ def request_routes_page(
         )
 
         try:
-            with urllib.request.urlopen(
-                request,
-                timeout=120,
-            ) as response:
+            with urllib.request.urlopen(request, timeout=120) as response:
                 response_text = response.read().decode("utf-8")
 
             try:
@@ -313,7 +319,7 @@ def get_route_ids(routes: list[dict[str, Any]]) -> set[str]:
 def is_technical_path(path: str) -> bool:
     normalised_path = normalise_key(path)
     return any(
-        token in normalised_path
+        normalise_key(token) in normalised_path
         for token in TECHNICAL_KEY_TOKENS
     )
 
@@ -321,16 +327,13 @@ def is_technical_path(path: str) -> bool:
 def is_reason_path(path: str) -> bool:
     normalised_path = normalise_key(path)
     return any(
-        token in normalised_path
+        normalise_key(token) in normalised_path
         for token in REASON_KEY_TOKENS
     )
 
 
 def scalar_from_value(value: Any) -> str:
-    if value is None:
-        return ""
-
-    if isinstance(value, bool):
+    if value is None or isinstance(value, bool):
         return ""
 
     if isinstance(value, (str, int, float)):
@@ -381,8 +384,9 @@ def discover_reason_candidates(
         for key, child in value.items():
             child_path = f"{path}.{key}" if path else key
 
-            if is_reason_path(child_path) and not is_technical_path(
-                child_path
+            if (
+                is_reason_path(child_path)
+                and not is_technical_path(child_path)
             ):
                 text = scalar_from_value(child)
                 if text != "":
@@ -399,7 +403,6 @@ def discover_reason_candidates(
                 discover_reason_candidates(child, child_path)
             )
 
-    # Elimina duplicados conservando el orden.
     unique_candidates: list[tuple[str, str]] = []
     seen: set[tuple[str, str]] = set()
 
@@ -425,6 +428,9 @@ def classify_reason_path(path: str) -> str:
             "noentreg",
             "reject",
             "rechaz",
+            "refusal",
+            "failed",
+            "failure",
         )
     ):
         return "NO_ENTREGA"
@@ -436,16 +442,10 @@ def extract_rejection_reasons(
     stop: dict[str, Any],
     order: dict[str, Any],
 ) -> tuple[str, str, list[tuple[str, str]]]:
-    # Se revisa primero el pedido y después la parada.
-    order_candidates = discover_reason_candidates(
-        order,
-        "order",
+    candidates = (
+        discover_reason_candidates(order, "order")
+        + discover_reason_candidates(stop, "stop")
     )
-    stop_candidates = discover_reason_candidates(
-        stop,
-        "stop",
-    )
-    candidates = order_candidates + stop_candidates
 
     reason_not_delivered = ""
     reason_cancelled = ""
@@ -467,7 +467,6 @@ def extract_rejection_reasons(
         elif generic_reason == "":
             generic_reason = text
 
-    # Si solo apareció una razón genérica, se conserva como no entrega.
     if reason_not_delivered == "" and generic_reason != "":
         reason_not_delivered = generic_reason
 
@@ -605,7 +604,6 @@ def create_not_migrated_record(
         "LongitudActual": None,
         "FuenteCoordenada": "",
         "DeliveryStatusRaw": "",
-        "EstadoRutaRaw": "",
         "MotivoNoEntrega": "",
         "MotivoCancelacion": "",
     }
@@ -619,6 +617,7 @@ def process_detail_routes(
     observed_route_statuses: Counter[str],
     observed_delivery_statuses: Counter[str],
     observed_reason_candidates: Counter[str],
+    rejected_debug_records: list[dict[str, Any]],
 ) -> int:
     matching_routes = 0
 
@@ -673,6 +672,36 @@ def process_detail_routes(
                     reason_cancelled,
                 )
 
+                if (
+                    mapped_delivery_status == "RECHAZADO"
+                    and len(rejected_debug_records)
+                    < MAX_DEBUG_REJECTS
+                ):
+                    rejected_debug_records.append(
+                        {
+                            "ShipmentCustom": shipment_number,
+                            "DeliveryStatusRaw": delivery_status_raw,
+                            "RouteKey": vehicle_key,
+                            "RouteStatus": route_status_raw,
+                            "RouteDate": route_date,
+                            "MotivoNoEntregaDetectado": (
+                                reason_not_delivered
+                            ),
+                            "MotivoCancelacionDetectado": (
+                                reason_cancelled
+                            ),
+                            "CandidatosDetectados": [
+                                {
+                                    "RutaCampo": path,
+                                    "Valor": text,
+                                }
+                                for path, text in reason_candidates
+                            ],
+                            "StopCompleto": stop,
+                            "OrderCompleto": order,
+                        }
+                    )
+
                 candidate = {
                     "ShipmentCustom": shipment_number,
                     "VehicleKey": vehicle_key,
@@ -687,7 +716,6 @@ def process_detail_routes(
                     "LongitudActual": longitude,
                     "FuenteCoordenada": coordinate_source,
                     "DeliveryStatusRaw": delivery_status_raw,
-                    "EstadoRutaRaw": route_status_raw,
                     "MotivoNoEntrega": reason_not_delivered,
                     "MotivoCancelacion": reason_cancelled,
                 }
@@ -736,6 +764,7 @@ def main() -> None:
     observed_delivery_statuses: Counter[str] = Counter()
     observed_route_statuses: Counter[str] = Counter()
     observed_reason_candidates: Counter[str] = Counter()
+    rejected_debug_records: list[dict[str, Any]] = []
 
     first_result = 0
     page_number = 0
@@ -835,6 +864,9 @@ def main() -> None:
                     observed_reason_candidates=(
                         observed_reason_candidates
                     ),
+                    rejected_debug_records=(
+                        rejected_debug_records
+                    ),
                 )
 
             missing_ids = light_page_ids - detail_ids_seen
@@ -871,6 +903,20 @@ def main() -> None:
             file,
             ensure_ascii=False,
             indent=2,
+        )
+        file.write("\n")
+
+    with DEBUG_FILE.open(
+        "w",
+        encoding="utf-8",
+        newline="",
+    ) as file:
+        json.dump(
+            rejected_debug_records,
+            file,
+            ensure_ascii=False,
+            indent=2,
+            default=str,
         )
         file.write("\n")
 
@@ -935,6 +981,11 @@ def main() -> None:
         )
 
     print(f"Archivo generado: {OUTPUT_FILE}")
+    print(f"Archivo diagnóstico: {DEBUG_FILE}")
+    print(
+        "Rechazos guardados para diagnóstico: "
+        f"{len(rejected_debug_records)}"
+    )
 
 
 if __name__ == "__main__":
