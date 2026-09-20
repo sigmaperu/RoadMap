@@ -15,7 +15,7 @@ on:
       - "RoadMap_Shipment.json"
       - "GreenMile_Estados.json"
       - "scripts/build_powerapp_data.py"
-      - ".github/workflows/generar-datos-power-apps.yml"
+      - ".github/workflows/build-powerapp-data.yml"
 
   workflow_dispatch:
 
@@ -28,6 +28,8 @@ concurrency:
 
 jobs:
   build-powerapp-data:
+    name: Generar PowerApp_Data.json y PowerApp_Data.xlsx
+
     if: >-
       github.event_name != 'workflow_run' ||
       github.event.workflow_run.conclusion == 'success'
@@ -46,18 +48,38 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Mostrar versión de Python
+      - name: Actualizar rama main
+        shell: bash
         run: |
+          set -euo pipefail
+
+          git fetch origin main
+          git checkout main
+          git reset --hard origin/main
+
+          echo "Rama main actualizada correctamente."
+
+      - name: Mostrar versión de Python
+        shell: bash
+        run: |
+          set -euo pipefail
+
           python --version
           python -m pip --version
 
       - name: Instalar dependencias
+        shell: bash
         run: |
+          set -euo pipefail
+
           python -m pip install --upgrade pip
           python -m pip install pandas openpyxl
 
       - name: Verificar dependencias instaladas
+        shell: bash
         run: |
+          set -euo pipefail
+
           python - <<'PY'
           import pandas
           import openpyxl
@@ -66,52 +88,92 @@ jobs:
           print(f"openpyxl instalado: {openpyxl.__version__}")
           PY
 
-      - name: Actualizar rama main
-        shell: bash
-        run: |
-          git fetch origin main
-          git checkout main
-          git reset --hard origin/main
-
       - name: Validar archivos requeridos
         shell: bash
         run: |
-          if [ ! -f "RoadMap_Shipment.json" ]; then
-            echo "ERROR: No existe RoadMap_Shipment.json"
-            exit 1
-          fi
+          set -euo pipefail
 
-          if [ ! -f "GreenMile_Estados.json" ]; then
-            echo "ERROR: No existe GreenMile_Estados.json"
-            exit 1
-          fi
+          required_files=(
+            "RoadMap_Shipment.json"
+            "GreenMile_Estados.json"
+            "scripts/build_powerapp_data.py"
+          )
 
-          if [ ! -f "scripts/build_powerapp_data.py" ]; then
-            echo "ERROR: No existe scripts/build_powerapp_data.py"
-            exit 1
-          fi
+          for file in "${required_files[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "ERROR: No existe el archivo requerido: $file"
+              exit 1
+            fi
 
-          echo "Archivos requeridos encontrados correctamente."
+            if [ ! -s "$file" ]; then
+              echo "ERROR: El archivo requerido está vacío: $file"
+              exit 1
+            fi
+
+            echo "Archivo encontrado: $file"
+          done
+
+          echo "Todos los archivos requeridos están disponibles."
 
       - name: Validar sintaxis del script
-        run: |
-          python -m py_compile scripts/build_powerapp_data.py
-          echo "Sintaxis del script validada correctamente."
-
-      - name: Eliminar archivos de salida anteriores
         shell: bash
         run: |
+          set -euo pipefail
+
+          python -m py_compile scripts/build_powerapp_data.py
+
+          echo "Sintaxis de build_powerapp_data.py validada."
+
+      - name: Eliminar salidas temporales anteriores
+        shell: bash
+        run: |
+          set -euo pipefail
+
           rm -f PowerApp_Data.json
           rm -f PowerApp_Data.xlsx
 
-          echo "Archivos de salida anteriores eliminados."
+          echo "Salidas anteriores eliminadas del entorno de ejecución."
 
-      - name: Generar datos Power Apps
+      - name: Generar archivos Power Apps
+        shell: bash
         run: |
+          set -euo pipefail
+
           python scripts/build_powerapp_data.py
 
-      - name: Validar PowerApp_Data.json
+      - name: Comprobar archivos generados
+        shell: bash
         run: |
+          set -euo pipefail
+
+          if [ ! -f "PowerApp_Data.json" ]; then
+            echo "ERROR: No se generó PowerApp_Data.json"
+            exit 1
+          fi
+
+          if [ ! -s "PowerApp_Data.json" ]; then
+            echo "ERROR: PowerApp_Data.json está vacío"
+            exit 1
+          fi
+
+          if [ ! -f "PowerApp_Data.xlsx" ]; then
+            echo "ERROR: No se generó PowerApp_Data.xlsx"
+            exit 1
+          fi
+
+          if [ ! -s "PowerApp_Data.xlsx" ]; then
+            echo "ERROR: PowerApp_Data.xlsx está vacío"
+            exit 1
+          fi
+
+          echo "Archivos generados correctamente:"
+          ls -lh PowerApp_Data.json PowerApp_Data.xlsx
+
+      - name: Validar PowerApp_Data.json
+        shell: bash
+        run: |
+          set -euo pipefail
+
           python - <<'PY'
           import json
           from pathlib import Path
@@ -119,8 +181,8 @@ jobs:
           path = Path("PowerApp_Data.json")
 
           if not path.exists():
-              raise ValueError(
-                  "No se generó PowerApp_Data.json."
+              raise FileNotFoundError(
+                  "No existe PowerApp_Data.json."
               )
 
           if path.stat().st_size == 0:
@@ -128,20 +190,23 @@ jobs:
                   "PowerApp_Data.json está vacío."
               )
 
-          with path.open("r", encoding="utf-8") as file:
+          with path.open(
+              "r",
+              encoding="utf-8"
+          ) as file:
               records = json.load(file)
 
           if not isinstance(records, list):
               raise ValueError(
-                  "PowerApp_Data.json no contiene una matriz."
+                  "PowerApp_Data.json no contiene una matriz JSON."
               )
 
-          if len(records) == 0:
+          if not records:
               raise ValueError(
                   "PowerApp_Data.json no contiene registros."
               )
 
-          required = {
+          required_fields = {
               "DeliveryDate",
               "ShipmentCustom",
               "VehicleKey",
@@ -165,20 +230,25 @@ jobs:
               "MotivoCancelacion",
           }
 
-          shipments = set()
+          seen_shipments = set()
 
-          for position, record in enumerate(records, start=1):
+          for position, record in enumerate(
+              records,
+              start=1
+          ):
               if not isinstance(record, dict):
                   raise ValueError(
                       f"El registro {position} no es un objeto JSON."
                   )
 
-              missing = required - set(record)
+              missing_fields = (
+                  required_fields - set(record.keys())
+              )
 
-              if missing:
+              if missing_fields:
                   raise ValueError(
                       f"Registro {position} incompleto. "
-                      f"Faltan las columnas: {sorted(missing)}"
+                      f"Faltan campos: {sorted(missing_fields)}"
                   )
 
               shipment = str(
@@ -187,24 +257,28 @@ jobs:
 
               if shipment == "":
                   raise ValueError(
-                      f"El registro {position} no contiene ShipmentCustom."
+                      f"Registro {position} sin ShipmentCustom."
                   )
 
-              if shipment in shipments:
+              if shipment in seen_shipments:
                   raise ValueError(
-                      f"ShipmentCustom duplicado en el resultado: {shipment}"
+                      "ShipmentCustom duplicado en el resultado: "
+                      f"{shipment}"
                   )
 
-              shipments.add(shipment)
+              seen_shipments.add(shipment)
 
-          print(
-              f"PowerApp_Data.json validado. "
-              f"Registros: {len(records)}"
-          )
+          print("PowerApp_Data.json validado correctamente.")
+          print(f"Registros: {len(records)}")
+          print(f"Shipments únicos: {len(seen_shipments)}")
+          print(f"Tamaño: {path.stat().st_size} bytes")
           PY
 
       - name: Validar PowerApp_Data.xlsx
+        shell: bash
         run: |
+          set -euo pipefail
+
           python - <<'PY'
           from pathlib import Path
           from openpyxl import load_workbook
@@ -212,8 +286,8 @@ jobs:
           path = Path("PowerApp_Data.xlsx")
 
           if not path.exists():
-              raise ValueError(
-                  "No se generó PowerApp_Data.xlsx."
+              raise FileNotFoundError(
+                  "No existe PowerApp_Data.xlsx."
               )
 
           if path.stat().st_size == 0:
@@ -227,119 +301,152 @@ jobs:
               data_only=False
           )
 
-          if "Data" not in workbook.sheetnames:
-              raise ValueError(
-                  "PowerApp_Data.xlsx no contiene la hoja Data."
+          try:
+              expected_sheet = "Data"
+              expected_table = "PowerAppData"
+
+              if expected_sheet not in workbook.sheetnames:
+                  raise ValueError(
+                      "PowerApp_Data.xlsx no contiene "
+                      "la hoja Data."
+                  )
+
+              worksheet = workbook[expected_sheet]
+
+              if worksheet.max_row < 2:
+                  raise ValueError(
+                      "La hoja Data no contiene registros."
+                  )
+
+              if worksheet.max_column < 1:
+                  raise ValueError(
+                      "La hoja Data no contiene columnas."
+                  )
+
+              headers = [
+                  worksheet.cell(
+                      row=1,
+                      column=column
+                  ).value
+                  for column in range(
+                      1,
+                      worksheet.max_column + 1
+                  )
+              ]
+
+              expected_headers = [
+                  "DeliveryDate",
+                  "ShipmentCustom",
+                  "VehicleKey",
+                  "Location",
+                  "CustomerAccount",
+                  "CustomerName",
+                  "DriverName",
+                  "DriverBadge",
+                  "RutaVenta",
+                  "Canal",
+                  "KgPlanificados",
+                  "EstadoMigracion",
+                  "EstadoConexion",
+                  "EstadoEntrega",
+                  "Latitude",
+                  "Longitude",
+                  "LatitudActual",
+                  "LongitudActual",
+                  "FuenteCoordenada",
+                  "MotivoNoEntrega",
+                  "MotivoCancelacion",
+              ]
+
+              if headers != expected_headers:
+                  raise ValueError(
+                      "Las columnas del Excel no coinciden "
+                      "con la estructura esperada.\n"
+                      f"Esperadas: {expected_headers}\n"
+                      f"Encontradas: {headers}"
+                  )
+
+              available_tables = list(
+                  worksheet.tables.keys()
               )
 
-          worksheet = workbook["Data"]
+              if expected_table not in available_tables:
+                  raise ValueError(
+                      "La hoja Data no contiene la tabla "
+                      "PowerAppData."
+                  )
 
-          if worksheet.max_row < 2:
-              raise ValueError(
-                  "La hoja Data no contiene registros."
+              table = worksheet.tables[expected_table]
+
+              print(
+                  "PowerApp_Data.xlsx validado correctamente."
+              )
+              print(f"Hoja: {worksheet.title}")
+              print(
+                  f"Registros: {worksheet.max_row - 1}"
+              )
+              print(
+                  f"Columnas: {worksheet.max_column}"
+              )
+              print(f"Tabla: {table.name}")
+              print(f"Rango de tabla: {table.ref}")
+              print(
+                  f"Tamaño: {path.stat().st_size} bytes"
               )
 
-          if worksheet.max_column < 1:
-              raise ValueError(
-                  "La hoja Data no contiene columnas."
-              )
-
-          headers = [
-              worksheet.cell(
-                  row=1,
-                  column=column
-              ).value
-              for column in range(
-                  1,
-                  worksheet.max_column + 1
-              )
-          ]
-
-          required_headers = {
-              "DeliveryDate",
-              "ShipmentCustom",
-              "VehicleKey",
-              "Location",
-              "CustomerAccount",
-              "CustomerName",
-              "DriverName",
-              "DriverBadge",
-              "RutaVenta",
-              "Canal",
-              "KgPlanificados",
-              "EstadoMigracion",
-              "EstadoConexion",
-              "EstadoEntrega",
-              "Latitude",
-              "Longitude",
-              "LatitudActual",
-              "LongitudActual",
-              "FuenteCoordenada",
-              "MotivoNoEntrega",
-              "MotivoCancelacion",
-          }
-
-          missing_headers = (
-              required_headers - set(headers)
-          )
-
-          if missing_headers:
-              raise ValueError(
-                  "Faltan columnas en PowerApp_Data.xlsx: "
-                  f"{sorted(missing_headers)}"
-              )
-
-          table_names = list(worksheet.tables.keys())
-
-          if "PowerAppData" not in table_names:
-              raise ValueError(
-                  "La hoja Data no contiene la tabla PowerAppData."
-              )
-
-          table = worksheet.tables["PowerAppData"]
-
-          print("PowerApp_Data.xlsx validado.")
-          print(f"Hoja: {worksheet.title}")
-          print(f"Filas con cabecera: {worksheet.max_row}")
-          print(f"Registros: {worksheet.max_row - 1}")
-          print(f"Columnas: {worksheet.max_column}")
-          print(f"Tabla: {table.name}")
-          print(f"Rango de tabla: {table.ref}")
-          print(f"Tamaño del archivo: {path.stat().st_size} bytes")
-
-          workbook.close()
+          finally:
+              workbook.close()
           PY
 
-      - name: Comparar archivos generados
+      - name: Mostrar cambios generados
         shell: bash
         run: |
-          echo "Estado de PowerApp_Data.json:"
-          git status --short -- PowerApp_Data.json || true
+          set -euo pipefail
 
-          echo "Estado de PowerApp_Data.xlsx:"
-          git status --short -- PowerApp_Data.xlsx || true
+          echo "Cambios detectados:"
+          git status --short -- \
+            PowerApp_Data.json \
+            PowerApp_Data.xlsx
 
-          echo "Archivos generados:"
-          ls -lh PowerApp_Data.json PowerApp_Data.xlsx
+          echo "Archivos disponibles:"
+          ls -lh \
+            PowerApp_Data.json \
+            PowerApp_Data.xlsx
 
-      - name: Guardar datos Power Apps
+      - name: Guardar archivos generados
         shell: bash
         run: |
+          set -euo pipefail
+
           if [ -z "$(git status --porcelain -- PowerApp_Data.json PowerApp_Data.xlsx)" ]; then
-            echo "PowerApp_Data.json y PowerApp_Data.xlsx no cambiaron."
+            echo "No hay cambios en los archivos Power Apps."
+            echo "No se creará un nuevo commit."
             exit 0
           fi
 
-          git config user.name "github-actions[bot]"
-          git config user.email \
+          git config \
+            user.name \
+            "github-actions[bot]"
+
+          git config \
+            user.email \
             "41898282+github-actions[bot]@users.noreply.github.com"
 
           git add PowerApp_Data.json
           git add PowerApp_Data.xlsx
 
-          git commit -m "Actualizar datos Power Apps"
+          git commit \
+            -m "Actualizar datos Power Apps"
 
-          git pull --rebase origin main
-          git push origin main
+          git pull \
+            --rebase \
+            origin \
+            main
 
-          echo "Datos Power Apps guardados correctamente."
+          git push \
+            origin \
+            main
+
+          echo "PowerApp_Data.json guardado en main."
+          echo "PowerApp_Data.xlsx guardado en main."
+          echo "Workflow finalizado correctamente."
