@@ -1,6 +1,13 @@
 name: Generar datos Power Apps
 
 on:
+  workflow_run:
+    workflows:
+      - "Generar estados GreenMile"
+      - "Generar RoadMap resumido por Shipment"
+    types:
+      - completed
+
   push:
     branches:
       - main
@@ -20,18 +27,30 @@ concurrency:
 
 jobs:
   build-powerapp-data:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.conclusion == 'success'
+
     runs-on: ubuntu-latest
 
     steps:
-      - name: Descargar repositorio
+      - name: Descargar repositorio actualizado
         uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
 
       - name: Configurar Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
+      - name: Actualizar rama main
+        shell: bash
+        run: |
+          git fetch origin main
+          git checkout main
+          git reset --hard origin/main
 
       - name: Validar archivos requeridos
         shell: bash
@@ -56,11 +75,23 @@ jobs:
 
           path = Path("PowerApp_Data.json")
 
+          if not path.exists():
+              raise ValueError(
+                  "No se generó PowerApp_Data.json."
+              )
+
           with path.open("r", encoding="utf-8") as file:
               records = json.load(file)
 
-          if not isinstance(records, list) or len(records) == 0:
-              raise ValueError("PowerApp_Data.json no contiene datos.")
+          if not isinstance(records, list):
+              raise ValueError(
+                  "PowerApp_Data.json no contiene una matriz."
+              )
+
+          if len(records) == 0:
+              raise ValueError(
+                  "PowerApp_Data.json no contiene datos."
+              )
 
           required = {
               "ShipmentCustom",
@@ -77,12 +108,16 @@ jobs:
 
           for position, record in enumerate(records, start=1):
               missing = required - set(record)
+
               if missing:
                   raise ValueError(
-                      f"Registro {position} incompleto: {sorted(missing)}"
+                      f"Registro {position} incompleto: "
+                      f"{sorted(missing)}"
                   )
 
-          print(f"JSON final validado. Registros: {len(records)}")
+          print(
+              f"JSON final validado. Registros: {len(records)}"
+          )
           PY
 
       - name: Guardar datos Power Apps
@@ -99,5 +134,6 @@ jobs:
 
           git add PowerApp_Data.json
           git commit -m "Actualizar datos Power Apps"
+
           git pull --rebase origin main
           git push origin main
