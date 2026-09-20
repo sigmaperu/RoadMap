@@ -28,8 +28,8 @@ LIGHT_FIELDS = [
     "status",
 ]
 
-# Se solicita stops.* para descubrir y conservar los nombres reales de los
-# campos de motivos que expone el ambiente GreenMile de Sigma Peru.
+# stops.* y stops.orders.* permiten revisar recursivamente los campos reales
+# que devuelve el ambiente de GreenMile para rechazo/cancelación.
 DETAIL_FIELDS = [
     "id",
     "organization.key",
@@ -50,6 +50,59 @@ REJECTED_DELIVERY_STATUSES = {
     "FAILED",
 }
 
+# Palabras que identifican motivos o razones funcionales.
+REASON_KEY_TOKENS = (
+    "reason",
+    "razon",
+    "motivo",
+    "undeliver",
+    "notdeliver",
+    "noentreg",
+    "reject",
+    "rechaz",
+    "cancelreason",
+    "cancellationreason",
+)
+
+# Campos técnicos de GPS/calidad/cancelación que no son motivos comerciales.
+TECHNICAL_KEY_TOKENS = (
+    "latitude",
+    "longitude",
+    "accuracy",
+    "distance",
+    "provider",
+    "gps",
+    "quality",
+    "conformity",
+    "actualcancel",
+    "timestamp",
+    "datetime",
+    "date",
+    "time",
+)
+
+# Valores técnicos que tampoco deben convertirse en motivos.
+TECHNICAL_VALUES = {
+    "DRIVER_ENTERED",
+    "ROUTER_INFERRED",
+    "FUSED",
+    "GPS",
+    "TRUE",
+    "FALSE",
+    "0",
+}
+
+PREFERRED_TEXT_KEYS = (
+    "description",
+    "name",
+    "label",
+    "reason",
+    "value",
+    "displayName",
+    "key",
+    "code",
+)
+
 
 def clean_text(value: Any) -> str:
     if value is None:
@@ -65,8 +118,16 @@ def normalise_status(value: Any) -> str:
 
 def normalise_key(value: Any) -> str:
     text = unicodedata.normalize("NFKD", clean_text(value))
-    text = "".join(character for character in text if not unicodedata.combining(character))
-    return "".join(character.lower() for character in text if character.isalnum())
+    text = "".join(
+        character
+        for character in text
+        if not unicodedata.combining(character)
+    )
+    return "".join(
+        character.lower()
+        for character in text
+        if character.isalnum()
+    )
 
 
 def to_number(value: Any) -> Optional[float]:
@@ -81,27 +142,33 @@ def to_number(value: Any) -> Optional[float]:
 def require_environment_variable(name: str) -> str:
     value = os.getenv(name, "").strip()
     if value == "":
-        raise RuntimeError(f"No se configuro el secreto obligatorio: {name}")
+        raise RuntimeError(
+            f"No se configuró el secreto obligatorio: {name}"
+        )
     return value
 
 
 def load_programmed_shipments() -> list[dict[str, Any]]:
     if not ROADMAP_FILE.exists():
         raise FileNotFoundError(
-            f"No existe {ROADMAP_FILE} en la raiz del repositorio."
+            f"No existe {ROADMAP_FILE} en la raíz del repositorio."
         )
 
     with ROADMAP_FILE.open("r", encoding="utf-8") as file:
         records = json.load(file)
 
     if not isinstance(records, list) or len(records) == 0:
-        raise ValueError("RoadMap_Shipment.json no contiene una matriz con datos.")
+        raise ValueError(
+            "RoadMap_Shipment.json no contiene una matriz con datos."
+        )
 
     valid_records: list[dict[str, Any]] = []
 
     for position, record in enumerate(records, start=1):
         if not isinstance(record, dict):
-            raise ValueError(f"El registro {position} no es un objeto JSON.")
+            raise ValueError(
+                f"El registro {position} no es un objeto JSON."
+            )
 
         shipment = clean_text(record.get("ShipmentCustom"))
         delivery_date = clean_text(record.get("DeliveryDate"))
@@ -110,7 +177,9 @@ def load_programmed_shipments() -> list[dict[str, Any]]:
             continue
 
         if delivery_date == "":
-            raise ValueError(f"El Shipment {shipment} no tiene DeliveryDate.")
+            raise ValueError(
+                f"El Shipment {shipment} no tiene DeliveryDate."
+            )
 
         valid_records.append(
             {
@@ -123,7 +192,7 @@ def load_programmed_shipments() -> list[dict[str, Any]]:
         )
 
     if len(valid_records) == 0:
-        raise ValueError("No se encontraron shipments validos.")
+        raise ValueError("No se encontraron shipments válidos.")
 
     return valid_records
 
@@ -147,7 +216,11 @@ def request_routes_page(
     }
 
     encoded_criteria = urllib.parse.quote(
-        json.dumps(criteria, ensure_ascii=False, separators=(",", ":")),
+        json.dumps(
+            criteria,
+            ensure_ascii=False,
+            separators=(",", ":"),
+        ),
         safe="",
     )
 
@@ -166,27 +239,37 @@ def request_routes_page(
         )
 
         try:
-            with urllib.request.urlopen(request, timeout=120) as response:
+            with urllib.request.urlopen(
+                request,
+                timeout=120,
+            ) as response:
                 response_text = response.read().decode("utf-8")
 
             try:
                 data = json.loads(response_text)
             except json.JSONDecodeError as error:
                 raise RuntimeError(
-                    f"GreenMile no devolvio JSON valido. "
-                    f"firstResult={first_result}. Respuesta={response_text[:1000]}"
+                    "GreenMile no devolvió JSON válido. "
+                    f"firstResult={first_result}. "
+                    f"Respuesta={response_text[:1000]}"
                 ) from error
 
             if not isinstance(data, list):
-                raise RuntimeError("La respuesta de GreenMile no es una matriz.")
+                raise RuntimeError(
+                    "La respuesta de GreenMile no es una matriz."
+                )
 
             return data
 
         except urllib.error.HTTPError as error:
-            error_body = error.read().decode("utf-8", errors="replace")
+            error_body = error.read().decode(
+                "utf-8",
+                errors="replace",
+            )
             latest_error = RuntimeError(
-                f"GreenMile respondio HTTP {error.code}. "
-                f"firstResult={first_result}, maxResults={max_results}. "
+                f"GreenMile respondió HTTP {error.code}. "
+                f"firstResult={first_result}, "
+                f"maxResults={max_results}. "
                 f"Respuesta={error_body[:1000]}"
             )
 
@@ -195,15 +278,18 @@ def request_routes_page(
 
         except urllib.error.URLError as error:
             latest_error = RuntimeError(
-                f"No fue posible conectar con GreenMile. "
-                f"firstResult={first_result}, maxResults={max_results}. Error={error}"
+                "No fue posible conectar con GreenMile. "
+                f"firstResult={first_result}, "
+                f"maxResults={max_results}. "
+                f"Error={error}"
             )
 
         if attempt < HTTP_RETRIES:
             wait_seconds = attempt * 2
             print(
                 f"Reintento HTTP {attempt + 1}/{HTTP_RETRIES} "
-                f"en {wait_seconds}s. firstResult={first_result}, "
+                f"en {wait_seconds}s. "
+                f"firstResult={first_result}, "
                 f"maxResults={max_results}"
             )
             time.sleep(wait_seconds)
@@ -211,7 +297,9 @@ def request_routes_page(
     if latest_error is not None:
         raise latest_error
 
-    raise RuntimeError("Error HTTP no identificado al consultar GreenMile.")
+    raise RuntimeError(
+        "Error HTTP no identificado al consultar GreenMile."
+    )
 
 
 def get_route_ids(routes: list[dict[str, Any]]) -> set[str]:
@@ -222,150 +310,197 @@ def get_route_ids(routes: list[dict[str, Any]]) -> set[str]:
     }
 
 
-def scalar_from_value(value: Any, preferred_keys: tuple[str, ...]) -> str:
+def is_technical_path(path: str) -> bool:
+    normalised_path = normalise_key(path)
+    return any(
+        token in normalised_path
+        for token in TECHNICAL_KEY_TOKENS
+    )
+
+
+def is_reason_path(path: str) -> bool:
+    normalised_path = normalise_key(path)
+    return any(
+        token in normalised_path
+        for token in REASON_KEY_TOKENS
+    )
+
+
+def scalar_from_value(value: Any) -> str:
     if value is None:
         return ""
-
-    if isinstance(value, (str, int, float)):
-        return clean_text(value)
 
     if isinstance(value, bool):
         return ""
 
+    if isinstance(value, (str, int, float)):
+        text = clean_text(value)
+        if normalise_status(text) in TECHNICAL_VALUES:
+            return ""
+        return text
+
     if isinstance(value, dict):
-        normalised = {normalise_key(key): item for key, item in value.items()}
-        for preferred_key in preferred_keys:
-            candidate = normalised.get(normalise_key(preferred_key))
-            text = scalar_from_value(candidate, ())
-            if text not in {"", "FALSE", "TRUE"}:
+        normalised_items = {
+            normalise_key(key): item
+            for key, item in value.items()
+        }
+
+        for preferred_key in PREFERRED_TEXT_KEYS:
+            candidate = normalised_items.get(
+                normalise_key(preferred_key)
+            )
+            text = scalar_from_value(candidate)
+            if text != "":
                 return text
 
         for item in value.values():
-            text = scalar_from_value(item, ())
-            if text not in {"", "FALSE", "TRUE"}:
+            text = scalar_from_value(item)
+            if text != "":
                 return text
+
         return ""
 
     if isinstance(value, list):
-        texts = []
+        texts: list[str] = []
         for item in value:
-            text = scalar_from_value(item, preferred_keys)
-            if text not in {"", "FALSE", "TRUE"} and text not in texts:
+            text = scalar_from_value(item)
+            if text != "" and text not in texts:
                 texts.append(text)
         return " | ".join(texts)
 
     return ""
 
 
-def extract_reason_fields(stop: dict[str, Any]) -> dict[str, str]:
+def discover_reason_candidates(
+    value: Any,
+    path: str = "",
+) -> list[tuple[str, str]]:
+    candidates: list[tuple[str, str]] = []
+
+    if isinstance(value, dict):
+        for key, child in value.items():
+            child_path = f"{path}.{key}" if path else key
+
+            if is_reason_path(child_path) and not is_technical_path(
+                child_path
+            ):
+                text = scalar_from_value(child)
+                if text != "":
+                    candidates.append((child_path, text))
+
+            candidates.extend(
+                discover_reason_candidates(child, child_path)
+            )
+
+    elif isinstance(value, list):
+        for index, child in enumerate(value):
+            child_path = f"{path}[{index}]"
+            candidates.extend(
+                discover_reason_candidates(child, child_path)
+            )
+
+    # Elimina duplicados conservando el orden.
+    unique_candidates: list[tuple[str, str]] = []
+    seen: set[tuple[str, str]] = set()
+
+    for candidate in candidates:
+        if candidate not in seen:
+            unique_candidates.append(candidate)
+            seen.add(candidate)
+
+    return unique_candidates
+
+
+def classify_reason_path(path: str) -> str:
+    normalised_path = normalise_key(path)
+
+    if "cancel" in normalised_path:
+        return "CANCELACION"
+
+    if any(
+        token in normalised_path
+        for token in (
+            "undeliver",
+            "notdeliver",
+            "noentreg",
+            "reject",
+            "rechaz",
+        )
+    ):
+        return "NO_ENTREGA"
+
+    return "GENERICA"
+
+
+def extract_rejection_reasons(
+    stop: dict[str, Any],
+    order: dict[str, Any],
+) -> tuple[str, str, list[tuple[str, str]]]:
+    # Se revisa primero el pedido y después la parada.
+    order_candidates = discover_reason_candidates(
+        order,
+        "order",
+    )
+    stop_candidates = discover_reason_candidates(
+        stop,
+        "stop",
+    )
+    candidates = order_candidates + stop_candidates
+
     reason_not_delivered = ""
     reason_cancelled = ""
-    code_not_delivered = ""
-    code_cancelled = ""
-    discovered_fields: list[str] = []
+    generic_reason = ""
 
-    reason_preferred = (
-        "description",
-        "name",
-        "label",
-        "value",
-        "reason",
-        "key",
-        "code",
-    )
-    code_preferred = ("code", "key", "id", "value")
+    for path, text in candidates:
+        classification = classify_reason_path(path)
 
-    for key, value in stop.items():
-        normalised_key = normalise_key(key)
+        if (
+            classification == "CANCELACION"
+            and reason_cancelled == ""
+        ):
+            reason_cancelled = text
+        elif (
+            classification == "NO_ENTREGA"
+            and reason_not_delivered == ""
+        ):
+            reason_not_delivered = text
+        elif generic_reason == "":
+            generic_reason = text
 
-        is_reason_field = any(
-            token in normalised_key
-            for token in (
-                "reason",
-                "razon",
-                "motivo",
-                "undeliver",
-                "notdeliver",
-                "cancel",
-                "reject",
-                "rechaz",
-            )
-        )
+    # Si solo apareció una razón genérica, se conserva como no entrega.
+    if reason_not_delivered == "" and generic_reason != "":
+        reason_not_delivered = generic_reason
 
-        if not is_reason_field:
-            continue
-
-        text = scalar_from_value(value, reason_preferred)
-        if text in {"", "FALSE", "TRUE", "0"}:
-            continue
-
-        discovered_fields.append(f"{key}={text}")
-
-        is_code = any(token in normalised_key for token in ("code", "codigo", "id"))
-        is_cancel = any(token in normalised_key for token in ("cancel", "cancell"))
-        is_not_delivered = any(
-            token in normalised_key
-            for token in (
-                "undeliver",
-                "notdeliver",
-                "noentreg",
-                "reject",
-                "rechaz",
-            )
-        )
-
-        if is_cancel:
-            if is_code:
-                code_cancelled = scalar_from_value(value, code_preferred) or text
-            elif reason_cancelled == "":
-                reason_cancelled = text
-        elif is_not_delivered or "reason" in normalised_key or "razon" in normalised_key:
-            if is_code:
-                code_not_delivered = scalar_from_value(value, code_preferred) or text
-            elif reason_not_delivered == "":
-                reason_not_delivered = text
-
-    return {
-        "MotivoNoEntrega": reason_not_delivered,
-        "MotivoCancelacion": reason_cancelled,
-        "CodigoMotivoNoEntrega": code_not_delivered,
-        "CodigoMotivoCancelacion": code_cancelled,
-        "CamposMotivoRaw": " || ".join(discovered_fields),
-    }
+    return reason_not_delivered, reason_cancelled, candidates
 
 
 def map_delivery_status(
     delivery_status: Any,
-    reason_fields: dict[str, str],
+    reason_not_delivered: str,
+    reason_cancelled: str,
 ) -> str:
     status = normalise_status(delivery_status)
-
-    has_rejection_reason = any(
-        clean_text(reason_fields.get(field)) != ""
-        for field in (
-            "MotivoNoEntrega",
-            "MotivoCancelacion",
-            "CodigoMotivoNoEntrega",
-            "CodigoMotivoCancelacion",
-        )
-    )
 
     if status == "DELIVERED":
         return "ENTREGADO"
 
-    if has_rejection_reason or status in REJECTED_DELIVERY_STATUSES:
+    if (
+        status in REJECTED_DELIVERY_STATUSES
+        or reason_not_delivered != ""
+        or reason_cancelled != ""
+    ):
         return "RECHAZADO"
 
     if status == "PENDING":
         return "PENDIENTE"
 
-    return "SIN INFORMACION"
+    return "SIN INFORMACIÓN"
 
 
 def map_connection_status(value: Any) -> str:
     status = normalise_status(value)
     if status in {"", "NOT_STARTED"}:
-        return "SIN CONEXION"
+        return "SIN CONEXIÓN"
     return "CONECTADO"
 
 
@@ -384,6 +519,17 @@ def delivery_priority(value: Any) -> int:
     return priorities.get(normalise_status(value), 5)
 
 
+def reason_score(record: dict[str, Any]) -> int:
+    return sum(
+        1
+        for field in (
+            "MotivoNoEntrega",
+            "MotivoCancelacion",
+        )
+        if clean_text(record.get(field)) != ""
+    )
+
+
 def choose_best_record(
     existing: Optional[dict[str, Any]],
     candidate: dict[str, Any],
@@ -391,14 +537,19 @@ def choose_best_record(
     if existing is None:
         return candidate
 
-    existing_rejected = existing.get("EstadoEntrega") == "RECHAZADO"
-    candidate_rejected = candidate.get("EstadoEntrega") == "RECHAZADO"
+    existing_priority = delivery_priority(
+        existing.get("DeliveryStatusRaw")
+    )
+    candidate_priority = delivery_priority(
+        candidate.get("DeliveryStatusRaw")
+    )
 
-    if candidate_rejected and not existing_rejected:
+    if candidate_priority > existing_priority:
         return candidate
 
-    if delivery_priority(candidate.get("DeliveryStatusRaw")) > delivery_priority(
-        existing.get("DeliveryStatusRaw")
+    if (
+        candidate_priority == existing_priority
+        and reason_score(candidate) > reason_score(existing)
     ):
         return candidate
 
@@ -412,7 +563,12 @@ def extract_coordinates(
         ("serviceLatitude", "serviceLongitude", "SERVICIO"),
         ("departureLatitude", "departureLongitude", "PARTIDA"),
         ("arrivalLatitude", "arrivalLongitude", "LLEGADA"),
-        ("cancellationLatitude", "cancellationLongitude", "CANCELACION"),
+        (
+            "cancellationLatitude",
+            "cancellationLongitude",
+            "CANCELACIÓN",
+        ),
+        ("cancelLatitude", "cancelLongitude", "CANCELACIÓN"),
         ("latitude", "longitude", "PARADA"),
     ]
 
@@ -426,15 +582,25 @@ def extract_coordinates(
     return None, None, ""
 
 
-def create_not_migrated_record(programmed: dict[str, Any]) -> dict[str, Any]:
+def create_not_migrated_record(
+    programmed: dict[str, Any],
+) -> dict[str, Any]:
     return {
-        "ShipmentCustom": clean_text(programmed.get("ShipmentCustom")),
-        "VehicleKey": clean_text(programmed.get("VehicleKey")),
-        "Location": clean_text(programmed.get("Location")),
-        "FechaOperacion": clean_text(programmed.get("DeliveryDate")),
+        "ShipmentCustom": clean_text(
+            programmed.get("ShipmentCustom")
+        ),
+        "VehicleKey": clean_text(
+            programmed.get("VehicleKey")
+        ),
+        "Location": clean_text(
+            programmed.get("Location")
+        ),
+        "FechaOperacion": clean_text(
+            programmed.get("DeliveryDate")
+        ),
         "EstadoMigracion": "NO MIGRADO",
         "EstadoConexion": "NO APLICA",
-        "EstadoEntrega": "SIN INFORMACION",
+        "EstadoEntrega": "SIN INFORMACIÓN",
         "LatitudActual": None,
         "LongitudActual": None,
         "FuenteCoordenada": "",
@@ -442,9 +608,6 @@ def create_not_migrated_record(programmed: dict[str, Any]) -> dict[str, Any]:
         "EstadoRutaRaw": "",
         "MotivoNoEntrega": "",
         "MotivoCancelacion": "",
-        "CodigoMotivoNoEntrega": "",
-        "CodigoMotivoCancelacion": "",
-        "CamposMotivoRaw": "",
     }
 
 
@@ -455,7 +618,7 @@ def process_detail_routes(
     found_shipments: dict[str, dict[str, Any]],
     observed_route_statuses: Counter[str],
     observed_delivery_statuses: Counter[str],
-    observed_reason_fields: Counter[str],
+    observed_reason_candidates: Counter[str],
 ) -> int:
     matching_routes = 0
 
@@ -473,22 +636,19 @@ def process_detail_routes(
         location = clean_text(organization.get("key"))
 
         for stop in route.get("stops") or []:
-            delivery_status_raw = normalise_status(stop.get("deliveryStatus"))
+            delivery_status_raw = normalise_status(
+                stop.get("deliveryStatus")
+            )
             observed_delivery_statuses[delivery_status_raw] += 1
 
-            latitude, longitude, coordinate_source = extract_coordinates(stop)
-            reason_fields = extract_reason_fields(stop)
-
-            if reason_fields["CamposMotivoRaw"] != "":
-                observed_reason_fields[reason_fields["CamposMotivoRaw"]] += 1
-
-            mapped_delivery_status = map_delivery_status(
-                delivery_status_raw,
-                reason_fields,
+            latitude, longitude, coordinate_source = (
+                extract_coordinates(stop)
             )
 
             for order in stop.get("orders") or []:
-                shipment_number = clean_text(order.get("number"))
+                shipment_number = clean_text(
+                    order.get("number")
+                )
 
                 if (
                     shipment_number == ""
@@ -496,48 +656,86 @@ def process_detail_routes(
                 ):
                     continue
 
+                (
+                    reason_not_delivered,
+                    reason_cancelled,
+                    reason_candidates,
+                ) = extract_rejection_reasons(stop, order)
+
+                for path, text in reason_candidates:
+                    observed_reason_candidates[
+                        f"{path}={text}"
+                    ] += 1
+
+                mapped_delivery_status = map_delivery_status(
+                    delivery_status_raw,
+                    reason_not_delivered,
+                    reason_cancelled,
+                )
+
                 candidate = {
                     "ShipmentCustom": shipment_number,
                     "VehicleKey": vehicle_key,
                     "Location": location,
                     "FechaOperacion": route_date,
                     "EstadoMigracion": "MIGRADO",
-                    "EstadoConexion": map_connection_status(route_status_raw),
+                    "EstadoConexion": map_connection_status(
+                        route_status_raw
+                    ),
                     "EstadoEntrega": mapped_delivery_status,
                     "LatitudActual": latitude,
                     "LongitudActual": longitude,
                     "FuenteCoordenada": coordinate_source,
                     "DeliveryStatusRaw": delivery_status_raw,
                     "EstadoRutaRaw": route_status_raw,
-                    **reason_fields,
+                    "MotivoNoEntrega": reason_not_delivered,
+                    "MotivoCancelacion": reason_cancelled,
                 }
 
-                found_shipments[shipment_number] = choose_best_record(
-                    found_shipments.get(shipment_number),
-                    candidate,
+                found_shipments[shipment_number] = (
+                    choose_best_record(
+                        found_shipments.get(shipment_number),
+                        candidate,
+                    )
                 )
 
     return matching_routes
 
 
 def main() -> None:
-    username = require_environment_variable("GREENMILE_USERNAME")
-    password = require_environment_variable("GREENMILE_PASSWORD")
-    authorisation = build_basic_authorisation(username, password)
+    username = require_environment_variable(
+        "GREENMILE_USERNAME"
+    )
+    password = require_environment_variable(
+        "GREENMILE_PASSWORD"
+    )
+    authorisation = build_basic_authorisation(
+        username,
+        password,
+    )
 
     programmed_shipments = load_programmed_shipments()
     programmed_by_number = {
-        record["ShipmentCustom"]: record for record in programmed_shipments
+        record["ShipmentCustom"]: record
+        for record in programmed_shipments
     }
-    target_dates = {record["DeliveryDate"] for record in programmed_shipments}
+    target_dates = {
+        record["DeliveryDate"]
+        for record in programmed_shipments
+    }
 
-    print("Fechas operativas: " + ", ".join(sorted(target_dates)))
-    print(f"Shipments programados: {len(programmed_by_number)}")
+    print(
+        "Fechas operativas: "
+        + ", ".join(sorted(target_dates))
+    )
+    print(
+        f"Shipments programados: {len(programmed_by_number)}"
+    )
 
     found_shipments: dict[str, dict[str, Any]] = {}
     observed_delivery_statuses: Counter[str] = Counter()
     observed_route_statuses: Counter[str] = Counter()
-    observed_reason_fields: Counter[str] = Counter()
+    observed_reason_candidates: Counter[str] = Counter()
 
     first_result = 0
     page_number = 0
@@ -555,16 +753,21 @@ def main() -> None:
         page_number += 1
 
         if len(light_routes) == 0:
-            print(f"Fin de paginacion. firstResult={first_result}")
+            print(
+                f"Fin de paginación. firstResult={first_result}"
+            )
             break
 
-        current_page_signature = frozenset(get_route_ids(light_routes))
+        current_page_signature = frozenset(
+            get_route_ids(light_routes)
+        )
         if (
             current_page_signature
-            and current_page_signature == previous_page_signature
+            and current_page_signature
+            == previous_page_signature
         ):
             raise RuntimeError(
-                "GreenMile devolvio la misma pagina dos veces. "
+                "GreenMile devolvió la misma página dos veces. "
                 f"firstResult={first_result}."
             )
         previous_page_signature = current_page_signature
@@ -578,8 +781,10 @@ def main() -> None:
         matching_dates = page_dates & target_dates
 
         print(
-            f"Pagina {page_number}: firstResult={first_result}, "
-            f"rutas={len(light_routes)}, fechas={sorted(page_dates)}, "
+            f"Página {page_number}: "
+            f"firstResult={first_result}, "
+            f"rutas={len(light_routes)}, "
+            f"fechas={sorted(page_dates)}, "
             f"coincidencias={sorted(matching_dates)}"
         )
 
@@ -587,15 +792,22 @@ def main() -> None:
             light_page_ids = get_route_ids(light_routes)
             detail_ids_seen: set[str] = set()
 
-            for detail_offset in range(0, len(light_routes), DETAIL_PAGE_SIZE):
-                detail_first_result = first_result + detail_offset
+            for detail_offset in range(
+                0,
+                len(light_routes),
+                DETAIL_PAGE_SIZE,
+            ):
+                detail_first_result = (
+                    first_result + detail_offset
+                )
                 detail_max_results = min(
                     DETAIL_PAGE_SIZE,
                     len(light_routes) - detail_offset,
                 )
 
                 print(
-                    f"  Detalle: firstResult={detail_first_result}, "
+                    "  Detalle: "
+                    f"firstResult={detail_first_result}, "
                     f"maxResults={detail_max_results}"
                 )
 
@@ -606,40 +818,60 @@ def main() -> None:
                     authorisation=authorisation,
                 )
 
-                detail_ids_seen.update(get_route_ids(detail_routes))
+                detail_ids_seen.update(
+                    get_route_ids(detail_routes)
+                )
                 matching_routes += process_detail_routes(
                     detail_routes=detail_routes,
                     target_dates=target_dates,
                     programmed_by_number=programmed_by_number,
                     found_shipments=found_shipments,
-                    observed_route_statuses=observed_route_statuses,
-                    observed_delivery_statuses=observed_delivery_statuses,
-                    observed_reason_fields=observed_reason_fields,
+                    observed_route_statuses=(
+                        observed_route_statuses
+                    ),
+                    observed_delivery_statuses=(
+                        observed_delivery_statuses
+                    ),
+                    observed_reason_candidates=(
+                        observed_reason_candidates
+                    ),
                 )
 
             missing_ids = light_page_ids - detail_ids_seen
             if missing_ids:
                 print(
-                    "ADVERTENCIA: la consulta detallada no devolvio "
-                    f"{len(missing_ids)} rutas de la pagina ligera."
+                    "ADVERTENCIA: la consulta detallada "
+                    f"no devolvió {len(missing_ids)} rutas "
+                    "de la página ligera."
                 )
 
         first_result += len(light_routes)
     else:
         raise RuntimeError(
-            f"Se alcanzo GREENMILE_MAX_PAGES={MAX_PAGES} "
-            "sin detectar el final de la informacion."
+            f"Se alcanzó GREENMILE_MAX_PAGES={MAX_PAGES} "
+            "sin detectar el final de la información."
         )
 
     output_records: list[dict[str, Any]] = []
     for shipment_number in sorted(programmed_by_number):
         output_records.append(
             found_shipments.get(shipment_number)
-            or create_not_migrated_record(programmed_by_number[shipment_number])
+            or create_not_migrated_record(
+                programmed_by_number[shipment_number]
+            )
         )
 
-    with OUTPUT_FILE.open("w", encoding="utf-8", newline="") as file:
-        json.dump(output_records, file, ensure_ascii=False, indent=2)
+    with OUTPUT_FILE.open(
+        "w",
+        encoding="utf-8",
+        newline="",
+    ) as file:
+        json.dump(
+            output_records,
+            file,
+            ensure_ascii=False,
+            indent=2,
+        )
         file.write("\n")
 
     migrated_count = sum(
@@ -650,6 +882,14 @@ def main() -> None:
         record["EstadoEntrega"] == "RECHAZADO"
         for record in output_records
     )
+    rejected_with_reason_count = sum(
+        record["EstadoEntrega"] == "RECHAZADO"
+        and (
+            clean_text(record.get("MotivoNoEntrega")) != ""
+            or clean_text(record.get("MotivoCancelacion")) != ""
+        )
+        for record in output_records
+    )
     coordinates_count = sum(
         record.get("LatitudActual") is not None
         and record.get("LongitudActual") is not None
@@ -658,14 +898,42 @@ def main() -> None:
 
     print("\nRESUMEN")
     print(f"Rutas revisadas: {total_routes_reviewed}")
-    print(f"Rutas de fecha operativa: {matching_routes}")
+    print(
+        f"Rutas de fecha operativa: {matching_routes}"
+    )
     print(f"Shipments migrados: {migrated_count}")
-    print(f"Shipments no migrados: {len(output_records) - migrated_count}")
+    print(
+        "Shipments no migrados: "
+        f"{len(output_records) - migrated_count}"
+    )
     print(f"Shipments rechazados: {rejected_count}")
-    print(f"Shipments con coordenadas: {coordinates_count}")
-    print(f"Estados de ruta observados: {dict(observed_route_statuses)}")
-    print(f"Estados de entrega observados: {dict(observed_delivery_statuses)}")
-    print(f"Campos de motivo observados: {dict(observed_reason_fields)}")
+    print(
+        "Rechazados con motivo: "
+        f"{rejected_with_reason_count}"
+    )
+    print(
+        f"Shipments con coordenadas: {coordinates_count}"
+    )
+    print(
+        "Estados de ruta observados: "
+        f"{dict(observed_route_statuses)}"
+    )
+    print(
+        "Estados de entrega observados: "
+        f"{dict(observed_delivery_statuses)}"
+    )
+
+    if observed_reason_candidates:
+        print("Candidatos de motivo observados:")
+        for candidate, count in (
+            observed_reason_candidates.most_common(50)
+        ):
+            print(f"  {count} x {candidate}")
+    else:
+        print(
+            "Candidatos de motivo observados: ninguno"
+        )
+
     print(f"Archivo generado: {OUTPUT_FILE}")
 
 
