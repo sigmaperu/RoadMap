@@ -1,11 +1,15 @@
 import json
 import sys
+import pandas as pd
+from openpyxl import load_workbook
+from openpyxl.worksheet.table import Table, TableStyleInfo
 from pathlib import Path
 from typing import Any
 
 ROADMAP_FILE = Path("RoadMap_Shipment.json")
 GREENMILE_FILE = Path("GreenMile_Estados.json")
 OUTPUT_FILE = Path("PowerApp_Data.json")
+OUTPUT_XLSX = Path("PowerApp_Data.xlsx")
 
 
 def load_json_array(path: Path) -> list[dict[str, Any]]:
@@ -77,22 +81,18 @@ def main() -> None:
 
         output_record = {
             "DeliveryDate": clean_text(roadmap.get("DeliveryDate")),
-            "Location": clean_text(roadmap.get("Location")),
+            "ShipmentCustom": shipment,
             "VehicleKey": clean_text(roadmap.get("VehicleKey")),
+            "Location": clean_text(roadmap.get("Location")),
             "CustomerAccount": clean_text(roadmap.get("CustomerAccount")),
             "CustomerName": clean_text(roadmap.get("CustomerName")),
-            "CustomerName2": clean_text(roadmap.get("CustomerName2")),
-            "RutaVenta": clean_text(roadmap.get("RutaVenta")),
-            "ShipmentCustom": shipment,
             "DriverName": clean_text(roadmap.get("DriverName")),
             "DriverBadge": clean_text(roadmap.get("DriverBadge")),
-            "City": clean_text(roadmap.get("City")),
-            "Address": clean_text(roadmap.get("Address")),
-            "Latitude": optional_number(roadmap.get("Latitude")),
-            "Longitude": optional_number(roadmap.get("Longitude")),
-            "TimeWindow": clean_text(roadmap.get("TimeWindow")),
+            "RutaVenta": clean_text(roadmap.get("RutaVenta")),
             "Canal": clean_text(roadmap.get("Canal")),
-            "KgPlanificados": optional_number(roadmap.get("KgPlanificados")),
+            "KgPlanificados": optional_number(
+                roadmap.get("KgPlanificados")
+            ),
             "EstadoMigracion": clean_text(
                 greenmile.get("EstadoMigracion") or "NO MIGRADO"
             ),
@@ -100,7 +100,13 @@ def main() -> None:
                 greenmile.get("EstadoConexion") or "NO APLICA"
             ),
             "EstadoEntrega": clean_text(
-                greenmile.get("EstadoEntrega") or "SIN INFORMACIÓN"
+                greenmile.get("EstadoEntrega") or "SIN INFORMACION"
+            ),
+            "Latitude": optional_number(
+                roadmap.get("Latitude")
+            ),
+            "Longitude": optional_number(
+                roadmap.get("Longitude")
             ),
             "LatitudActual": optional_number(
                 greenmile.get("LatitudActual")
@@ -111,17 +117,13 @@ def main() -> None:
             "FuenteCoordenada": clean_text(
                 greenmile.get("FuenteCoordenada")
             ),
-            "DeliveryStatusRaw": clean_text(
-                greenmile.get("DeliveryStatusRaw")
-            ),
-            "EstadoRutaRaw": clean_text(
-                greenmile.get("EstadoRutaRaw")
-            ),
             "MotivoNoEntrega": clean_text(
                 greenmile.get("MotivoNoEntrega")
             ),
+            "MotivoCancelacion": clean_text(
+                greenmile.get("MotivoCancelacion")
+            ),
         }
-
         output_records.append(output_record)
 
     if len(output_records) == 0:
@@ -131,6 +133,40 @@ def main() -> None:
         json.dump(output_records, file, ensure_ascii=False, indent=2)
         file.write("\n")
 
+        # Generar Excel para Power Apps
+    dataframe = pd.DataFrame(output_records)
+
+    with pd.ExcelWriter(
+        OUTPUT_XLSX,
+        engine="openpyxl"
+    ) as writer:
+        dataframe.to_excel(
+            writer,
+            index=False,
+            sheet_name="Data"
+        )
+
+    workbook = load_workbook(OUTPUT_XLSX)
+    worksheet = workbook["Data"]
+
+    last_row = worksheet.max_row
+    last_col = worksheet.max_column
+
+    table = Table(
+        displayName="PowerAppData",
+        ref=f"A1:{chr(64 + last_col)}{last_row}"
+    )
+
+    style = TableStyleInfo(
+        name="TableStyleMedium2",
+        showRowStripes=True
+    )
+
+    table.tableStyleInfo = style
+    worksheet.add_table(table)
+
+    workbook.save(OUTPUT_XLSX)
+    
     migrated = sum(
         record["EstadoMigracion"] == "MIGRADO"
         for record in output_records
@@ -155,6 +191,7 @@ def main() -> None:
     print(f"Shipments entregados: {delivered}")
     print(f"Shipments con coordenadas operativas: {with_coordinates}")
     print(f"Archivo generado: {OUTPUT_FILE}")
+    print(f"Archivo generado: {OUTPUT_XLSX}")
 
 
 if __name__ == "__main__":
