@@ -41,6 +41,14 @@ NULL_VALUES = {
 }
 
 
+# Los registros asociados a estos Vehicle Key
+# no se incluirán en RoadMap_Shipment.json.
+EXCLUDED_VEHICLES = {
+    "FRT-001",
+    "RES-CLI",
+}
+
+
 def clean_text(value: Any) -> str:
     if value is None:
         return ""
@@ -63,7 +71,14 @@ def normalize_header(value: Any) -> str:
     )
 
 
-def parse_decimal(value: Any, field_name: str) -> Decimal:
+def normalize_vehicle_key(value: Any) -> str:
+    return clean_text(value).upper()
+
+
+def parse_decimal(
+    value: Any,
+    field_name: str,
+) -> Decimal:
     cleaned = clean_text(value)
 
     if cleaned == "":
@@ -77,16 +92,20 @@ def parse_decimal(value: Any, field_name: str) -> Decimal:
     except InvalidOperation:
         pass
 
-    # Alternativa: 1234,56
+    # Formato alternativo: 1234,56
     try:
         return Decimal(cleaned.replace(",", "."))
     except InvalidOperation as exc:
         raise ValueError(
-            f"Valor numérico inválido en {field_name}: {value!r}"
+            f"Valor numérico inválido en {field_name}: "
+            f"{value!r}"
         ) from exc
 
 
-def parse_coordinate(value: Any, field_name: str):
+def parse_coordinate(
+    value: Any,
+    field_name: str,
+):
     cleaned = clean_text(value)
 
     if cleaned == "":
@@ -103,7 +122,8 @@ def parse_coordinate(value: Any, field_name: str):
         return float(cleaned.replace(",", "."))
     except ValueError as exc:
         raise ValueError(
-            f"Coordenada inválida en {field_name}: {value!r}"
+            f"Coordenada inválida en {field_name}: "
+            f"{value!r}"
         ) from exc
 
 
@@ -114,7 +134,8 @@ def normalize_date(value: Any) -> str:
         return ""
 
     # El raw utiliza principalmente día/mes/año.
-    # También se aceptan formatos alternativos para evitar fallos futuros.
+    # También se aceptan formatos alternativos
+    # para evitar fallos futuros.
     accepted_formats = [
         "%d/%m/%Y",
         "%d/%m/%y",
@@ -248,8 +269,8 @@ def validate_and_merge_attributes(
             )
 
             raise ValueError(
-                f"El Shipment {shipment} presenta valores distintos "
-                f"en la columna {field_name}. "
+                f"El Shipment {shipment} presenta valores "
+                f"distintos en la columna {field_name}. "
                 f"Fila del CSV: {row_number}. "
                 f"Valor inicial: {stored_value!r}. "
                 f"Valor encontrado: {new_value!r}."
@@ -281,8 +302,10 @@ def main():
         )
 
     shipments = {}
+
     source_row_count = 0
-    skipped_rows = 0
+    skipped_without_shipment = 0
+    skipped_excluded_vehicle = 0
 
     with SOURCE_FILE.open(
         mode="r",
@@ -301,12 +324,23 @@ def main():
 
             row = normalize_row_keys(original_row)
 
+            vehicle_key = normalize_vehicle_key(
+                row.get("Vehicle Key")
+            )
+
+            # Excluir completamente estos vehículos.
+            # Las filas excluidas no generan shipments
+            # ni participan en la suma de KgPlanificados.
+            if vehicle_key in EXCLUDED_VEHICLES:
+                skipped_excluded_vehicle += 1
+                continue
+
             shipment = clean_text(
                 row.get("Shipment Custom")
             )
 
             if shipment == "":
-                skipped_rows += 1
+                skipped_without_shipment += 1
                 continue
 
             current_record = build_base_record(row)
@@ -349,19 +383,29 @@ def main():
         json_file.write("\n")
 
     print(
-        f"Filas leídas del CSV: {source_row_count}"
+        f"Filas leídas del CSV: "
+        f"{source_row_count}"
     )
 
     print(
-        f"Filas omitidas sin Shipment Custom: {skipped_rows}"
+        f"Filas omitidas sin Shipment Custom: "
+        f"{skipped_without_shipment}"
     )
 
     print(
-        f"Shipments únicos generados: {len(output_records)}"
+        f"Filas excluidas por Vehicle Key "
+        f"(FRT-001 / RES-CLI): "
+        f"{skipped_excluded_vehicle}"
     )
 
     print(
-        f"Archivo generado correctamente: {OUTPUT_FILE}"
+        f"Shipments únicos generados: "
+        f"{len(output_records)}"
+    )
+
+    print(
+        f"Archivo generado correctamente: "
+        f"{OUTPUT_FILE}"
     )
 
 
