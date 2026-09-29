@@ -7,9 +7,8 @@ on:
     types:
       - completed
 
-  push:
-    paths:
-      - ".heartbeat-greenmile"
+  schedule:
+    - cron: "*/1 * * * *"
 
   workflow_dispatch:
 
@@ -91,7 +90,6 @@ jobs:
 
           for position, record in enumerate(records, start=1):
               missing = required - set(record)
-
               if missing:
                   raise ValueError(
                       f"Registro {position} incompleto: {sorted(missing)}"
