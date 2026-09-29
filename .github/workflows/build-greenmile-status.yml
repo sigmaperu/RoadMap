@@ -8,7 +8,9 @@ on:
       - completed
 
   schedule:
-    - cron: "*/5 * * * *"
+    # Ejecutar cada 5 minutos, desplazado dos minutos
+    # para evitar los momentos de mayor carga del scheduler.
+    - cron: "2-57/5 * * * *"
 
   workflow_dispatch:
 
@@ -21,44 +23,128 @@ concurrency:
 
 jobs:
   build-greenmile-status:
+    name: Generar GreenMile_Estados.json
+
     if: >-
       github.event_name != 'workflow_run' ||
       github.event.workflow_run.conclusion == 'success'
 
     runs-on: ubuntu-latest
 
+    timeout-minutes: 15
+
     steps:
+      - name: Mostrar información del disparador
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "Evento: ${{ github.event_name }}"
+          echo "Workflow: ${{ github.workflow }}"
+          echo "Rama: ${{ github.ref_name }}"
+          echo "Repositorio: ${{ github.repository }}"
+          echo "Run ID: ${{ github.run_id }}"
+          echo "Fecha UTC:"
+          date -u +"%Y-%m-%dT%H:%M:%SZ"
+
       - name: Descargar repositorio
         uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
+
+      - name: Actualizar rama main
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git fetch origin main
+          git checkout main
+          git reset --hard origin/main
+
+          echo "Rama main actualizada correctamente."
+          git branch --show-current
+          git log -1 --oneline
 
       - name: Configurar Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
+      - name: Mostrar versión de Python
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          python --version
+          python -m pip --version
+
       - name: Validar archivos requeridos
         shell: bash
         run: |
-          test -f "RoadMap_Shipment.json"
-          test -f "scripts/build_greenmile_status.py"
+          set -euo pipefail
+
+          required_files=(
+            "RoadMap_Shipment.json"
+            "scripts/build_greenmile_status.py"
+          )
+
+          for file in "${required_files[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "ERROR: No existe el archivo requerido: $file"
+              exit 1
+            fi
+
+            if [ ! -s "$file" ]; then
+              echo "ERROR: El archivo requerido está vacío: $file"
+              exit 1
+            fi
+
+            echo "Archivo encontrado: $file"
+          done
 
       - name: Validar sintaxis
+        shell: bash
         run: |
+          set -euo pipefail
+
           python -m py_compile scripts/build_greenmile_status.py
+          echo "Sintaxis validada correctamente."
+
+      - name: Eliminar salida temporal anterior
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          rm -f GreenMile_Estados.json
+          echo "Salida anterior eliminada del entorno de ejecución."
 
       - name: Generar estados GreenMile
         env:
           GREENMILE_USERNAME: ${{ secrets.GREENMILE_USERNAME }}
           GREENMILE_PASSWORD: ${{ secrets.GREENMILE_PASSWORD }}
           GREENMILE_SCAN_PAGE_SIZE: "100"
+          GREENMILE_DETAIL_PAGE_SIZE: "10"
           GREENMILE_MAX_PAGES: "2000"
+          GREENMILE_HTTP_RETRIES: "3"
+          GREENMILE_DEBUG_REJECTED_LIMIT: "12"
+        shell: bash
         run: |
+          set -euo pipefail
+
+          echo "Inicio de consulta GreenMile:"
+          date -u +"%Y-%m-%dT%H:%M:%SZ"
+
           python scripts/build_greenmile_status.py
 
+          echo "Fin de consulta GreenMile:"
+          date -u +"%Y-%m-%dT%H:%M:%SZ"
+
       - name: Validar GreenMile_Estados.json
+        shell: bash
         run: |
+          set -euo pipefail
+
           python - <<'PY'
           import json
           from pathlib import Path
@@ -66,18 +152,32 @@ jobs:
           path = Path("GreenMile_Estados.json")
 
           if not path.exists():
-              raise ValueError("No se generó GreenMile_Estados.json")
+              raise ValueError(
+                  "No se generó GreenMile_Estados.json"
+              )
 
-          with path.open("r", encoding="utf-8") as file:
+          if path.stat().st_size == 0:
+              raise ValueError(
+                  "GreenMile_Estados.json está vacío"
+              )
+
+          with path.open(
+              "r",
+              encoding="utf-8",
+          ) as file:
               records = json.load(file)
 
           if not isinstance(records, list):
-              raise ValueError("GreenMile_Estados.json no es una matriz")
+              raise ValueError(
+                  "GreenMile_Estados.json no es una matriz"
+              )
 
           if len(records) == 0:
-              raise ValueError("GreenMile_Estados.json está vacío")
+              raise ValueError(
+                  "GreenMile_Estados.json está vacío"
+              )
 
-          required = {
+          required_fields = {
               "ShipmentCustom",
               "VehicleKey",
               "Location",
@@ -88,29 +188,127 @@ jobs:
               "MotivoNoEntrega",
           }
 
-          for position, record in enumerate(records, start=1):
-              missing = required - set(record)
-              if missing:
+          seen_shipments = set()
+
+          for position, record in enumerate(
+              records,
+              start=1,
+          ):
+              if not isinstance(record, dict):
                   raise ValueError(
-                      f"Registro {position} incompleto: {sorted(missing)}"
+                      f"El registro {position} no es un objeto"
                   )
 
-          print(f"JSON validado. Registros: {len(records)}")
+              missing_fields = (
+                  required_fields - set(record)
+              )
+
+              if missing_fields:
+                  raise ValueError(
+                      f"Registro {position} incompleto: "
+                      f"{sorted(missing_fields)}"
+                  )
+
+              shipment = str(
+                  record.get("ShipmentCustom", "")
+              ).strip()
+
+              if shipment == "":
+                  raise ValueError(
+                      f"Registro {position} sin ShipmentCustom"
+                  )
+
+              if shipment in seen_shipments:
+                  raise ValueError(
+                      "ShipmentCustom duplicado: "
+                      f"{shipment}"
+                  )
+
+              seen_shipments.add(shipment)
+
+          migrated = sum(
+              record.get("EstadoMigracion") == "MIGRADO"
+              for record in records
+          )
+
+          delivered = sum(
+              record.get("EstadoEntrega") == "ENTREGADO"
+              for record in records
+          )
+
+          rejected = sum(
+              record.get("EstadoEntrega") == "RECHAZADO"
+              for record in records
+          )
+
+          pending = sum(
+              record.get("EstadoEntrega") == "PENDIENTE"
+              for record in records
+          )
+
+          without_information = sum(
+              record.get("EstadoEntrega")
+              == "SIN INFORMACION"
+              for record in records
+          )
+
+          print("GreenMile_Estados.json validado.")
+          print(f"Registros: {len(records)}")
+          print(f"Shipments únicos: {len(seen_shipments)}")
+          print(f"Migrados: {migrated}")
+          print(f"Entregados: {delivered}")
+          print(f"Rechazados: {rejected}")
+          print(f"Pendientes: {pending}")
+          print(
+              "Sin información: "
+              f"{without_information}"
+          )
+          print(f"Tamaño: {path.stat().st_size} bytes")
           PY
+
+      - name: Mostrar cambios generados
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "Cambios detectados:"
+          git status --short -- GreenMile_Estados.json
+
+          echo "Archivo generado:"
+          ls -lh GreenMile_Estados.json
 
       - name: Guardar estados generados
         shell: bash
         run: |
+          set -euo pipefail
+
           if [ -z "$(git status --porcelain -- GreenMile_Estados.json)" ]; then
             echo "GreenMile_Estados.json no cambió."
+            echo "La consulta al API sí se ejecutó."
+            echo "No se requiere un nuevo commit."
             exit 0
           fi
 
-          git config user.name "github-actions[bot]"
-          git config user.email \
+          git config \
+            user.name \
+            "github-actions[bot]"
+
+          git config \
+            user.email \
             "41898282+github-actions[bot]@users.noreply.github.com"
 
           git add GreenMile_Estados.json
-          git commit -m "Actualizar estados GreenMile"
-          git pull --rebase origin main
-          git push origin main
+
+          git commit \
+            -m "Actualizar estados GreenMile"
+
+          git pull \
+            --rebase \
+            origin \
+            main
+
+          git push \
+            origin \
+            main
+
+          echo "GreenMile_Estados.json guardado en main."
