@@ -3771,11 +3771,11 @@
     "FechaOperacion": "2026-09-30",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
+    "EstadoEntrega": "SIN INFORMACION",
     "LatitudActual": -13.83534,
     "LongitudActual": -76.24844,
     "FuenteCoordenada": "PARADA",
-    "DeliveryStatusRaw": "PENDING",
+    "DeliveryStatusRaw": "IN_PROGRESS",
     "MotivoNoEntrega": "",
     "MotivoCancelacion": ""
   },
