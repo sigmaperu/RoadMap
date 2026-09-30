@@ -3282,9 +3282,9 @@
     "EstadoEntrega": "ENTREGADO",
     "Latitude": -12.16516,
     "Longitude": -76.99722,
-    "LatitudActual": -12.1553264,
-    "LongitudActual": -76.9905488,
-    "FuenteCoordenada": "LLEGADA",
+    "LatitudActual": -12.1541193,
+    "LongitudActual": -76.9902328,
+    "FuenteCoordenada": "PARTIDA",
     "MotivoNoEntrega": "",
     "MotivoCancelacion": ""
   },
