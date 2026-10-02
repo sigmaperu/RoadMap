@@ -31,7 +31,6 @@ SCAN_FIELDS = [
     "stops.orders.number",
 ]
 
-# Campos optimizados sin comodines universales masivos
 DETAIL_FIELDS = [
     "id",
     "organization.key",
@@ -680,7 +679,7 @@ def main() -> None:
             f"rutas={len(scan_routes)}, pedidos={len(page_order_numbers)}, "
             f"coincidencias_shipment={len(page_matching_shipments)}, "
             f"rutas_candidatas={len(candidate_routes)}"
-        )[span_2](start_span)[span_2](end_span)
+        )
 
         for route_offset, scan_route, route_matches in candidate_routes:
             detail_first = first_result + route_offset
@@ -690,9 +689,8 @@ def main() -> None:
                 "  Coincidencia por shipment: "
                 f"firstResult={detail_first}, routeId={expected_route_id}, "
                 f"shipments={sorted(route_matches)}"
-            )[span_3](start_span)[span_3](end_span)
+            )
 
-            # Si el scan_route ya trae stops y orders completos, no volvemos a hacer request si id coincide
             detail_routes = request_routes_page(
                 DETAIL_FIELDS,
                 detail_first,
