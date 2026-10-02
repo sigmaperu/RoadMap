@@ -22,16 +22,8 @@ HTTP_RETRIES = int(os.getenv("GREENMILE_HTTP_RETRIES", "3"))
 DEBUG_REJECTED_LIMIT = int(os.getenv("GREENMILE_DEBUG_REJECTED_LIMIT", "12"))
 DEBUG_REJECTED_COUNT = 0
 
+# Campos directos válidos para Hibernate en una sola consulta
 SCAN_FIELDS = [
-    "id",
-    "organization.key",
-    "date",
-    "key",
-    "status",
-    "stops.orders.number",
-]
-
-DETAIL_FIELDS = [
     "id",
     "organization.key",
     "date",
@@ -48,13 +40,12 @@ DETAIL_FIELDS = [
     "stops.cancellationLongitude",
     "stops.latitude",
     "stops.longitude",
-    "stops.actualCancelReason.*",
-    "stops.undeliveredReason.*",
+    "stops.undeliveredReason.description",
+    "stops.undeliveredReason.name",
+    "stops.actualCancelReason.description",
+    "stops.actualCancelReason.name",
     "stops.orders.number",
     "stops.orders.deliveryStatus",
-    "stops.orders.actualCancelReason.*",
-    "stops.orders.undeliveredReason.*",
-    "stops.orders.rejectionReason.*",
 ]
 
 REJECTED_DELIVERY_STATUSES = {
@@ -183,14 +174,9 @@ def request_routes_page(
     first_result: int,
     max_results: int,
     authorisation: str,
-    extra_filters: Optional[list[str]] = None,
 ) -> list[dict[str, Any]]:
-    filters = list(fields)
-    if extra_filters:
-        filters.extend(extra_filters)
-
     criteria = {
-        "filters": filters,
+        "filters": fields,
         "firstResult": first_result,
         "maxResults": max_results,
     }
@@ -253,20 +239,6 @@ def get_route_ids(routes: list[dict[str, Any]]) -> set[str]:
         for route in routes
         if clean_text(route.get("id")) != ""
     }
-
-
-def get_order_numbers_in_route(route: dict[str, Any]) -> set[str]:
-    order_numbers: set[str] = set()
-    for stop in route.get("stops") or []:
-        if not isinstance(stop, dict):
-            continue
-        for order in stop.get("orders") or []:
-            if not isinstance(order, dict):
-                continue
-            shipment_number = normalise_shipment_number(order.get("number"))
-            if shipment_number != "":
-                order_numbers.add(shipment_number)
-    return order_numbers
 
 
 def scalar_from_value(value: Any) -> str:
@@ -517,21 +489,22 @@ def create_not_migrated_record(programmed: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def process_detail_routes(
-    detail_routes: list[dict[str, Any]],
+def process_routes_batch(
+    routes: list[dict[str, Any]],
     programmed_by_number: dict[str, dict[str, Any]],
     found_shipments: dict[str, dict[str, Any]],
     observed_route_statuses: Counter[str],
     observed_delivery_statuses: Counter[str],
     observed_reason_candidates: Counter[str],
+    all_greenmile_orders: set[str],
+    matched_shipments_in_scan: set[str],
 ) -> int:
-    processed_routes = 0
+    routes_matched = 0
 
-    for route in detail_routes:
+    for route in routes:
         if not isinstance(route, dict):
             continue
 
-        processed_routes += 1
         route_date = clean_text(route.get("date"))
         greenmile_route_key = clean_text(route.get("key"))
         route_status_raw = normalise_status(route.get("status"))
@@ -540,12 +513,14 @@ def process_detail_routes(
         organization = route.get("organization") or {}
         greenmile_location = clean_text(organization.get("key"))
 
+        route_has_match = False
+
         for stop in route.get("stops") or []:
             if not isinstance(stop, dict):
                 continue
 
-            delivery_status_raw = normalise_status(stop.get("deliveryStatus"))
-            observed_delivery_statuses[delivery_status_raw] += 1
+            stop_delivery_status = normalise_status(stop.get("deliveryStatus"))
+            observed_delivery_statuses[stop_delivery_status] += 1
             latitude, longitude, coordinate_source = extract_coordinates(stop)
 
             for order in stop.get("orders") or []:
@@ -553,10 +528,21 @@ def process_detail_routes(
                     continue
 
                 shipment_number = normalise_shipment_number(order.get("number"))
-                if shipment_number == "" or shipment_number not in programmed_by_number:
+                if shipment_number == "":
                     continue
 
+                all_greenmile_orders.add(shipment_number)
+
+                if shipment_number not in programmed_by_number:
+                    continue
+
+                route_has_match = True
+                matched_shipments_in_scan.add(shipment_number)
                 programmed = programmed_by_number[shipment_number]
+
+                delivery_status_raw = normalise_status(
+                    order.get("deliveryStatus") or stop_delivery_status
+                )
 
                 dump_rejected_objects(
                     shipment_number,
@@ -600,7 +586,10 @@ def process_detail_routes(
                     candidate,
                 )
 
-    return processed_routes
+        if route_has_match:
+            routes_matched += 1
+
+    return routes_matched
 
 
 def main() -> None:
@@ -632,12 +621,11 @@ def main() -> None:
     first_result = 0
     page_number = 0
     total_routes_reviewed = 0
-    detailed_routes_processed = 0
     routes_with_programmed_shipments = 0
     previous_page_signature: Optional[frozenset[str]] = None
 
     while page_number < MAX_PAGES:
-        scan_routes = request_routes_page(
+        routes_page = request_routes_page(
             SCAN_FIELDS,
             first_result,
             SCAN_PAGE_SIZE,
@@ -645,78 +633,40 @@ def main() -> None:
         )
         page_number += 1
 
-        if not scan_routes:
+        if not routes_page:
             print(f"Fin de paginacion. firstResult={first_result}")
             break
 
-        signature = frozenset(get_route_ids(scan_routes))
+        signature = frozenset(get_route_ids(routes_page))
         if signature and signature == previous_page_signature:
             raise RuntimeError(
                 f"GreenMile devolvio la misma pagina. firstResult={first_result}."
             )
         previous_page_signature = signature
-        total_routes_reviewed += len(scan_routes)
+        total_routes_reviewed += len(routes_page)
 
-        page_order_numbers: set[str] = set()
-        page_matching_shipments: set[str] = set()
-        candidate_routes: list[tuple[int, dict[str, Any], set[str]]] = []
+        matched_in_page_before = len(matched_shipments_in_scan)
 
-        for route_offset, scan_route in enumerate(scan_routes):
-            route_order_numbers = get_order_numbers_in_route(scan_route)
-            page_order_numbers.update(route_order_numbers)
-            all_greenmile_orders.update(route_order_numbers)
-
-            route_matches = route_order_numbers & programmed_numbers
-            if not route_matches:
-                continue
-
-            page_matching_shipments.update(route_matches)
-            matched_shipments_in_scan.update(route_matches)
-            candidate_routes.append((route_offset, scan_route, route_matches))
+        matched_routes = process_routes_batch(
+            routes_page,
+            programmed_by_number,
+            found_shipments,
+            observed_route_statuses,
+            observed_delivery_statuses,
+            observed_reason_candidates,
+            all_greenmile_orders,
+            matched_shipments_in_scan,
+        )
+        routes_with_programmed_shipments += matched_routes
+        matched_in_page = len(matched_shipments_in_scan) - matched_in_page_before
 
         print(
             f"Pagina {page_number}: firstResult={first_result}, "
-            f"rutas={len(scan_routes)}, pedidos={len(page_order_numbers)}, "
-            f"coincidencias_shipment={len(page_matching_shipments)}, "
-            f"rutas_candidatas={len(candidate_routes)}"
+            f"rutas={len(routes_page)}, coincidencias_shipment={matched_in_page}, "
+            f"total_encontrados={len(found_shipments)}"
         )
 
-        for route_offset, scan_route, route_matches in candidate_routes:
-            detail_first = first_result + route_offset
-            expected_route_id = clean_text(scan_route.get("id"))
-
-            print(
-                "  Coincidencia por shipment: "
-                f"firstResult={detail_first}, routeId={expected_route_id}, "
-                f"shipments={sorted(route_matches)}"
-            )
-
-            detail_routes = request_routes_page(
-                DETAIL_FIELDS,
-                detail_first,
-                1,
-                authorisation,
-            )
-
-            actual_route_ids = get_route_ids(detail_routes)
-            if expected_route_id != "" and expected_route_id not in actual_route_ids:
-                print(
-                    f"  ADVERTENCIA: La ruta devuelta ({actual_route_ids}) no coincide con el routeId={expected_route_id}. "
-                    "Se utilizara la data obtenida en la exploracion principal para preservar el mapeo."
-                )
-                detail_routes = [scan_route]
-
-            routes_with_programmed_shipments += 1
-            detailed_routes_processed += process_detail_routes(
-                detail_routes,
-                programmed_by_number,
-                found_shipments,
-                observed_route_statuses,
-                observed_delivery_statuses,
-                observed_reason_candidates,
-            )
-
-        first_result += len(scan_routes)
+        first_result += len(routes_page)
 
     else:
         raise RuntimeError(
@@ -726,8 +676,7 @@ def main() -> None:
     if not all_greenmile_orders:
         raise RuntimeError(
             "La consulta de exploracion no devolvio ningun stops.orders.number. "
-            "Verificar que GreenMile acepte el campo stops.orders.number "
-            "dentro de SCAN_FIELDS."
+            "Verificar que GreenMile acepte el campo stops.orders.number dentro de SCAN_FIELDS."
         )
 
     output_records = [
@@ -769,13 +718,12 @@ def main() -> None:
     print("\nRESUMEN")
     print(f"Rutas revisadas: {total_routes_reviewed}")
     print(
-        "Rutas con shipment programado detectadas en exploracion: "
+        "Rutas con shipment programado detectadas: "
         f"{routes_with_programmed_shipments}"
     )
-    print(f"Rutas detalladas procesadas: {detailed_routes_processed}")
     print(f"Pedidos unicos observados en GreenMile: {len(all_greenmile_orders)}")
     print(
-        "Shipments programados detectados en exploracion: "
+        "Shipments programados detectados: "
         f"{len(matched_shipments_in_scan)}"
     )
     print(f"Shipments migrados: {migrated}")
