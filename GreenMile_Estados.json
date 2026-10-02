@@ -5509,7 +5509,7 @@
     "LatitudActual": -14.08292,
     "LongitudActual": -75.75183,
     "FuenteCoordenada": "PARADA",
-    "DeliveryStatusRaw": "PENDING",
+    "DeliveryStatusRaw": "IN_PROGRESS",
     "MotivoNoEntrega": "",
     "MotivoCancelacion": "",
     "GreenMileRouteKey": "CCN-848",
