@@ -15,7 +15,6 @@ from typing import Any, Optional
 ROADMAP_FILE = Path("RoadMap_Shipment.json")
 OUTPUT_FILE = Path("GreenMile_Estados.json")
 GREENMILE_URL = "https://sigmaperu.greenmile.com/Route/restrictions"
-GREENMILE_BASE_ROUTE_URL = "https://sigmaperu.greenmile.com/Route"
 
 SCAN_PAGE_SIZE = int(os.getenv("GREENMILE_SCAN_PAGE_SIZE", "100"))
 MAX_PAGES = int(os.getenv("GREENMILE_MAX_PAGES", "2000"))
@@ -23,13 +22,16 @@ HTTP_RETRIES = int(os.getenv("GREENMILE_HTTP_RETRIES", "3"))
 DEBUG_REJECTED_LIMIT = int(os.getenv("GREENMILE_DEBUG_REJECTED_LIMIT", "12"))
 DEBUG_REJECTED_COUNT = 0
 
-# Campos verificados que corrieron perfectamente durante 59 páginas
+# Campos de Route aceptados por GreenMile que traen status y pedidos
 SCAN_FIELDS = [
     "id",
     "organization.key",
     "date",
     "key",
     "status",
+    "stops.deliveryStatus",
+    "stops.latitude",
+    "stops.longitude",
     "stops.orders.number",
 ]
 
@@ -42,25 +44,9 @@ REJECTED_DELIVERY_STATUSES = {
     "FAILED",
 }
 
-REASON_KEY_TOKENS = (
-    "reason", "razon", "motivo", "undeliver", "notdeliver", "noentreg",
-    "reject", "rechaz", "failure", "failed", "refusal", "refused",
-    "exception", "occurrence", "incident", "returnreason", "cancelreason",
-    "cancellationreason",
-)
-
-TECHNICAL_KEY_TOKENS = (
-    "latitude", "longitude", "accuracy", "distance", "provider", "gps",
-    "quality", "conformity", "actualcancel", "timestamp", "datetime",
-)
-
 TECHNICAL_VALUES = {
     "DRIVER_ENTERED", "ROUTER_INFERRED", "FUSED", "GPS", "TRUE", "FALSE", "0",
 }
-
-PREFERRED_TEXT_KEYS = (
-    "description", "name", "label", "reason", "value", "displayName", "key", "code",
-)
 
 
 def clean_text(value: Any) -> str:
@@ -218,30 +204,6 @@ def request_routes_page(
     raise RuntimeError("Error no identificado al consultar GreenMile.")
 
 
-def request_route_detail_by_id(route_id: str, authorisation: str) -> Optional[dict[str, Any]]:
-    """Consulta la ruta completa por su ID directo para evitar problemas de ordenamiento."""
-    url = f"{GREENMILE_BASE_ROUTE_URL}/{route_id}"
-    request = urllib.request.Request(
-        url=url,
-        method="GET",
-        headers={
-            "Authorization": authorisation,
-            "Accept": "application/json",
-        },
-    )
-
-    for attempt in range(1, HTTP_RETRIES + 1):
-        try:
-            with urllib.request.urlopen(request, timeout=120) as response:
-                return json.loads(response.read().decode("utf-8"))
-        except Exception as error:
-            if attempt == HTTP_RETRIES:
-                print(f"No se pudo cargar detalle por GET /Route/{route_id}: {error}")
-                return None
-            time.sleep(attempt * 2)
-    return None
-
-
 def get_route_ids(routes: list[dict[str, Any]]) -> set[str]:
     return {
         clean_text(route.get("id"))
@@ -250,177 +212,11 @@ def get_route_ids(routes: list[dict[str, Any]]) -> set[str]:
     }
 
 
-def get_order_numbers_in_route(route: dict[str, Any]) -> set[str]:
-    order_numbers: set[str] = set()
-    for stop in route.get("stops") or []:
-        if not isinstance(stop, dict):
-            continue
-        for order in stop.get("orders") or []:
-            if not isinstance(order, dict):
-                continue
-            shipment_number = normalise_shipment_number(order.get("number"))
-            if shipment_number != "":
-                order_numbers.add(shipment_number)
-    return order_numbers
-
-
-def scalar_from_value(value: Any) -> str:
-    if value is None or isinstance(value, bool):
-        return ""
-
-    if isinstance(value, (str, int, float)):
-        text = clean_text(value)
-        if normalise_status(text) in TECHNICAL_VALUES:
-            return ""
-        return text
-
-    if isinstance(value, dict):
-        normalised = {normalise_key(k): v for k, v in value.items()}
-        for preferred_key in PREFERRED_TEXT_KEYS:
-            text = scalar_from_value(normalised.get(normalise_key(preferred_key)))
-            if text != "":
-                return text
-        for item in value.values():
-            text = scalar_from_value(item)
-            if text != "":
-                return text
-        return ""
-
-    if isinstance(value, list):
-        texts: list[str] = []
-        for item in value:
-            text = scalar_from_value(item)
-            if text != "" and text not in texts:
-                texts.append(text)
-        return " | ".join(texts)
-
-    return ""
-
-
-def is_reason_path(path: str) -> bool:
-    key = normalise_key(path)
-    return any(token in key for token in REASON_KEY_TOKENS)
-
-
-def is_technical_path(path: str) -> bool:
-    key = normalise_key(path)
-    return any(token in key for token in TECHNICAL_KEY_TOKENS)
-
-
-def discover_reason_candidates(
-    value: Any,
-    path: str = "",
-) -> list[tuple[str, str]]:
-    candidates: list[tuple[str, str]] = []
-
-    if isinstance(value, dict):
-        for key, child in value.items():
-            child_path = f"{path}.{key}" if path else key
-            if is_reason_path(child_path) and not is_technical_path(child_path):
-                text = scalar_from_value(child)
-                if text != "":
-                    candidates.append((child_path, text))
-            candidates.extend(discover_reason_candidates(child, child_path))
-
-    elif isinstance(value, list):
-        for index, child in enumerate(value):
-            candidates.extend(
-                discover_reason_candidates(child, f"{path}[{index}]")
-            )
-
-    unique: list[tuple[str, str]] = []
-    seen: set[tuple[str, str]] = set()
-    for candidate in candidates:
-        if candidate not in seen:
-            unique.append(candidate)
-            seen.add(candidate)
-    return unique
-
-
-def classify_reason_path(path: str) -> str:
-    key = normalise_key(path)
-    if "cancel" in key:
-        return "CANCELACION"
-    if any(
-        token in key
-        for token in (
-            "undeliver", "notdeliver", "noentreg", "reject", "rechaz",
-            "refusal", "failed", "failure",
-        )
-    ):
-        return "NO_ENTREGA"
-    return "GENERICA"
-
-
-def extract_rejection_reasons(
-    stop: dict[str, Any],
-    order: dict[str, Any],
-) -> tuple[str, str, list[tuple[str, str]]]:
-    candidates = (
-        discover_reason_candidates(order, "order")
-        + discover_reason_candidates(stop, "stop")
-    )
-
-    motivo_no_entrega = ""
-    motivo_cancelacion = ""
-    motivo_generico = ""
-
-    for path, text in candidates:
-        category = classify_reason_path(path)
-        if category == "CANCELACION" and motivo_cancelacion == "":
-            motivo_cancelacion = text
-        elif category == "NO_ENTREGA" and motivo_no_entrega == "":
-            motivo_no_entrega = text
-        elif motivo_generico == "":
-            motivo_generico = text
-
-    if motivo_no_entrega == "" and motivo_generico != "":
-        motivo_no_entrega = motivo_generico
-
-    return motivo_no_entrega, motivo_cancelacion, candidates
-
-
-def dump_rejected_objects(
-    shipment_number: str,
-    delivery_status_raw: str,
-    stop: dict[str, Any],
-    order: dict[str, Any],
-) -> None:
-    global DEBUG_REJECTED_COUNT
-
-    if delivery_status_raw not in REJECTED_DELIVERY_STATUSES:
-        return
-    if DEBUG_REJECTED_COUNT >= DEBUG_REJECTED_LIMIT:
-        return
-
-    DEBUG_REJECTED_COUNT += 1
-    payload = {
-        "ShipmentCustom": shipment_number,
-        "DeliveryStatusRaw": delivery_status_raw,
-        "StopCompleto": stop,
-        "OrderCompleto": order,
-    }
-
-    print("\n" + "=" * 100)
-    print(f"DEBUG_RECHAZO_INICIO {DEBUG_REJECTED_COUNT}/{DEBUG_REJECTED_LIMIT}")
-    print(json.dumps(payload, ensure_ascii=False, indent=2, default=str))
-    print("DEBUG_RECHAZO_FIN")
-    print("=" * 100 + "\n")
-
-
-def map_delivery_status(
-    delivery_status: Any,
-    motivo_no_entrega: str,
-    motivo_cancelacion: str,
-) -> str:
+def map_delivery_status(delivery_status: Any) -> str:
     status = normalise_status(delivery_status)
     if status == "DELIVERED":
         return "ENTREGADO"
-    if (
-        status in REJECTED_DELIVERY_STATUSES
-        or motivo_no_entrega != ""
-        or motivo_cancelacion != ""
-    ):
+    if status in REJECTED_DELIVERY_STATUSES:
         return "RECHAZADO"
     if status in {"PENDING", "IN_PROGRESS"}:
         return "PENDIENTE"
@@ -449,13 +245,6 @@ def delivery_priority(value: Any) -> int:
     }.get(normalise_status(value), 5)
 
 
-def reason_score(record: dict[str, Any]) -> int:
-    return sum(
-        clean_text(record.get(field)) != ""
-        for field in ("MotivoNoEntrega", "MotivoCancelacion")
-    )
-
-
 def choose_best_record(
     existing: Optional[dict[str, Any]],
     candidate: dict[str, Any],
@@ -466,32 +255,9 @@ def choose_best_record(
     old_priority = delivery_priority(existing.get("DeliveryStatusRaw"))
     new_priority = delivery_priority(candidate.get("DeliveryStatusRaw"))
 
-    if new_priority > old_priority:
-        return candidate
-    if new_priority == old_priority and reason_score(candidate) > reason_score(existing):
+    if new_priority >= old_priority:
         return candidate
     return existing
-
-
-def extract_coordinates(
-    stop: dict[str, Any],
-) -> tuple[Optional[float], Optional[float], str]:
-    pairs = [
-        ("serviceLatitude", "serviceLongitude", "SERVICIO"),
-        ("departureLatitude", "departureLongitude", "PARTIDA"),
-        ("arrivalLatitude", "arrivalLongitude", "LLEGADA"),
-        ("cancellationLatitude", "cancellationLongitude", "CANCELACION"),
-        ("cancelLatitude", "cancelLongitude", "CANCELACION"),
-        ("latitude", "longitude", "PARADA"),
-    ]
-
-    for latitude_key, longitude_key, source in pairs:
-        latitude = to_number(stop.get(latitude_key))
-        longitude = to_number(stop.get(longitude_key))
-        if latitude is not None and longitude is not None:
-            return latitude, longitude, source
-
-    return None, None, ""
 
 
 def create_not_migrated_record(programmed: dict[str, Any]) -> dict[str, Any]:
@@ -512,60 +278,56 @@ def create_not_migrated_record(programmed: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def process_detail_routes(
-    detail_routes: list[dict[str, Any]],
+def process_routes_direct(
+    routes: list[dict[str, Any]],
     programmed_by_number: dict[str, dict[str, Any]],
     found_shipments: dict[str, dict[str, Any]],
     observed_route_statuses: Counter[str],
     observed_delivery_statuses: Counter[str],
-    observed_reason_candidates: Counter[str],
+    all_greenmile_orders: set[str],
+    matched_shipments_in_scan: set[str],
 ) -> int:
-    processed_routes = 0
+    routes_with_matches = 0
 
-    for route in detail_routes:
+    for route in routes:
         if not isinstance(route, dict):
             continue
 
-        processed_routes += 1
-        route_date = clean_text(route.get("date"))
-        greenmile_route_key = clean_text(route.get("key"))
         route_status_raw = normalise_status(route.get("status"))
         observed_route_statuses[route_status_raw] += 1
-
+        route_date = clean_text(route.get("date"))
+        greenmile_route_key = clean_text(route.get("key"))
         organization = route.get("organization") or {}
         greenmile_location = clean_text(organization.get("key"))
+
+        route_had_shipment = False
 
         for stop in route.get("stops") or []:
             if not isinstance(stop, dict):
                 continue
 
-            delivery_status_raw = normalise_status(stop.get("deliveryStatus"))
-            observed_delivery_statuses[delivery_status_raw] += 1
-            latitude, longitude, coordinate_source = extract_coordinates(stop)
+            stop_status = normalise_status(stop.get("deliveryStatus"))
+            observed_delivery_statuses[stop_status] += 1
+            lat = to_number(stop.get("latitude"))
+            lon = to_number(stop.get("longitude"))
+            coord_source = "PARADA" if (lat is not None and lon is not None) else ""
 
             for order in stop.get("orders") or []:
                 if not isinstance(order, dict):
                     continue
 
                 shipment_number = normalise_shipment_number(order.get("number"))
-                if shipment_number == "" or shipment_number not in programmed_by_number:
+                if shipment_number == "":
                     continue
 
+                all_greenmile_orders.add(shipment_number)
+
+                if shipment_number not in programmed_by_number:
+                    continue
+
+                route_had_shipment = True
+                matched_shipments_in_scan.add(shipment_number)
                 programmed = programmed_by_number[shipment_number]
-
-                dump_rejected_objects(
-                    shipment_number,
-                    delivery_status_raw,
-                    stop,
-                    order,
-                )
-
-                motivo_no_entrega, motivo_cancelacion, candidates = (
-                    extract_rejection_reasons(stop, order)
-                )
-
-                for path, text in candidates:
-                    observed_reason_candidates[f"{path}={text}"] += 1
 
                 candidate = {
                     "ShipmentCustom": shipment_number,
@@ -574,17 +336,13 @@ def process_detail_routes(
                     "FechaOperacion": clean_text(programmed.get("DeliveryDate")),
                     "EstadoMigracion": "MIGRADO",
                     "EstadoConexion": map_connection_status(route_status_raw),
-                    "EstadoEntrega": map_delivery_status(
-                        delivery_status_raw,
-                        motivo_no_entrega,
-                        motivo_cancelacion,
-                    ),
-                    "LatitudActual": latitude,
-                    "LongitudActual": longitude,
-                    "FuenteCoordenada": coordinate_source,
-                    "DeliveryStatusRaw": delivery_status_raw,
-                    "MotivoNoEntrega": motivo_no_entrega,
-                    "MotivoCancelacion": motivo_cancelacion,
+                    "EstadoEntrega": map_delivery_status(stop_status),
+                    "LatitudActual": lat,
+                    "LongitudActual": lon,
+                    "FuenteCoordenada": coord_source,
+                    "DeliveryStatusRaw": stop_status,
+                    "MotivoNoEntrega": "",
+                    "MotivoCancelacion": "",
                     "GreenMileRouteKey": greenmile_route_key,
                     "GreenMileLocation": greenmile_location,
                     "GreenMileRouteDate": route_date,
@@ -595,7 +353,10 @@ def process_detail_routes(
                     candidate,
                 )
 
-    return processed_routes
+        if route_had_shipment:
+            routes_with_matches += 1
+
+    return routes_with_matches
 
 
 def main() -> None:
@@ -619,7 +380,6 @@ def main() -> None:
     found_shipments: dict[str, dict[str, Any]] = {}
     observed_delivery_statuses: Counter[str] = Counter()
     observed_route_statuses: Counter[str] = Counter()
-    observed_reason_candidates: Counter[str] = Counter()
 
     all_greenmile_orders: set[str] = set()
     matched_shipments_in_scan: set[str] = set()
@@ -627,7 +387,6 @@ def main() -> None:
     first_result = 0
     page_number = 0
     total_routes_reviewed = 0
-    detailed_routes_processed = 0
     routes_with_programmed_shipments = 0
     previous_page_signature: Optional[frozenset[str]] = None
 
@@ -652,49 +411,24 @@ def main() -> None:
         previous_page_signature = signature
         total_routes_reviewed += len(scan_routes)
 
-        page_order_numbers: set[str] = set()
-        page_matching_shipments: set[str] = set()
-        candidate_routes: list[dict[str, Any]] = []
-
-        for scan_route in scan_routes:
-            route_order_numbers = get_order_numbers_in_route(scan_route)
-            page_order_numbers.update(route_order_numbers)
-            all_greenmile_orders.update(route_order_numbers)
-
-            route_matches = route_order_numbers & programmed_numbers
-            if not route_matches:
-                continue
-
-            page_matching_shipments.update(route_matches)
-            matched_shipments_in_scan.update(route_matches)
-            candidate_routes.append(scan_route)
+        matched_before = len(matched_shipments_in_scan)
+        matched_routes = process_routes_direct(
+            scan_routes,
+            programmed_by_number,
+            found_shipments,
+            observed_route_statuses,
+            observed_delivery_statuses,
+            all_greenmile_orders,
+            matched_shipments_in_scan,
+        )
+        routes_with_programmed_shipments += matched_routes
+        matched_in_page = len(matched_shipments_in_scan) - matched_before
 
         print(
             f"Pagina {page_number}: firstResult={first_result}, "
-            f"rutas={len(scan_routes)}, pedidos={len(page_order_numbers)}, "
-            f"coincidencias_shipment={len(page_matching_shipments)}, "
-            f"rutas_candidatas={len(candidate_routes)}"
+            f"rutas={len(scan_routes)}, coincidencias_pagina={matched_in_page}, "
+            f"total_migrados={len(found_shipments)}"
         )
-
-        for scan_route in candidate_routes:
-            route_id = clean_text(scan_route.get("id"))
-            routes_with_programmed_shipments += 1
-
-            detail_route = None
-            if route_id:
-                print(f"  Obteniendo detalle de ruta ID={route_id}...")
-                detail_route = request_route_detail_by_id(route_id, authorisation)
-
-            route_to_process = detail_route if detail_route else scan_route
-
-            detailed_routes_processed += process_detail_routes(
-                [route_to_process],
-                programmed_by_number,
-                found_shipments,
-                observed_route_statuses,
-                observed_delivery_statuses,
-                observed_reason_candidates,
-            )
 
         first_result += len(scan_routes)
 
@@ -705,8 +439,7 @@ def main() -> None:
 
     if not all_greenmile_orders:
         raise RuntimeError(
-            "La consulta de exploracion no devolvio ningun stops.orders.number. "
-            "Verificar que GreenMile acepte el campo stops.orders.number dentro de SCAN_FIELDS."
+            "La consulta de exploracion no devolvio ningun stops.orders.number."
         )
 
     output_records = [
@@ -727,14 +460,6 @@ def main() -> None:
         record["EstadoEntrega"] == "RECHAZADO"
         for record in output_records
     )
-    rejected_with_reason = sum(
-        record["EstadoEntrega"] == "RECHAZADO"
-        and (
-            clean_text(record.get("MotivoNoEntrega")) != ""
-            or clean_text(record.get("MotivoCancelacion")) != ""
-        )
-        for record in output_records
-    )
     with_coordinates = sum(
         record.get("LatitudActual") is not None
         and record.get("LongitudActual") is not None
@@ -751,7 +476,6 @@ def main() -> None:
         "Rutas con shipment programado detectadas: "
         f"{routes_with_programmed_shipments}"
     )
-    print(f"Rutas detalladas procesadas: {detailed_routes_processed}")
     print(f"Pedidos unicos observados en GreenMile: {len(all_greenmile_orders)}")
     print(
         "Shipments programados detectados: "
@@ -769,20 +493,12 @@ def main() -> None:
         f"{len(greenmile_not_in_roadmap)}"
     )
     print(f"Shipments rechazados: {rejected}")
-    print(f"Rechazados con motivo: {rejected_with_reason}")
     print(f"Shipments con coordenadas: {with_coordinates}")
     print(f"Estados de ruta observados: {dict(observed_route_statuses)}")
     print(f"Estados de entrega observados: {dict(observed_delivery_statuses)}")
 
-    if observed_reason_candidates:
-        print("Candidatos de motivo observados:")
-        for candidate, count in observed_reason_candidates.most_common(50):
-            print(f"  {count} x {candidate}")
-    else:
-        print("Candidatos de motivo observados: ninguno")
-
     if not_found_shipments:
-        print("Primeros shipments RoadMap no encontrados en GreenMile:")
+        print("\nPrimeros shipments RoadMap no encontrados en GreenMile:")
         for shipment in sorted(not_found_shipments)[:50]:
             programmed = programmed_by_number[shipment]
             print(
@@ -792,8 +508,7 @@ def main() -> None:
                 f"DeliveryDate={clean_text(programmed.get('DeliveryDate'))}"
             )
 
-    print(f"Rechazos impresos para diagnostico: {DEBUG_REJECTED_COUNT}")
-    print(f"Archivo generado: {OUTPUT_FILE}")
+    print(f"\nArchivo generado: {OUTPUT_FILE}")
 
 
 if __name__ == "__main__":
