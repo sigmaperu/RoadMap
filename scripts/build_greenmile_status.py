@@ -22,7 +22,7 @@ HTTP_RETRIES = int(os.getenv("GREENMILE_HTTP_RETRIES", "3"))
 DEBUG_REJECTED_LIMIT = int(os.getenv("GREENMILE_DEBUG_REJECTED_LIMIT", "12"))
 DEBUG_REJECTED_COUNT = 0
 
-# Campos directos válidos para Hibernate en una sola consulta
+# Campos verificados y soportados por el mapeo HQL de GreenMile
 SCAN_FIELDS = [
     "id",
     "organization.key",
@@ -40,10 +40,6 @@ SCAN_FIELDS = [
     "stops.cancellationLongitude",
     "stops.latitude",
     "stops.longitude",
-    "stops.undeliveredReason.description",
-    "stops.undeliveredReason.name",
-    "stops.actualCancelReason.description",
-    "stops.actualCancelReason.name",
     "stops.orders.number",
     "stops.orders.deliveryStatus",
 ]
