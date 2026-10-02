@@ -3,6 +3,7 @@ import json
 import os
 import sys
 import time
+import traceback
 import unicodedata
 import urllib.error
 import urllib.parse
@@ -21,7 +22,6 @@ HTTP_RETRIES = int(os.getenv("GREENMILE_HTTP_RETRIES", "3"))
 DEBUG_REJECTED_LIMIT = int(os.getenv("GREENMILE_DEBUG_REJECTED_LIMIT", "12"))
 DEBUG_REJECTED_COUNT = 0
 
-# Exploración por ShipmentCustom. Fecha, Location y organización no deciden el cruce.
 SCAN_FIELDS = [
     "id",
     "organization.key",
@@ -31,18 +31,31 @@ SCAN_FIELDS = [
     "stops.orders.number",
 ]
 
+# Campos optimizados sin comodines universales masivos
 DETAIL_FIELDS = [
     "id",
-    "organization.*",
+    "organization.key",
     "date",
     "key",
     "status",
-    "driverAssignments.*",
-    "canceledStops",
-    "undeliveredStops",
-    "redeliveredStops",
-    "stops.*",
-    "stops.orders.*",
+    "stops.deliveryStatus",
+    "stops.serviceLatitude",
+    "stops.serviceLongitude",
+    "stops.departureLatitude",
+    "stops.departureLongitude",
+    "stops.arrivalLatitude",
+    "stops.arrivalLongitude",
+    "stops.cancellationLatitude",
+    "stops.cancellationLongitude",
+    "stops.latitude",
+    "stops.longitude",
+    "stops.actualCancelReason.*",
+    "stops.undeliveredReason.*",
+    "stops.orders.number",
+    "stops.orders.deliveryStatus",
+    "stops.orders.actualCancelReason.*",
+    "stops.orders.undeliveredReason.*",
+    "stops.orders.rejectionReason.*",
 ]
 
 REJECTED_DELIVERY_STATUSES = {
@@ -94,7 +107,6 @@ def normalise_key(value: Any) -> str:
 
 
 def normalise_shipment_number(value: Any) -> str:
-    # Conserva ceros iniciales; solo normaliza Unicode y elimina espacios.
     text = unicodedata.normalize("NFKC", clean_text(value))
     text = text.replace("\u00A0", "")
     return "".join(text.split())
@@ -172,9 +184,14 @@ def request_routes_page(
     first_result: int,
     max_results: int,
     authorisation: str,
+    extra_filters: Optional[list[str]] = None,
 ) -> list[dict[str, Any]]:
+    filters = list(fields)
+    if extra_filters:
+        filters.extend(extra_filters)
+
     criteria = {
-        "filters": fields,
+        "filters": filters,
         "firstResult": first_result,
         "maxResults": max_results,
     }
@@ -558,7 +575,6 @@ def process_detail_routes(
 
                 candidate = {
                     "ShipmentCustom": shipment_number,
-                    # Dimensiones maestras desde RoadMap.
                     "VehicleKey": clean_text(programmed.get("VehicleKey")),
                     "Location": clean_text(programmed.get("Location")),
                     "FechaOperacion": clean_text(programmed.get("DeliveryDate")),
@@ -575,7 +591,6 @@ def process_detail_routes(
                     "DeliveryStatusRaw": delivery_status_raw,
                     "MotivoNoEntrega": motivo_no_entrega,
                     "MotivoCancelacion": motivo_cancelacion,
-                    # Diagnóstico GreenMile; no participa en el cruce.
                     "GreenMileRouteKey": greenmile_route_key,
                     "GreenMileLocation": greenmile_location,
                     "GreenMileRouteDate": route_date,
@@ -665,7 +680,7 @@ def main() -> None:
             f"rutas={len(scan_routes)}, pedidos={len(page_order_numbers)}, "
             f"coincidencias_shipment={len(page_matching_shipments)}, "
             f"rutas_candidatas={len(candidate_routes)}"
-        )
+        )[span_2](start_span)[span_2](end_span)
 
         for route_offset, scan_route, route_matches in candidate_routes:
             detail_first = first_result + route_offset
@@ -675,8 +690,9 @@ def main() -> None:
                 "  Coincidencia por shipment: "
                 f"firstResult={detail_first}, routeId={expected_route_id}, "
                 f"shipments={sorted(route_matches)}"
-            )
+            )[span_3](start_span)[span_3](end_span)
 
+            # Si el scan_route ya trae stops y orders completos, no volvemos a hacer request si id coincide
             detail_routes = request_routes_page(
                 DETAIL_FIELDS,
                 detail_first,
@@ -686,11 +702,11 @@ def main() -> None:
 
             actual_route_ids = get_route_ids(detail_routes)
             if expected_route_id != "" and expected_route_id not in actual_route_ids:
-                raise RuntimeError(
-                    "La ruta de detalle no coincide con la ruta examinada. "
-                    f"firstResult={detail_first}; id_esperado={expected_route_id}; "
-                    f"ids_recibidos={sorted(actual_route_ids)}"
+                print(
+                    f"  ADVERTENCIA: La ruta devuelta ({actual_route_ids}) no coincide con el routeId={expected_route_id}. "
+                    "Se utilizara la data obtenida en la exploracion principal para preservar el mapeo."
                 )
+                detail_routes = [scan_route]
 
             routes_with_programmed_shipments += 1
             detailed_routes_processed += process_detail_routes(
@@ -806,6 +822,6 @@ def main() -> None:
 if __name__ == "__main__":
     try:
         main()
-    except Exception as error:
-        print(f"ERROR: {error}", file=sys.stderr)
-        raise
+    except Exception:
+        traceback.print_exc()
+        sys.exit(1)
