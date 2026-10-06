@@ -15394,7 +15394,7 @@
     "LatitudActual": -12.0954,
     "LongitudActual": -77.06843,
     "FuenteCoordenada": "PARADA",
-    "DeliveryStatusRaw": "PENDING",
+    "DeliveryStatusRaw": "IN_PROGRESS",
     "MotivoNoEntrega": "",
     "MotivoCancelacion": "",
     "GreenMileRouteKey": "AVO-887",
