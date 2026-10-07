@@ -841,7 +841,7 @@
   },
   {
     "ShipmentCustom": "3032251092",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -949,7 +949,7 @@
   },
   {
     "ShipmentCustom": "3032273763",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -1371,11 +1371,11 @@
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
+    "EstadoEntrega": "ENTREGADO",
     "LatitudActual": -12.07262,
     "LongitudActual": -77.00983,
     "FuenteCoordenada": "PARADA",
-    "DeliveryStatusRaw": "IN_PROGRESS",
+    "DeliveryStatusRaw": "DELIVERED",
     "MotivoNoEntrega": "",
     "MotivoCancelacion": "",
     "GreenMileRouteKey": "AZD-758",
@@ -1690,7 +1690,7 @@
   },
   {
     "ShipmentCustom": "3032401261",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -8527,7 +8527,7 @@
   },
   {
     "ShipmentCustom": "3032533449",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -8989,7 +8989,7 @@
   },
   {
     "ShipmentCustom": "3032536878",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -9724,7 +9724,7 @@
   },
   {
     "ShipmentCustom": "3032542206",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -10042,7 +10042,7 @@
   },
   {
     "ShipmentCustom": "3032544269",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -10660,7 +10660,7 @@
   },
   {
     "ShipmentCustom": "3032546820",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -10966,7 +10966,7 @@
   },
   {
     "ShipmentCustom": "3032549703",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -11074,7 +11074,7 @@
   },
   {
     "ShipmentCustom": "3032551301",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -11556,11 +11556,11 @@
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
+    "EstadoEntrega": "ENTREGADO",
     "LatitudActual": -12.10139,
     "LongitudActual": -76.9719,
     "FuenteCoordenada": "PARADA",
-    "DeliveryStatusRaw": "IN_PROGRESS",
+    "DeliveryStatusRaw": "DELIVERED",
     "MotivoNoEntrega": "",
     "MotivoCancelacion": "",
     "GreenMileRouteKey": "BNY-776",
@@ -12055,7 +12055,7 @@
     "LatitudActual": -12.14705,
     "LongitudActual": -77.01386,
     "FuenteCoordenada": "PARADA",
-    "DeliveryStatusRaw": "PENDING",
+    "DeliveryStatusRaw": "IN_PROGRESS",
     "MotivoNoEntrega": "",
     "MotivoCancelacion": "",
     "GreenMileRouteKey": "C2H-866",
@@ -14656,7 +14656,7 @@
   },
   {
     "ShipmentCustom": "3032557902",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -15976,7 +15976,7 @@
   },
   {
     "ShipmentCustom": "3032562360",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -16417,7 +16417,7 @@
   },
   {
     "ShipmentCustom": "3032563461",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -16774,7 +16774,7 @@
   },
   {
     "ShipmentCustom": "3032564410",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -16969,7 +16969,7 @@
   },
   {
     "ShipmentCustom": "3032564759",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -17005,7 +17005,7 @@
   },
   {
     "ShipmentCustom": "3032565326",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -17269,7 +17269,7 @@
   },
   {
     "ShipmentCustom": "3032565791",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -17461,7 +17461,7 @@
   },
   {
     "ShipmentCustom": "3032566097",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -17569,7 +17569,7 @@
   },
   {
     "ShipmentCustom": "3032566945",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -17872,7 +17872,7 @@
   },
   {
     "ShipmentCustom": "3032567992",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -18769,7 +18769,7 @@
   },
   {
     "ShipmentCustom": "3032570460",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -18856,7 +18856,7 @@
   },
   {
     "ShipmentCustom": "3032570650",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -20299,7 +20299,7 @@
   },
   {
     "ShipmentCustom": "3032571779",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -20848,7 +20848,7 @@
   },
   {
     "ShipmentCustom": "3032572579",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -21169,7 +21169,7 @@
   },
   {
     "ShipmentCustom": "3032572634",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -21223,7 +21223,7 @@
   },
   {
     "ShipmentCustom": "3032572664",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -21481,7 +21481,7 @@
   },
   {
     "ShipmentCustom": "3032573649",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -21607,7 +21607,7 @@
   },
   {
     "ShipmentCustom": "3032574415",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -22108,7 +22108,7 @@
   },
   {
     "ShipmentCustom": "3032574757",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -22747,7 +22747,7 @@
   },
   {
     "ShipmentCustom": "3032576167",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -23131,7 +23131,7 @@
   },
   {
     "ShipmentCustom": "3032576984",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -23347,7 +23347,7 @@
   },
   {
     "ShipmentCustom": "3032577939",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -23587,7 +23587,7 @@
   },
   {
     "ShipmentCustom": "3032578135",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -23605,7 +23605,7 @@
   },
   {
     "ShipmentCustom": "3032578136",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -24547,7 +24547,7 @@
   },
   {
     "ShipmentCustom": "3032580484",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -24601,7 +24601,7 @@
   },
   {
     "ShipmentCustom": "3032580495",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -24619,7 +24619,7 @@
   },
   {
     "ShipmentCustom": "3032580496",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -25246,7 +25246,7 @@
   },
   {
     "ShipmentCustom": "3032584745",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -25300,7 +25300,7 @@
   },
   {
     "ShipmentCustom": "3032584809",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -25692,11 +25692,11 @@
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
+    "EstadoEntrega": "ENTREGADO",
     "LatitudActual": -12.06212,
     "LongitudActual": -77.06548,
     "FuenteCoordenada": "PARADA",
-    "DeliveryStatusRaw": "PENDING",
+    "DeliveryStatusRaw": "DELIVERED",
     "MotivoNoEntrega": "",
     "MotivoCancelacion": "",
     "GreenMileRouteKey": "CKF-826",
@@ -25921,7 +25921,7 @@
   },
   {
     "ShipmentCustom": "3032587632",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -26170,7 +26170,7 @@
   },
   {
     "ShipmentCustom": "3032588950",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -26863,7 +26863,7 @@
   },
   {
     "ShipmentCustom": "3032591238",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -27307,7 +27307,7 @@
   },
   {
     "ShipmentCustom": "3032591948",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -27631,7 +27631,7 @@
   },
   {
     "ShipmentCustom": "3032593318",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -28912,7 +28912,7 @@
   },
   {
     "ShipmentCustom": "3032599818",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -28948,7 +28948,7 @@
   },
   {
     "ShipmentCustom": "3032600021",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -29233,7 +29233,7 @@
   },
   {
     "ShipmentCustom": "3032602410",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
@@ -29305,7 +29305,7 @@
   },
   {
     "ShipmentCustom": "3032602810",
-    "VehicleKey": "CFO-873",
+    "VehicleKey": "CJJ-926",
     "Location": "0780-ATE2",
     "FechaOperacion": "2026-10-07",
     "EstadoMigracion": "MIGRADO",
