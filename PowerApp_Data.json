@@ -5579,7 +5579,7 @@
     "KgPlanificados": 7.8,
     "EstadoMigracion": "MIGRADO",
     "EstadoConexion": "CONECTADO",
-    "EstadoEntrega": "PENDIENTE",
+    "EstadoEntrega": "ENTREGADO",
     "Latitude": -12.18461,
     "Longitude": -77.0069,
     "LatitudActual": -12.18461,
