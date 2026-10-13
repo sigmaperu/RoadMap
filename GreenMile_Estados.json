@@ -26197,7 +26197,7 @@
     "LatitudActual": -12.22141,
     "LongitudActual": -76.97672,
     "FuenteCoordenada": "PARADA",
-    "DeliveryStatusRaw": "PENDING",
+    "DeliveryStatusRaw": "IN_PROGRESS",
     "MotivoNoEntrega": "",
     "MotivoCancelacion": "",
     "GreenMileRouteKey": "B6L-879",
