@@ -8332,7 +8332,7 @@
     "LatitudActual": -12.10265,
     "LongitudActual": -77.01492,
     "FuenteCoordenada": "PARADA",
-    "DeliveryStatusRaw": "PENDING",
+    "DeliveryStatusRaw": "IN_PROGRESS",
     "MotivoNoEntrega": "",
     "MotivoCancelacion": "",
     "GreenMileRouteKey": "F1G-866",
