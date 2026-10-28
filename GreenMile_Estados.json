@@ -10084,7 +10084,7 @@
     "LatitudActual": -12.08324,
     "LongitudActual": -76.97252,
     "FuenteCoordenada": "PARADA",
-    "DeliveryStatusRaw": "PENDING",
+    "DeliveryStatusRaw": "IN_PROGRESS",
     "MotivoNoEntrega": "",
     "MotivoCancelacion": "",
     "GreenMileRouteKey": "BNY-776",
