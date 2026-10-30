@@ -26190,8 +26190,8 @@
     "EstadoEntrega": "ENTREGADO",
     "Latitude": -12.00573,
     "Longitude": -77.07189,
-    "LatitudActual": -12.04571,
-    "LongitudActual": -76.93783,
+    "LatitudActual": -12.00573,
+    "LongitudActual": -77.07189,
     "FuenteCoordenada": "PARADA",
     "MotivoNoEntrega": "",
     "MotivoCancelacion": ""
