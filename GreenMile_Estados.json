@@ -18310,7 +18310,7 @@
     "LatitudActual": -12.06934,
     "LongitudActual": -77.07516,
     "FuenteCoordenada": "PARADA",
-    "DeliveryStatusRaw": "PENDING",
+    "DeliveryStatusRaw": "IN_PROGRESS",
     "MotivoNoEntrega": "",
     "MotivoCancelacion": "",
     "GreenMileRouteKey": "CKQ-748",
