@@ -90,7 +90,7 @@ body {
 /* Items del menú lateral */
 .nav-item {
   display: flex; align-items: center; gap: 14px;
-  padding: 12px 18px; border-radius: 10px; text-decoration: none;
+  padding: 12px 18px; border-radius: 12px; text-decoration: none;
   color: #94a3b8; font-size: 0.92rem; font-weight: 500;
   transition: all 0.2s ease;
   position: relative;
@@ -101,17 +101,18 @@ body {
   color: #ffffff; 
 }
 
-/* EFECTO NOTCH ACTIVO (El acople exacto con el panel blanco) */
+/* EFECTO NOTCH ACTIVO (Con bordes redondeados precisos) */
 .nav-item--active { 
-  background-color: #ffffff !important; 
+  background-color: #FFFFFF !important; 
   color: #0f172a !important; 
   font-weight: 700;
   border-top-left-radius: 12px;
   border-bottom-left-radius: 12px;
-  border-top-right-radius: 0px;
-  border-bottom-right-radius: 0px;
-  margin-right: -12px; /* Muerde el panel principal */
-  box-shadow: -4px 0 15px rgba(0,0,0,0.1);
+  border-top-right-radius: 16px;    /* Curva superior notch */
+  border-bottom-right-radius: 16px; /* Curva inferior notch */
+  margin-right: -14px;              /* Muerde el panel blanco */
+  box-shadow: -4px 0 15px rgba(0,0,0,0.12);
+  z-index: 5;
 }
 
 .nav-item--active .nav-item__icon {
@@ -128,7 +129,7 @@ body {
   display: flex; 
   flex-direction: column; 
   background: #FFFFFF;
-  border-top-left-radius: 20px; /* Curva superior que abraza el notch */
+  border-top-left-radius: 20px; 
   border-bottom-left-radius: 20px;
   box-shadow: -5px 0 25px rgba(0,0,0,0.15);
   overflow: hidden;
