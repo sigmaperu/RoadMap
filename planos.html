@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -15,10 +14,10 @@
   <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
 
-  <!-- Estilos globales -->
+  <!-- Estilos globales con versión para evitar caché -->
   <link rel="stylesheet" href="assets/css/styles.css?v=13.0">
 
-  <!-- Header / config global -->
+  <!-- Header y Sidebar modular / config global -->
   <script defer src="assets/js/main.js"></script>
 
   <style>
@@ -99,7 +98,7 @@
     }
     .filter-group select:focus { border-color: var(--primary, #9C27B0); }
 
-    /* Estilos profesionales para Marcadores de Pines personalizados con DivIcon */
+    /* Marcadores personalizados con DivIcon y bolita central negra al marcar */
     .custom-pin {
       position: relative;
       width: 28px;
@@ -131,19 +130,16 @@
       transform: rotate(45deg);
       transition: background-color 0.2s ease;
     }
-    /* Colores del pin según estatus */
     .pin-verde .custom-pin-body { background-color: #10b981; }
     .pin-rojo .custom-pin-body { background-color: #ef4444; }
     .pin-naranja .custom-pin-body { background-color: #f59e0b; }
     .pin-gris .custom-pin-body { background-color: #94a3b8; }
 
-    /* Al marcar visitado, solo la bolita interna se pone negra */
     .is-visited .custom-pin-dot {
       background-color: #000000 !important;
       box-shadow: 0 0 0 2px #ffffff;
     }
 
-    /* Popups limpios y modernos */
     .leaflet-popup-content-wrapper { border-radius: 12px; padding: 4px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
     .leaflet-popup-content { font-family: "Roboto", sans-serif; font-size: 0.85rem; color: #1e293b; line-height: 1.4; }
   </style>
@@ -152,9 +148,11 @@
 <body data-title="Planos">
   <div class="app-shell">
 
+    <!-- Sidebar modular inyectado por main.js -->
     <aside class="sidebar" id="app-sidebar"></aside>
 
     <div class="main-layout">
+      <!-- Header modular -->
       <div id="app-header"></div>
 
       <main class="content">
@@ -199,7 +197,7 @@
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
 
-  <!-- Script Planos Definitivo -->
+  <!-- Script Planos -->
   <script>
   (() => {
     const CSV_URL = (window.RoadMapConfig && window.RoadMapConfig.CSV_URL) || "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
@@ -374,7 +372,6 @@
           </div>
         `;
 
-        // DivIcon personalizado para controlar la bolita interna en negro al marcar
         const customIcon = L.divIcon({
           className: 'custom-pin-container',
           html: `<div class="custom-pin ${statusInfo.cssClass}"><div class="custom-pin-body"><div class="custom-pin-dot"></div></div></div>`,
