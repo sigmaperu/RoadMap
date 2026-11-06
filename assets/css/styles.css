@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - styles.css (Versión Notch Cóncavo Exacto - Fowllow)
+   RoadMap - styles.css (Versión Notch Exacto Fowllow)
    ========================================================================== */
 
 :root {
@@ -8,8 +8,12 @@
   --primary-light: #F3E5F5;
   --accent: #7C4DFF;
 
-  --bg-dark: #0d1b2a;
-  --sidebar-bg: #0f172a;
+  /* Variables de Fowllow integradas */
+  --gm-navy: #0f172a;
+  --gm-navy-dark: #0d1b2a;
+  --gm-blue: #9C27B0;
+  --gm-bg: #FFFFFF;
+
   --surface: #FFFFFF;
   --text-main: #212121;
   --text-muted: #757575;
@@ -28,35 +32,54 @@ html, body { margin: 0; padding: 0; height: 100%; }
 
 body {
   font-family: "Roboto", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background-color: var(--bg-dark) !important;
+  background-color: var(--gm-navy-dark) !important;
   color: var(--text-main);
 }
 
 .app-shell { 
   display: flex; 
   min-height: 100vh; 
-  background-color: var(--bg-dark);
+  background-color: var(--gm-navy-dark);
   padding: 0;
   gap: 0;
 }
 
+/* ===================== */
+/* SIDEBAR ESTILO FOWLLOW*/
+/* ===================== */
 .sidebar {
+  position: relative;
   width: 260px;
-  background: var(--sidebar-bg);
-  color: #ffffff;
-  display: flex; 
-  flex-direction: column;
-  padding: 24px 0;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  overflow: hidden;
+  padding: 22px 0;
+  color: #dce8f8;
+  background: linear-gradient(180deg, var(--gm-navy), var(--gm-navy-dark));
+  box-shadow: 10px 0 30px rgba(10,24,44,.14);
   flex-shrink: 0;
   z-index: 2000;
-  position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar__logo { 
-  padding: 0 24px 14px; 
-  margin-bottom: 4px; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 112px;
+  padding: 8px 18px 24px;
+  text-decoration: none;
 }
-.sidebar__logo img { max-width: 130px; height: auto; display: block; }
+.sidebar__logo img { 
+  width: 150px !important; 
+  height: auto !important; 
+  max-width: 150px !important; 
+  max-height: 86px !important; 
+  object-fit: contain !important; 
+  filter: drop-shadow(0 5px 12px rgba(0,0,0,.18)); 
+}
 
 .sidebar__tagline {
   font-size: 0.65rem;
@@ -65,72 +88,86 @@ body {
   letter-spacing: 0.12em;
   color: #93c5fd;
   padding: 0 24px;
-  margin-bottom: 24px;
+  margin-bottom: 12px;
+  text-align: center;
 }
 
-.sidebar__nav { display: flex; flex-direction: column; gap: 4px; padding: 0 12px; position: relative; }
+/* MENÚ CON NOTCH DE FOWLLOW */
+.sidebar__nav { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 8px; 
+  padding: 10px 0 10px 16px; 
+}
 
 .nav-item {
-  display: flex; align-items: center; gap: 14px;
-  padding: 12px 18px; border-radius: 12px; text-decoration: none;
-  color: #94a3b8; font-size: 0.92rem; font-weight: 500;
-  transition: all 0.15s ease;
   position: relative;
+  display: flex; 
+  align-items: center; 
+  gap: 14px;
+  min-height: 52px;
+  padding: 12px 24px 12px 18px; 
+  color: #c7d7ea; 
+  text-decoration: none;
+  border-radius: 16px 0 0 16px; 
+  transition: .18s ease;
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+
+.nav-item>span:first-child { 
+  display: grid; 
+  place-items: center; 
+  width: 28px; 
+  height: 28px; 
+  font-size: 1.1rem; 
 }
 
 .nav-item:hover { 
-  background-color: rgba(255, 255, 255, 0.05); 
-  color: #ffffff; 
+  color: #fff; 
+  background: rgba(255,255,255,.08); 
+  transform: translateX(3px); 
 }
 
-/* ========================================================== */
-/* EFECTO NOTCH REAL CON ESQUINAS CÓNCAVAS (FOWLLOW STYLE)    */
-/* ========================================================== */
-.nav-item--active { 
-  background-color: #FFFFFF !important; 
-  color: #0f172a !important; 
-  font-weight: 700;
-  border-radius: 12px 0 0 12px !important;
-  margin-right: -16px;
-  box-shadow: -4px 0 15px rgba(0,0,0,0.15);
-  z-index: 10;
+/* CLASE ACTIVE CON EL NOTCH PERFECTO DE FOWLLOW */
+.nav-item.active { 
+  z-index: 1; 
+  color: var(--gm-blue); 
+  background: var(--gm-bg); 
+  font-weight: 700; 
+  transform: none; 
 }
 
-.nav-item--active .nav-item__icon {
+.nav-item.active>span:first-child {
   color: var(--primary);
 }
 
-/* Curva cóncava superior */
-.nav-item--active::before {
-  content: "";
-  position: absolute;
-  top: -16px;
-  right: 0;
-  width: 16px;
-  height: 16px;
-  background-color: transparent;
-  border-bottom-right-radius: 16px;
-  box-shadow: 4px 4px 0 4px #FFFFFF;
-  pointer-events: none;
+.nav-item.active::before, 
+.nav-item.active::after { 
+  content: ""; 
+  position: absolute; 
+  right: 0; 
+  width: 24px; 
+  height: 24px; 
+  background: transparent; 
+  pointer-events: none; 
 }
 
-/* Curva cóncava inferior */
-.nav-item--active::after {
-  content: "";
-  position: absolute;
-  bottom: -16px;
-  right: 0;
-  width: 16px;
-  height: 16px;
-  background-color: transparent;
-  border-top-right-radius: 16px;
-  box-shadow: 4px -4px 0 4px #FFFFFF;
-  pointer-events: none;
+.nav-item.active::before { 
+  top: -24px; 
+  border-radius: 0 0 18px 0; 
+  box-shadow: 10px 10px 0 10px var(--gm-bg); 
 }
 
-.nav-item__icon { font-size: 1.25rem; }
+.nav-item.active::after { 
+  bottom: -24px; 
+  border-radius: 0 18px 0 0; 
+  box-shadow: 10px -10px 0 10px var(--gm-bg); 
+}
 
-/* Main Layout */
+/* ===================== */
+/* MAIN LAYOUT / TOPBAR  */
+/* ===================== */
 .main-layout { 
   flex: 1; 
   display: flex; 
@@ -170,6 +207,9 @@ body {
 .content { padding: 20px 24px 24px; overflow-y: auto; flex: 1; }
 .page-section { margin-top: 4px; }
 
+/* ===================== */
+/* AGENDA                */
+/* ===================== */
 .agenda-card { background: var(--surface); border-radius: var(--border-radius); padding: 4px 0; }
 .agenda-filters { display: flex; align-items: center; flex-wrap: nowrap; margin-bottom: 16px; }
 .agenda-filters-inner { display: flex; flex: 1; align-items: center; gap: 12px; }
@@ -217,16 +257,21 @@ body {
 .agenda-map-icon { border: none; border-radius: 50%; width: 22px; height: 22px; margin-left: 6px; cursor: pointer; background: #2563EB; color: #fff; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: transform .15s ease; }
 .agenda-map-icon:hover { transform: scale(1.1); }
 
-@media (max-width: 920px) {
+@media(max-width:860px){
   .app-shell { flex-direction: column; background: #FFFFFF; }
   .sidebar { 
-    position: fixed; top: 0; left: 0; bottom: 0; width: 260px; 
+    position: fixed; top: 0; left: 0; bottom: 0; width: 260px; height: 100vh;
     margin: 0; border-radius: 0; box-shadow: 4px 0 20px rgba(0,0,0,0.15); 
     transform: translateX(-100%); transition: transform 0.25s ease; z-index: 3000; 
+    padding: 10px 12px;
   }
   .sidebar--open { transform: translateX(0); }
+  .sidebar__logo { height: 68px; padding: 3px 8px 9px; }
+  .sidebar__logo img { width: 130px !important; height: auto !important; max-width: 130px !important; max-height: 56px !important; }
+  .gm-nav, .sidebar__nav { overflow-x: auto; flex-direction: row; padding: 0; }
+  .nav-item, .gm-nav__item { flex: 0 0 auto; min-height: 44px; padding: 9px 14px; border-radius: 12px; }
+  .nav-item.active::before, .nav-item.active::after { display: none; }
   .main-layout { margin: 0; border-radius: 0; box-shadow: none; }
-  .nav-item--active::before, .nav-item--active::after { display: none; } /* Ocultar pseudo-elementos en mobile */
   .icon-button--menu { display: inline-flex; }
   .content { padding: 12px; }
   .agenda-card { padding: 0; }
