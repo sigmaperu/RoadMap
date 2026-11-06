@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css?v=9.0">
+  <link rel="stylesheet" href="assets/css/styles.css?v=10.0">
 
   <script defer src="assets/js/main.js"></script>
 </head>
@@ -214,7 +214,7 @@
     const LS_VIEW_KEY = "roadmap.agenda.view";
 
     let agendaRows = [];
-    let powerAppData = new Map(); // Mapa optimizado para matching de pedidos
+    let powerAppData = new Map(); 
     let centrosAgenda = [];
     let hasSearched = false;
     let filteredCache = [];
@@ -255,7 +255,6 @@
     }
     const unique = arr => Array.from(new Set(arr.filter(v => v !== "" && v != null)));
 
-    // Función auxiliar para extraer solo los dígitos limpios del pedido/cliente (Ej: "11771041 - QUIROZ" -> "11771041")
     function extractCleanId(val) {
       if (!val) return "";
       const match = String(val).match(/\d+/);
@@ -270,12 +269,11 @@
         
         if (Array.isArray(data)) {
           data.forEach(item => {
-            // Buscamos propiedades comunes donde venga el ID del cliente o pedido
-            const rawKey = item.Cliente || item.Client || item.Pedido || item.NroPedido || item.ID || "";
+            const rawKey = item.Cliente || item.Client || item.Pedido || item.NroPedido || item.ID || item.Codigo || "";
             const cleanKey = extractCleanId(rawKey);
-            const statusVal = item.Estado || item.Status || item.State || "";
+            const statusVal = item.Estado || item.Status || item.State || item.DeliveryStatus || item.Condition || "";
             if (cleanKey) {
-              powerAppData.set(cleanKey, statusVal);
+              powerAppData.set(cleanKey, String(statusVal).trim());
             }
           });
         }
@@ -285,11 +283,10 @@
     }
 
     function getStatusInfo(r) {
-      // r[3] es el código/nombre del cliente en RoadMap. Extraemos su ID numérico limpio.
       const clienteKey = extractCleanId(r[3]);
       const statusRaw = String(powerAppData.get(clienteKey) || "").toLowerCase();
 
-      if (statusRaw.includes("entreg") || statusRaw.includes("aten") || statusRaw.includes("verde")) {
+      if (statusRaw.includes("entreg") || statusRaw.includes("aten") || statusRaw.includes("verde") || statusRaw.includes("ok")) {
         return { clase: "status-verde", texto: "Entregado" };
       }
       if (statusRaw.includes("rech") || statusRaw.includes("anul") || statusRaw.includes("rojo")) {
@@ -298,7 +295,7 @@
       if (statusRaw.includes("pend") || statusRaw.includes("ruta")) {
         return { clase: "status-naranja", texto: "Pendiente" };
       }
-      return { clase: "status-gris", texto: "Sin Información" };
+      return { clase: statusRaw ? "status-naranja" : "status-gris", texto: statusRaw ? statusRaw : "Sin Información" };
     }
 
     function loadCentros() {
@@ -332,8 +329,7 @@
       const map = new Map();
       rows.forEach(r => {
         const placa = (r[2] || "").trim().toUpperCase();
-        // REGLA: Excluir estrictamente pedidos de la placa FRT-001
-        if (placa === "FRT-001") return;
+        if (placa === "FRT-001") return; // Regla: Excluir FRT-001
 
         const key = (r[1] || "") + "\n" + (r[3] || "");
         if ((r[3] || "") && !map.has(key)) map.set(key, r);
@@ -341,9 +337,8 @@
       return Array.from(map.values());
     }
 
-    function updateViewButtonIcon() {
+    function updateButtonIcon() {
       viewIcon.textContent = currentView === "bento" ? "table_chart" : "grid_view";
-      viewToggleBtn.title = currentView === "bento" ? "Cambiar a Vista de Tabla" : "Cambiar a Vista de Tarjetas Bento";
     }
 
     function renderAgenda() {
@@ -360,7 +355,7 @@
       localStorage.setItem(LS_CENTRO_KEY, centroSel);
       localStorage.setItem(LS_SEARCH_KEY, term);
       localStorage.setItem(LS_VIEW_KEY, currentView);
-      updateViewButtonIcon();
+      updateButtonIcon();
 
       let rows = agendaRows.filter(r => (r[1] || "") === centroSel);
 
@@ -380,7 +375,6 @@
 
       filteredCache = groupByCliente(rows);
       
-      // REGLA: RES-CLI no cuenta como placa, pero sí sus clientes
       kpiClientes.textContent = filteredCache.length;
       const placasUnicas = new Set(
         filteredCache
