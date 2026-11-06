@@ -15,21 +15,35 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
 
   <!-- Estilos globales -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=12.0">
+  <link rel="stylesheet" href="assets/css/styles.css?v=13.0">
 
   <!-- Header / config global -->
   <script defer src="assets/js/main.js"></script>
 
   <style>
-    /* Estilos optimizados y compactos para el mapa y filtros */
-    .map-wrapper { position: relative; width: 100%; height: calc(100vh - 140px); min-height: 500px; display: flex; flex-direction: column; }
-    #map { width: 100%; flex: 1; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow: hidden; }
+    /* Contenedor del mapa optimizado y limpio */
+    .map-wrapper { 
+      position: relative; 
+      width: 100%; 
+      height: calc(100vh - 160px); 
+      min-height: 520px; 
+      display: flex; 
+      flex-direction: column; 
+    }
+    #map { 
+      width: 100%; 
+      flex: 1; 
+      border-radius: 16px; 
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
+      overflow: hidden; 
+      border: 1px solid #e2e8f0;
+    }
     
-    /* Toolbar compacta con mejor calidad gráfica */
+    /* Toolbar flotante minimalista */
     .map-toolbar {
       position: absolute;
-      top: 12px;
-      left: 12px;
+      top: 16px;
+      left: 16px;
       z-index: 1000;
       display: flex;
       flex-direction: column;
@@ -39,41 +53,31 @@
       background: #ffffff;
       border: 1px solid #cbd5e1;
       border-radius: 50%;
-      width: 40px;
-      height: 40px;
+      width: 42px;
+      height: 42px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
       transition: all 0.2s ease;
       color: var(--primary, #9C27B0);
     }
     .btn-small-icon:hover { background: #f8fafc; transform: scale(1.05); }
 
     .filters-floating {
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(255, 255, 255, 0.96);
       backdrop-filter: blur(8px);
       border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 12px 16px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      border-radius: 14px;
+      padding: 14px 18px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.12);
       transition: all 0.25s ease;
-      max-width: 340px;
+      width: 280px;
     }
-    .filters-floating--collapsed {
-      display: none;
-    }
-    .filters-floating__row {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .filter-group {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
+    .filters-floating--collapsed { display: none; }
+    .filters-floating__row { display: flex; flex-direction: column; gap: 10px; }
+    .filter-group { display: flex; flex-direction: column; gap: 4px; }
     .filter-group label {
       font-size: 0.72rem;
       font-weight: 700;
@@ -82,8 +86,8 @@
       letter-spacing: 0.05em;
     }
     .filter-group select {
-      height: 36px;
-      padding: 0 10px;
+      height: 38px;
+      padding: 0 12px;
       border-radius: 8px;
       border: 1px solid #cbd5e1;
       background: #fff;
@@ -94,7 +98,51 @@
     }
     .filter-group select:focus { border-color: var(--primary, #9C27B0); }
 
-    /* Popups mejorados y limpios */
+    /* Estilos profesionales para Marcadores de Pines personalizados con DivIcon */
+    .custom-pin {
+      position: relative;
+      width: 28px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      filter: drop-shadow(0 3px 6px rgba(0,0,0,0.25));
+      transition: transform 0.2s;
+    }
+    .custom-pin:hover { transform: scale(1.1); }
+    .custom-pin-body {
+      position: absolute;
+      top: 0;
+      width: 26px;
+      height: 26px;
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #ffffff;
+    }
+    .custom-pin-dot {
+      width: 8px;
+      height: 8px;
+      background-color: #ffffff;
+      border-radius: 50%;
+      transform: rotate(45deg);
+      transition: background-color 0.2s ease;
+    }
+    /* Colores del pin según estatus */
+    .pin-verde .custom-pin-body { background-color: #10b981; }
+    .pin-rojo .custom-pin-body { background-color: #ef4444; }
+    .pin-naranja .custom-pin-body { background-color: #f59e0b; }
+    .pin-gris .custom-pin-body { background-color: #94a3b8; }
+
+    /* Al marcar visitado, solo la bolita interna se pone negra */
+    .is-visited .custom-pin-dot {
+      background-color: #000000 !important;
+      box-shadow: 0 0 0 2px #ffffff;
+    }
+
+    /* Popups limpios y modernos */
     .leaflet-popup-content-wrapper { border-radius: 12px; padding: 4px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
     .leaflet-popup-content { font-family: "Roboto", sans-serif; font-size: 0.85rem; color: #1e293b; line-height: 1.4; }
   </style>
@@ -103,10 +151,8 @@
 <body data-title="Planos">
   <div class="app-shell">
 
-    <!-- Sidebar modular inyectado o estático -->
     <aside class="sidebar" id="app-sidebar"></aside>
 
-    <!-- Main layout -->
     <div class="main-layout">
       <div id="app-header"></div>
 
@@ -115,9 +161,9 @@
 
           <div class="map-wrapper">
 
-            <!-- Toolbar & Filtros flotantes compactos -->
+            <!-- Toolbar & Filtros flotantes -->
             <div class="map-toolbar">
-              <button id="btnToggleFilters" class="btn-small-icon" type="button" title="Mostrar/ocultar filtros operativos">
+              <button id="btnToggleFilters" class="btn-small-icon" type="button" title="Mostrar/ocultar filtros">
                 <span class="material-icons">tune</span>
               </button>
 
@@ -152,7 +198,7 @@
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
 
-  <!-- Script Planos Modernizado con Estatus Sincronizado -->
+  <!-- Script Planos Definitivo -->
   <script>
   (() => {
     const CSV_URL = (window.RoadMapConfig && window.RoadMapConfig.CSV_URL) || "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
@@ -170,35 +216,6 @@
     const btnToggleFilters = document.getElementById("btnToggleFilters");
     const filtersPanel     = document.getElementById("filtersPanel");
 
-    /* =========================
-       ICONES DE MAPA POR COLOR (Leaflet Color Markers)
-    ========================== */
-    const shadowUrl = "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png";
-    
-    const pinVerde = new L.Icon({
-      iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png",
-      shadowUrl, iconSize:[25,41], iconAnchor:[12,41], popupAnchor:[1,-34], shadowSize:[41,41]
-    });
-    const pinRojo = new L.Icon({
-      iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
-      shadowUrl, iconSize:[25,41], iconAnchor:[12,41], popupAnchor:[1,-34], shadowSize:[41,41]
-    });
-    const pinNaranja = new L.Icon({
-      iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png",
-      shadowUrl, iconSize:[25,41], iconAnchor:[12,41], popupAnchor:[1,-34], shadowSize:[41,41]
-    });
-    const pinGris = new L.Icon({
-      iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-grey.png",
-      shadowUrl, iconSize:[25,41], iconAnchor:[12,41], popupAnchor:[1,-34], shadowSize:[41,41]
-    });
-    const pinNegro = new L.Icon({
-      iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-black.png",
-      shadowUrl, iconSize:[25,41], iconAnchor:[12,41], popupAnchor:[1,-34], shadowSize:[41,41]
-    });
-
-    /* =========================
-       UTILS & PARSE
-    ========================== */
     function parseCSV(text){
       const lines = text.split(/\r?\n/).filter(l=>l.trim()!=="");
       lines.shift();
@@ -246,20 +263,20 @@
       }
     }
 
-    function getStatusPin(clienteCod) {
+    function getStatusClass(clienteCod) {
       const cleanKey = extractCleanId(clienteCod);
       const statusRaw = String(powerAppData.get(cleanKey) || "").toLowerCase();
 
       if (statusRaw.includes("entreg") || statusRaw.includes("aten") || statusRaw.includes("verde") || statusRaw.includes("ok")) {
-        return { icon: pinVerde, texto: "Entregado" };
+        return { cssClass: "pin-verde", texto: "Entregado" };
       }
       if (statusRaw.includes("rech") || statusRaw.includes("anul") || statusRaw.includes("rojo")) {
-        return { icon: pinRojo, texto: "Rechazado" };
+        return { cssClass: "pin-rojo", texto: "Rechazado" };
       }
       if (statusRaw.includes("pend") || statusRaw.includes("ruta")) {
-        return { icon: pinNaranja, texto: "Pendiente" };
+        return { cssClass: "pin-naranja", texto: "Pendiente" };
       }
-      return { icon: pinGris, texto: "Sin información" };
+      return { cssClass: "pin-gris", texto: "Sin información" };
     }
 
     function buildClienteLabelFromRow(r){
@@ -274,9 +291,6 @@
       return cod;
     }
 
-    /* =========================
-       OPCIONES DE FILTROS
-    ========================== */
     let allCentros=[], allPlacas=[], allClientes=[];
 
     function populateBaseOptions(){
@@ -328,9 +342,6 @@
       });
     }
 
-    /* =========================
-       MAPA LEAFLET
-    ========================== */
     function initMap(){
       if (leafletMap) return;
       leafletMap = L.map("map",{zoomControl:false}).setView([-9.19,-75.02],5);
@@ -345,7 +356,7 @@
       markersLayer.clearLayers();
       const bounds=[];
       points.forEach(p=>{
-        const statusInfo = getStatusPin(p.codCliente);
+        const statusInfo = getStatusClass(p.codCliente);
         const addressText = (p.direccion && p.direccion.trim()) ? p.direccion.trim() : "-";
         const googleUrl = `https://www.google.com/maps?q=${encodeURIComponent(p.lat + "," + p.lng)}`;
 
@@ -356,25 +367,38 @@
             <strong>Dirección:</strong> <a href="${googleUrl}" target="_blank" rel="noopener noreferrer">${addressText}</a><br>
             <strong>Ruta:</strong> ${p.ruta ?? "-"}<br>
             <strong>VH:</strong> ${p.vh ?? "-"}<br>
-            <label style="margin-top:6px;display:flex;align-items:center;gap:6px;font-size:.82rem;cursor:pointer;user-select:none;">
+            <label style="margin-top:8px;display:flex;align-items:center;gap:6px;font-size:.82rem;cursor:pointer;user-select:none;">
               <input type="checkbox" class="visitado-checkbox" style="cursor:pointer;"/> Marcar como visitado
             </label>
           </div>
         `;
 
-        const m = L.marker([p.lat, p.lng], { icon: statusInfo.icon });
-        m._baseIcon = statusInfo.icon; 
-        m._visitedIcon = pinNegro;
+        // DivIcon personalizado para controlar la bolita interna en negro al marcar
+        const customIcon = L.divIcon({
+          className: 'custom-pin-container',
+          html: `<div class="custom-pin ${statusInfo.cssClass}"><div class="custom-pin-body"><div class="custom-pin-dot"></div></div></div>`,
+          iconSize: [28, 38],
+          iconAnchor: [14, 38],
+          popupAnchor: [0, -36]
+        });
 
+        const m = L.marker([p.lat, p.lng], { icon: customIcon });
         m.bindPopup(popupHtml);
         m.addTo(markersLayer);
         bounds.push([p.lat, p.lng]);
 
         m.on("popupopen", e => {
           const cb = e.popup.getElement().querySelector(".visitado-checkbox");
-          if(cb) cb.addEventListener("change", () => {
-            m.setIcon(cb.checked ? m._visitedIcon : m._baseIcon);
-          });
+          const pinElement = m.getElement().querySelector('.custom-pin');
+          if(cb && pinElement) {
+            cb.addEventListener("change", () => {
+              if (cb.checked) {
+                pinElement.classList.add('is-visited');
+              } else {
+                pinElement.classList.remove('is-visited');
+              }
+            });
+          }
         });
       });
 
@@ -401,9 +425,6 @@
       );
     }
 
-    /* =========================
-       APLICAR FILTROS
-    ========================== */
     function applyFilters(){
       const centro  = filterCentro.value;
       const placa   = filterPlaca.value;
@@ -419,7 +440,7 @@
       filtered.forEach(r=>{
         const cod = r[3] ?? "";
         if(!cod) return;
-        if(String(r[2]).trim().toUpperCase() === "FRT-001") return; // Regla de negocio FRT-001
+        if(String(r[2]).trim().toUpperCase() === "FRT-001") return;
 
         const lat=parseFloat((r[16]??"").replace(",","."));
         const lng=parseFloat((r[17]??"").replace(",","."));
@@ -463,9 +484,6 @@
       renderMarkers([...clientMap.values()]);
     }
 
-    /* =========================
-       INIT
-    ========================== */
     async function init(){
       initMap();
       try{
