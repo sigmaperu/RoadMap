@@ -1,10 +1,7 @@
 /* ==========================================================================
-   RoadMap - styles.css (Versión Notch / Estilo Fowllow Unificado)
+   RoadMap - styles.css (Versión Notch Cóncavo Exacto - Fowllow)
    ========================================================================== */
 
-/* ===================== */
-/* VARIABLES GLOBALES    */
-/* ===================== */
 :root {
   --primary: #9C27B0;
   --primary-dark: #7B1FA2;
@@ -20,25 +17,14 @@
   --border-radius: 12px;
   --shadow-elevated: 0 4px 20px rgba(0,0,0,0.05);
 
-  /* Agenda */
   --agenda-control-height: 38px;
   --agenda-radius-pill: 999px;
   --agenda-border-color: #d1d5db;
   --agenda-border: 1px solid var(--agenda-border-color);
 }
 
-/* ===================== */
-/* RESET Y BASE          */
-/* ===================== */
-*,
-*::before,
-*::after { box-sizing: border-box; }
-
-html, body { 
-  margin: 0; 
-  padding: 0; 
-  height: 100%; 
-}
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; }
 
 body {
   font-family: "Roboto", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -46,9 +32,6 @@ body {
   color: var(--text-main);
 }
 
-/* ===================== */
-/* APP SHELL / SIDEBAR (ESTILO NOTCH / FOWLLOW) */
-/* ===================== */
 .app-shell { 
   display: flex; 
   min-height: 100vh; 
@@ -85,14 +68,13 @@ body {
   margin-bottom: 24px;
 }
 
-.sidebar__nav { display: flex; flex-direction: column; gap: 4px; padding: 0 12px; }
+.sidebar__nav { display: flex; flex-direction: column; gap: 4px; padding: 0 12px; position: relative; }
 
-/* Items del menú lateral */
 .nav-item {
   display: flex; align-items: center; gap: 14px;
   padding: 12px 18px; border-radius: 12px; text-decoration: none;
   color: #94a3b8; font-size: 0.92rem; font-weight: 500;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   position: relative;
 }
 
@@ -101,41 +83,66 @@ body {
   color: #ffffff; 
 }
 
-/* EFECTO NOTCH ACTIVO (Con bordes redondeados precisos) */
+/* ========================================================== */
+/* EFECTO NOTCH REAL CON ESQUINAS CÓNCAVAS (FOWLLOW STYLE)    */
+/* ========================================================== */
 .nav-item--active { 
   background-color: #FFFFFF !important; 
   color: #0f172a !important; 
   font-weight: 700;
-  border-top-left-radius: 12px;
-  border-bottom-left-radius: 12px;
-  border-top-right-radius: 16px;    /* Curva superior notch */
-  border-bottom-right-radius: 16px; /* Curva inferior notch */
-  margin-right: -14px;              /* Muerde el panel blanco */
-  box-shadow: -4px 0 15px rgba(0,0,0,0.12);
-  z-index: 5;
+  border-radius: 12px 0 0 12px !important;
+  margin-right: -16px;
+  box-shadow: -4px 0 15px rgba(0,0,0,0.15);
+  z-index: 10;
 }
 
 .nav-item--active .nav-item__icon {
   color: var(--primary);
 }
 
+/* Curva cóncava superior */
+.nav-item--active::before {
+  content: "";
+  position: absolute;
+  top: -16px;
+  right: 0;
+  width: 16px;
+  height: 16px;
+  background-color: transparent;
+  border-bottom-right-radius: 16px;
+  box-shadow: 4px 4px 0 4px #FFFFFF;
+  pointer-events: none;
+}
+
+/* Curva cóncava inferior */
+.nav-item--active::after {
+  content: "";
+  position: absolute;
+  bottom: -16px;
+  right: 0;
+  width: 16px;
+  height: 16px;
+  background-color: transparent;
+  border-top-right-radius: 16px;
+  box-shadow: 4px -4px 0 4px #FFFFFF;
+  pointer-events: none;
+}
+
 .nav-item__icon { font-size: 1.25rem; }
 
-/* ===================== */
-/* MAIN LAYOUT / TOPBAR  */
-/* ===================== */
+/* Main Layout */
 .main-layout { 
   flex: 1; 
   display: flex; 
   flex-direction: column; 
   background: #FFFFFF;
-  border-top-left-radius: 20px; 
-  border-bottom-left-radius: 20px;
+  border-top-left-radius: 24px; 
+  border-bottom-left-radius: 24px;
   box-shadow: -5px 0 25px rgba(0,0,0,0.15);
   overflow: hidden;
   margin-top: 12px;
   margin-bottom: 12px;
-  z-index: 10;
+  z-index: 5;
 }
 
 .topbar {
@@ -160,20 +167,13 @@ body {
 .topbar__right { display: flex; align-items: center; justify-content: flex-end; }
 .topbar-fecha { font-size: 0.88rem; font-weight: 600; color: var(--text-muted); background: #f1f5f9; padding: 6px 14px; border-radius: 999px; }
 
-/* ===================== */
-/* CONTENIDO             */
-/* ===================== */
 .content { padding: 20px 24px 24px; overflow-y: auto; flex: 1; }
 .page-section { margin-top: 4px; }
 
-/* ===================== */
-/* AGENDA – CARD + FILTROS + TABLA */
-/* ===================== */
 .agenda-card { background: var(--surface); border-radius: var(--border-radius); padding: 4px 0; }
 .agenda-filters { display: flex; align-items: center; flex-wrap: nowrap; margin-bottom: 16px; }
 .agenda-filters-inner { display: flex; flex: 1; align-items: center; gap: 12px; }
 
-/* Grupo Centro */
 .agenda-filters__group { display: flex; flex-direction: column; min-width: 220px; }
 .agenda-filters__group select {
   height: var(--agenda-control-height);
@@ -189,7 +189,6 @@ body {
 }
 .agenda-filters__group select:focus { border-color: var(--primary); }
 
-/* Búsqueda + lupa */
 .agenda-search-box { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; }
 .agenda-search-bar { position: relative; overflow: hidden; max-width: 0; opacity: 0; transition: max-width 0.28s ease, opacity 0.22s ease; height: var(--agenda-control-height); display: flex; align-items: center; }
 .agenda-search-bar--open { max-width: clamp(240px, 32vw, 360px); opacity: 1; }
@@ -203,7 +202,6 @@ body {
 .agenda-search-toggle:hover { transform: scale(1.05); }
 .agenda-search-toggle .material-icons { font-size: 20px; }
 
-/* Tabla */
 .agenda-table-wrapper { margin-top: 12px; overflow-x: auto; border-radius: 8px; border: 1px solid #f0f0f0; }
 .agenda-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
 .agenda-table thead { background: var(--primary-dark); color: #FFFFFF; }
@@ -212,7 +210,6 @@ body {
 .agenda-th-icon { font-size: 15px; vertical-align: middle; margin-right: 6px; color: var(--primary-light); }
 .agenda-name { display: inline-flex; align-items: center; gap: 6px; }
 
-/* Botones mini */
 .agenda-whatsapp-btn { border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; background: #25D366; color: #fff; display: inline-flex; align-items: center; justify-content: center; margin-left: 6px; transition: transform 0.15s; }
 .agenda-whatsapp-btn:hover { transform: scale(1.1); }
 .agenda-whatsapp-btn svg { width: 13px; height: 13px; display: block; }
@@ -220,9 +217,6 @@ body {
 .agenda-map-icon { border: none; border-radius: 50%; width: 22px; height: 22px; margin-left: 6px; cursor: pointer; background: #2563EB; color: #fff; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: transform .15s ease; }
 .agenda-map-icon:hover { transform: scale(1.1); }
 
-/* ===================== */
-/* RESPONSIVE            */
-/* ===================== */
 @media (max-width: 920px) {
   .app-shell { flex-direction: column; background: #FFFFFF; }
   .sidebar { 
@@ -232,6 +226,7 @@ body {
   }
   .sidebar--open { transform: translateX(0); }
   .main-layout { margin: 0; border-radius: 0; box-shadow: none; }
+  .nav-item--active::before, .nav-item--active::after { display: none; } /* Ocultar pseudo-elementos en mobile */
   .icon-button--menu { display: inline-flex; }
   .content { padding: 12px; }
   .agenda-card { padding: 0; }
