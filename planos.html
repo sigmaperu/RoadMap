@@ -15,30 +15,96 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
 
   <!-- Estilos globales -->
-  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/styles.css?v=12.0">
 
   <!-- Header / config global -->
   <script defer src="assets/js/main.js"></script>
+
+  <style>
+    /* Estilos optimizados y compactos para el mapa y filtros */
+    .map-wrapper { position: relative; width: 100%; height: calc(100vh - 140px); min-height: 500px; display: flex; flex-direction: column; }
+    #map { width: 100%; flex: 1; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow: hidden; }
+    
+    /* Toolbar compacta con mejor calidad gráfica */
+    .map-toolbar {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .btn-small-icon {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transition: all 0.2s ease;
+      color: var(--primary, #9C27B0);
+    }
+    .btn-small-icon:hover { background: #f8fafc; transform: scale(1.05); }
+
+    .filters-floating {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      transition: all 0.25s ease;
+      max-width: 340px;
+    }
+    .filters-floating--collapsed {
+      display: none;
+    }
+    .filters-floating__row {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .filter-group label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #64748b;
+      letter-spacing: 0.05em;
+    }
+    .filter-group select {
+      height: 36px;
+      padding: 0 10px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      font-size: 0.85rem;
+      color: #1e293b;
+      outline: none;
+      cursor: pointer;
+    }
+    .filter-group select:focus { border-color: var(--primary, #9C27B0); }
+
+    /* Popups mejorados y limpios */
+    .leaflet-popup-content-wrapper { border-radius: 12px; padding: 4px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+    .leaflet-popup-content { font-family: "Roboto", sans-serif; font-size: 0.85rem; color: #1e293b; line-height: 1.4; }
+  </style>
 </head>
 
 <body data-title="Planos">
   <div class="app-shell">
 
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="sidebar__logo">
-        <img src="assets/img/logotipo.png" alt="RoadMap" style="max-width:100%;height:auto;">
-      </div>
-      <nav class="sidebar__nav">
-        <a href="index.html" class="nav-item"><span class="nav-item__icon material-icons">home</span><span>Inicio</span></a>
-        <a href="agenda.html" class="nav-item"><span class="nav-item__icon material-icons">event</span><span>Agenda</span></a>
-        <a href="dashboard.html" class="nav-item"><span class="nav-item__icon material-icons">dashboard</span><span>Dashboard</span></a>
-        <a href="planif.html" class="nav-item"><span class="nav-item__icon material-icons">timeline</span><span>Planificación</span></a>
-        <a href="planos.html" class="nav-item nav-item--active"><span class="nav-item__icon material-icons">map</span><span>Planos</span></a>
-        <a href="program.html" class="nav-item"><span class="nav-item__icon material-icons">view_week</span><span>Programación</span></a>
-        <a href="ubicame.html" class="nav-item"><span class="nav-item__icon material-icons">my_location</span><span>Ubícame</span></a>
-      </nav>
-    </aside>
+    <!-- Sidebar modular inyectado o estático -->
+    <aside class="sidebar" id="app-sidebar"></aside>
 
     <!-- Main layout -->
     <div class="main-layout">
@@ -47,11 +113,11 @@
       <main class="content">
         <section class="page-section">
 
-          <div class="map-wrapper" style="position:relative;width:100%;">
+          <div class="map-wrapper">
 
-            <!-- Toolbar -->
+            <!-- Toolbar & Filtros flotantes compactos -->
             <div class="map-toolbar">
-              <button id="btnToggleFilters" class="btn-small-icon" type="button" title="Mostrar/ocultar filtros">
+              <button id="btnToggleFilters" class="btn-small-icon" type="button" title="Mostrar/ocultar filtros operativos">
                 <span class="material-icons">tune</span>
               </button>
 
@@ -73,10 +139,7 @@
               </div>
             </div>
 
-            <div id="map"
-                 style="width:100%;height:560px;border-radius:12px;
-                 box-shadow:0 4px 12px rgba(0,0,0,0.08);overflow:hidden;">
-            </div>
+            <div id="map"></div>
 
           </div>
 
@@ -89,17 +152,14 @@
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
 
-  <!-- Script específico Planos -->
+  <!-- Script Planos Modernizado con Estatus Sincronizado -->
   <script>
   (() => {
-    /* =========================
-       CONFIG
-    ========================== */
-    const CSV_URL =
-      (window.RoadMapConfig && window.RoadMapConfig.CSV_URL)
-      || "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
+    const CSV_URL = (window.RoadMapConfig && window.RoadMapConfig.CSV_URL) || "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
+    const JSON_URL = "https://raw.githubusercontent.com/sigmaperu/RoadMap/refs/heads/main/PowerApp_Data.json";
 
     let allRows = [];
+    let powerAppData = new Map();
     let leafletMap = null;
     let markersLayer = null;
 
@@ -111,28 +171,37 @@
     const filtersPanel     = document.getElementById("filtersPanel");
 
     /* =========================
-       ICONOS
+       ICONES DE MAPA POR COLOR (Leaflet Color Markers)
     ========================== */
     const shadowUrl = "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png";
-    const redPin = new L.Icon({
+    
+    const pinVerde = new L.Icon({
+      iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png",
+      shadowUrl, iconSize:[25,41], iconAnchor:[12,41], popupAnchor:[1,-34], shadowSize:[41,41]
+    });
+    const pinRojo = new L.Icon({
       iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
       shadowUrl, iconSize:[25,41], iconAnchor:[12,41], popupAnchor:[1,-34], shadowSize:[41,41]
     });
-    const purplePin = new L.Icon({
-      iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-violet.png",
+    const pinNaranja = new L.Icon({
+      iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png",
       shadowUrl, iconSize:[25,41], iconAnchor:[12,41], popupAnchor:[1,-34], shadowSize:[41,41]
     });
-    const blackPin = new L.Icon({
+    const pinGris = new L.Icon({
+      iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-grey.png",
+      shadowUrl, iconSize:[25,41], iconAnchor:[12,41], popupAnchor:[1,-34], shadowSize:[41,41]
+    });
+    const pinNegro = new L.Icon({
       iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-black.png",
       shadowUrl, iconSize:[25,41], iconAnchor:[12,41], popupAnchor:[1,-34], shadowSize:[41,41]
     });
 
     /* =========================
-       UTILS
+       UTILS & PARSE
     ========================== */
     function parseCSV(text){
       const lines = text.split(/\r?\n/).filter(l=>l.trim()!=="");
-      lines.shift(); // remove header
+      lines.shift();
       const rows=[];
       for (const line of lines){
         let inQuotes=false, cur="", row=[];
@@ -150,34 +219,70 @@
       }
       return rows;
     }
-    const unique = arr => [...new Set(arr.filter(v=>v!==""
-      && v!=null))];
-    const toNum  = v => { const n = parseFloat(String(v??"0").replace(",", ".")); return isNaN(n)?0:n; };
+    const unique = arr => [...new Set(arr.filter(v=>v!=="" && v!=null))];
+    const toNum = v => { const n = parseFloat(String(v??"0").replace(",", ".")); return isNaN(n)?0:n; };
+    const extractCleanId = val => {
+      if (!val) return "";
+      const match = String(val).match(/\d+/);
+      return match ? match[0] : String(val).trim();
+    };
 
-    /* =========================
-       ETIQUETA CLIENTE (Col[3]=Cod, Col[4]=Nombre, Col[5]=Sec)
-    ========================== */
+    async function loadPowerAppData() {
+      try {
+        const resp = await fetch(JSON_URL);
+        if (!resp.ok) return;
+        const data = await resp.json();
+        if (Array.isArray(data)) {
+          data.forEach(item => {
+            const cleanKey = extractCleanId(item.CustomerAccount);
+            const statusVal = item.EstadoEntrega || "";
+            if (cleanKey) {
+              powerAppData.set(cleanKey, String(statusVal).trim());
+            }
+          });
+        }
+      } catch (e) {
+        console.warn("No se pudo cargar PowerApp_Data.json en Planos:", e);
+      }
+    }
+
+    function getStatusPin(clienteCod) {
+      const cleanKey = extractCleanId(clienteCod);
+      const statusRaw = String(powerAppData.get(cleanKey) || "").toLowerCase();
+
+      if (statusRaw.includes("entreg") || statusRaw.includes("aten") || statusRaw.includes("verde") || statusRaw.includes("ok")) {
+        return { icon: pinVerde, texto: "Entregado" };
+      }
+      if (statusRaw.includes("rech") || statusRaw.includes("anul") || statusRaw.includes("rojo")) {
+        return { icon: pinRojo, texto: "Rechazado" };
+      }
+      if (statusRaw.includes("pend") || statusRaw.includes("ruta")) {
+        return { icon: pinNaranja, texto: "Pendiente" };
+      }
+      return { icon: pinGris, texto: "Sin información" };
+    }
+
     function buildClienteLabelFromRow(r){
       const cod = r[3] ?? "";
       const nom = r[4] ?? "";
       const sec = r[5] ?? "";
       const validNom = nom && nom !== "0" && nom.toLowerCase() !== "error";
       const validSec = sec && sec !== "0" && sec.toLowerCase() !== "error";
-      if (validNom && validSec) return `${cod}  ${nom} - ${sec}`;
-      if (validNom)             return `${cod}  ${nom}`;
-      if (validSec)             return `${cod}  ${sec}`;
+      if (validNom && validSec) return `${cod} - ${nom} - ${sec}`;
+      if (validNom) return `${cod} - ${nom}`;
+      if (validSec) return `${cod} - ${sec}`;
       return cod;
     }
 
     /* =========================
-       PREPARAR OPCIONES
+       OPCIONES DE FILTROS
     ========================== */
     let allCentros=[], allPlacas=[], allClientes=[];
 
     function populateBaseOptions(){
       allCentros  = unique(allRows.map(r=>r[1]??"")).sort();
       allPlacas   = unique(allRows.map(r=>r[2]??"")).sort();
-      allClientes = unique(allRows.map(r=>r[3]??"")).sort(); // CodCliente
+      allClientes = unique(allRows.map(r=>r[3]??"")).sort();
     }
 
     function resetSelect(sel){
@@ -218,20 +323,19 @@
         const rowOne = subset.find(r=> (r[3]??"") === cod );
         const label  = rowOne ? buildClienteLabelFromRow(rowOne) : cod;
         const o=document.createElement("option");
-        o.value=cod;
-        o.textContent=label;
+        o.value=cod; o.textContent=label;
         filterCliente.appendChild(o);
       });
     }
 
     /* =========================
-       MAPA
+       MAPA LEAFLET
     ========================== */
     function initMap(){
       if (leafletMap) return;
       leafletMap = L.map("map",{zoomControl:false}).setView([-9.19,-75.02],5);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
-        maxZoom:19, attribution:"© OpenStreetMap contributors"
+        maxZoom:19, attribution:"© OpenStreetMap"
       }).addTo(leafletMap);
       L.control.zoom({position:"bottomright"}).addTo(leafletMap);
       markersLayer = L.layerGroup().addTo(leafletMap);
@@ -241,74 +345,64 @@
       markersLayer.clearLayers();
       const bounds=[];
       points.forEach(p=>{
-        const icon = p.pesoTotal >= 100 ? purplePin : redPin;
-
-        // Dirección (Col[15] - Col[14]) y link a Google Maps con lat,lon (Col[16],Col[17])
+        const statusInfo = getStatusPin(p.codCliente);
         const addressText = (p.direccion && p.direccion.trim()) ? p.direccion.trim() : "-";
         const googleUrl = `https://www.google.com/maps?q=${encodeURIComponent(p.lat + "," + p.lng)}`;
 
         const popupHtml=`
-          <div style="min-width:220px;">
-            <strong>Cliente:</strong> ${p.cliente}<br>
+          <div style="min-width:210px; padding:4px;">
+            <div style="font-weight:700; color:var(--primary,#9C27B0); margin-bottom:4px;">${p.cliente}</div>
+            <strong>Estado:</strong> <span style="font-weight:600;">${statusInfo.texto}</span><br>
             <strong>Dirección:</strong> <a href="${googleUrl}" target="_blank" rel="noopener noreferrer">${addressText}</a><br>
             <strong>Ruta:</strong> ${p.ruta ?? "-"}<br>
             <strong>VH:</strong> ${p.vh ?? "-"}<br>
-            <label style="margin-top:4px;display:flex;gap:5px;font-size:.85rem;">
-              <input type="checkbox" class="visitado-checkbox"/> Visitado
+            <label style="margin-top:6px;display:flex;align-items:center;gap:6px;font-size:.82rem;cursor:pointer;user-select:none;">
+              <input type="checkbox" class="visitado-checkbox" style="cursor:pointer;"/> Marcar como visitado
             </label>
           </div>
         `;
 
-        const m=L.marker([p.lat,p.lng],{icon});
-        m._baseIcon=icon; m._visitedIcon=blackPin;
+        const m = L.marker([p.lat, p.lng], { icon: statusInfo.icon });
+        m._baseIcon = statusInfo.icon; 
+        m._visitedIcon = pinNegro;
 
         m.bindPopup(popupHtml);
         m.addTo(markersLayer);
-        bounds.push([p.lat,p.lng]);
+        bounds.push([p.lat, p.lng]);
 
-        m.on("popupopen",e=>{
-          const cb=e.popup.getElement().querySelector(".visitado-checkbox");
-          if(cb) cb.addEventListener("change",()=> {
+        m.on("popupopen", e => {
+          const cb = e.popup.getElement().querySelector(".visitado-checkbox");
+          if(cb) cb.addEventListener("change", () => {
             m.setIcon(cb.checked ? m._visitedIcon : m._baseIcon);
           });
         });
       });
 
-      if(bounds.length>0) leafletMap.fitBounds(bounds,{padding:[30,30]});
-      else leafletMap.setView([-9.19,-75.02],5);
+      if(bounds.length > 0) leafletMap.fitBounds(bounds, { padding: [40, 40] });
+      else leafletMap.setView([-9.19, -75.02], 5);
     }
 
-    /* =========================
-       GEOLOCALIZACIÓN: puntito negro (Mi ubicación)
-    ========================== */
     function locateUserOnLoad() {
       if (!leafletMap || !navigator.geolocation) return;
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           const { latitude, longitude } = pos.coords;
-          // Puntito negro pequeño
           L.circleMarker([latitude, longitude], {
-            radius: 2,
-            color: "#000",
-            fillColor: "#000",
-            fillOpacity: 1
-          })
-          .bindPopup("Mi ubicación")
-          .addTo(leafletMap);
+            radius: 6, color: "#2563eb", fillColor: "#3b82f6", fillOpacity: 0.9, weight: 2
+          }).bindPopup("Mi ubicación actual").addTo(leafletMap);
 
-          // Si no hay markers aún, centra en mi ubicación (zoom 12)
           try {
             const hasData = markersLayer && markersLayer.getLayers().length > 0;
-            if (!hasData) leafletMap.setView([latitude, longitude], 12);
+            if (!hasData) leafletMap.setView([latitude, longitude], 13);
           } catch(_) {}
         },
-        () => { /* silencio en error para no interrumpir flujo */ },
+        () => {},
         { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 }
       );
     }
 
     /* =========================
-       FILTRO + AGRUPACIÓN (CodCliente = COL[3])
+       APLICAR FILTROS
     ========================== */
     function applyFilters(){
       const centro  = filterCentro.value;
@@ -316,7 +410,6 @@
       const codCli  = filterCliente.value;
 
       let filtered = allRows.slice();
-
       if(centro) filtered = filtered.filter(r=> (r[1]??"")===centro );
       if(placa)  filtered = filtered.filter(r=> (r[2]??"")===placa );
       if(codCli) filtered = filtered.filter(r=> (r[3]??"")===codCli );
@@ -326,6 +419,7 @@
       filtered.forEach(r=>{
         const cod = r[3] ?? "";
         if(!cod) return;
+        if(String(r[2]).trim().toUpperCase() === "FRT-001") return; // Regla de negocio FRT-001
 
         const lat=parseFloat((r[16]??"").replace(",","."));
         const lng=parseFloat((r[17]??"").replace(",","."));
@@ -340,17 +434,14 @@
         const vh=r[18]??"";
         const peso=toNum(r[10]??"0");
 
-        // Etiqueta de cliente: Col[3]  Col[4] - Col[5]
         const clienteLabel = buildClienteLabelFromRow(r);
 
-        // Dirección EXACTA: Col[15] - Col[14] (si existen)
         let direccion = "";
         if (dir15 && dir15 !== "0" && dir15.toLowerCase() !== "error") direccion = dir15;
         if (dir14 && dir14 !== "0" && dir14.toLowerCase() !== "error") {
           direccion = direccion ? `${direccion} - ${dir14}` : dir14;
         }
 
-        // Ruta (ruta + ruta extra si aplica)
         const rutaTexto=(rutaExt && rutaExt!=="0" && rutaExt.toLowerCase()!=="error")
                          ? (ruta ? `${ruta} - ${rutaExt}` : rutaExt)
                          : ruta;
@@ -358,12 +449,13 @@
         const exists=clientMap.get(cod);
         if(!exists){
           clientMap.set(cod,{
-            cliente:clienteLabel,
-            lat,lng,
-            direccion: direccion,  // <- texto visible y clickable
-            ruta:rutaTexto,
+            codCliente: cod,
+            cliente: clienteLabel,
+            lat, lng,
+            direccion,
+            ruta: rutaTexto,
             vh,
-            pesoTotal:peso
+            pesoTotal: peso
           });
         } else exists.pesoTotal += peso;
       });
@@ -372,35 +464,12 @@
     }
 
     /* =========================
-       PERSISTENCIA DE FILTROS (mínimo y sin tocar diseño)
-    ========================== */
-
-    const LS_KEY = "roadmap.planos.filters.v1";
-    const optionExists = (sel, val) => [...sel.options].some(o => o.value === val);
-
-    function saveFiltersState(){
-      try {
-        localStorage.setItem(LS_KEY, JSON.stringify({
-          centro:  filterCentro.value || "",
-          placa:   filterPlaca.value || "",
-          cliente: filterCliente.value || ""
-        }));
-      } catch(_) {}
-    }
-
-    function loadFiltersState(){
-      try {
-        const raw = localStorage.getItem(LS_KEY);
-        return raw ? JSON.parse(raw) : null;
-      } catch(_) { return null; }
-    }
-
-    /* =========================
        INIT
     ========================== */
     async function init(){
       initMap();
       try{
+        await loadPowerAppData();
         const resp = await fetch(CSV_URL);
         const text = await resp.text();
         allRows = parseCSV(text);
@@ -410,68 +479,33 @@
         refreshPlacaOptions("");
         refreshClienteOptions("","");
 
-        // --- Restaurar filtros guardados, si existen en el CSV actual ---
-        const st = loadFiltersState();
-        if (st) {
-          // Centro
-          if (st.centro && optionExists(filterCentro, st.centro)) {
-            filterCentro.value = st.centro;
-          } else {
-            filterCentro.value = "";
-          }
-
-          // Placa depende de centro
-          refreshPlacaOptions(filterCentro.value || "");
-          if (st.placa && optionExists(filterPlaca, st.placa)) {
-            filterPlaca.value = st.placa;
-          } else {
-            filterPlaca.value = "";
-          }
-
-          // Cliente depende de centro/placa
-          refreshClienteOptions(filterCentro.value || "", filterPlaca.value || "");
-          if (st.cliente && optionExists(filterCliente, st.cliente)) {
-            filterCliente.value = st.cliente;
-          } else {
-            filterCliente.value = "";
-          }
-        }
-        // ----------------------------------------------------------------
-
         applyFilters();
       }catch(e){
         console.error(e);
-        alert("No se pudo cargar RoadMap.csv");
+        alert("No se pudo cargar RoadMap.csv para el mapa.");
       }
 
-      // Listeners filtros (guardan estado al cambiar)
       filterCentro.addEventListener("change",()=>{
         const c=filterCentro.value;
         refreshPlacaOptions(c);
         refreshClienteOptions(c, filterPlaca.value);
         applyFilters();
-        saveFiltersState();
       });
 
       filterPlaca.addEventListener("change",()=>{
         const c=filterCentro.value;
         refreshClienteOptions(c, filterPlaca.value);
         applyFilters();
-        saveFiltersState();
       });
 
       filterCliente.addEventListener("change",()=>{
         applyFilters();
-        saveFiltersState();
       });
 
-      // Toggle panel filtros (sin persistir, tal como pediste)
       btnToggleFilters.addEventListener("click",()=>{
         filtersPanel.classList.toggle("filters-floating--collapsed");
-        btnToggleFilters.classList.toggle("btn-small-icon--open");
       });
 
-      // === Mi ubicación (puntito negro)
       locateUserOnLoad();
     }
 
