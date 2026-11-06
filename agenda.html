@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css?v=7.0">
+  <link rel="stylesheet" href="assets/css/styles.css?v=8.0">
 
   <script defer src="assets/js/main.js"></script>
 </head>
@@ -36,11 +36,9 @@
                   <span class="kpi-chip"><span class="material-icons">local_shipping</span> <strong id="kpiVehiculos">0</strong> Placas</span>
                 </div>
 
-                <!-- Botones de Acción y Cambio de Vista -->
                 <div class="agenda-search-box">
-                  <!-- Toggle Vista (Tabla vs Tarjetas Bento) -->
                   <button id="viewToggleBtn" class="agenda-search-toggle" type="button" title="Cambiar vista (Tabla / Tarjetas)" style="background:#0f172a;">
-                    <span class="material-icons" id="viewIcon">grid_view</span>
+                    <span class="material-icons" id="viewIcon">table_chart</span>
                   </button>
 
                   <div id="agendaSearchBar" class="agenda-search-bar">
@@ -56,11 +54,12 @@
               </div>
             </div>
 
-            <!-- Contenedor de Resultados (Tabla Tradicional) -->
+            <!-- Tabla Tradicional -->
             <div class="agenda-table-wrapper" id="agendaResultsTable" style="display:none;">
               <table id="agendaTable" class="agenda-table">
                 <thead>
                   <tr>
+                    <th>Estado</th>
                     <th><span class="material-icons agenda-th-icon">local_shipping</span>Placa</th>
                     <th><span class="material-icons agenda-th-icon">badge</span>Cliente</th>
                     <th><span class="material-icons agenda-th-icon">person</span>Nombre</th>
@@ -74,7 +73,7 @@
               </table>
             </div>
 
-            <!-- Contenedor de Resultados (Vista Bento Grid / Tarjetas Modernas) -->
+            <!-- Vista Bento Grid (Tarjetas con Estatus Sutil) -->
             <div id="agendaResultsCards" class="bento-grid" style="display:none;"></div>
 
           </div>
@@ -88,9 +87,19 @@
     .kpi-chip { background: #f1f5f9; color: #334155; padding: 6px 12px; border-radius: 999px; font-size: 0.8rem; font-weight: 500; display: inline-flex; align-items: center; gap: 5px; border: 1px solid #e2e8f0; }
     .kpi-chip .material-icons { font-size: 16px; color: var(--primary); }
 
-    /* ========================================== */
-    /* ESTILOS BENTO GRID (TARJETAS FLOTANTES)    */
-    /* ========================================== */
+    /* Estatus sutiles de atención */
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+      box-shadow: 0 0 0 2px rgba(255,255,255,0.8);
+    }
+    .status-verde { background-color: #10b981; } /* Atendido */
+    .status-rojo { background-color: #ef4444; } /* Rechazado */
+    .status-naranja { background-color: #f59e0b; } /* Pendiente */
+    .status-gris { background-color: #94a3b8; } /* Sin información / No migrado */
+
     .bento-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -138,11 +147,6 @@
       display: inline-flex;
       align-items: center;
       gap: 4px;
-    }
-    .bento-badge-cliente {
-      font-size: 0.78rem;
-      color: #64748b;
-      font-weight: 600;
     }
     .bento-title {
       font-size: 0.95rem;
@@ -203,15 +207,18 @@
   <script>
   (() => {
     const CSV_URL = (window.RoadMapConfig && window.RoadMapConfig.CSV_URL) || "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
+    const JSON_URL = "https://raw.githubusercontent.com/sigmaperu/RoadMap/refs/heads/main/PowerApp_Data.json";
+    
     const LS_CENTRO_KEY = "roadmap.agenda.centro";
     const LS_SEARCH_KEY = "roadmap.agenda.search";
-    const LS_VIEW_KEY = "roadmap.agenda.view"; // 'table' o 'bento'
+    const LS_VIEW_KEY = "roadmap.agenda.view";
 
     let agendaRows = [];
+    let powerAppData = {}; // Diccionario para cruzar estatus por pedido/cliente
     let centrosAgenda = [];
     let hasSearched = false;
     let filteredCache = [];
-    let currentView = localStorage.getItem(LS_VIEW_KEY) || "bento"; // Arranca en Bento por defecto para que explote la cabeza
+    let currentView = localStorage.getItem(LS_VIEW_KEY) || "bento";
 
     const agendaCentroSelect = document.getElementById("agendaCentro");
     const agendaSearchToggle = document.getElementById("agendaSearchToggle");
@@ -248,6 +255,40 @@
     }
     const unique = arr => Array.from(new Set(arr.filter(v => v !== "" && v != null)));
 
+    async function loadPowerAppData() {
+      try {
+        const resp = await fetch(JSON_URL);
+        if (!resp.ok) return;
+        const data = await resp.json();
+        // Indexamos los datos por número de pedido/cliente según venga en el JSON
+        if (Array.isArray(data)) {
+          data.forEach(item => {
+            const key = String(item.Pedido || item.Client || "").trim();
+            if (key) powerAppData[key] = item.Status || item.Estado || "Pendiente";
+          });
+        }
+      } catch (e) {
+        console.warn("No se pudo cargar PowerApp_Data.json (usando estado por defecto):", e);
+      }
+    }
+
+    function getStatusInfo(r) {
+      // r[3] es Cliente/Pedido por lo general
+      const clienteKey = String(r[3] || "").trim();
+      const statusRaw = (powerAppData[clienteKey] || "").toLowerCase();
+
+      if (statusRaw.includes("aten") || statusRaw.includes("entreg") || statusRaw.includes("verde")) {
+        return { clase: "status-verde", texto: "Atendido" };
+      }
+      if (statusRaw.includes("rech") || statusRaw.includes("anul") || statusRaw.includes("rojo")) {
+        return { clase: "status-rojo", texto: "Rechazado" };
+      }
+      if (statusRaw.includes("pend") || statusRaw.includes("ruta")) {
+        return { clase: "status-naranja", texto: "Pendiente" };
+      }
+      return { clase: "status-gris", texto: "Sin Información" };
+    }
+
     function loadCentros() {
       centrosAgenda = unique(agendaRows.map(r => r[1] || "")).sort();
       agendaCentroSelect.innerHTML = "";
@@ -278,6 +319,10 @@
     function groupByCliente(rows) {
       const map = new Map();
       rows.forEach(r => {
+        const placa = (r[2] || "").trim().toUpperCase();
+        // REGLA 1: Excluir estrictamente pedidos de la placa FRT-001
+        if (placa === "FRT-001") return;
+
         const key = (r[1] || "") + "\n" + (r[3] || "");
         if ((r[3] || "") && !map.has(key)) map.set(key, r);
       });
@@ -323,9 +368,15 @@
 
       filteredCache = groupByCliente(rows);
       
-      // Actualizar KPIs en vivo
+      // REGLA 2: RES-CLI no cuenta como placa, pero sí sus clientes y volumen
       kpiClientes.textContent = filteredCache.length;
-      kpiVehiculos.textContent = new Set(filteredCache.map(r => r[2])).size;
+      const placasUnicas = new Set(
+        filteredCache
+          .map(r => (r[2] || "").trim().toUpperCase())
+          .filter(placa => placa && placa !== "RES-CLI")
+      );
+      kpiVehiculos.textContent = placasUnicas.size;
+
       agendaKpis.style.display = "inline-flex";
       agendaCopyBtn.style.display = filteredCache.length > 0 ? "inline-flex" : "none";
 
@@ -348,8 +399,16 @@
         const ruta = buildRuta(r); const auxiliar = r[12] || "";
         const telefono = r[13] || ""; const dir = buildDireccion(r);
         const mapsUrl = googleMapsLink(r);
+        const status = getStatusInfo(r);
 
         const tr = document.createElement("tr");
+        
+        // Columna de estatus sutil
+        const tdStatus = document.createElement("td");
+        tdStatus.setAttribute("data-label", "Estado");
+        tdStatus.innerHTML = `<span class="status-dot ${status.clase}" title="${status.texto}"></span>`;
+        tr.appendChild(tdStatus);
+
         const td = (v,l) => { const c=document.createElement("td"); c.setAttribute("data-label",l); c.textContent=v||"-"; return c; };
         tr.appendChild(td(placa,"Placa"));
         tr.appendChild(td(cliente,"Cliente"));
@@ -388,12 +447,6 @@
         tr.appendChild(tdTel);
         agendaTableBody.appendChild(tr);
       });
-
-      if (filteredCache.length === 0) {
-        const tr = document.createElement("tr"); const td = document.createElement("td");
-        td.colSpan = 7; td.textContent = "No se encontraron registros."; tr.appendChild(td);
-        agendaTableBody.appendChild(tr);
-      }
     }
 
     function renderCards() {
@@ -409,6 +462,7 @@
         const dir = buildDireccion(r);
         const mapsUrl = googleMapsLink(r);
         const phone = cleanPhone(telefono);
+        const status = getStatusInfo(r);
 
         const card = document.createElement("div");
         card.className = "bento-card";
@@ -416,11 +470,14 @@
           <div>
             <div class="bento-header">
               <span class="bento-badge-placa"><span class="material-icons" style="font-size:14px;">local_shipping</span> ${placa}</span>
-              <span class="bento-badge-cliente">Cod: ${cliente}</span>
+              <span style="display:inline-flex; align-items:center; gap:6px; font-size:0.75rem; font-weight:600; color:#64748b;">
+                <span class="status-dot ${status.clase}"></span> ${status.texto}
+              </span>
             </div>
             <div class="bento-title">${nombre}</div>
             <div class="bento-details">
-              <div class="bento-detail-row"><span><strong>Ruta:</strong> ${ruta}</span><span><strong>VH:</strong> ${vh}</span></div>
+              <div class="bento-detail-row"><span><strong>Cod:</strong> ${cliente}</span><span><strong>VH:</strong> ${vh}</span></div>
+              <div class="bento-detail-row"><span><strong>Ruta:</strong> ${ruta}</span></div>
               <div class="bento-detail-row"><span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:260px;"><strong>Auxiliar:</strong> ${auxiliar}</span></div>
             </div>
           </div>
@@ -434,13 +491,8 @@
         `;
         agendaResultsCards.appendChild(card);
       });
-
-      if (filteredCache.length === 0) {
-        agendaResultsCards.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding: 40px; color:#64748b; font-weight:500;">No se encontraron registros.</div>`;
-      }
     }
 
-    // Cambiar de vista (Tabla <-> Bento)
     viewToggleBtn.addEventListener("click", () => {
       currentView = currentView === "bento" ? "table" : "bento";
       renderAgenda();
@@ -462,6 +514,8 @@
 
     async function initAgenda() {
       try {
+        // Carga simultánea de CSV y JSON de PowerApp
+        await loadPowerAppData();
         const resp = await fetch(CSV_URL);
         const text = await resp.text();
         const { rows } = parseCSV(text);
@@ -479,7 +533,7 @@
           renderAgenda(); 
         }
       } catch (err) {
-        console.error("Error cargando RoadMap.csv en Agenda:", err);
+        console.error("Error inicializando Agenda:", err);
       }
 
       agendaCentroSelect.addEventListener("change", () => { hasSearched = true; renderAgenda(); });
