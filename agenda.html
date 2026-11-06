@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css?v=8.0">
+  <link rel="stylesheet" href="assets/css/styles.css?v=9.0">
 
   <script defer src="assets/js/main.js"></script>
 </head>
@@ -95,10 +95,10 @@
       display: inline-block;
       box-shadow: 0 0 0 2px rgba(255,255,255,0.8);
     }
-    .status-verde { background-color: #10b981; } /* Atendido */
+    .status-verde { background-color: #10b981; } /* Entregado / Atendido */
     .status-rojo { background-color: #ef4444; } /* Rechazado */
     .status-naranja { background-color: #f59e0b; } /* Pendiente */
-    .status-gris { background-color: #94a3b8; } /* Sin información / No migrado */
+    .status-gris { background-color: #94a3b8; } /* Sin información */
 
     .bento-grid {
       display: grid;
@@ -214,7 +214,7 @@
     const LS_VIEW_KEY = "roadmap.agenda.view";
 
     let agendaRows = [];
-    let powerAppData = {}; // Diccionario para cruzar estatus por pedido/cliente
+    let powerAppData = new Map(); // Mapa optimizado para matching de pedidos
     let centrosAgenda = [];
     let hasSearched = false;
     let filteredCache = [];
@@ -255,30 +255,42 @@
     }
     const unique = arr => Array.from(new Set(arr.filter(v => v !== "" && v != null)));
 
+    // Función auxiliar para extraer solo los dígitos limpios del pedido/cliente (Ej: "11771041 - QUIROZ" -> "11771041")
+    function extractCleanId(val) {
+      if (!val) return "";
+      const match = String(val).match(/\d+/);
+      return match ? match[0] : String(val).trim();
+    }
+
     async function loadPowerAppData() {
       try {
         const resp = await fetch(JSON_URL);
         if (!resp.ok) return;
         const data = await resp.json();
-        // Indexamos los datos por número de pedido/cliente según venga en el JSON
+        
         if (Array.isArray(data)) {
           data.forEach(item => {
-            const key = String(item.Pedido || item.Client || "").trim();
-            if (key) powerAppData[key] = item.Status || item.Estado || "Pendiente";
+            // Buscamos propiedades comunes donde venga el ID del cliente o pedido
+            const rawKey = item.Cliente || item.Client || item.Pedido || item.NroPedido || item.ID || "";
+            const cleanKey = extractCleanId(rawKey);
+            const statusVal = item.Estado || item.Status || item.State || "";
+            if (cleanKey) {
+              powerAppData.set(cleanKey, statusVal);
+            }
           });
         }
       } catch (e) {
-        console.warn("No se pudo cargar PowerApp_Data.json (usando estado por defecto):", e);
+        console.warn("No se pudo cargar PowerApp_Data.json:", e);
       }
     }
 
     function getStatusInfo(r) {
-      // r[3] es Cliente/Pedido por lo general
-      const clienteKey = String(r[3] || "").trim();
-      const statusRaw = (powerAppData[clienteKey] || "").toLowerCase();
+      // r[3] es el código/nombre del cliente en RoadMap. Extraemos su ID numérico limpio.
+      const clienteKey = extractCleanId(r[3]);
+      const statusRaw = String(powerAppData.get(clienteKey) || "").toLowerCase();
 
-      if (statusRaw.includes("aten") || statusRaw.includes("entreg") || statusRaw.includes("verde")) {
-        return { clase: "status-verde", texto: "Atendido" };
+      if (statusRaw.includes("entreg") || statusRaw.includes("aten") || statusRaw.includes("verde")) {
+        return { clase: "status-verde", texto: "Entregado" };
       }
       if (statusRaw.includes("rech") || statusRaw.includes("anul") || statusRaw.includes("rojo")) {
         return { clase: "status-rojo", texto: "Rechazado" };
@@ -320,7 +332,7 @@
       const map = new Map();
       rows.forEach(r => {
         const placa = (r[2] || "").trim().toUpperCase();
-        // REGLA 1: Excluir estrictamente pedidos de la placa FRT-001
+        // REGLA: Excluir estrictamente pedidos de la placa FRT-001
         if (placa === "FRT-001") return;
 
         const key = (r[1] || "") + "\n" + (r[3] || "");
@@ -368,7 +380,7 @@
 
       filteredCache = groupByCliente(rows);
       
-      // REGLA 2: RES-CLI no cuenta como placa, pero sí sus clientes y volumen
+      // REGLA: RES-CLI no cuenta como placa, pero sí sus clientes
       kpiClientes.textContent = filteredCache.length;
       const placasUnicas = new Set(
         filteredCache
@@ -403,7 +415,6 @@
 
         const tr = document.createElement("tr");
         
-        // Columna de estatus sutil
         const tdStatus = document.createElement("td");
         tdStatus.setAttribute("data-label", "Estado");
         tdStatus.innerHTML = `<span class="status-dot ${status.clase}" title="${status.texto}"></span>`;
@@ -501,7 +512,8 @@
     agendaCopyBtn.addEventListener("click", () => {
       let textoReporte = `*RESUMEN AGENDA - BRAEDT S.A.*\nCentro: ${agendaCentroSelect.value}\nTotal Registros: ${filteredCache.length}\n\n`;
       filteredCache.slice(0, 15).forEach(r => {
-        textoReporte += `🚚 Placa: ${r[2]} | 🏷️ Cliente: ${r[3]} | 👤 ${buildNombre(r)} | 📞 ${r[13] || "N/A"}\n`;
+        const st = getStatusInfo(r);
+        textoReporte += `🚚 Placa: ${r[2]} | 🏷️ Cliente: ${r[3]} | [${st.texto}] | 📞 ${r[13] || "N/A"}\n`;
       });
       if (filteredCache.length > 15) textoReporte += `\n*(Y ${filteredCache.length - 15} registros más...)*`;
 
@@ -514,7 +526,6 @@
 
     async function initAgenda() {
       try {
-        // Carga simultánea de CSV y JSON de PowerApp
         await loadPowerAppData();
         const resp = await fetch(CSV_URL);
         const text = await resp.text();
