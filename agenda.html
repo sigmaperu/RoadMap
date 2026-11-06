@@ -9,44 +9,46 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css?v=6.0">
+  <link rel="stylesheet" href="assets/css/styles.css?v=7.0">
 
   <script defer src="assets/js/main.js"></script>
 </head>
 <body data-title="Agenda">
   <div class="app-shell">
-    <!-- Sidebar modular inyectado automáticamente -->
     <aside class="sidebar" id="app-sidebar"></aside>
 
     <div class="main-layout">
-      <!-- Header modular -->
       <div id="app-header"></div>
 
       <main class="content">
         <section class="page-section">
           <div class="agenda-card">
             
-            <!-- Barra de Filtros y Estadísticas en Vivo -->
+            <!-- Barra de Filtros, KPIs y Selector de Vista -->
             <div class="agenda-filters">
               <div class="agenda-filters-inner">
                 <div class="agenda-filters__group">
                   <select id="agendaCentro" title="Seleccionar Centro Operativo"></select>
                 </div>
 
-                <!-- KPIs Rápidos en Vivo -->
                 <div id="agendaKpis" class="agenda-kpis" style="display:none;">
                   <span class="kpi-chip"><span class="material-icons">group</span> <strong id="kpiClientes">0</strong> Clientes</span>
                   <span class="kpi-chip"><span class="material-icons">local_shipping</span> <strong id="kpiVehiculos">0</strong> Placas</span>
                 </div>
 
+                <!-- Botones de Acción y Cambio de Vista -->
                 <div class="agenda-search-box">
+                  <!-- Toggle Vista (Tabla vs Tarjetas Bento) -->
+                  <button id="viewToggleBtn" class="agenda-search-toggle" type="button" title="Cambiar vista (Tabla / Tarjetas)" style="background:#0f172a;">
+                    <span class="material-icons" id="viewIcon">grid_view</span>
+                  </button>
+
                   <div id="agendaSearchBar" class="agenda-search-bar">
                     <input id="agendaSearchInput" class="agenda-search-input" type="text" placeholder="Buscar por placa, cliente, ruta...">
                   </div>
                   <button id="agendaSearchToggle" class="agenda-search-toggle" type="button" aria-label="Buscar">
                     <span class="material-icons">search</span>
                   </button>
-                  <!-- Botón Copiar Reporte al Portapapeles -->
                   <button id="agendaCopyBtn" class="agenda-search-toggle" type="button" title="Copiar reporte filtrado para WhatsApp" style="background:#25D366; display:none;">
                     <span class="material-icons">content_copy</span>
                   </button>
@@ -54,8 +56,8 @@
               </div>
             </div>
 
-            <!-- Tabla de Resultados con Estilo Fowllow -->
-            <div class="agenda-table-wrapper" id="agendaResults" style="display:none;">
+            <!-- Contenedor de Resultados (Tabla Tradicional) -->
+            <div class="agenda-table-wrapper" id="agendaResultsTable" style="display:none;">
               <table id="agendaTable" class="agenda-table">
                 <thead>
                   <tr>
@@ -72,6 +74,9 @@
               </table>
             </div>
 
+            <!-- Contenedor de Resultados (Vista Bento Grid / Tarjetas Modernas) -->
+            <div id="agendaResultsCards" class="bento-grid" style="display:none;"></div>
+
           </div>
         </section>
       </main>
@@ -79,31 +84,119 @@
   </div>
 
   <style>
-    /* Estilos adicionales para los KPIs y chips modernos */
-    .agenda-kpis {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin-left: 12px;
+    .agenda-kpis { display: inline-flex; align-items: center; gap: 8px; margin-left: 12px; }
+    .kpi-chip { background: #f1f5f9; color: #334155; padding: 6px 12px; border-radius: 999px; font-size: 0.8rem; font-weight: 500; display: inline-flex; align-items: center; gap: 5px; border: 1px solid #e2e8f0; }
+    .kpi-chip .material-icons { font-size: 16px; color: var(--primary); }
+
+    /* ========================================== */
+    /* ESTILOS BENTO GRID (TARJETAS FLOTANTES)    */
+    /* ========================================== */
+    .bento-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
     }
-    .kpi-chip {
-      background: #f1f5f9;
-      color: #334155;
-      padding: 6px 12px;
-      border-radius: 999px;
-      font-size: 0.8rem;
-      font-weight: 500;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
+    .bento-card {
+      background: #ffffff;
       border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
     }
-    .kpi-chip .material-icons {
-      font-size: 16px;
-      color: var(--primary);
+    .bento-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(156,39,176,0.08);
+      border-color: rgba(156,39,176,0.3);
     }
+    .bento-card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; bottom: 0;
+      width: 4px;
+      background: var(--primary);
+    }
+    .bento-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .bento-badge-placa {
+      background: #F3E5F5;
+      color: var(--primary-dark, #7B1FA2);
+      font-weight: 700;
+      font-size: 0.82rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .bento-badge-cliente {
+      font-size: 0.78rem;
+      color: #64748b;
+      font-weight: 600;
+    }
+    .bento-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+    .bento-details {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.82rem;
+      color: #475569;
+      background: #f8fafc;
+      padding: 10px 12px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+    }
+    .bento-detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .bento-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid #f1f5f9;
+      padding-top: 10px;
+    }
+    .bento-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .bento-btn {
+      border: none;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: transform 0.1s;
+    }
+    .bento-btn:hover { transform: scale(1.03); }
+    .bento-btn-map { background: #2563eb; color: #fff; }
+    .bento-btn-wa { background: #25d366; color: #fff; }
+
     @media (max-width: 920px) {
       .agenda-kpis { display: none; }
+      .bento-grid { grid-template-columns: 1fr; }
     }
   </style>
 
@@ -112,22 +205,29 @@
     const CSV_URL = (window.RoadMapConfig && window.RoadMapConfig.CSV_URL) || "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
     const LS_CENTRO_KEY = "roadmap.agenda.centro";
     const LS_SEARCH_KEY = "roadmap.agenda.search";
+    const LS_VIEW_KEY = "roadmap.agenda.view"; // 'table' o 'bento'
 
     let agendaRows = [];
     let centrosAgenda = [];
     let hasSearched = false;
     let filteredCache = [];
+    let currentView = localStorage.getItem(LS_VIEW_KEY) || "bento"; // Arranca en Bento por defecto para que explote la cabeza
 
     const agendaCentroSelect = document.getElementById("agendaCentro");
     const agendaSearchToggle = document.getElementById("agendaSearchToggle");
     const agendaSearchBar = document.getElementById("agendaSearchBar");
     const agendaSearchInput = document.getElementById("agendaSearchInput");
+    
+    const agendaResultsTable = document.getElementById("agendaResultsTable");
+    const agendaResultsCards = document.getElementById("agendaResultsCards");
     const agendaTableBody = document.querySelector("#agendaTable tbody");
-    const agendaResults = document.getElementById("agendaResults");
+    
     const agendaKpis = document.getElementById("agendaKpis");
     const kpiClientes = document.getElementById("kpiClientes");
     const kpiVehiculos = document.getElementById("kpiVehiculos");
     const agendaCopyBtn = document.getElementById("agendaCopyBtn");
+    const viewToggleBtn = document.getElementById("viewToggleBtn");
+    const viewIcon = document.getElementById("viewIcon");
 
     function parseCSV(text) {
       const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
@@ -184,12 +284,17 @@
       return Array.from(map.values());
     }
 
+    function updateViewButtonIcon() {
+      viewIcon.textContent = currentView === "bento" ? "table_chart" : "grid_view";
+      viewToggleBtn.title = currentView === "bento" ? "Cambiar a Vista de Tabla" : "Cambiar a Vista de Tarjetas Bento";
+    }
+
     function renderAgenda() {
       if (!hasSearched) { 
-        agendaResults.style.display = "none"; 
+        agendaResultsTable.style.display = "none"; 
+        agendaResultsCards.style.display = "none";
         agendaKpis.style.display = "none";
         agendaCopyBtn.style.display = "none";
-        agendaTableBody.innerHTML = ""; 
         return; 
       }
       const centroSel = agendaCentroSelect.value;
@@ -197,6 +302,8 @@
       
       localStorage.setItem(LS_CENTRO_KEY, centroSel);
       localStorage.setItem(LS_SEARCH_KEY, term);
+      localStorage.setItem(LS_VIEW_KEY, currentView);
+      updateViewButtonIcon();
 
       let rows = agendaRows.filter(r => (r[1] || "") === centroSel);
 
@@ -222,8 +329,19 @@
       agendaKpis.style.display = "inline-flex";
       agendaCopyBtn.style.display = filteredCache.length > 0 ? "inline-flex" : "none";
 
-      agendaTableBody.innerHTML = "";
+      if (currentView === "table") {
+        agendaResultsCards.style.display = "none";
+        agendaResultsTable.style.display = "block";
+        renderTable();
+      } else {
+        agendaResultsTable.style.display = "none";
+        agendaResultsCards.style.display = "grid";
+        renderCards();
+      }
+    }
 
+    function renderTable() {
+      agendaTableBody.innerHTML = "";
       filteredCache.forEach(r => {
         const placa = r[2] || ""; const cliente = r[3] || "";
         const nombre = buildNombre(r); const vh = r[18] || "";
@@ -276,10 +394,58 @@
         td.colSpan = 7; td.textContent = "No se encontraron registros."; tr.appendChild(td);
         agendaTableBody.appendChild(tr);
       }
-      agendaResults.style.display = "block";
     }
 
-    // Copiar reporte al portapapeles
+    function renderCards() {
+      agendaResultsCards.innerHTML = "";
+      filteredCache.forEach(r => {
+        const placa = r[2] || "-"; 
+        const cliente = r[3] || "-";
+        const nombre = buildNombre(r) || "-"; 
+        const vh = r[18] || "-";
+        const ruta = buildRuta(r) || "-"; 
+        const auxiliar = r[12] || "-";
+        const telefono = r[13] || "-"; 
+        const dir = buildDireccion(r);
+        const mapsUrl = googleMapsLink(r);
+        const phone = cleanPhone(telefono);
+
+        const card = document.createElement("div");
+        card.className = "bento-card";
+        card.innerHTML = `
+          <div>
+            <div class="bento-header">
+              <span class="bento-badge-placa"><span class="material-icons" style="font-size:14px;">local_shipping</span> ${placa}</span>
+              <span class="bento-badge-cliente">Cod: ${cliente}</span>
+            </div>
+            <div class="bento-title">${nombre}</div>
+            <div class="bento-details">
+              <div class="bento-detail-row"><span><strong>Ruta:</strong> ${ruta}</span><span><strong>VH:</strong> ${vh}</span></div>
+              <div class="bento-detail-row"><span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:260px;"><strong>Auxiliar:</strong> ${auxiliar}</span></div>
+            </div>
+          </div>
+          <div class="bento-footer">
+            <span style="font-size:0.8rem; font-weight:600; color:#334155;"><span class="material-icons" style="font-size:14px; vertical-align:middle; color:#64748b;">phone</span> ${telefono}</span>
+            <div class="bento-actions">
+              ${mapsUrl ? `<button type="button" class="bento-btn bento-btn-map" onclick="window.open('${mapsUrl}', '_blank')" title="${dir}"><span class="material-icons" style="font-size:14px;">place</span> Mapa</button>` : ''}
+              ${phone ? `<button type="button" class="bento-btn bento-btn-wa" onclick="window.open('https://wa.me/${phone}', '_blank')" title="Contactar por WhatsApp"><span class="material-icons" style="font-size:14px;">chat</span> WA</button>` : ''}
+            </div>
+          </div>
+        `;
+        agendaResultsCards.appendChild(card);
+      });
+
+      if (filteredCache.length === 0) {
+        agendaResultsCards.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding: 40px; color:#64748b; font-weight:500;">No se encontraron registros.</div>`;
+      }
+    }
+
+    // Cambiar de vista (Tabla <-> Bento)
+    viewToggleBtn.addEventListener("click", () => {
+      currentView = currentView === "bento" ? "table" : "bento";
+      renderAgenda();
+    });
+
     agendaCopyBtn.addEventListener("click", () => {
       let textoReporte = `*RESUMEN AGENDA - BRAEDT S.A.*\nCentro: ${agendaCentroSelect.value}\nTotal Registros: ${filteredCache.length}\n\n`;
       filteredCache.slice(0, 15).forEach(r => {
