@@ -1,28 +1,23 @@
 // assets/js/main.js
 (() => {
-  // Config global única (evita choques)
   window.RoadMapConfig = window.RoadMapConfig || {};
   RoadMapConfig.CSV_URL =
     RoadMapConfig.CSV_URL ||
     "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
 
-  // ---- Monta el header en todas las páginas ----
+  // ---- Monta el Header ----
   async function mountHeader() {
     const host = document.getElementById('app-header');
     if (!host) return;
-
     try {
       const res = await fetch('partials/header.html', { cache: 'no-cache' });
       host.innerHTML = await res.text();
 
-      // Título dinámico
       const titleEl = document.getElementById('pageTitle');
       if (titleEl) {
-        const pageTitle = document.body.dataset.title || document.title || 'RoadMap';
-        titleEl.textContent = pageTitle;
+        titleEl.textContent = document.body.dataset.title || document.title || 'RoadMap';
       }
 
-      // Menú hamburguesa
       const menuToggle = document.getElementById('menuToggle');
       const sidebar = document.querySelector('.sidebar');
       if (menuToggle && sidebar) {
@@ -31,20 +26,7 @@
         });
       }
 
-      // Cierra sidebar al navegar en mobile
-      const navLinks = document.querySelectorAll('.sidebar__nav .nav-item');
-      navLinks.forEach(link => {
-        link.addEventListener('click', () => {
-          if (window.innerWidth <= 920 && sidebar && sidebar.classList.contains('sidebar--open')) {
-            sidebar.classList.remove('sidebar--open');
-          }
-        });
-      });
-
-      // Fecha en header
       initTopbarFecha();
-
-      // Fallback por si tarda el CSV
       setTimeout(() => {
         const el = document.getElementById('topbarFecha');
         if (el && !el.textContent.trim()) el.textContent = getLocalNow();
@@ -53,6 +35,39 @@
       document.dispatchEvent(new CustomEvent('header:ready'));
     } catch (e) {
       console.error('No se pudo montar el header:', e);
+    }
+  }
+
+  // ---- Monta el Sidebar Modular y marca la página activa (Notch) ----
+  async function mountSidebar() {
+    const host = document.getElementById('app-sidebar');
+    if (!host) return;
+    try {
+      const res = await fetch('partials/sidebar.html', { cache: 'no-cache' });
+      host.innerHTML = await res.text();
+
+      // Detectar página actual para activar el notch automáticamente
+      const currentPath = window.location.pathname.split("/").pop() || "index.html";
+      const navLinks = host.querySelectorAll('.gm-nav__item');
+      
+      navLinks.forEach(link => {
+        const pageAttr = link.getAttribute('data-page');
+        if (currentPath === pageAttr || (currentPath === "" && pageAttr === "index.html")) {
+          link.classList.add('active', 'nav-item--active');
+        } else {
+          link.classList.remove('active', 'nav-item--active');
+        }
+
+        // Cierra sidebar en mobile al navegar
+        link.addEventListener('click', () => {
+          const sidebar = document.querySelector('.sidebar');
+          if (window.innerWidth <= 860 && sidebar && sidebar.classList.contains('sidebar--open')) {
+            sidebar.classList.remove('sidebar--open');
+          }
+        });
+      });
+    } catch (e) {
+      console.error('No se pudo montar el sidebar:', e);
     }
   }
 
@@ -92,5 +107,8 @@
     }
   }
 
-  document.addEventListener('DOMContentLoaded', mountHeader);
+  document.addEventListener('DOMContentLoaded', () => {
+    mountSidebar();
+    mountHeader();
+  });
 })();
