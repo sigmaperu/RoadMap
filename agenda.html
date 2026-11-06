@@ -5,33 +5,28 @@
   <title>RoadMap – Agenda</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Fuentes + Material Icons + Estilos (ETIQUETAS REALES) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/styles.css">
 
-  <!-- Header global y configuración -->
   <script defer src="assets/js/main.js"></script>
 </head>
 <body data-title="Agenda">
   <div class="app-shell">
     <aside class="sidebar">
       <div class="sidebar__logo"><img src="assets/img/logotipo.png" alt="RoadMap"></div>
+      <div class="sidebar__tagline">Track. Analyze. Deliver.</div>
       <nav class="sidebar__nav">
         <a href="index.html" class="nav-item"><span class="nav-item__icon material-icons">home</span><span>Inicio</span></a>
         <a href="agenda.html" class="nav-item nav-item--active"><span class="nav-item__icon material-icons">event</span><span>Agenda</span></a>
         <a href="dashboard.html" class="nav-item"><span class="nav-item__icon material-icons">dashboard</span><span>Dashboard</span></a>
-        <a href="planif.html" class="nav-item"><span class="nav-item__icon material-icons">timeline</span><span>Planificación</span></a>
         <a href="planos.html" class="nav-item"><span class="nav-item__icon material-icons">map</span><span>Planos</span></a>
-        <a href="program.html" class="nav-item"><span class="nav-item__icon material-icons">view_week</span><span>Programación</span></a>
-        <a href="ubicame.html" class="nav-item"><span class="nav-item__icon material-icons">my_location</span><span>Ubícame</span></a>
       </nav>
     </aside>
 
     <div class="main-layout">
-      <!-- Header global -->
       <div id="app-header"></div>
 
       <main class="content">
@@ -45,7 +40,7 @@
 
                 <div class="agenda-search-box">
                   <div id="agendaSearchBar" class="agenda-search-bar">
-                    <input id="agendaSearchInput" class="agenda-search-input" type="text" placeholder="Buscar por placa, cliente, ruta, etc.">
+                    <input id="agendaSearchInput" class="agenda-search-input" type="text" placeholder="Buscar por placa, cliente, ruta...">
                   </div>
                   <button id="agendaSearchToggle" class="agenda-search-toggle" type="button" aria-label="Buscar">
                     <span class="material-icons">search</span>
@@ -67,7 +62,7 @@
                     <th><span class="material-icons agenda-th-icon">phone</span>Teléfono</th>
                   </tr>
                 </thead>
-                <tbody><!-- filas por JS --></tbody>
+                <tbody></tbody>
               </table>
             </div>
           </div>
@@ -76,12 +71,11 @@
     </div>
   </div>
 
-  <!-- JS específico de Agenda -->
   <script>
   (() => {
-    const CSV_URL =
-      (window.RoadMapConfig && window.RoadMapConfig.CSV_URL)
-      || "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
+    const CSV_URL = (window.RoadMapConfig && window.RoadMapConfig.CSV_URL) || "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
+    const LS_CENTRO_KEY = "roadmap.agenda.centro";
+    const LS_SEARCH_KEY = "roadmap.agenda.search";
 
     let agendaRows = [];
     let centrosAgenda = [];
@@ -98,8 +92,7 @@
       const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
       if (lines.length === 0) return { header: [], rows: [] };
       const header = lines[0].split(",");
-      const dataLines = lines.slice(1);
-      const rows = dataLines.map(line => {
+      const rows = lines.slice(1).map(line => {
         const result = []; let current = ""; let inQuotes = false;
         for (let i = 0; i < line.length; i++) {
           const char = line[i];
@@ -122,11 +115,18 @@
         opt.value = c; opt.textContent = c;
         agendaCentroSelect.appendChild(opt);
       });
-      if (centrosAgenda.length > 0) agendaCentroSelect.value = centrosAgenda[0];
+
+      // Restaurar centro guardado o usar el primero
+      const savedCentro = localStorage.getItem(LS_CENTRO_KEY);
+      if (savedCentro && centrosAgenda.includes(savedCentro)) {
+        agendaCentroSelect.value = savedCentro;
+      } else if (centrosAgenda.length > 0) {
+        agendaCentroSelect.value = centrosAgenda[0];
+      }
     }
 
     const buildNombre = r => { const a=r[4]||"", b=r[5]||""; return (b && b!=="0" && b.toLowerCase()!=="error") ? (a?`${a} - ${b}`:b) : a; };
-    const buildRuta   = r => { const a=r[6]||"", b=r[19]||""; return (b && b!=="0" && b.toLowerCase()!=="error") ? (a?`${a} - ${b}`:b) : a; };
+    const buildRuta = r => { const a=r[6]||"", b=r[19]||""; return (b && b!=="0" && b.toLowerCase()!=="error") ? (a?`${a} - ${b}`:b) : a; };
     const buildDireccion = r => { const d1=r[15]||"", d2=r[14]||""; return (d2 && d2!=="0" && d2.toLowerCase()!=="error") ? (d1?`${d1} - ${d2}`:d2):d1; };
     function googleMapsLink(r) {
       const lat = parseFloat((r[16] || "").replace(",", ".")); const lng = parseFloat((r[17] || "").replace(",", "."));
@@ -148,6 +148,11 @@
       if (!hasSearched) { agendaResults.style.display = "none"; agendaTableBody.innerHTML = ""; return; }
       const centroSel = agendaCentroSelect.value;
       const term = (agendaSearchInput.value || "").toLowerCase().trim();
+      
+      // Guardar estados en localStorage para persistencia al navegar
+      localStorage.setItem(LS_CENTRO_KEY, centroSel);
+      localStorage.setItem(LS_SEARCH_KEY, term);
+
       let rows = agendaRows.filter(r => (r[1] || "") === centroSel);
 
       if (term) {
@@ -189,10 +194,7 @@
           const btn = document.createElement("button");
           btn.type="button"; btn.className="agenda-map-icon"; btn.title=dir||"Ver dirección";
           btn.onclick = e => { e.stopPropagation(); window.open(mapsUrl,"_blank"); };
-          btn.innerHTML = `
-            <svg viewBox="0 0 24 24" class="map-pin" aria-hidden="true">
-              <path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z"/>
-            </svg>`;
+          btn.innerHTML = `<svg viewBox="0 0 24 24" class="map-pin" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z"/></svg>`;
           spanNombre.appendChild(btn);
         }
         tdNombre.appendChild(spanNombre);
@@ -210,10 +212,7 @@
           const wa = document.createElement("button");
           wa.type="button"; wa.className="agenda-whatsapp-btn";
           wa.onclick = e => { e.stopPropagation(); window.open("https://wa.me/" + phone,"_blank"); };
-          wa.innerHTML = `
-            <svg viewBox="0 0 32 32" aria-hidden="true">
-              <path fill="currentColor" d="M16 3.2A12.77 12.77 0 0 0 3.2 16a12.6 12.6 0 0 0 1.78 6.5L3 29l6.7-1.96A12.8 12.8 0 0 0 16 28.8 12.77 12.77 0 0 0 28.8 16 12.8 12.8 0 0 0 16 3.2zm0 22.3a9.5 9.5 0 0 1-4.84-1.34l-.35-.2-4 1.16 1.08-3.9-.23-.37A9.4 9.4 0 0 1 6.5 16 9.5 9.5 0 1 1 16 25.5zm4.94-7.1c-.27-.14-1.59-.8-1.84-.9s-.43-.14-.6.14-.69.9-.84 1.08-.31.2-.58.07a7.7 7.7 0 0 1-2.27-1.4 8 8 0 0 1-1.47-1.8c-.15-.27 0-.42.11-.56s.27-.31.4-.48a1.88 1.88 0 0 0 .27-.45.51.51 0 0 0-.02-.48c-.07-.14-.6-1.44-.82-1.98s-.44-.45-.6-.46h-.5a1 1 0 0 0-.7.33 3 3 0 0 0-.93 2.2 5.2 5.2 0 0 0 1.09 2.76 11.9 11.9 0 0 0 4.55 4 5.2 5.2 0 0 0 3.09.65 2.6 2.6 0 0 0 1.76-1.22 2.15 2.15 0 0 0 .15-1.22c-.06-.1-.24-.17-.5-.3z"/>
-            </svg>`;
+          wa.innerHTML = `<svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M16 3.2A12.77 12.77 0 0 0 3.2 16a12.6 12.6 0 0 0 1.78 6.5L3 29l6.7-1.96A12.8 12.8 0 0 0 16 28.8 12.77 12.77 0 0 0 28.8 16 12.8 12.8 0 0 0 16 3.2zm0 22.3a9.5 9.5 0 0 1-4.84-1.34l-.35-.2-4 1.16 1.08-3.9-.23-.37A9.4 9.4 0 0 1 6.5 16 9.5 9.5 0 1 1 16 25.5zm4.94-7.1c-.27-.14-1.59-.8-1.84-.9s-.43-.14-.6.14-.69.9-.84 1.08-.31.2-.58.07a7.7 7.7 0 0 1-2.27-1.4 8 8 0 0 1-1.47-1.8c-.15-.27 0-.42.11-.56s.27-.31.4-.48a1.88 1.88 0 0 0 .27-.45.51.51 0 0 0-.02-.48c-.07-.14-.6-1.44-.82-1.98s-.44-.45-.6-.46h-.5a1 1 0 0 0-.7.33 3 3 0 0 0-.93 2.2 5.2 5.2 0 0 0 1.09 2.76 11.9 11.9 0 0 0 4.55 4 5.2 5.2 0 0 0 3.09.65 2.6 2.6 0 0 0 1.76-1.22 2.15 2.15 0 0 0 .15-1.22c-.06-.1-.24-.17-.5-.3z"/></svg>`;
           tdTel.appendChild(wa);
         }
         tr.appendChild(tdTel);
@@ -235,15 +234,24 @@
         const { rows } = parseCSV(text);
         agendaRows = rows;
         loadCentros();
-        if (centrosAgenda.length > 0) { hasSearched = true; renderAgenda(); }
+
+        // Restaurar texto de búsqueda anterior si existía en localStorage
+        const savedSearch = localStorage.getItem(LS_SEARCH_KEY);
+        if (savedSearch) {
+          agendaSearchInput.value = savedSearch;
+          agendaSearchBar.classList.add("agenda-search-bar--open");
+        }
+
+        if (centrosAgenda.length > 0) { 
+          hasSearched = true; 
+          renderAgenda(); 
+        }
       } catch (err) {
         console.error("Error cargando RoadMap.csv en Agenda:", err);
-        alert("No se pudo cargar RoadMap.csv para Agenda");
       }
 
       agendaCentroSelect.addEventListener("change", () => { hasSearched = true; renderAgenda(); });
 
-      // Toggle animado de búsqueda
       agendaSearchToggle.addEventListener("click", () => {
         const isOpen = agendaSearchBar.classList.toggle("agenda-search-bar--open");
         if (isOpen) agendaSearchInput.focus();
