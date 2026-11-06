@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css?v=16.0">
+  <link rel="stylesheet" href="assets/css/styles.css?v=17.0">
 
   <script defer src="assets/js/main.js"></script>
 </head>
@@ -24,11 +24,15 @@
         <section class="page-section">
           <div class="agenda-card">
             
-            <!-- Barra de Filtros, KPIs y Buscador Compacto -->
+            <!-- Barra de Filtros Estilizada y Moderna -->
             <div class="agenda-filters">
               <div class="agenda-filters-inner">
+                <!-- Selector de Centro Estilizado en Píldora -->
                 <div class="agenda-filters__group">
-                  <select id="agendaCentro" title="Seleccionar Centro Operativo"></select>
+                  <div class="select-wrapper">
+                    <span class="material-icons select-icon">business</span>
+                    <select id="agendaCentro" title="Seleccionar Centro Operativo"></select>
+                  </div>
                 </div>
 
                 <div id="agendaKpis" class="agenda-kpis" style="display:none;">
@@ -36,7 +40,7 @@
                   <span class="kpi-chip"><span class="material-icons">local_shipping</span> <strong id="kpiVehiculos">0</strong> Placas</span>
                 </div>
 
-                <!-- Contenedor de Acciones y Buscador alineado a la derecha -->
+                <!-- Acciones y Buscador -->
                 <div class="agenda-search-box">
                   <button id="viewToggleBtn" class="agenda-search-toggle" type="button" title="Cambiar vista (Tabla / Tarjetas)" style="background:#0f172a;">
                     <span class="material-icons" id="viewIcon">table_chart</span>
@@ -57,26 +61,26 @@
               </div>
             </div>
 
-            <!-- Tabla Tradicional -->
+            <!-- Tabla Rediseñada, Estilizada y Compacta -->
             <div class="agenda-table-wrapper" id="agendaResultsTable" style="display:none;">
               <table id="agendaTable" class="agenda-table">
                 <thead>
                   <tr>
-                    <th>Estado</th>
+                    <th style="width: 70px; text-align: center;">Estado</th>
                     <th><span class="material-icons agenda-th-icon">local_shipping</span>Placa</th>
                     <th><span class="material-icons agenda-th-icon">badge</span>Cliente</th>
-                    <th><span class="material-icons agenda-th-icon">person</span>Nombre</th>
+                    <th><span class="material-icons agenda-th-icon">person</span>Nombre / Dirección</th>
                     <th><span class="material-icons agenda-th-icon">schedule</span>VH</th>
                     <th><span class="material-icons agenda-th-icon">business_center</span>Ruta</th>
                     <th><span class="material-icons agenda-th-icon">group</span>Auxiliar</th>
-                    <th><span class="material-icons agenda-th-icon">phone</span>Teléfono</th>
+                    <th style="text-align: right;"><span class="material-icons agenda-th-icon">phone</span>Acciones</th>
                   </tr>
                 </thead>
                 <tbody></tbody>
               </table>
             </div>
 
-            <!-- Vista Bento Grid (Tarjetas con Estatus Sutil) -->
+            <!-- Vista Bento Grid (Tarjetas coloreadas por Estatus) -->
             <div id="agendaResultsCards" class="bento-grid" style="display:none;"></div>
 
           </div>
@@ -86,18 +90,48 @@
   </div>
 
   <style>
-    /* Estilos robustos específicos para la barra de herramientas de la Agenda */
-    .agenda-filters { display: flex; align-items: center; margin-bottom: 16px; width: 100%; }
+    /* Estilos generales de la barra y filtros */
+    .agenda-filters { display: flex; align-items: center; margin-bottom: 20px; width: 100%; }
     .agenda-filters-inner { display: flex; flex: 1; align-items: center; gap: 12px; width: 100%; flex-wrap: nowrap; }
-    .agenda-filters__group { display: flex; flex-direction: column; min-width: 200px; }
     
+    /* Selector de Centro Estilizado (Tipo Píldora Corporativa) */
+    .agenda-filters__group { position: relative; min-width: 240px; }
+    .select-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 999px;
+      padding: 0 14px 0 38px;
+      height: 38px;
+      transition: all 0.2s ease;
+    }
+    .select-wrapper:hover { border-color: var(--primary); background: #fff; }
+    .select-icon {
+      position: absolute;
+      left: 12px;
+      font-size: 18px;
+      color: var(--primary);
+    }
+    .select-wrapper select {
+      width: 100%;
+      border: none;
+      background: transparent;
+      font: inherit;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #1e293b;
+      outline: none;
+      cursor: pointer;
+    }
+
     .agenda-kpis { display: inline-flex; align-items: center; gap: 8px; }
     .kpi-chip { background: #f1f5f9; color: #334155; padding: 6px 12px; border-radius: 999px; font-size: 0.8rem; font-weight: 500; display: inline-flex; align-items: center; gap: 5px; border: 1px solid #e2e8f0; }
     .kpi-chip .material-icons { font-size: 16px; color: var(--primary); }
 
     .agenda-search-box { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; }
     
-    /* Buscador colapsable impecable */
     .agenda-search-bar { 
       position: relative; 
       overflow: hidden; 
@@ -108,47 +142,61 @@
       display: flex; 
       align-items: center; 
     }
-    .agenda-search-bar.agenda-search-bar--open { 
-      max-width: 280px; 
-      opacity: 1; 
-    }
+    .agenda-search-bar.agenda-search-bar--open { max-width: 280px; opacity: 1; }
     .agenda-search-input {
-      height: 38px; 
-      padding: 0 14px; 
-      width: 280px;
-      border-radius: 999px; 
-      border: 1px solid #d1d5db; 
-      background: #fff; 
-      font: inherit; 
-      font-size: 0.90rem; 
-      outline: none;
+      height: 38px; padding: 0 14px; width: 280px;
+      border-radius: 999px; border: 1px solid #cbd5e1; background: #fff; font: inherit; font-size: 0.90rem; outline: none;
     }
     .agenda-search-input:focus { border-color: var(--primary); }
 
     .agenda-search-toggle { 
-      border: none; 
-      border-radius: 999px; 
-      width: 38px; 
-      height: 38px; 
-      cursor: pointer; 
-      background: var(--primary); 
-      color: #fff; 
-      display: inline-flex; 
-      align-items: center; 
-      justify-content: center; 
-      box-shadow: 0 2px 6px rgba(156,39,176,0.3); 
-      transition: transform 0.15s; 
-      flex-shrink: 0;
+      border: none; border-radius: 999px; width: 38px; height: 38px; cursor: pointer; background: var(--primary); color: #fff; 
+      display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(156,39,176,0.3); transition: transform 0.15s; flex-shrink: 0;
     }
     .agenda-search-toggle:hover { transform: scale(1.05); }
 
-    /* Estatus y colores de tarjetas Bento */
-    .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; box-shadow: 0 0 0 2px rgba(255,255,255,0.8); }
+    /* ========================================== */
+    /* DISEÑO PROFESIONAL DE LA TABLA TRADICIONAL */
+    /* ========================================== */
+    .agenda-table-wrapper { 
+      margin-top: 12px; 
+      overflow-x: auto; 
+      border-radius: 12px; 
+      border: 1px solid #e2e8f0; 
+      background: #ffffff;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.02);
+    }
+    .agenda-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .agenda-table thead { background: #f8fafc; color: #475569; border-bottom: 2px solid #e2e8f0; }
+    .agenda-table th, .agenda-table td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; text-align: left; vertical-align: middle; }
+    .agenda-table th { font-weight: 600; white-space: nowrap; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; }
+    .agenda-th-icon { font-size: 15px; vertical-align: middle; margin-right: 6px; color: var(--primary); }
+    
+    .agenda-table tbody tr { transition: background-color 0.15s ease; }
+    .agenda-table tbody tr:hover { background-color: #f8fafc; }
+
+    .agenda-name { display: flex; flex-direction: column; gap: 2px; }
+    .agenda-name-text { font-weight: 600; color: #1e293b; }
+    .agenda-subtext { font-size: 0.75rem; color: #64748b; }
+
+    /* Botones de acción en tabla alineados */
+    .table-actions-cell { display: inline-flex; align-items: center; gap: 6px; justify-content: flex-end; width: 100%; }
+    .agenda-whatsapp-btn { border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; background: #25D366; color: #fff; display: inline-flex; align-items: center; justify-content: center; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 2px 5px rgba(37,211,102,0.3); }
+    .agenda-whatsapp-btn:hover { transform: scale(1.1); box-shadow: 0 4px 8px rgba(37,211,102,0.4); }
+    .agenda-whatsapp-btn svg { width: 14px; height: 14px; display: block; }
+
+    .agenda-map-icon { border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; background: #2563EB; color: #fff; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(37,99,235,0.3); transition: transform .15s ease, box-shadow 0.15s; }
+    .agenda-map-icon:hover { transform: scale(1.1); box-shadow: 0 4px 8px rgba(37,99,235,0.4); }
+    .agenda-map-icon svg { width: 14px; height: 14px; fill: currentColor; }
+
+    /* Estatus y Colores */
+    .status-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; box-shadow: 0 0 0 3px rgba(0,0,0,0.04); }
     .status-verde { background-color: #10b981; } 
     .status-rojo { background-color: #ef4444; } 
     .status-naranja { background-color: #f59e0b; } 
     .status-gris { background-color: #94a3b8; } 
 
+    /* Estilos Bento Grid */
     .bento-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -399,12 +447,15 @@
         const ruta = buildRuta(r); const auxiliar = r[12] || "";
         const telefono = r[13] || ""; const dir = buildDireccion(r);
         const mapsUrl = googleMapsLink(r);
+        const phone = cleanPhone(telefono);
         const status = getStatusInfo(r);
 
         const tr = document.createElement("tr");
         
+        // Columna Estado
         const tdStatus = document.createElement("td");
         tdStatus.setAttribute("data-label", "Estado");
+        tdStatus.style.textAlign = "center";
         tdStatus.innerHTML = `<span class="status-dot ${status.clase}" title="${status.texto}"></span>`;
         tr.appendChild(tdStatus);
 
@@ -412,38 +463,51 @@
         tr.appendChild(td(placa,"Placa"));
         tr.appendChild(td(cliente,"Cliente"));
 
+        // Nombre y Dirección en la misma celda ordenados con jerarquía
         const tdNombre = document.createElement("td");
         tdNombre.setAttribute("data-label","Nombre");
-        const spanNombre = document.createElement("span");
-        spanNombre.className="agenda-name";
-        const sTexto = document.createElement("span"); sTexto.textContent = nombre || "-";
-        spanNombre.appendChild(sTexto);
-        if (mapsUrl) {
-          const btn = document.createElement("button");
-          btn.type="button"; btn.className="agenda-map-icon"; btn.title=dir||"Ver dirección";
-          btn.onclick = e => { e.stopPropagation(); window.open(mapsUrl,"_blank"); };
-          btn.innerHTML = `<svg viewBox="0 0 24 24" class="map-pin" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z"/></svg>`;
-          spanNombre.appendChild(btn);
-        }
-        tdNombre.appendChild(spanNombre);
+        tdNombre.innerHTML = `
+          <div class="agenda-name">
+            <span class="agenda-name-text">${nombre || "-"}</span>
+            <span class="agenda-subtext">${dir || ""}</span>
+          </div>
+        `;
         tr.appendChild(tdNombre);
 
         tr.appendChild(td(vh,"VH"));
         tr.appendChild(td(ruta,"Ruta"));
         tr.appendChild(td(auxiliar,"Auxiliar"));
 
-        const tdTel = document.createElement("td");
-        tdTel.setAttribute("data-label","Teléfono");
-        tdTel.textContent = telefono || "-";
-        const phone = cleanPhone(telefono);
-        if (phone) {
-          const wa = document.createElement("button");
-          wa.type="button"; wa.className="agenda-whatsapp-btn";
-          wa.onclick = e => { e.stopPropagation(); window.open("https://wa.me/" + phone,"_blank"); };
-          wa.innerHTML = `<svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M16 3.2A12.77 12.77 0 0 0 3.2 16a12.6 12.6 0 0 0 1.78 6.5L3 29l6.7-1.96A12.8 12.8 0 0 0 16 28.8 12.77 12.77 0 0 0 28.8 16 12.8 12.8 0 0 0 16 3.2zm0 22.3a9.5 9.5 0 0 1-4.84-1.34l-.35-.2-4 1.16 1.08-3.9-.23-.37A9.4 9.4 0 0 1 6.5 16 9.5 9.5 0 1 1 16 25.5zm4.94-7.1c-.27-.14-1.59-.8-1.84-.9s-.43-.14-.6.14-.69.9-.84 1.08-.31.2-.58.07a7.7 7.7 0 0 1-2.27-1.4 8 8 0 0 1-1.47-1.8c-.15-.27 0-.42.11-.56s.27-.31.4-.48a1.88 1.88 0 0 0 .27-.45.51.51 0 0 0-.02-.48c-.07-.14-.6-1.44-.82-1.98s-.44-.45-.6-.46h-.5a1 1 0 0 0-.7.33 3 3 0 0 0-.93 2.2 5.2 5.2 0 0 0 1.09 2.76 11.9 11.9 0 0 0 4.55 4 5.2 5.2 0 0 0 3.09.65 2.6 2.6 0 0 0 1.76-1.22 2.15 2.15 0 0 0 .15-1.22c-.06-.1-.24-.17-.5-.3z"/></svg>`;
-          tdTel.appendChild(wa);
+        // Celda de Acciones (Mapa y WhatsApp alineados)
+        const tdAcciones = document.createElement("td");
+        tdAcciones.setAttribute("data-label","Acciones");
+        
+        const actionsDiv = document.createElement("div");
+        actionsDiv.className = "table-actions-cell";
+
+        if (mapsUrl) {
+          const btnMap = document.createElement("button");
+          btnMap.type = "button";
+          btnMap.className = "agenda-map-icon";
+          btnMap.title = dir || "Ver dirección en mapa";
+          btnMap.onclick = e => { e.stopPropagation(); window.open(mapsUrl, "_blank"); };
+          btnMap.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z"/></svg>`;
+          actionsDiv.appendChild(btnMap);
         }
-        tr.appendChild(tdTel);
+
+        if (phone) {
+          const btnWa = document.createElement("button");
+          btnWa.type = "button";
+          btnWa.className = "agenda-whatsapp-btn";
+          btnWa.title = "Contactar por WhatsApp";
+          btnWa.onclick = e => { e.stopPropagation(); window.open("https://wa.me/" + phone, "_blank"); };
+          btnWa.innerHTML = `<svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M16 3.2A12.77 12.77 0 0 0 3.2 16a12.6 12.6 0 0 0 1.78 6.5L3 29l6.7-1.96A12.8 12.8 0 0 0 16 28.8 12.77 12.77 0 0 0 28.8 16 12.8 12.8 0 0 0 16 3.2zm0 22.3a9.5 9.5 0 0 1-4.84-1.34l-.35-.2-4 1.16 1.08-3.9-.23-.37A9.4 9.4 0 0 1 6.5 16 9.5 9.5 0 1 1 16 25.5zm4.94-7.1c-.27-.14-1.59-.8-1.84-.9s-.43-.14-.6.14-.69.9-.84 1.08-.31.2-.58.07a7.7 7.7 0 0 1-2.27-1.4 8 8 0 0 1-1.47-1.8c-.15-.27 0-.42.11-.56s.27-.31.4-.48a1.88 1.88 0 0 0 .27-.45.51.51 0 0 0-.02-.48c-.07-.14-.6-1.44-.82-1.98s-.44-.45-.6-.46h-.5a1 1 0 0 0-.7.33 3 3 0 0 0-.93 2.2 5.2 5.2 0 0 0 1.09 2.76 11.9 11.9 0 0 0 4.55 4 5.2 5.2 0 0 0 3.09.65 2.6 2.6 0 0 0 1.76-1.22 2.15 2.15 0 0 0 .15-1.22c-.06-.1-.24-.17-.5-.3z"/></svg>`;
+          actionsDiv.appendChild(btnWa);
+        }
+
+        tdAcciones.appendChild(actionsDiv);
+        tr.appendChild(tdAcciones);
+
         agendaTableBody.appendChild(tr);
       });
     }
