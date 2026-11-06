@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css?v=10.0">
+  <link rel="stylesheet" href="assets/css/styles.css?v=11.0">
 
   <script defer src="assets/js/main.js"></script>
 </head>
@@ -95,7 +95,7 @@
       display: inline-block;
       box-shadow: 0 0 0 2px rgba(255,255,255,0.8);
     }
-    .status-verde { background-color: #10b981; } /* Entregado / Atendido */
+    .status-verde { background-color: #10b981; } /* Entregado */
     .status-rojo { background-color: #ef4444; } /* Rechazado */
     .status-naranja { background-color: #f59e0b; } /* Pendiente */
     .status-gris { background-color: #94a3b8; } /* Sin información */
@@ -269,9 +269,9 @@
         
         if (Array.isArray(data)) {
           data.forEach(item => {
-            const rawKey = item.Cliente || item.Client || item.Pedido || item.NroPedido || item.ID || item.Codigo || "";
-            const cleanKey = extractCleanId(rawKey);
-            const statusVal = item.Estado || item.Status || item.State || item.DeliveryStatus || item.Condition || "";
+            // Mapeo exacto con CustomerAccount y EstadoEntrega del JSON real
+            const cleanKey = extractCleanId(item.CustomerAccount);
+            const statusVal = item.EstadoEntrega || "";
             if (cleanKey) {
               powerAppData.set(cleanKey, String(statusVal).trim());
             }
