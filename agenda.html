@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/styles.css?v=2.2">
 
   <script defer src="assets/js/main.js"></script>
 </head>
@@ -116,7 +116,6 @@
         agendaCentroSelect.appendChild(opt);
       });
 
-      // Restaurar centro guardado o usar el primero
       const savedCentro = localStorage.getItem(LS_CENTRO_KEY);
       if (savedCentro && centrosAgenda.includes(savedCentro)) {
         agendaCentroSelect.value = savedCentro;
@@ -149,7 +148,6 @@
       const centroSel = agendaCentroSelect.value;
       const term = (agendaSearchInput.value || "").toLowerCase().trim();
       
-      // Guardar estados en localStorage para persistencia al navegar
       localStorage.setItem(LS_CENTRO_KEY, centroSel);
       localStorage.setItem(LS_SEARCH_KEY, term);
 
@@ -235,7 +233,6 @@
         agendaRows = rows;
         loadCentros();
 
-        // Restaurar texto de búsqueda anterior si existía en localStorage
         const savedSearch = localStorage.getItem(LS_SEARCH_KEY);
         if (savedSearch) {
           agendaSearchInput.value = savedSearch;
