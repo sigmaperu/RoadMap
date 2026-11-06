@@ -1,559 +1,375 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <title>RoadMap – Agenda</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+/* ==========================================================================
+   RoadMap - styles.css (Versión Definitiva Responsiva y Notch Fowllow)
+   ========================================================================== */
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css?v=11.0">
+:root {
+  --primary: #9C27B0;
+  --primary-dark: #7B1FA2;
+  --primary-light: #F3E5F5;
+  --accent: #7C4DFF;
 
-  <script defer src="assets/js/main.js"></script>
-</head>
-<body data-title="Agenda">
-  <div class="app-shell">
-    <aside class="sidebar" id="app-sidebar"></aside>
+  --gm-navy: #0f172a;
+  --gm-navy-dark: #0d1b2a;
+  --gm-blue: #9C27B0;
+  --gm-bg: #FFFFFF;
 
-    <div class="main-layout">
-      <div id="app-header"></div>
+  --surface: #FFFFFF;
+  --text-main: #212121;
+  --text-muted: #757575;
 
-      <main class="content">
-        <section class="page-section">
-          <div class="agenda-card">
-            
-            <!-- Barra de Filtros, KPIs y Selector de Vista -->
-            <div class="agenda-filters">
-              <div class="agenda-filters-inner">
-                <div class="agenda-filters__group">
-                  <select id="agendaCentro" title="Seleccionar Centro Operativo"></select>
-                </div>
+  --border-radius: 12px;
+  --shadow-elevated: 0 4px 20px rgba(0,0,0,0.05);
 
-                <div id="agendaKpis" class="agenda-kpis" style="display:none;">
-                  <span class="kpi-chip"><span class="material-icons">group</span> <strong id="kpiClientes">0</strong> Clientes</span>
-                  <span class="kpi-chip"><span class="material-icons">local_shipping</span> <strong id="kpiVehiculos">0</strong> Placas</span>
-                </div>
+  --agenda-control-height: 38px;
+  --agenda-radius-pill: 999px;
+  --agenda-border-color: #d1d5db;
+  --agenda-border: 1px solid var(--agenda-border-color);
+}
 
-                <div class="agenda-search-box">
-                  <button id="viewToggleBtn" class="agenda-search-toggle" type="button" title="Cambiar vista (Tabla / Tarjetas)" style="background:#0f172a;">
-                    <span class="material-icons" id="viewIcon">table_chart</span>
-                  </button>
+*, *::before, *::after { box-sizing: border-box; }
+html, body { 
+  margin: 0; 
+  padding: 0; 
+  height: 100vh; 
+  width: 100vw;
+  overflow: hidden; 
+}
 
-                  <div id="agendaSearchBar" class="agenda-search-bar">
-                    <input id="agendaSearchInput" class="agenda-search-input" type="text" placeholder="Buscar por placa, cliente, ruta...">
-                  </div>
-                  <button id="agendaSearchToggle" class="agenda-search-toggle" type="button" aria-label="Buscar">
-                    <span class="material-icons">search</span>
-                  </button>
-                  <button id="agendaCopyBtn" class="agenda-search-toggle" type="button" title="Copiar reporte filtrado para WhatsApp" style="background:#25D366; display:none;">
-                    <span class="material-icons">content_copy</span>
-                  </button>
-                </div>
-              </div>
-            </div>
+body {
+  font-family: "Roboto", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background-color: var(--gm-navy-dark) !important;
+  color: var(--text-main);
+}
 
-            <!-- Tabla Tradicional -->
-            <div class="agenda-table-wrapper" id="agendaResultsTable" style="display:none;">
-              <table id="agendaTable" class="agenda-table">
-                <thead>
-                  <tr>
-                    <th>Estado</th>
-                    <th><span class="material-icons agenda-th-icon">local_shipping</span>Placa</th>
-                    <th><span class="material-icons agenda-th-icon">badge</span>Cliente</th>
-                    <th><span class="material-icons agenda-th-icon">person</span>Nombre</th>
-                    <th><span class="material-icons agenda-th-icon">schedule</span>VH</th>
-                    <th><span class="material-icons agenda-th-icon">business_center</span>Ruta</th>
-                    <th><span class="material-icons agenda-th-icon">group</span>Auxiliar</th>
-                    <th><span class="material-icons agenda-th-icon">phone</span>Teléfono</th>
-                  </tr>
-                </thead>
-                <tbody></tbody>
-              </table>
-            </div>
+.app-shell { 
+  display: flex; 
+  height: 100vh; 
+  width: 100vw;
+  background-color: var(--gm-navy-dark);
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+}
 
-            <!-- Vista Bento Grid (Tarjetas con Estatus Sutil) -->
-            <div id="agendaResultsCards" class="bento-grid" style="display:none;"></div>
+/* ===================== */
+/* SIDEBAR ESTILO FOWLLOW*/
+/* ===================== */
+.sidebar {
+  position: relative;
+  width: 260px;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 22px 0;
+  color: #dce8f8;
+  background: linear-gradient(180deg, var(--gm-navy), var(--gm-navy-dark));
+  box-shadow: 10px 0 30px rgba(10,24,44,.14);
+  flex-shrink: 0;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+}
 
-          </div>
-        </section>
-      </main>
-    </div>
-  </div>
+.sidebar__brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 112px;
+  padding: 8px 18px 24px;
+  text-decoration: none;
+}
+.sidebar__brand img {
+  width: 150px !important;
+  height: auto !important;
+  max-width: 150px !important;
+  max-height: 86px !important;
+  object-fit: contain !important;
+  filter: drop-shadow(0 5px 12px rgba(0,0,0,.18));
+}
 
-  <style>
-    .agenda-kpis { display: inline-flex; align-items: center; gap: 8px; margin-left: 12px; }
-    .kpi-chip { background: #f1f5f9; color: #334155; padding: 6px 12px; border-radius: 999px; font-size: 0.8rem; font-weight: 500; display: inline-flex; align-items: center; gap: 5px; border: 1px solid #e2e8f0; }
-    .kpi-chip .material-icons { font-size: 16px; color: var(--primary); }
+.sidebar__tagline {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #93c5fd;
+  padding: 0 24px;
+  margin-bottom: 12px;
+  text-align: center;
+}
 
-    /* Estatus sutiles de atención */
-    .status-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      display: inline-block;
-      box-shadow: 0 0 0 2px rgba(255,255,255,0.8);
-    }
-    .status-verde { background-color: #10b981; } /* Entregado */
-    .status-rojo { background-color: #ef4444; } /* Rechazado */
-    .status-naranja { background-color: #f59e0b; } /* Pendiente */
-    .status-gris { background-color: #94a3b8; } /* Sin información */
+/* MENÚ CON NOTCH DE FOWLLOW EXACTO */
+.gm-nav { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 8px; 
+  padding: 10px 0 10px 16px; 
+}
 
-    .bento-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 16px;
-      margin-top: 16px;
-    }
-    .bento-card {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 16px;
-      padding: 18px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-      transition: all 0.2s ease;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      position: relative;
-      overflow: hidden;
-    }
-    .bento-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 25px rgba(156,39,176,0.08);
-      border-color: rgba(156,39,176,0.3);
-    }
-    .bento-card::before {
-      content: "";
-      position: absolute;
-      top: 0; left: 0; bottom: 0;
-      width: 4px;
-      background: var(--primary);
-    }
-    .bento-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-    .bento-badge-placa {
-      background: #F3E5F5;
-      color: var(--primary-dark, #7B1FA2);
-      font-weight: 700;
-      font-size: 0.82rem;
-      padding: 4px 10px;
-      border-radius: 999px;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .bento-title {
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: #0f172a;
-      margin-bottom: 12px;
-      line-height: 1.3;
-    }
-    .bento-details {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      font-size: 0.82rem;
-      color: #475569;
-      background: #f8fafc;
-      padding: 10px 12px;
-      border-radius: 10px;
-      margin-bottom: 12px;
-    }
-    .bento-detail-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .bento-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-top: 1px solid #f1f5f9;
-      padding-top: 10px;
-    }
-    .bento-actions {
-      display: flex;
-      gap: 8px;
-    }
-    .bento-btn {
-      border: none;
-      border-radius: 8px;
-      padding: 6px 10px;
-      font-size: 0.78rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      transition: transform 0.1s;
-    }
-    .bento-btn:hover { transform: scale(1.03); }
-    .bento-btn-map { background: #2563eb; color: #fff; }
-    .bento-btn-wa { background: #25d366; color: #fff; }
+.gm-nav__item, .nav-item {
+  position: relative;
+  display: flex; 
+  align-items: center; 
+  gap: 14px;
+  min-height: 52px;
+  padding: 12px 24px 12px 18px; 
+  color: #c7d7ea; 
+  text-decoration: none;
+  border-radius: 16px 0 0 16px; 
+  transition: .18s ease;
+  font-size: 0.92rem;
+  font-weight: 500;
+}
 
-    @media (max-width: 920px) {
-      .agenda-kpis { display: none; }
-      .bento-grid { grid-template-columns: 1fr; }
-    }
-  </style>
+.gm-nav__item>span:first-child, .nav-item>span:first-child { 
+  display: grid; 
+  place-items: center; 
+  width: 28px; 
+  height: 28px; 
+  font-size: 1.1rem; 
+}
 
-  <script>
-  (() => {
-    const CSV_URL = (window.RoadMapConfig && window.RoadMapConfig.CSV_URL) || "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
-    const JSON_URL = "https://raw.githubusercontent.com/sigmaperu/RoadMap/refs/heads/main/PowerApp_Data.json";
-    
-    const LS_CENTRO_KEY = "roadmap.agenda.centro";
-    const LS_SEARCH_KEY = "roadmap.agenda.search";
-    const LS_VIEW_KEY = "roadmap.agenda.view";
+.gm-nav__item:hover, .nav-item:hover { 
+  color: #fff; 
+  background: rgba(255,255,255,.08); 
+  transform: translateX(3px); 
+}
 
-    let agendaRows = [];
-    let powerAppData = new Map(); 
-    let centrosAgenda = [];
-    let hasSearched = false;
-    let filteredCache = [];
-    let currentView = localStorage.getItem(LS_VIEW_KEY) || "bento";
+/* CLASE ACTIVE CON EL NOTCH PERFECTO Y CURVAS CÓNCAVAS */
+.gm-nav__item.active, .nav-item.active, .nav-item--active { 
+  z-index: 1; 
+  color: var(--primary) !important; 
+  background: var(--gm-bg) !important; 
+  font-weight: 700; 
+  transform: none !important; 
+}
 
-    const agendaCentroSelect = document.getElementById("agendaCentro");
-    const agendaSearchToggle = document.getElementById("agendaSearchToggle");
-    const agendaSearchBar = document.getElementById("agendaSearchBar");
-    const agendaSearchInput = document.getElementById("agendaSearchInput");
-    
-    const agendaResultsTable = document.getElementById("agendaResultsTable");
-    const agendaResultsCards = document.getElementById("agendaResultsCards");
-    const agendaTableBody = document.querySelector("#agendaTable tbody");
-    
-    const agendaKpis = document.getElementById("agendaKpis");
-    const kpiClientes = document.getElementById("kpiClientes");
-    const kpiVehiculos = document.getElementById("kpiVehiculos");
-    const agendaCopyBtn = document.getElementById("agendaCopyBtn");
-    const viewToggleBtn = document.getElementById("viewToggleBtn");
-    const viewIcon = document.getElementById("viewIcon");
+.gm-nav__item.active>span:first-child, .nav-item.active>span:first-child, .nav-item--active .nav-item__icon {
+  color: var(--primary);
+}
 
-    function parseCSV(text) {
-      const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
-      if (lines.length === 0) return { header: [], rows: [] };
-      const header = lines[0].split(",");
-      const rows = lines.slice(1).map(line => {
-        const result = []; let current = ""; let inQuotes = false;
-        for (let i = 0; i < line.length; i++) {
-          const char = line[i];
-          if (char === '"') { if (inQuotes && line[i + 1] === '"') { current += '"'; i++; } else { inQuotes = !inQuotes; } }
-          else if (char === "," && !inQuotes) { result.push(current); current = ""; }
-          else { current += char; }
-        }
-        result.push(current);
-        return result;
-      });
-      return { header, rows };
-    }
-    const unique = arr => Array.from(new Set(arr.filter(v => v !== "" && v != null)));
+.gm-nav__item.active::before, .gm-nav__item.active::after, 
+.nav-item.active::before, .nav-item.active::after,
+.nav-item--active::before, .nav-item--active::after { 
+  content: ""; 
+  position: absolute; 
+  right: 0; 
+  width: 24px; 
+  height: 24px; 
+  background: transparent; 
+  pointer-events: none; 
+}
 
-    function extractCleanId(val) {
-      if (!val) return "";
-      const match = String(val).match(/\d+/);
-      return match ? match[0] : String(val).trim();
-    }
+.gm-nav__item.active::before, .nav-item.active::before, .nav-item--active::before { 
+  top: -24px; 
+  border-radius: 0 0 18px 0; 
+  box-shadow: 10px 10px 0 10px var(--gm-bg); 
+}
 
-    async function loadPowerAppData() {
-      try {
-        const resp = await fetch(JSON_URL);
-        if (!resp.ok) return;
-        const data = await resp.json();
-        
-        if (Array.isArray(data)) {
-          data.forEach(item => {
-            // Mapeo exacto con CustomerAccount y EstadoEntrega del JSON real
-            const cleanKey = extractCleanId(item.CustomerAccount);
-            const statusVal = item.EstadoEntrega || "";
-            if (cleanKey) {
-              powerAppData.set(cleanKey, String(statusVal).trim());
-            }
-          });
-        }
-      } catch (e) {
-        console.warn("No se pudo cargar PowerApp_Data.json:", e);
-      }
-    }
+.gm-nav__item.active::after, .nav-item.active::after, .nav-item--active::after { 
+  bottom: -24px; 
+  border-radius: 0 18px 0 0; 
+  box-shadow: 10px -10px 0 10px var(--gm-bg); 
+}
 
-    function getStatusInfo(r) {
-      const clienteKey = extractCleanId(r[3]);
-      const statusRaw = String(powerAppData.get(clienteKey) || "").toLowerCase();
+/* ===================== */
+/* MAIN LAYOUT / TOPBAR  */
+/* ===================== */
+.main-layout { 
+  flex: 1; 
+  display: flex; 
+  flex-direction: column; 
+  background: #FFFFFF;
+  border-top-left-radius: 24px; 
+  border-bottom-left-radius: 24px;
+  box-shadow: -5px 0 25px rgba(0,0,0,0.15);
+  height: calc(100vh - 24px);
+  max-width: calc(100vw - 260px);
+  margin-top: 12px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  z-index: 5;
+}
 
-      if (statusRaw.includes("entreg") || statusRaw.includes("aten") || statusRaw.includes("verde") || statusRaw.includes("ok")) {
-        return { clase: "status-verde", texto: "Entregado" };
-      }
-      if (statusRaw.includes("rech") || statusRaw.includes("anul") || statusRaw.includes("rojo")) {
-        return { clase: "status-rojo", texto: "Rechazado" };
-      }
-      if (statusRaw.includes("pend") || statusRaw.includes("ruta")) {
-        return { clase: "status-naranja", texto: "Pendiente" };
-      }
-      return { clase: statusRaw ? "status-naranja" : "status-gris", texto: statusRaw ? statusRaw : "Sin Información" };
-    }
+.topbar {
+  height: 64px; 
+  padding: 0 24px; 
+  background-color: var(--surface);
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; 
+  top: 0; 
+  z-index: 1500;
+  flex-shrink: 0;
+}
+.topbar__left { display: inline-flex; align-items: center; gap: 12px; min-width: 0; }
+.topbar__left h1 { font-size: 1.25rem; font-weight: 700; margin: 0; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    function loadCentros() {
-      centrosAgenda = unique(agendaRows.map(r => r[1] || "")).sort();
-      agendaCentroSelect.innerHTML = "";
-      centrosAgenda.forEach(c => {
-        const opt = document.createElement("option");
-        opt.value = c; opt.textContent = c;
-        agendaCentroSelect.appendChild(opt);
-      });
+.icon-button { border: none; background: transparent; border-radius: 999px; padding: 8px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; color: var(--text-main); transition: background-color 0.15s ease; }
+.icon-button:hover { background-color: rgba(0,0,0,0.04); }
+.icon-button--menu { margin-right: 4px; display: none; }
 
-      const savedCentro = localStorage.getItem(LS_CENTRO_KEY);
-      if (savedCentro && centrosAgenda.includes(savedCentro)) {
-        agendaCentroSelect.value = savedCentro;
-      } else if (centrosAgenda.length > 0) {
-        agendaCentroSelect.value = centrosAgenda[0];
-      }
-    }
+.topbar__right { display: flex; align-items: center; justify-content: flex-end; }
+.topbar-fecha { font-size: 0.88rem; font-weight: 600; color: var(--text-muted); background: #f1f5f9; padding: 6px 14px; border-radius: 999px; }
 
-    const buildNombre = r => { const a=r[4]||"", b=r[5]||""; return (b && b!=="0" && b.toLowerCase()!=="error") ? (a?`${a} - ${b}`:b) : a; };
-    const buildRuta = r => { const a=r[6]||"", b=r[19]||""; return (b && b!=="0" && b.toLowerCase()!=="error") ? (a?`${a} - ${b}`:b) : a; };
-    const buildDireccion = r => { const d1=r[15]||"", d2=r[14]||""; return (d2 && d2!=="0" && d2.toLowerCase()!=="error") ? (d1?`${d1} - ${d2}`:d2):d1; };
-    function googleMapsLink(r) {
-      const lat = parseFloat((r[16] || "").replace(",", ".")); const lng = parseFloat((r[17] || "").replace(",", "."));
-      if (Number.isNaN(lat) || Number.isNaN(lng)) return null;
-      return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(lat + "," + lng);
-    }
-    const cleanPhone = s => (s || "").replace(/[^0-9]/g, "");
+.content { 
+  padding: 20px 24px 24px; 
+  overflow-y: auto; 
+  flex: 1; 
+  max-width: 100%;
+}
+.page-section { margin-top: 4px; }
 
-    function groupByCliente(rows) {
-      const map = new Map();
-      rows.forEach(r => {
-        const placa = (r[2] || "").trim().toUpperCase();
-        if (placa === "FRT-001") return; // Regla: Excluir FRT-001
+/* ===================== */
+/* AGENDA & RESPONSIVE   */
+/* ===================== */
+.agenda-card { background: var(--surface); border-radius: var(--border-radius); padding: 4px 0; }
 
-        const key = (r[1] || "") + "\n" + (r[3] || "");
-        if ((r[3] || "") && !map.has(key)) map.set(key, r);
-      });
-      return Array.from(map.values());
-    }
+.agenda-filters { 
+  display: flex; 
+  align-items: center; 
+  flex-wrap: wrap; 
+  gap: 12px; 
+  margin-bottom: 16px; 
+}
 
-    function updateButtonIcon() {
-      viewIcon.textContent = currentView === "bento" ? "table_chart" : "grid_view";
-    }
+.agenda-filters-inner { 
+  display: flex; 
+  flex: 1; 
+  align-items: center; 
+  flex-wrap: wrap; 
+  gap: 12px; 
+  width: 100%;
+}
 
-    function renderAgenda() {
-      if (!hasSearched) { 
-        agendaResultsTable.style.display = "none"; 
-        agendaResultsCards.style.display = "none";
-        agendaKpis.style.display = "none";
-        agendaCopyBtn.style.display = "none";
-        return; 
-      }
-      const centroSel = agendaCentroSelect.value;
-      const term = (agendaSearchInput.value || "").toLowerCase().trim();
-      
-      localStorage.setItem(LS_CENTRO_KEY, centroSel);
-      localStorage.setItem(LS_SEARCH_KEY, term);
-      localStorage.setItem(LS_VIEW_KEY, currentView);
-      updateButtonIcon();
+.agenda-filters__group { display: flex; flex-direction: column; min-width: 200px; }
+.agenda-filters__group select {
+  height: var(--agenda-control-height);
+  padding: 0 14px;
+  border-radius: var(--agenda-radius-pill);
+  border: var(--agenda-border);
+  background: #fff;
+  font: inherit; font-size: 0.88rem; font-weight: 500;
+  color: var(--text-main);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.agenda-filters__group select:focus { border-color: var(--primary); }
 
-      let rows = agendaRows.filter(r => (r[1] || "") === centroSel);
+.agenda-search-box { 
+  margin-left: auto; 
+  display: inline-flex; 
+  align-items: center; 
+  gap: 8px; 
+  flex-wrap: wrap; 
+}
 
-      if (term) {
-        rows = rows.filter(r => {
-          const placa = (r[2] || "").toLowerCase();
-          const cliente = (r[3] || "").toLowerCase();
-          const nombre = (buildNombre(r) || "").toLowerCase();
-          const ruta = (buildRuta(r) || "").toLowerCase();
-          const auxiliar = (r[12] || "").toLowerCase();
-          const telefono = (r[13] || "").toLowerCase();
-          const direccion = (buildDireccion(r) || "").toLowerCase();
-          return placa.includes(term) || cliente.includes(term) || nombre.includes(term) ||
-                 ruta.includes(term) || auxiliar.includes(term) || telefono.includes(term) || direccion.includes(term);
-        });
-      }
+.agenda-search-bar { 
+  position: relative; 
+  overflow: hidden; 
+  max-width: 0; 
+  opacity: 0; 
+  transition: max-width 0.28s ease, opacity 0.22s ease; 
+  height: var(--agenda-control-height); 
+  display: flex; 
+  align-items: center; 
+}
 
-      filteredCache = groupByCliente(rows);
-      
-      kpiClientes.textContent = filteredCache.length;
-      const placasUnicas = new Set(
-        filteredCache
-          .map(r => (r[2] || "").trim().toUpperCase())
-          .filter(placa => placa && placa !== "RES-CLI")
-      );
-      kpiVehiculos.textContent = placasUnicas.size;
+.agenda-search-bar--open { 
+  max-width: clamp(200px, 30vw, 320px); 
+  opacity: 1; 
+}
 
-      agendaKpis.style.display = "inline-flex";
-      agendaCopyBtn.style.display = filteredCache.length > 0 ? "inline-flex" : "none";
+.agenda-search-input {
+  height: var(--agenda-control-height); 
+  padding: 0 14px; 
+  width: clamp(200px, 30vw, 320px);
+  border-radius: var(--agenda-radius-pill); 
+  border: var(--agenda-border); 
+  background: #fff; 
+  font: inherit; 
+  font-size: 0.90rem; 
+  display: inline-block;
+  outline: none;
+}
+.agenda-search-input:focus { border-color: var(--primary); }
 
-      if (currentView === "table") {
-        agendaResultsCards.style.display = "none";
-        agendaResultsTable.style.display = "block";
-        renderTable();
-      } else {
-        agendaResultsTable.style.display = "none";
-        agendaResultsCards.style.display = "grid";
-        renderCards();
-      }
-    }
+.agenda-search-toggle { 
+  border: none; 
+  border-radius: var(--agenda-radius-pill); 
+  width: var(--agenda-control-height); 
+  height: var(--agenda-control-height); 
+  cursor: pointer; 
+  background: var(--primary); 
+  color: #fff; 
+  display: inline-flex; 
+  align-items: center; 
+  justify-content: center; 
+  box-shadow: 0 2px 6px rgba(156,39,176,0.3); 
+  transition: transform 0.15s; 
+  flex-shrink: 0;
+}
+.agenda-search-toggle:hover { transform: scale(1.05); }
+.agenda-search-toggle .material-icons { font-size: 20px; }
 
-    function renderTable() {
-      agendaTableBody.innerHTML = "";
-      filteredCache.forEach(r => {
-        const placa = r[2] || ""; const cliente = r[3] || "";
-        const nombre = buildNombre(r); const vh = r[18] || "";
-        const ruta = buildRuta(r); const auxiliar = r[12] || "";
-        const telefono = r[13] || ""; const dir = buildDireccion(r);
-        const mapsUrl = googleMapsLink(r);
-        const status = getStatusInfo(r);
+.agenda-table-wrapper { margin-top: 12px; overflow-x: auto; border-radius: 8px; border: 1px solid #f0f0f0; max-height: calc(100vh - 220px); }
+.agenda-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.agenda-table thead { background: var(--primary-dark); color: #FFFFFF; position: sticky; top: 0; z-index: 5; }
+.agenda-table th, .agenda-table td { padding: 10px 12px; border-bottom: 1px solid #E5E7EB; text-align: left; }
+.agenda-table th { font-weight: 500; white-space: nowrap; font-size: 0.78rem; }
+.agenda-th-icon { font-size: 15px; vertical-align: middle; margin-right: 6px; color: var(--primary-light); }
+.agenda-name { display: inline-flex; align-items: center; gap: 6px; }
 
-        const tr = document.createElement("tr");
-        
-        const tdStatus = document.createElement("td");
-        tdStatus.setAttribute("data-label", "Estado");
-        tdStatus.innerHTML = `<span class="status-dot ${status.clase}" title="${status.texto}"></span>`;
-        tr.appendChild(tdStatus);
+.agenda-whatsapp-btn { border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; background: #25D366; color: #fff; display: inline-flex; align-items: center; justify-content: center; margin-left: 6px; transition: transform 0.15s; }
+.agenda-whatsapp-btn:hover { transform: scale(1.1); }
+.agenda-whatsapp-btn svg { width: 13px; height: 13px; display: block; }
 
-        const td = (v,l) => { const c=document.createElement("td"); c.setAttribute("data-label",l); c.textContent=v||"-"; return c; };
-        tr.appendChild(td(placa,"Placa"));
-        tr.appendChild(td(cliente,"Cliente"));
+.agenda-map-icon { border: none; border-radius: 50%; width: 22px; height: 22px; margin-left: 6px; cursor: pointer; background: #2563EB; color: #fff; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: transform .15s ease; }
+.agenda-map-icon:hover { transform: scale(1.1); }
 
-        const tdNombre = document.createElement("td");
-        tdNombre.setAttribute("data-label","Nombre");
-        const spanNombre = document.createElement("span");
-        spanNombre.className="agenda-name";
-        const sTexto = document.createElement("span"); sTexto.textContent = nombre || "-";
-        spanNombre.appendChild(sTexto);
-        if (mapsUrl) {
-          const btn = document.createElement("button");
-          btn.type="button"; btn.className="agenda-map-icon"; btn.title=dir||"Ver dirección";
-          btn.onclick = e => { e.stopPropagation(); window.open(mapsUrl,"_blank"); };
-          btn.innerHTML = `<svg viewBox="0 0 24 24" class="map-pin" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z"/></svg>`;
-          spanNombre.appendChild(btn);
-        }
-        tdNombre.appendChild(spanNombre);
-        tr.appendChild(tdNombre);
+/* ===================== */
+/* BREAKPOINTS MÓVILES   */
+/* ===================== */
+@media(max-width:860px){
+  html, body { height: auto; overflow: auto; }
+  .app-shell { flex-direction: column; background: #FFFFFF; height: auto; overflow: visible; width: 100vw; }
+  .sidebar { 
+    position: fixed; top: 0; left: 0; bottom: 0; width: 260px; height: 100vh;
+    margin: 0; border-radius: 0; box-shadow: 4px 0 20px rgba(0,0,0,0.15); 
+    transform: translateX(-100%); transition: transform 0.25s ease; z-index: 3000; 
+    padding: 10px 12px;
+  }
+  .sidebar--open { transform: translateX(0); }
+  .sidebar__brand { height: 68px; padding: 3px 8px 9px; }
+  .sidebar__brand img { width: 130px !important; height: auto !important; max-width: 130px !important; max-height: 56px !important; }
+  .gm-nav, .sidebar__nav { overflow-x: auto; flex-direction: row; padding: 0; }
+  .gm-nav__item, .nav-item { flex: 0 0 auto; min-height: 44px; padding: 9px 14px; border-radius: 12px; }
+  .gm-nav__item.active::before, .gm-nav__item.active::after, .nav-item.active::before, .nav-item.active::after { display: none; }
+  
+  .main-layout { margin: 0; border-radius: 0; box-shadow: none; height: auto; max-width: 100vw; overflow: visible; }
+  .icon-button--menu { display: inline-flex; }
+  .content { padding: 12px; overflow: visible; }
+  .agenda-card { padding: 0; }
+  
+  /* Adaptabilidad móvil para filtros y botones en pantallas pequeñas */
+  .agenda-filters-inner { flex-direction: column; align-items: stretch; gap: 10px; }
+  .agenda-filters__group { width: 100%; min-width: 100%; }
+  .agenda-search-box { margin-left: 0; width: 100%; justify-content: flex-start; }
+  .agenda-search-bar { width: 100%; max-width: 100% !important; }
+  .agenda-search-bar--open { max-width: 100% !important; flex: 1; }
+  .agenda-search-input { width: 100% !important; max-width: 100% !important; }
+  
+  .agenda-table-wrapper { max-height: none; }
+}
 
-        tr.appendChild(td(vh,"VH"));
-        tr.appendChild(td(ruta,"Ruta"));
-        tr.appendChild(td(auxiliar,"Auxiliar"));
-
-        const tdTel = document.createElement("td");
-        tdTel.setAttribute("data-label","Teléfono");
-        tdTel.textContent = telefono || "-";
-        const phone = cleanPhone(telefono);
-        if (phone) {
-          const wa = document.createElement("button");
-          wa.type="button"; wa.className="agenda-whatsapp-btn";
-          wa.onclick = e => { e.stopPropagation(); window.open("https://wa.me/" + phone,"_blank"); };
-          wa.innerHTML = `<svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M16 3.2A12.77 12.77 0 0 0 3.2 16a12.6 12.6 0 0 0 1.78 6.5L3 29l6.7-1.96A12.8 12.8 0 0 0 16 28.8 12.77 12.77 0 0 0 28.8 16 12.8 12.8 0 0 0 16 3.2zm0 22.3a9.5 9.5 0 0 1-4.84-1.34l-.35-.2-4 1.16 1.08-3.9-.23-.37A9.4 9.4 0 0 1 6.5 16 9.5 9.5 0 1 1 16 25.5zm4.94-7.1c-.27-.14-1.59-.8-1.84-.9s-.43-.14-.6.14-.69.9-.84 1.08-.31.2-.58.07a7.7 7.7 0 0 1-2.27-1.4 8 8 0 0 1-1.47-1.8c-.15-.27 0-.42.11-.56s.27-.31.4-.48a1.88 1.88 0 0 0 .27-.45.51.51 0 0 0-.02-.48c-.07-.14-.6-1.44-.82-1.98s-.44-.45-.6-.46h-.5a1 1 0 0 0-.7.33 3 3 0 0 0-.93 2.2 5.2 5.2 0 0 0 1.09 2.76 11.9 11.9 0 0 0 4.55 4 5.2 5.2 0 0 0 3.09.65 2.6 2.6 0 0 0 1.76-1.22 2.15 2.15 0 0 0 .15-1.22c-.06-.1-.24-.17-.5-.3z"/></svg>`;
-          tdTel.appendChild(wa);
-        }
-        tr.appendChild(tdTel);
-        agendaTableBody.appendChild(tr);
-      });
-    }
-
-    function renderCards() {
-      agendaResultsCards.innerHTML = "";
-      filteredCache.forEach(r => {
-        const placa = r[2] || "-"; 
-        const cliente = r[3] || "-";
-        const nombre = buildNombre(r) || "-"; 
-        const vh = r[18] || "-";
-        const ruta = buildRuta(r) || "-"; 
-        const auxiliar = r[12] || "-";
-        const telefono = r[13] || "-"; 
-        const dir = buildDireccion(r);
-        const mapsUrl = googleMapsLink(r);
-        const phone = cleanPhone(telefono);
-        const status = getStatusInfo(r);
-
-        const card = document.createElement("div");
-        card.className = "bento-card";
-        card.innerHTML = `
-          <div>
-            <div class="bento-header">
-              <span class="bento-badge-placa"><span class="material-icons" style="font-size:14px;">local_shipping</span> ${placa}</span>
-              <span style="display:inline-flex; align-items:center; gap:6px; font-size:0.75rem; font-weight:600; color:#64748b;">
-                <span class="status-dot ${status.clase}"></span> ${status.texto}
-              </span>
-            </div>
-            <div class="bento-title">${nombre}</div>
-            <div class="bento-details">
-              <div class="bento-detail-row"><span><strong>Cod:</strong> ${cliente}</span><span><strong>VH:</strong> ${vh}</span></div>
-              <div class="bento-detail-row"><span><strong>Ruta:</strong> ${ruta}</span></div>
-              <div class="bento-detail-row"><span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:260px;"><strong>Auxiliar:</strong> ${auxiliar}</span></div>
-            </div>
-          </div>
-          <div class="bento-footer">
-            <span style="font-size:0.8rem; font-weight:600; color:#334155;"><span class="material-icons" style="font-size:14px; vertical-align:middle; color:#64748b;">phone</span> ${telefono}</span>
-            <div class="bento-actions">
-              ${mapsUrl ? `<button type="button" class="bento-btn bento-btn-map" onclick="window.open('${mapsUrl}', '_blank')" title="${dir}"><span class="material-icons" style="font-size:14px;">place</span> Mapa</button>` : ''}
-              ${phone ? `<button type="button" class="bento-btn bento-btn-wa" onclick="window.open('https://wa.me/${phone}', '_blank')" title="Contactar por WhatsApp"><span class="material-icons" style="font-size:14px;">chat</span> WA</button>` : ''}
-            </div>
-          </div>
-        `;
-        agendaResultsCards.appendChild(card);
-      });
-    }
-
-    viewToggleBtn.addEventListener("click", () => {
-      currentView = currentView === "bento" ? "table" : "bento";
-      renderAgenda();
-    });
-
-    agendaCopyBtn.addEventListener("click", () => {
-      let textoReporte = `*RESUMEN AGENDA - BRAEDT S.A.*\nCentro: ${agendaCentroSelect.value}\nTotal Registros: ${filteredCache.length}\n\n`;
-      filteredCache.slice(0, 15).forEach(r => {
-        const st = getStatusInfo(r);
-        textoReporte += `🚚 Placa: ${r[2]} | 🏷️ Cliente: ${r[3]} | [${st.texto}] | 📞 ${r[13] || "N/A"}\n`;
-      });
-      if (filteredCache.length > 15) textoReporte += `\n*(Y ${filteredCache.length - 15} registros más...)*`;
-
-      navigator.clipboard.writeText(textoReporte).then(() => {
-        const originalBg = agendaCopyBtn.style.background;
-        agendaCopyBtn.style.background = "#0284c7";
-        setTimeout(() => { agendaCopyBtn.style.background = originalBg; }, 1500);
-      });
-    });
-
-    async function initAgenda() {
-      try {
-        await loadPowerAppData();
-        const resp = await fetch(CSV_URL);
-        const text = await resp.text();
-        const { rows } = parseCSV(text);
-        agendaRows = rows;
-        loadCentros();
-
-        const savedSearch = localStorage.getItem(LS_SEARCH_KEY);
-        if (savedSearch) {
-          agendaSearchInput.value = savedSearch;
-          agendaSearchBar.classList.add("agenda-search-bar--open");
-        }
-
-        if (centrosAgenda.length > 0) { 
-          hasSearched = true; 
-          renderAgenda(); 
-        }
-      } catch (err) {
-        console.error("Error inicializando Agenda:", err);
-      }
-
-      agendaCentroSelect.addEventListener("change", () => { hasSearched = true; renderAgenda(); });
-
-      agendaSearchToggle.addEventListener("click", () => {
-        const isOpen = agendaSearchBar.classList.toggle("agenda-search-bar--open");
-        if (isOpen) agendaSearchInput.focus();
-        else { agendaSearchInput.value = ""; hasSearched = true; renderAgenda(); }
-      });
-
-      agendaSearchInput.addEventListener("input", () => { hasSearched = true; renderAgenda(); });
-    }
-
-    document.addEventListener("DOMContentLoaded", initAgenda);
-  })();
-  </script>
-</body>
-</html>
+@media (max-width: 800px) {
+  .agenda-table thead { display: none; }
+  .agenda-table, .agenda-table tbody, .agenda-table tr, .agenda-table td { display: block; width: 100%; }
+  .agenda-table tr { margin-bottom: 12px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); background: var(--surface); padding: 10px 12px; border: 1px solid #f0f0f0; }
+  .agenda-table td { border-bottom: none; padding: 6px 0; font-size: 0.82rem; }
+  .agenda-table td::before { content: attr(data-label); display: block; font-size: 0.72rem; color: var(--text-muted); font-weight: 600; margin-bottom: 2px; text-transform: uppercase; }
+  .agenda-table td:last-child { margin-bottom: 4px; }
+}
