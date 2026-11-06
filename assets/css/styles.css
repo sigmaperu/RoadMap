@@ -1,5 +1,46 @@
+/* ==========================================================================
+   RoadMap - styles.css (Versión Moderna unificada - Estilo Fowllow)
+   ========================================================================== */
+
 /* ===================== */
-/* DISEÑO NOTCH / ISLA FLOTANTE (Sidebar) */
+/* VARIABLES GLOBALES    */
+/* ===================== */
+:root {
+  --primary: #9C27B0;
+  --primary-dark: #7B1FA2;
+  --primary-light: #F3E5F5;
+  --accent: #7C4DFF;
+
+  --bg: #F4F6F9;
+  --surface: #FFFFFF;
+  --text-main: #212121;
+  --text-muted: #757575;
+
+  --border-radius: 12px;
+  --shadow-elevated: 0 4px 20px rgba(0,0,0,0.05);
+
+  /* Agenda */
+  --agenda-control-height: 38px;
+  --agenda-radius-pill: 999px;
+  --agenda-border-color: #d1d5db;
+  --agenda-border: 1px solid var(--agenda-border-color);
+}
+
+/* ===================== */
+/* RESET Y BASE          */
+/* ===================== */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; }
+body {
+  font-family: "Roboto", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background-color: var(--bg);
+  color: var(--text-main);
+}
+
+/* ===================== */
+/* APP SHELL / SIDEBAR (ESTILO NOTCH / ISLA FLOTANTE) */
 /* ===================== */
 .app-shell { 
   display: flex; 
@@ -10,7 +51,6 @@
 .sidebar {
   width: 260px;
   background: var(--surface);
-  border-right: none;
   border-radius: 16px;
   margin: 12px 0 12px 12px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.06);
@@ -23,16 +63,16 @@
 
 .sidebar__logo { 
   padding: 0 20px 14px; 
-  margin-bottom: 12px; 
+  margin-bottom: 8px; 
   border-bottom: 1px solid rgba(0,0,0,0.04);
 }
 .sidebar__logo img { max-width: 140px; height: auto; }
 
 .sidebar__tagline {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   color: var(--primary);
   padding: 0 20px;
   margin-bottom: 16px;
@@ -49,7 +89,9 @@
 .nav-item--active { background-color: var(--primary-light); color: var(--primary-dark); font-weight: 700; }
 .nav-item__icon { font-size: 1.25rem; }
 
-/* Ajuste del layout principal para acompañar el sidebar flotante */
+/* ===================== */
+/* MAIN LAYOUT / TOPBAR  */
+/* ===================== */
 .main-layout { 
   flex: 1; 
   display: flex; 
@@ -57,6 +99,130 @@
   margin: 12px;
   background: var(--surface);
   border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+  box-shadow: var(--shadow-elevated);
   overflow: hidden;
+}
+
+.topbar {
+  height: 64px; 
+  padding: 0 24px; 
+  background-color: var(--surface);
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; 
+  top: 0; 
+  z-index: 1500;
+}
+.topbar__left { display: inline-flex; align-items: center; gap: 12px; min-width: 0; }
+.topbar__left h1 { font-size: 1.25rem; font-weight: 700; margin: 0; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.icon-button { border: none; background: transparent; border-radius: 999px; padding: 8px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; color: var(--text-main); transition: background-color 0.15s ease; }
+.icon-button:hover { background-color: rgba(0,0,0,0.04); }
+.icon-button--menu { margin-right: 4px; display: none; }
+
+.topbar__right { display: flex; align-items: center; justify-content: flex-end; }
+.topbar-fecha { font-size: 0.88rem; font-weight: 600; color: var(--text-muted); background: var(--bg); padding: 6px 14px; border-radius: 999px; }
+
+/* ===================== */
+/* CONTENIDO             */
+/* ===================== */
+.content { padding: 16px 24px 24px; overflow-y: auto; flex: 1; }
+.page-section { margin-top: 4px; }
+
+/* ===================== */
+/* AGENDA – CARD + FILTROS + TABLA */
+/* ===================== */
+.agenda-card { background: var(--surface); border-radius: var(--border-radius); padding: 4px 0; }
+.agenda-filters { display: flex; align-items: center; flex-wrap: nowrap; margin-bottom: 16px; }
+.agenda-filters-inner { display: flex; flex: 1; align-items: center; gap: 12px; }
+
+/* Grupo Centro */
+.agenda-filters__group { display: flex; flex-direction: column; min-width: 220px; }
+.agenda-filters__group select {
+  height: var(--agenda-control-height);
+  padding: 0 14px;
+  border-radius: var(--agenda-radius-pill);
+  border: var(--agenda-border);
+  background: #fff;
+  font: inherit; font-size: 0.88rem; font-weight: 500;
+  color: var(--text-main);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.agenda-filters__group select:focus { border-color: var(--primary); }
+
+/* Búsqueda + lupa */
+.agenda-search-box { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; }
+.agenda-search-bar { position: relative; overflow: hidden; max-width: 0; opacity: 0; transition: max-width 0.28s ease, opacity 0.22s ease; height: var(--agenda-control-height); display: flex; align-items: center; }
+.agenda-search-bar--open { max-width: clamp(240px, 32vw, 360px); opacity: 1; }
+.agenda-search-input {
+  height: var(--agenda-control-height); padding: 0 14px; width: clamp(240px, 32vw, 360px);
+  border-radius: var(--agenda-radius-pill); border: var(--agenda-border); background: #fff; font: inherit; font-size: 0.90rem; display: inline-block;
+  outline: none;
+}
+.agenda-search-input:focus { border-color: var(--primary); }
+.agenda-search-toggle { border: none; border-radius: var(--agenda-radius-pill); width: var(--agenda-control-height); height: var(--agenda-control-height); cursor: pointer; background: var(--primary); color: #fff; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(156,39,176,0.3); transition: transform 0.15s; }
+.agenda-search-toggle:hover { transform: scale(1.05); }
+.agenda-search-toggle .material-icons { font-size: 20px; }
+
+/* Tabla */
+.agenda-table-wrapper { margin-top: 12px; overflow-x: auto; border-radius: 8px; border: 1px solid #f0f0f0; }
+.agenda-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.agenda-table thead { background: var(--primary-dark); color: #FFFFFF; }
+.agenda-table th, .agenda-table td { padding: 8px 10px; border-bottom: 1px solid #E5E7EB; text-align: left; }
+.agenda-table th { font-weight: 500; white-space: nowrap; font-size: 0.78rem; }
+.agenda-th-icon { font-size: 15px; vertical-align: middle; margin-right: 6px; color: var(--primary-light); }
+.agenda-name { display: inline-flex; align-items: center; gap: 6px; }
+
+/* Botones mini */
+.agenda-whatsapp-btn { border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; background: #25D366; color: #fff; display: inline-flex; align-items: center; justify-content: center; margin-left: 6px; transition: transform 0.15s; }
+.agenda-whatsapp-btn:hover { transform: scale(1.1); }
+.agenda-whatsapp-btn svg { width: 13px; height: 13px; display: block; }
+
+.agenda-map-icon { border: none; border-radius: 50%; width: 22px; height: 22px; margin-left: 6px; cursor: pointer; background: #2563EB; color: #fff; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: transform .15s ease; }
+.agenda-map-icon:hover { transform: scale(1.1); }
+
+/* ===================== */
+/* MAPA / PLANOS – toolbar */
+/* ===================== */
+.leaflet-container { z-index: 0; }
+.map-toolbar { position: absolute; top: 16px; left: 16px; right: 16px; z-index: 1000; display: flex; align-items: center; gap: 8px; }
+.map-toolbar .btn-small-icon { border: none; border-radius: 999px; padding: 8px; font-size: 0.85rem; cursor: pointer; background: rgba(255,255,255,0.96); color: var(--text-main); display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.map-toolbar .btn-small-icon .material-icons { font-size: 20px; transition: transform 0.2s ease; }
+.map-toolbar .btn-small-icon--open .material-icons { transform: rotate(180deg); }
+.map-toolbar .filters-floating { position: static; flex: 1 1 auto; background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(6px); border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; transform-origin: left top; transition: transform 0.2s ease, opacity 0.2s ease; }
+.map-toolbar .filters-floating--collapsed { transform: scale(0.9) translateY(-8%); opacity: 0; pointer-events: none; }
+.filters-floating__row { display: flex; flex-wrap: wrap; gap: 10px; width: 100%; align-items: center; }
+.filter-group { display: flex; flex-direction: column; flex: 1; min-width: 160px; }
+.filter-group label { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 3px; font-weight: 600; }
+.filter-group select { padding: 6px 8px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.15); font-family: inherit; font-size: 0.85rem; background-color: #fff; width: 100%; outline: none; }
+.filter-group select:focus { border-color: var(--primary); }
+
+/* ===================== */
+/* RESPONSIVE            */
+/* ===================== */
+@media (max-width: 920px) {
+  .app-shell { flex-direction: column; }
+  .sidebar { 
+    position: fixed; top: 0; left: 0; bottom: 0; width: 260px; 
+    margin: 0; border-radius: 0; box-shadow: 4px 0 20px rgba(0,0,0,0.15); 
+    transform: translateX(-100%); transition: transform 0.25s ease; z-index: 3000; 
+  }
+  .sidebar--open { transform: translateX(0); }
+  .main-layout { margin: 0; border-radius: 0; box-shadow: none; }
+  .icon-button--menu { display: inline-flex; }
+  .content { padding: 12px; }
+  .agenda-card { padding: 0; }
+}
+
+@media (max-width: 800px) {
+  .agenda-table thead { display: none; }
+  .agenda-table, .agenda-table tbody, .agenda-table tr, .agenda-table td { display: block; width: 100%; }
+  .agenda-table tr { margin-bottom: 12px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); background: var(--surface); padding: 10px 12px; border: 1px solid #f0f0f0; }
+  .agenda-table td { border-bottom: none; padding: 4px 0; font-size: 0.82rem; }
+  .agenda-table td::before { content: attr(data-label); display: block; font-size: 0.72rem; color: var(--text-muted); font-weight: 600; margin-bottom: 1px; text-transform: uppercase; }
+  .agenda-table td:last-child { margin-bottom: 4px; }
 }
