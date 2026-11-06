@@ -9,13 +9,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css?v=4.0">
+  <link rel="stylesheet" href="assets/css/styles.css?v=6.0">
 
   <script defer src="assets/js/main.js"></script>
 </head>
 <body data-title="Agenda">
   <div class="app-shell">
-    <!-- Sidebar modular inyectado por JS -->
+    <!-- Sidebar modular inyectado automáticamente -->
     <aside class="sidebar" id="app-sidebar"></aside>
 
     <div class="main-layout">
@@ -25,10 +25,18 @@
       <main class="content">
         <section class="page-section">
           <div class="agenda-card">
+            
+            <!-- Barra de Filtros y Estadísticas en Vivo -->
             <div class="agenda-filters">
               <div class="agenda-filters-inner">
                 <div class="agenda-filters__group">
-                  <select id="agendaCentro"></select>
+                  <select id="agendaCentro" title="Seleccionar Centro Operativo"></select>
+                </div>
+
+                <!-- KPIs Rápidos en Vivo -->
+                <div id="agendaKpis" class="agenda-kpis" style="display:none;">
+                  <span class="kpi-chip"><span class="material-icons">group</span> <strong id="kpiClientes">0</strong> Clientes</span>
+                  <span class="kpi-chip"><span class="material-icons">local_shipping</span> <strong id="kpiVehiculos">0</strong> Placas</span>
                 </div>
 
                 <div class="agenda-search-box">
@@ -38,10 +46,15 @@
                   <button id="agendaSearchToggle" class="agenda-search-toggle" type="button" aria-label="Buscar">
                     <span class="material-icons">search</span>
                   </button>
+                  <!-- Botón Copiar Reporte al Portapapeles -->
+                  <button id="agendaCopyBtn" class="agenda-search-toggle" type="button" title="Copiar reporte filtrado para WhatsApp" style="background:#25D366; display:none;">
+                    <span class="material-icons">content_copy</span>
+                  </button>
                 </div>
               </div>
             </div>
 
+            <!-- Tabla de Resultados con Estilo Fowllow -->
             <div class="agenda-table-wrapper" id="agendaResults" style="display:none;">
               <table id="agendaTable" class="agenda-table">
                 <thead>
@@ -58,14 +71,43 @@
                 <tbody></tbody>
               </table>
             </div>
+
           </div>
         </section>
       </main>
     </div>
   </div>
 
+  <style>
+    /* Estilos adicionales para los KPIs y chips modernos */
+    .agenda-kpis {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: 12px;
+    }
+    .kpi-chip {
+      background: #f1f5f9;
+      color: #334155;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      border: 1px solid #e2e8f0;
+    }
+    .kpi-chip .material-icons {
+      font-size: 16px;
+      color: var(--primary);
+    }
+    @media (max-width: 920px) {
+      .agenda-kpis { display: none; }
+    }
+  </style>
+
   <script>
-  /* (Tu script de agenda se mantiene exactamente igual que antes) */
   (() => {
     const CSV_URL = (window.RoadMapConfig && window.RoadMapConfig.CSV_URL) || "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
     const LS_CENTRO_KEY = "roadmap.agenda.centro";
@@ -74,6 +116,7 @@
     let agendaRows = [];
     let centrosAgenda = [];
     let hasSearched = false;
+    let filteredCache = [];
 
     const agendaCentroSelect = document.getElementById("agendaCentro");
     const agendaSearchToggle = document.getElementById("agendaSearchToggle");
@@ -81,6 +124,10 @@
     const agendaSearchInput = document.getElementById("agendaSearchInput");
     const agendaTableBody = document.querySelector("#agendaTable tbody");
     const agendaResults = document.getElementById("agendaResults");
+    const agendaKpis = document.getElementById("agendaKpis");
+    const kpiClientes = document.getElementById("kpiClientes");
+    const kpiVehiculos = document.getElementById("kpiVehiculos");
+    const agendaCopyBtn = document.getElementById("agendaCopyBtn");
 
     function parseCSV(text) {
       const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
@@ -138,7 +185,13 @@
     }
 
     function renderAgenda() {
-      if (!hasSearched) { agendaResults.style.display = "none"; agendaTableBody.innerHTML = ""; return; }
+      if (!hasSearched) { 
+        agendaResults.style.display = "none"; 
+        agendaKpis.style.display = "none";
+        agendaCopyBtn.style.display = "none";
+        agendaTableBody.innerHTML = ""; 
+        return; 
+      }
       const centroSel = agendaCentroSelect.value;
       const term = (agendaSearchInput.value || "").toLowerCase().trim();
       
@@ -161,10 +214,17 @@
         });
       }
 
-      const grouped = groupByCliente(rows);
+      filteredCache = groupByCliente(rows);
+      
+      // Actualizar KPIs en vivo
+      kpiClientes.textContent = filteredCache.length;
+      kpiVehiculos.textContent = new Set(filteredCache.map(r => r[2])).size;
+      agendaKpis.style.display = "inline-flex";
+      agendaCopyBtn.style.display = filteredCache.length > 0 ? "inline-flex" : "none";
+
       agendaTableBody.innerHTML = "";
 
-      grouped.forEach(r => {
+      filteredCache.forEach(r => {
         const placa = r[2] || ""; const cliente = r[3] || "";
         const nombre = buildNombre(r); const vh = r[18] || "";
         const ruta = buildRuta(r); const auxiliar = r[12] || "";
@@ -211,13 +271,28 @@
         agendaTableBody.appendChild(tr);
       });
 
-      if (grouped.length === 0) {
+      if (filteredCache.length === 0) {
         const tr = document.createElement("tr"); const td = document.createElement("td");
         td.colSpan = 7; td.textContent = "No se encontraron registros."; tr.appendChild(td);
         agendaTableBody.appendChild(tr);
       }
       agendaResults.style.display = "block";
     }
+
+    // Copiar reporte al portapapeles
+    agendaCopyBtn.addEventListener("click", () => {
+      let textoReporte = `*RESUMEN AGENDA - BRAEDT S.A.*\nCentro: ${agendaCentroSelect.value}\nTotal Registros: ${filteredCache.length}\n\n`;
+      filteredCache.slice(0, 15).forEach(r => {
+        textoReporte += `🚚 Placa: ${r[2]} | 🏷️ Cliente: ${r[3]} | 👤 ${buildNombre(r)} | 📞 ${r[13] || "N/A"}\n`;
+      });
+      if (filteredCache.length > 15) textoReporte += `\n*(Y ${filteredCache.length - 15} registros más...)*`;
+
+      navigator.clipboard.writeText(textoReporte).then(() => {
+        const originalBg = agendaCopyBtn.style.background;
+        agendaCopyBtn.style.background = "#0284c7";
+        setTimeout(() => { agendaCopyBtn.style.background = originalBg; }, 1500);
+      });
+    });
 
     async function initAgenda() {
       try {
