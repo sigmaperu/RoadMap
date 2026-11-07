@@ -12,8 +12,8 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   
   <!-- Estilos globales y específicos del Dashboard -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=24.0">
-  <link rel="stylesheet" href="assets/css/dashboard.css?v=24.0">
+  <link rel="stylesheet" href="assets/css/styles.css?v=25.0">
+  <link rel="stylesheet" href="assets/css/dashboard.css?v=25.0">
 
   <!-- Scripts -->
   <script defer src="assets/js/main.js"></script>
@@ -31,78 +31,93 @@
       <main class="content">
         <section class="page-section">
 
-          <!-- ========================================== -->
-          <!-- VISTA 1: LANDING PAGE DE RESUMEN EJECUTIVO -->
-          <!-- ========================================== -->
+          <!-- ========================================================== -->
+          <!-- VISTA 1: LANDING PAGE EJECUTIVA (Basada en tus indicadores) -->
+          <!-- ========================================================== -->
           <div id="executiveLanding" class="executive-landing">
-            <div class="landing-hero">
-              <div class="landing-hero__text">
-                <span class="landing-badge"><span class="material-icons">insights</span> Panel Gerencial Global</span>
-                <h1>Operación Braedt S.A.</h1>
-                <p>Resumen consolidado de todos los centros operativos, canales y métricas logísticas clave.</p>
+            
+            <!-- Hero Header corporativo sutil -->
+            <div class="landing-hero-simple">
+              <div class="landing-hero-title">
+                <span class="landing-badge"><span class="material-icons">dashboard</span> Resumen Ejecutivo Global</span>
+                <h2>Operación Consolidada</h2>
+                <p>Selecciona cualquier tarjeta para explorar el desglose detallado por centros, placas y rutas.</p>
               </div>
-              <button id="btnExploreDetail" class="btn-explore" type="button">
-                <span class="material-icons">tune</span> Ver Detalle por Centro / Canal
-              </button>
             </div>
 
-            <!-- KPIs Globales -->
-            <div class="kpi-row landing-kpis">
+            <!-- Fila 1: KPIs Principales (Interactivos) -->
+            <div class="kpi-grid-top">
               <div class="kpi-card landing-card-click" data-target-metric="Clientes">
-                <div class="kpi-card__label"><span class="kpi-icon-badge"><span class="material-icons icon--slate">badge</span></span> Clientes Totales</div>
+                <div class="kpi-card__label"><span class="kpi-icon-badge"><span class="material-icons icon--slate">badge</span></span> Clientes</div>
                 <div id="globalKpiClientes" class="kpi-card__value">–</div>
-                <span class="card-hint">Ver desglose <span class="material-icons">arrow_forward</span></span>
+                <span class="card-hint">Ver detalle <span class="material-icons" style="font-size:14px;">arrow_forward</span></span>
               </div>
               <div class="kpi-card landing-card-click" data-target-metric="Pedidos">
-                <div class="kpi-card__label"><span class="kpi-icon-badge"><span class="material-icons icon--blue">assignment</span></span> Pedidos Globales</div>
+                <div class="kpi-card__label"><span class="kpi-icon-badge"><span class="material-icons icon--blue">assignment</span></span> Pedidos</div>
                 <div id="globalKpiPedidos" class="kpi-card__value">–</div>
-                <span class="card-hint">Ver desglose <span class="material-icons">arrow_forward</span></span>
+                <span class="card-hint">Ver detalle <span class="material-icons" style="font-size:14px;">arrow_forward</span></span>
               </div>
               <div class="kpi-card landing-card-click" data-target-metric="Kilogramos">
                 <div class="kpi-card__label">
                   <span class="kpi-icon-badge">
-                    <svg viewBox="0 0 32 32" width="20" height="20" aria-hidden="true" class="icon--green">
+                    <svg viewBox="0 0 32 32" width="18" height="18" aria-hidden="true" class="icon--green">
                       <rect x="5" y="10" width="22" height="14" rx="3" fill="currentColor" opacity=".14"></rect>
                       <path fill="currentColor" d="M12 10a4 4 0 1 1 8 0h3.5a3.5 3.5 0 0 1 3.5 3.5V22a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3v-8.5A3.5 3.5 0 0 1 8.5 10H12zm2 0h4a2 2 0 1 0-4 0z"></path>
                       <text x="16" y="22" text-anchor="middle" font-size="10" font-weight="800" fill="currentColor">KG</text>
                     </svg>
-                  </span> Kilogramos Totales
+                  </span> Kilogramos
                 </div>
                 <div id="globalKpiKg" class="kpi-card__value">–</div>
-                <span class="card-hint">Ver desglose <span class="material-icons">arrow_forward</span></span>
+                <span class="card-hint">Ver detalle <span class="material-icons" style="font-size:14px;">arrow_forward</span></span>
               </div>
               <div class="kpi-card landing-card-click" data-target-metric="Soles">
-                <div class="kpi-card__label"><span class="kpi-icon-badge"><span class="material-icons icon--gold">paid</span></span> Facturación Soles</div>
+                <div class="kpi-card__label"><span class="kpi-icon-badge"><span class="material-icons icon--gold">paid</span></span> Soles</div>
                 <div id="globalKpiSoles" class="kpi-card__value">–</div>
-                <span class="card-hint">Ver desglose <span class="material-icons">arrow_forward</span></span>
+                <span class="card-hint">Ver detalle <span class="material-icons" style="font-size:14px;">arrow_forward</span></span>
               </div>
               <div class="kpi-card landing-card-click" data-target-metric="Camiones">
-                <div class="kpi-card__label"><span class="kpi-icon-badge"><span class="material-icons icon--slate">local_shipping</span></span> Flota Activa</div>
+                <div class="kpi-card__label"><span class="kpi-icon-badge"><span class="material-icons icon--slate">local_shipping</span></span> Camiones</div>
                 <div id="globalKpiCamiones" class="kpi-card__value">–</div>
-                <span class="card-hint">Ver desglose <span class="material-icons">arrow_forward</span></span>
+                <span class="card-hint">Ver detalle <span class="material-icons" style="font-size:14px;">arrow_forward</span></span>
               </div>
             </div>
 
-            <!-- Resumen Gráfico Global -->
-            <div class="charts-2col" style="margin-top: 20px;">
+            <!-- Sección de Indicadores (PIs) -->
+            <div class="pi-section-container">
+              <div class="pi-section-header">
+                <span class="material-icons icon--slate">insights</span> Indicadores (PIs)
+              </div>
+              <div class="pi-grid-top">
+                <div class="pi-card-item landing-card-click" data-target-metric="Kg/Camión">
+                  <div class="pi-item__label"><span class="material-icons icon--green">balance</span> Kg/Camión</div>
+                  <div id="globalPiKgCamion" class="pi-item__value">–</div>
+                </div>
+                <div class="pi-card-item landing-card-click" data-target-metric="Kg/Cliente">
+                  <div class="pi-item__label"><span class="material-icons icon--green">scale</span> Kg/Cliente</div>
+                  <div id="globalPiKgCliente" class="pi-item__value">–</div>
+                </div>
+                <div class="pi-card-item landing-card-click" data-target-metric="Clientes/Camión">
+                  <div class="pi-item__label"><span class="material-icons icon--slate">people_alt</span> Clientes/Camión</div>
+                  <div id="globalPiClientesCamion" class="pi-item__value">–</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Gráficos de Resumen Global en la Landing -->
+            <div class="charts-2col" style="margin-top: 10px;">
               <div class="panel">
                 <div class="chart-title">
                   <span class="material-icons icon--blue">bar_chart</span>
-                  <span class="chart-title__text">Distribución por Centro (Global)</span>
+                  <span class="chart-title__text">Top Centros (Global)</span>
                 </div>
-                <div class="panel__body">
-                  <div id="landingChartCentros" class="chart-box"></div>
-                </div>
+                <div class="panel__body"><div id="landingChartCentros" class="chart-box"></div></div>
               </div>
-
               <div class="panel">
                 <div class="chart-title">
                   <span class="material-icons icon--gold">stacked_bar_chart</span>
-                  <span class="chart-title__text">Distribución por Canal (Global)</span>
+                  <span class="chart-title__text">Top Canales (Global)</span>
                 </div>
-                <div class="panel__body">
-                  <div id="landingChartCanal" class="chart-box"></div>
-                </div>
+                <div class="panel__body"><div id="landingChartCanal" class="chart-box"></div></div>
               </div>
             </div>
           </div>
@@ -139,7 +154,7 @@
                 <div class="kpi-card">
                   <div class="kpi-card__label">
                     <span class="kpi-icon-badge">
-                      <svg viewBox="0 0 32 32" width="20" height="20" aria-hidden="true" class="icon--green">
+                      <svg viewBox="0 0 32 32" width="18" height="18" aria-hidden="true" class="icon--green">
                         <rect x="5" y="10" width="22" height="14" rx="3" fill="currentColor" opacity=".14"></rect>
                         <path fill="currentColor" d="M12 10a4 4 0 1 1 8 0h3.5a3.5 3.5 0 0 1 3.5 3.5V22a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3v-8.5A3.5 3.5 0 0 1 8.5 10H12zm2 0h4a2 2 0 1 0-4 0z"></path>
                         <text x="16" y="22" text-anchor="middle" font-size="10" font-weight="800" fill="currentColor">KG</text>
