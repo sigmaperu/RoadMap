@@ -1,12 +1,12 @@
 /* ==========================================================================
-   RoadMap - dashboard.css (Estilos para Landing Ejecutiva y Panel Analítico)
+   RoadMap - dashboard.css (Estilos limpios para Landing Ejecutiva y Detalle)
    ========================================================================== */
 
 :root {
-  --icon-blue:#2563eb;  /* Pedidos */
-  --icon-green:#16a34a; /* Kilogramos */
-  --icon-gold:#b45309;  /* Soles */
-  --icon-slate:#334155; /* Clientes / Camiones / PI */
+  --icon-blue:#2563eb;  
+  --icon-green:#16a34a; 
+  --icon-gold:#b45309;  
+  --icon-slate:#334155; 
   --chip-bg:#f3f4f6;
   --chip-border:#e5e7eb;
   --chip-active:#111827;
@@ -27,85 +27,112 @@
 .panel { background:#fff; border-radius:12px; box-shadow:var(--card-shadow); }
 .panel__body { padding:16px; }
 
-/* ======= Control de Vistas (Landing vs Detalle) ======= */
-.executive-landing { display: flex; flex-direction: column; gap: 20px; transition: opacity 0.25s ease; }
+/* Control de Vistas */
+.executive-landing { display: flex; flex-direction: column; gap: 16px; }
 .executive-landing.hidden { display: none; }
-
-.detailed-view { display: flex; flex-direction: column; gap: var(--gap-rows); transition: opacity 0.25s ease; }
+.detailed-view { display: flex; flex-direction: column; gap: var(--gap-rows); }
 .detailed-view.hidden { display: none; }
 
-/* ======= Landing Hero ======= */
-.landing-hero {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+/* Landing Hero Minimalista */
+.landing-hero-simple {
+  background: #ffffff;
   border-radius: 16px;
-  padding: 32px;
-  color: #fff;
+  padding: 20px 24px;
+  box-shadow: var(--card-shadow);
+  border: 1px solid #f1f5f9;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15);
 }
-@media (max-width: 860px) {
-  .landing-hero { flex-direction: column; align-items: flex-start; gap: 20px; padding: 20px; }
-}
-
 .landing-badge {
-  background: rgba(156, 39, 176, 0.25);
-  color: #e9d5ff;
-  padding: 6px 12px;
+  background: var(--badge-bg);
+  color: var(--primary, #9C27B0);
+  padding: 4px 10px;
   border-radius: 999px;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 8px;
+  gap: 4px;
+  margin-bottom: 6px;
 }
-.landing-hero h1 { font-size: 1.8rem; font-weight: 800; margin: 0 0 6px 0; }
-.landing-hero p { color: #94a3b8; font-size: 0.95rem; margin: 0; max-width: 600px; }
+.landing-hero-title h2 { font-size: 1.25rem; font-weight: 800; margin: 0 0 2px 0; color: #1e293b; }
+.landing-hero-title p { color: #64748b; font-size: 0.85rem; margin: 0; }
 
-.btn-explore {
-  background: var(--primary, #9C27B0);
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  padding: 12px 20px;
-  font-weight: 700;
+/* Grids idénticos a tu imagen de referencia */
+.kpi-grid-top {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--gap-cards);
+}
+@media (max-width: 1024px) {
+  .kpi-grid-top { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.pi-section-container {
+  background: #fff;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: var(--card-shadow);
+  border: 1px solid #f1f5f9;
+}
+.pi-section-header {
   font-size: 0.9rem;
-  cursor: pointer;
-  display: inline-flex;
+  color: #374151;
+  display: flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 4px 15px rgba(156,39,176,0.4);
-  transition: transform 0.15s, background-color 0.15s;
-  white-space: nowrap;
+  font-weight: 800;
+  margin-bottom: 12px;
 }
-.btn-explore:hover { background: var(--primary-dark, #7B1FA2); transform: translateY(-2px); }
+.pi-grid-top {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--gap-cards);
+}
+@media (max-width: 1024px) {
+  .pi-grid-top { grid-template-columns: 1fr; }
+}
 
-/* ======= Tarjetas Interactivas de Landing ======= */
+.pi-card-item {
+  background: #f9fafb;
+  border: 1px solid #eef2f7;
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pi-card-item .pi-item__value {
+  font-size: clamp(1.1rem, 1.6vw, 1.35rem);
+  font-weight: 800;
+  color: #111827;
+}
+
+/* Tarjetas interactivas con efecto hover */
 .landing-card-click {
   cursor: pointer;
   position: relative;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.2s ease;
 }
 .landing-card-click:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
   border-color: #cbd5e1;
 }
 .card-hint {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
   color: var(--primary, #9C27B0);
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  margin-top: 8px;
+  gap: 2px;
+  margin-top: 6px;
 }
 
-/* ======= Topbar de Detalle ======= */
+/* Topbar de Detalle */
 .detail-topbar-nav {
   display: flex;
   align-items: center;
@@ -133,7 +160,7 @@
 .btn-back-landing:hover { background: #f1f5f9; border-color: #94a3b8; }
 .detail-indicator { font-size: 0.85rem; font-weight: 600; color: #64748b; }
 
-/* ======= Disposición Analítica ======= */
+/* Componentes del Panel Detallado */
 .row {
   display:grid;
   grid-template-columns:minmax(200px, var(--side-w)) 1fr;
@@ -189,5 +216,3 @@
 
 .chart-grid-lower{ display:grid; grid-template-columns:1fr 1fr; gap:var(--gap-cards); margin-top:var(--gap-rows); }
 @media (max-width:1200px){ .chart-grid-lower{ grid-template-columns:1fr; } }
-
-.sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
