@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - planos.js (Lógica específica para la vista de Planos)
+   RoadMap - planos.js (Lógica optimizada con Selector Inicial y Mapa perezoso)
    ========================================================================== */
 
 (() => {
@@ -11,12 +11,20 @@
   let leafletMap = null;
   let markersLayer = null;
 
+  // Elementos del mapa y controles flotantes
   const filterCentro  = document.getElementById("filterCentro");
   const filterPlaca   = document.getElementById("filterPlaca");
   const filterCliente = document.getElementById("filterCliente");
 
   const btnToggleFilters = document.getElementById("btnToggleFilters");
   const filtersPanel     = document.getElementById("filtersPanel");
+
+  // Elementos de la Pantalla Selectora Inicial
+  const initialSelectorOverlay = document.getElementById("initialSelectorOverlay");
+  const initCentro = document.getElementById("initCentro");
+  const initPlaca = document.getElementById("initPlaca");
+  const initCliente = document.getElementById("initCliente");
+  const btnLaunchMap = document.getElementById("btnLaunchMap");
 
   function parseCSV(text){
     const lines = text.split(/\r?\n/).filter(l=>l.trim()!=="");
@@ -101,53 +109,99 @@
     allClientes = unique(allRows.map(r=>r[3]??"")).sort();
   }
 
-  function resetSelect(sel){
+  function fillSelect(sel, items, defaultText = "Todos"){
     sel.innerHTML = "";
-    const o=document.createElement("option");
-    o.value=""; o.textContent="Todos";
+    const o = document.createElement("option");
+    o.value = "";
+    o.textContent = defaultText;
     sel.appendChild(o);
-  }
-
-  function refreshCentroOptions(){
-    resetSelect(filterCentro);
-    allCentros.forEach(c=>{
-      const o=document.createElement("option");
-      o.value=c; o.textContent=c;
-      filterCentro.appendChild(o);
+    items.forEach(val => {
+      const opt = document.createElement("option");
+      opt.value = val;
+      opt.textContent = val;
+      sel.appendChild(opt);
     });
   }
 
-  function refreshPlacaOptions(centro){
-    resetSelect(filterPlaca);
-    let subset=allRows;
-    if (centro) subset = subset.filter(r=> (r[1]??"")===centro );
-    unique(subset.map(r=>r[2]??"")).sort()
-      .forEach(p=>{
-        const o=document.createElement("option");
-        o.value=p; o.textContent=p;
-        filterPlaca.appendChild(o);
-      });
-  }
-
-  function refreshClienteOptions(centro, placa){
-    resetSelect(filterCliente);
-    let subset=allRows;
-    if (centro) subset=subset.filter(r=> (r[1]??"")===centro );
-    if (placa)  subset=subset.filter(r=> (r[2]??"")===placa );
+  function fillClientSelect(sel, subset){
+    sel.innerHTML = "";
+    const o = document.createElement("option");
+    o.value = "";
+    o.textContent = "Todos";
+    sel.appendChild(o);
 
     unique(subset.map(r=>r[3]??"")).sort().forEach(cod=>{
       const rowOne = subset.find(r=> (r[3]??"") === cod );
       const label  = rowOne ? buildClienteLabelFromRow(rowOne) : cod;
-      const o=document.createElement("option");
-      o.value=cod; o.textContent=label;
-      filterCliente.appendChild(o);
+      const opt = document.createElement("option");
+      opt.value = cod;
+      opt.textContent = label;
+      sel.appendChild(opt);
     });
   }
 
+  /* ========================================== */
+  /* POBLAR SELECTORES (INICIAL Y FLOTANTE)      */
+  /* ========================================== */
+  function setupSelectors(){
+    // Llenar selector inicial
+    fillSelect(initCentro, allCentros);
+    fillSelect(initPlaca, allPlacas);
+    fillClientSelect(initCliente, allRows);
+
+    // Llenar selector flotante del mapa
+    fillSelect(filterCentro, allCentros);
+    fillSelect(filterPlaca, allPlacas);
+    fillClientSelect(filterCliente, allRows);
+
+    // Sincronizar cambios en el selector inicial
+    initCentro.addEventListener("change", () => {
+      const c = initCentro.value;
+      let subset = c ? allRows.filter(r => (r[1]??"") === c) : allRows;
+      fillSelect(initPlaca, unique(subset.map(r=>r[2]??"")).sort());
+      fillClientSelect(initCliente, subset);
+    });
+
+    initPlaca.addEventListener("change", () => {
+      const c = initCentro.value;
+      const p = initPlaca.value;
+      let subset = allRows;
+      if (c) subset = subset.filter(r => (r[1]??"") === c);
+      if (p) subset = subset.filter(r => (r[2]??"") === p);
+      fillClientSelect(initCliente, subset);
+    });
+
+    // Sincronizar cambios en los filtros flotantes del mapa
+    filterCentro.addEventListener("change", () => {
+      const c = filterCentro.value;
+      let subset = c ? allRows.filter(r => (r[1]??"") === c) : allRows;
+      fillSelect(filterPlaca, unique(subset.map(r=>r[2]??"")).sort());
+      fillClientSelect(filterCliente, subset);
+      applyFilters();
+    });
+
+    filterPlaca.addEventListener("change", () => {
+      const c = filterCentro.value;
+      const p = filterPlaca.value;
+      let subset = allRows;
+      if (c) subset = subset.filter(r => (r[1]??"") === c);
+      if (p) subset = subset.filter(r => (r[2]??"") === p);
+      fillClientSelect(filterCliente, subset);
+      applyFilters();
+    });
+
+    filterCliente.addEventListener("change", () => {
+      applyFilters();
+    });
+  }
+
+  /* ========================================== */
+  /* MAPA LEAFLET                               */
+  /* ========================================== */
   function initMap(){
     if (leafletMap) return;
     leafletMap = L.map("map",{zoomControl:false}).setView([-9.19,-75.02],5);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/*.png",{
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
       maxZoom:19, attribution:"© OpenStreetMap"
     }).addTo(leafletMap);
     L.control.zoom({position:"bottomright"}).addTo(leafletMap);
@@ -155,6 +209,7 @@
   }
 
   function renderMarkers(points){
+    if (!markersLayer) return;
     markersLayer.clearLayers();
     const bounds=[];
     points.forEach(p=>{
@@ -285,8 +340,10 @@
     renderMarkers([...clientMap.values()]);
   }
 
+  /* ========================================== */
+  /* INICIALIZACIÓN Y EVENTO DE APERTURA MAPA   */
+  /* ========================================== */
   async function init(){
-    initMap();
     try{
       await loadPowerAppData();
       const resp = await fetch(CSV_URL);
@@ -294,38 +351,43 @@
       allRows = parseCSV(text);
 
       populateBaseOptions();
-      refreshCentroOptions();
-      refreshPlacaOptions("");
-      refreshClienteOptions("","");
-
-      applyFilters();
+      setupSelectors();
     }catch(e){
       console.error(e);
       alert("No se pudo cargar RoadMap.csv para el mapa.");
     }
 
-    filterCentro.addEventListener("change",()=>{
-      const c=filterCentro.value;
-      refreshPlacaOptions(c);
-      refreshClienteOptions(c, filterPlaca.value);
+    // Botón para lanzar el mapa desde la pantalla selectora inicial
+    btnLaunchMap.addEventListener("click", () => {
+      // Transferir selecciones iniciales a los filtros flotantes del mapa
+      filterCentro.value = initCentro.value;
+      
+      // Actualizar opciones de placa según centro elegido
+      let subset = filterCentro.value ? allRows.filter(r => (r[1]??"") === filterCentro.value) : allRows;
+      fillSelect(filterPlaca, unique(subset.map(r=>r[2]??"")).sort());
+      filterPlaca.value = initPlaca.value;
+
+      // Actualizar opciones de cliente según centro y placa
+      if (filterPlaca.value) subset = subset.filter(r => (r[2]??"") === filterPlaca.value);
+      fillClientSelect(filterCliente, subset);
+      filterCliente.value = initCliente.value;
+
+      // Ocultar pantalla selectora inicial con transición suave
+      initialSelectorOverlay.classList.add("hidden");
+
+      // Inicializar Leaflet y renderizar puntos
+      initMap();
       applyFilters();
+      setTimeout(() => {
+        leafletMap.invalidateSize();
+        locateUserOnLoad();
+      }, 200);
     });
 
-    filterPlaca.addEventListener("change",()=>{
-      const c=filterCentro.value;
-      refreshClienteOptions(c, filterPlaca.value);
-      applyFilters();
-    });
-
-    filterCliente.addEventListener("change",()=>{
-      applyFilters();
-    });
-
+    // Toggle panel de filtros flotante dentro del mapa
     btnToggleFilters.addEventListener("click",()=>{
       filtersPanel.classList.toggle("filters-floating--collapsed");
     });
-
-    locateUserOnLoad();
   }
 
   document.addEventListener("DOMContentLoaded",init);
