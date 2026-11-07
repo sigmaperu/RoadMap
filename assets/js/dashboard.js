@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - dashboard.js (Gestión de Landing Ejecutiva y Panel Analítico)
+   RoadMap - dashboard.js (Control de Landing Ejecutiva e interactividad)
    ========================================================================== */
 
 (() => {
@@ -69,7 +69,6 @@
   // Elementos DOM
   const executiveLanding = document.getElementById("executiveLanding");
   const detailedView = document.getElementById("detailedView");
-  const btnExploreDetail = document.getElementById("btnExploreDetail");
   const btnBackToLanding = document.getElementById("btnBackToLanding");
 
   const filterCentro = document.getElementById("filterCentro");
@@ -87,6 +86,10 @@
   const globalKpiKg       = document.getElementById("globalKpiKg");
   const globalKpiSoles    = document.getElementById("globalKpiSoles");
   const globalKpiCamiones = document.getElementById("globalKpiCamiones");
+
+  const globalPiKgCamion = document.getElementById("globalPiKgCamion");
+  const globalPiKgCliente = document.getElementById("globalPiKgCliente");
+  const globalPiClientesCamion = document.getElementById("globalPiClientesCamion");
 
   const piKgCamion = document.getElementById("piKgCamion");
   const piKgCliente = document.getElementById("piKgCliente");
@@ -116,27 +119,17 @@
   }
 
   function setupNavigationEvents(){
-    // Ir al detalle analítico
-    btnExploreDetail.addEventListener("click", () => {
-      executiveLanding.classList.add("hidden");
-      detailedView.classList.remove("hidden");
-      renderCharts();
-    });
-
-    // Volver a la Landing Global
     btnBackToLanding.addEventListener("click", () => {
       detailedView.classList.add("hidden");
       executiveLanding.classList.remove("hidden");
       renderGlobalLanding();
     });
 
-    // Click en tarjetas de la landing para saltar al detalle con métrica preseleccionada
     document.querySelectorAll(".landing-card-click").forEach(card => {
       card.addEventListener("click", () => {
         const metric = card.getAttribute("data-target-metric");
         selectedMetrica = metric;
         
-        // Actualizar chips de métrica activos
         [...segMetrica.querySelectorAll(".seg__chip")].forEach(chip => {
           chip.setAttribute("aria-pressed", chip.textContent === metric ? "true" : "false");
         });
@@ -239,19 +232,15 @@
     globalKpiSoles.textContent    = formatK(soles);
     globalKpiCamiones.textContent = camiones.toLocaleString("es-PE");
 
-    // Gráficos de resumen global
-    {
-      const map = new Map();
-      rows.forEach(r => { const k=r[IDX.CENTRO] ?? ""; if(!k) return; if(!map.has(k)) map.set(k,[]); map.get(k).push(r); });
-      const serie = Array.from(map.entries()).map(([label,group]) => ({ label, value: countPedidos(group) }));
-      chartV_Centros_VLabels("landingChartCentros", topN(serie, 10), { barColor:"#2563eb" });
-    }
-    {
-      const map = new Map();
-      rows.forEach(r => { const k=r[IDX.CANAL] ?? ""; if(!k) return; if(!map.has(k)) map.set(k,[]); map.get(k).push(r); });
-      const serie = Array.from(map.entries()).map(([label,group]) => ({ label, value: countPedidos(group) }));
-      chartV_Canal_HLabels("landingChartCanal", topN(serie, 10), { barColor:"#b45309" });
-    }
+    const piKgCam = camiones ? (kg / camiones) : 0;
+    const piKgCli = clientes ? (kg / clientes) : 0;
+    const piCliCam= camiones ? (clientes / camiones) : 0;
+
+    globalPiKgCamion.textContent     = piKgCam.toLocaleString("es-PE",{maximumFractionDigits:2});
+    globalPiKgCliente.textContent    = piKgCli.toLocaleString("es-PE",{maximumFractionDigits:2});
+    globalPiClientesCamion.textContent = piCliCam.toLocaleString("es-PE",{maximumFractionDigits:2});
+
+    renderGlobalCharts();
   }
 
   function renderKPIs(){
