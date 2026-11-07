@@ -12,11 +12,11 @@
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
   
-  <!-- Estilos globales y específicos de Planos -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=21.0">
-  <link rel="stylesheet" href="assets/css/planos.css?v=21.0">
+  <!-- Estilos globales y específicos -->
+  <link rel="stylesheet" href="assets/css/styles.css?v=22.0">
+  <link rel="stylesheet" href="assets/css/planos.css?v=22.0">
 
-  <!-- Script global y específico de Planos -->
+  <!-- Scripts -->
   <script defer src="assets/js/main.js"></script>
   <script defer src="assets/js/planos.js"></script>
 </head>
@@ -32,8 +32,42 @@
       <main class="content">
         <section class="page-section">
           <div class="map-wrapper">
+
+            <!-- PANTALLA SELECTORA INICIAL (Optimización de Rendimiento) -->
+            <div id="initialSelectorOverlay" class="initial-selector-overlay">
+              <div class="selector-card">
+                <div class="selector-card__header">
+                  <span class="material-icons">map</span>
+                  <div>
+                    <h2>Configuración de Planos</h2>
+                    <p>Selecciona los filtros para inicializar el mapa</p>
+                  </div>
+                </div>
+
+                <div class="selector-form-group">
+                  <label for="initCentro">Centro / Location</label>
+                  <select id="initCentro"><option value="">Todos los centros</option></select>
+                </div>
+
+                <div class="selector-form-group">
+                  <label for="initPlaca">Placa</label>
+                  <select id="initPlaca"><option value="">Todas las placas</option></select>
+                </div>
+
+                <div class="selector-form-group">
+                  <label for="initCliente">Cliente</label>
+                  <select id="initCliente"><option value="">Todos los clientes</option></select>
+                </div>
+
+                <button id="btnLaunchMap" class="btn-launch-map" type="button">
+                  <span class="material-icons">visibility</span> Ver Mapa Logístico
+                </button>
+              </div>
+            </div>
+
+            <!-- Toolbar de Filtros Internos del Mapa -->
             <div class="map-toolbar">
-              <button id="btnToggleFilters" class="btn-small-icon" type="button" title="Mostrar/ocultar filtros">
+              <button id="btnToggleFilters" class="btn-small-icon" type="button" title="Modificar filtros">
                 <span class="material-icons">tune</span>
               </button>
 
@@ -55,7 +89,9 @@
               </div>
             </div>
 
+            <!-- Contenedor del Mapa Leaflet -->
             <div id="map"></div>
+
           </div>
         </section>
       </main>
