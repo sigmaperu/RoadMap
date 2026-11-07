@@ -263,3 +263,47 @@ body {
 
 .bento-card.card-gris { background: #f8fafc; border-color: #e2e8f0; }
 .bento-card.card-gris::before { content: ""; position: absolute; top: 0; left: 0; bottom: 0; width: 4px; background: #94a3b8; }
+
+/* ==========================================================================
+   Control Responsivo y Táctil del Sidebar en Móviles
+   ========================================================================== */
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+  z-index: 2500;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.sidebar-backdrop.backdrop--active {
+  opacity: 1;
+  visibility: visible;
+}
+
+@media(max-width: 860px) {
+  .sidebar { 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    bottom: 0; 
+    width: 260px; 
+    height: 100vh;
+    margin: 0; 
+    border-radius: 0; 
+    box-shadow: 4px 0 20px rgba(0,0,0,0.25); 
+    transform: translateX(-100%); 
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+    z-index: 3000; 
+  }
+  
+  .sidebar.sidebar--open { 
+    transform: translateX(0); 
+  }
+
+  .icon-button--menu { 
+    display: inline-flex !important; 
+  }
+}
