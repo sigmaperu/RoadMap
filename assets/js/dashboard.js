@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - dashboard.js (Lógica de negocio y renderizado de gráficos del Dashboard)
+   RoadMap - dashboard.js (Gestión de Landing Ejecutiva y Panel Analítico)
    ========================================================================== */
 
 (() => {
@@ -66,6 +66,12 @@
   let selectedCanales = new Set(["Todos"]);
   let selectedMetrica = "Pedidos";
 
+  // Elementos DOM
+  const executiveLanding = document.getElementById("executiveLanding");
+  const detailedView = document.getElementById("detailedView");
+  const btnExploreDetail = document.getElementById("btnExploreDetail");
+  const btnBackToLanding = document.getElementById("btnBackToLanding");
+
   const filterCentro = document.getElementById("filterCentro");
   const segCanal = document.getElementById("segCanal");
   const segMetrica= document.getElementById("segMetrica");
@@ -76,6 +82,12 @@
   const kpiSoles    = document.getElementById("kpiSoles");
   const kpiCamiones = document.getElementById("kpiCamiones");
 
+  const globalKpiClientes = document.getElementById("globalKpiClientes");
+  const globalKpiPedidos  = document.getElementById("globalKpiPedidos");
+  const globalKpiKg       = document.getElementById("globalKpiKg");
+  const globalKpiSoles    = document.getElementById("globalKpiSoles");
+  const globalKpiCamiones = document.getElementById("globalKpiCamiones");
+
   const piKgCamion = document.getElementById("piKgCamion");
   const piKgCliente = document.getElementById("piKgCliente");
   const piClientesCamion = document.getElementById("piClientesCamion");
@@ -85,15 +97,55 @@
       const text = await loadCSVWithFallback();
       const { rows } = parseCSV(text);
       allRows = rows;
+      
       buildCentroFilter();
       buildCanalSeg();
       buildMetricaSeg();
+      setupNavigationEvents();
+
+      renderGlobalLanding();
       render();
-      window.addEventListener("resize", renderCharts);
+      window.addEventListener("resize", () => {
+        renderGlobalCharts();
+        renderCharts();
+      });
     }catch(err){
       console.error("Error RoadMap.csv:", err);
       alert("No se pudo cargar RoadMap.csv para Dashboard");
     }
+  }
+
+  function setupNavigationEvents(){
+    // Ir al detalle analítico
+    btnExploreDetail.addEventListener("click", () => {
+      executiveLanding.classList.add("hidden");
+      detailedView.classList.remove("hidden");
+      renderCharts();
+    });
+
+    // Volver a la Landing Global
+    btnBackToLanding.addEventListener("click", () => {
+      detailedView.classList.add("hidden");
+      executiveLanding.classList.remove("hidden");
+      renderGlobalLanding();
+    });
+
+    // Click en tarjetas de la landing para saltar al detalle con métrica preseleccionada
+    document.querySelectorAll(".landing-card-click").forEach(card => {
+      card.addEventListener("click", () => {
+        const metric = card.getAttribute("data-target-metric");
+        selectedMetrica = metric;
+        
+        // Actualizar chips de métrica activos
+        [...segMetrica.querySelectorAll(".seg__chip")].forEach(chip => {
+          chip.setAttribute("aria-pressed", chip.textContent === metric ? "true" : "false");
+        });
+
+        executiveLanding.classList.add("hidden");
+        detailedView.classList.remove("hidden");
+        renderCharts();
+      });
+    });
   }
 
   function buildCentroFilter(){
@@ -172,6 +224,36 @@
   const countTrucks   = rows => unique(rows.filter(r => !isTruckExcluded(r)).map(r => r[IDX.PLACA] ?? "")).length;
 
   function formatK(value){ return `S/ ${(value/1000).toLocaleString('en-US',{maximumFractionDigits:1})}K`; }
+
+  function renderGlobalLanding(){
+    const rows = allRows;
+    const clientes = countClientes(rows);
+    const pedidos  = countPedidos(rows);
+    const kg       = sumKg(rows);
+    const soles    = sumSoles(rows);
+    const camiones = countTrucks(rows);
+
+    globalKpiClientes.textContent = clientes.toLocaleString("es-PE");
+    globalKpiPedidos.textContent  = pedidos.toLocaleString("es-PE");
+    globalKpiKg.textContent       = kg.toLocaleString("es-PE",{maximumFractionDigits:2});
+    globalKpiSoles.textContent    = formatK(soles);
+    globalKpiCamiones.textContent = camiones.toLocaleString("es-PE");
+
+    // Gráficos de resumen global
+    {
+      const map = new Map();
+      rows.forEach(r => { const k=r[IDX.CENTRO] ?? ""; if(!k) return; if(!map.has(k)) map.set(k,[]); map.get(k).push(r); });
+      const serie = Array.from(map.entries()).map(([label,group]) => ({ label, value: countPedidos(group) }));
+      chartV_Centros_VLabels("landingChartCentros", topN(serie, 10), { barColor:"#2563eb" });
+    }
+    {
+      const map = new Map();
+      rows.forEach(r => { const k=r[IDX.CANAL] ?? ""; if(!k) return; if(!map.has(k)) map.set(k,[]); map.get(k).push(r); });
+      const serie = Array.from(map.entries()).map(([label,group]) => ({ label, value: countPedidos(group) }));
+      chartV_Canal_HLabels("landingChartCanal", topN(serie, 10), { barColor:"#b45309" });
+    }
+  }
+
   function renderKPIs(){
     const rows = rowsForOthers();
     const clientes = countClientes(rows);
@@ -459,6 +541,22 @@
     renderHChart('chartTruckWorst', '#9ca3af', getTrucksSeries(metricName, false));
     renderHChart('chartRutaBest',   '#22c55e', getRutasSeries(metricName, true));
     renderHChart('chartRutaWorst',  '#f59e0b', getRutasSeries(metricName, false));
+  }
+
+  function renderGlobalCharts(){
+    const rows = allRows;
+    {
+      const map = new Map();
+      rows.forEach(r => { const k=r[IDX.CENTRO] ?? ""; if(!k) return; if(!map.has(k)) map.set(k,[]); map.get(k).push(r); });
+      const serie = Array.from(map.entries()).map(([label,group]) => ({ label, value: countPedidos(group) }));
+      chartV_Centros_VLabels("landingChartCentros", topN(serie, 10), { barColor:"#2563eb" });
+    }
+    {
+      const map = new Map();
+      rows.forEach(r => { const k=r[IDX.CANAL] ?? ""; if(!k) return; if(!map.has(k)) map.set(k,[]); map.get(k).push(r); });
+      const serie = Array.from(map.entries()).map(([label,group]) => ({ label, value: countPedidos(group) }));
+      chartV_Canal_HLabels("landingChartCanal", topN(serie, 10), { barColor:"#b45309" });
+    }
   }
 
   function render(){
