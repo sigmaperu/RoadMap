@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - styles.css (Soporte Definitivo para Sidebar, Layout y Bento Cards)
+   RoadMap - styles.css (Versión Corporativa Definitiva - Fowllow UI)
    ========================================================================== */
 
 :root {
@@ -265,7 +265,7 @@ body {
 .bento-card.card-gris::before { content: ""; position: absolute; top: 0; left: 0; bottom: 0; width: 4px; background: #94a3b8; }
 
 /* ==========================================================================
-   Control Responsivo y Táctil del Sidebar en Móviles
+   BACKDROP & MÓVILES (Responsivo y Táctil)
    ========================================================================== */
 .sidebar-backdrop {
   position: fixed;
@@ -283,7 +283,22 @@ body {
   visibility: visible;
 }
 
-@media(max-width: 860px) {
+@media (max-width: 860px) {
+  html, body { 
+    height: 100%; 
+    overflow-x: hidden; 
+    overflow-y: auto; 
+  }
+  
+  .app-shell { 
+    display: block; 
+    position: relative;
+    width: 100vw; 
+    height: auto; 
+    min-height: 100vh;
+    overflow: visible; 
+  }
+
   .sidebar { 
     position: fixed; 
     top: 0; 
@@ -293,17 +308,68 @@ body {
     height: 100vh;
     margin: 0; 
     border-radius: 0; 
-    box-shadow: 4px 0 20px rgba(0,0,0,0.25); 
+    box-shadow: 4px 0 25px rgba(0,0,0,0.3); 
     transform: translateX(-100%); 
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
     z-index: 3000; 
+    padding: 10px 12px;
   }
   
   .sidebar.sidebar--open { 
     transform: translateX(0); 
   }
 
+  .sidebar__brand { 
+    height: 68px; 
+    padding: 3px 8px 9px; 
+  }
+  
+  .sidebar__brand img { 
+    width: 130px !important; 
+    height: auto !important; 
+    max-width: 130px !important; 
+    max-height: 56px !important; 
+  }
+  
+  .gm-nav, .sidebar__nav { 
+    overflow-x: auto; 
+    flex-direction: row; 
+    padding: 0; 
+  }
+  
+  .gm-nav__item, .nav-item { 
+    flex: 0 0 auto; 
+    min-height: 44px; 
+    padding: 9px 14px; 
+    border-radius: 12px; 
+  }
+  
+  .gm-nav__item.active::before, .gm-nav__item.active::after, 
+  .nav-item.active::before, .nav-item.active::after { 
+    display: none; 
+  }
+  
+  .main-layout { 
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important; 
+    border-radius: 0 !important; 
+    box-shadow: none !important; 
+    height: auto !important; 
+    min-height: 100vh;
+    overflow: visible !important; 
+  }
+  
   .icon-button--menu { 
     display: inline-flex !important; 
+  }
+  
+  .content { 
+    padding: 12px; 
+    overflow: visible; 
+  }
+  
+  .agenda-card { 
+    padding: 0; 
   }
 }
