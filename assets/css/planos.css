@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - planos.css (Estilos específicos para Planos y Leaflet Map)
+   RoadMap - planos.css (Estilos para Planos, Mapa y Pantalla Selectora Inicial)
    ========================================================================== */
 
 .map-wrapper { 
@@ -21,7 +21,132 @@
   background: #f8fafc;
 }
 
-/* Toolbar flotante de filtros */
+/* ========================================== */
+/* PANTALLA SELECTORA INICIAL (RENDIMIENTO)     */
+/* ========================================== */
+.initial-selector-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(6px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  border-radius: 16px;
+  transition: opacity 0.25s ease;
+}
+
+.initial-selector-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.selector-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 28px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.selector-card__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 12px;
+}
+
+.selector-card__header .material-icons {
+  font-size: 28px;
+  color: var(--primary, #9C27B0);
+  background: var(--primary-light, #F3E5F5);
+  padding: 8px;
+  border-radius: 12px;
+}
+
+.selector-card__header h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.selector-card__header p {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 2px 0 0 0;
+}
+
+.selector-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.selector-form-group label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #475569;
+  letter-spacing: 0.05em;
+}
+
+.selector-form-group select {
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  font: inherit;
+  font-size: 0.9rem;
+  color: #1e293b;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.selector-form-group select:focus {
+  border-color: var(--primary, #9C27B0);
+  background: #fff;
+}
+
+.btn-launch-map {
+  margin-top: 8px;
+  height: 46px;
+  border: none;
+  border-radius: 12px;
+  background: var(--primary, #9C27B0);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(156,39,176,0.35);
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+.btn-launch-map:hover {
+  background: var(--primary-dark, #7B1FA2);
+  transform: translateY(-1px);
+}
+
+/* ========================================== */
+/* MAP TOOLBAR & FILTROS FLOTANTES           */
+/* ========================================== */
 .map-toolbar {
   position: absolute;
   top: 16px;
