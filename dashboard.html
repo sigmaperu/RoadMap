@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>RoadMap – Dashboard</title>
+  <title>RoadMap – Dashboard Ejecutivo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Fuentes + Material Icons -->
@@ -12,10 +12,10 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   
   <!-- Estilos globales y específicos del Dashboard -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=23.0">
-  <link rel="stylesheet" href="assets/css/dashboard.css?v=23.0">
+  <link rel="stylesheet" href="assets/css/styles.css?v=24.0">
+  <link rel="stylesheet" href="assets/css/dashboard.css?v=24.0">
 
-  <!-- Header global y scripts -->
+  <!-- Scripts -->
   <script defer src="assets/js/main.js"></script>
   <script defer src="assets/js/dashboard.js"></script>
 </head>
@@ -31,23 +31,34 @@
       <main class="content">
         <section class="page-section">
 
-          <!-- Row 1: Filtro Centro + KPIs -->
-          <div class="row row--flush-next">
-            <div class="panel seg-card">
-              <div class="seg__label">Centro</div>
-              <select id="filterCentro" class="seg__select"></select>
+          <!-- ========================================== -->
+          <!-- VISTA 1: LANDING PAGE DE RESUMEN EJECUTIVO -->
+          <!-- ========================================== -->
+          <div id="executiveLanding" class="executive-landing">
+            <div class="landing-hero">
+              <div class="landing-hero__text">
+                <span class="landing-badge"><span class="material-icons">insights</span> Panel Gerencial Global</span>
+                <h1>Operación Braedt S.A.</h1>
+                <p>Resumen consolidado de todos los centros operativos, canales y métricas logísticas clave.</p>
+              </div>
+              <button id="btnExploreDetail" class="btn-explore" type="button">
+                <span class="material-icons">tune</span> Ver Detalle por Centro / Canal
+              </button>
             </div>
 
-            <div class="kpi-row">
-              <div class="kpi-card">
-                <div class="kpi-card__label"><span class="kpi-icon-badge"><span class="material-icons icon--slate">badge</span></span> Clientes</div>
-                <div id="kpiClientes" class="kpi-card__value">–</div>
+            <!-- KPIs Globales -->
+            <div class="kpi-row landing-kpis">
+              <div class="kpi-card landing-card-click" data-target-metric="Clientes">
+                <div class="kpi-card__label"><span class="kpi-icon-badge"><span class="material-icons icon--slate">badge</span></span> Clientes Totales</div>
+                <div id="globalKpiClientes" class="kpi-card__value">–</div>
+                <span class="card-hint">Ver desglose <span class="material-icons">arrow_forward</span></span>
               </div>
-              <div class="kpi-card">
-                <div class="kpi-card__label"><span class="kpi-icon-badge"><span class="material-icons icon--blue">assignment</span></span> Pedidos</div>
-                <div id="kpiPedidos" class="kpi-card__value">–</div>
+              <div class="kpi-card landing-card-click" data-target-metric="Pedidos">
+                <div class="kpi-card__label"><span class="kpi-icon-badge"><span class="material-icons icon--blue">assignment</span></span> Pedidos Globales</div>
+                <div id="globalKpiPedidos" class="kpi-card__value">–</div>
+                <span class="card-hint">Ver desglose <span class="material-icons">arrow_forward</span></span>
               </div>
-              <div class="kpi-card">
+              <div class="kpi-card landing-card-click" data-target-metric="Kilogramos">
                 <div class="kpi-card__label">
                   <span class="kpi-icon-badge">
                     <svg viewBox="0 0 32 32" width="20" height="20" aria-hidden="true" class="icon--green">
@@ -55,101 +66,181 @@
                       <path fill="currentColor" d="M12 10a4 4 0 1 1 8 0h3.5a3.5 3.5 0 0 1 3.5 3.5V22a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3v-8.5A3.5 3.5 0 0 1 8.5 10H12zm2 0h4a2 2 0 1 0-4 0z"></path>
                       <text x="16" y="22" text-anchor="middle" font-size="10" font-weight="800" fill="currentColor">KG</text>
                     </svg>
-                  </span> Kilogramos
+                  </span> Kilogramos Totales
                 </div>
-                <div id="kpiKg" class="kpi-card__value">–</div>
+                <div id="globalKpiKg" class="kpi-card__value">–</div>
+                <span class="card-hint">Ver desglose <span class="material-icons">arrow_forward</span></span>
               </div>
-              <div class="kpi-card">
-                <div class="kpi-card__label"><span class="kpi-icon-badge"><span class="material-icons icon--gold">paid</span></span> Soles</div>
-                <div id="kpiSoles" class="kpi-card__value">–</div>
+              <div class="kpi-card landing-card-click" data-target-metric="Soles">
+                <div class="kpi-card__label"><span class="kpi-icon-badge"><span class="material-icons icon--gold">paid</span></span> Facturación Soles</div>
+                <div id="globalKpiSoles" class="kpi-card__value">–</div>
+                <span class="card-hint">Ver desglose <span class="material-icons">arrow_forward</span></span>
               </div>
-              <div class="kpi-card">
-                <div class="kpi-card__label"><span class="kpi-icon-badge"><span class="material-icons icon--slate">local_shipping</span></span> Camiones</div>
-                <div id="kpiCamiones" class="kpi-card__value">–</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Row 2: Canal + PIs -->
-          <div class="row row--flush-next">
-            <div class="panel seg-card">
-              <div class="seg__label">Canal</div>
-              <div id="segCanal" class="seg__items" role="group" aria-label="Segmentación por Canal"></div>
-            </div>
-
-            <div class="panel pi-card">
-              <div class="kpi-card__label"><span class="kpi-icon-badge"><span class="material-icons icon--slate">insights</span></span> Indicadores (PIs)</div>
-              <div class="pi-grid">
-                <div class="pi-item"><div class="pi-item__label"><span class="material-icons icon--green">balance</span> Kg/Camión</div><div id="piKgCamion" class="pi-item__value">–</div></div>
-                <div class="pi-item"><div class="pi-item__label"><span class="material-icons icon--green">scale</span> Kg/Cliente</div><div id="piKgCliente" class="pi-item__value">–</div></div>
-                <div class="pi-item"><div class="pi-item__label"><span class="material-icons icon--slate">people_alt</span> Clientes/Camión</div><div id="piClientesCamion" class="pi-item__value">–</div></div>
+              <div class="kpi-card landing-card-click" data-target-metric="Camiones">
+                <div class="kpi-card__label"><span class="kpi-icon-badge"><span class="material-icons icon--slate">local_shipping</span></span> Flota Activa</div>
+                <div id="globalKpiCamiones" class="kpi-card__value">–</div>
+                <span class="card-hint">Ver desglose <span class="material-icons">arrow_forward</span></span>
               </div>
             </div>
-          </div>
 
-          <!-- Row 3: Métrica + Gráficos Centros/Canal -->
-          <div class="row">
-            <div class="panel seg-card">
-              <div class="seg__label">Métrica (para gráficos)</div>
-              <div id="segMetrica" class="seg__items" role="group" aria-label="Métrica de gráficos"></div>
-            </div>
-
-            <div class="charts-2col">
+            <!-- Resumen Gráfico Global -->
+            <div class="charts-2col" style="margin-top: 20px;">
               <div class="panel">
                 <div class="chart-title">
                   <span class="material-icons icon--blue">bar_chart</span>
-                  <span class="chart-title__text">Centros</span>
+                  <span class="chart-title__text">Distribución por Centro (Global)</span>
                 </div>
                 <div class="panel__body">
-                  <div id="chartCentrosV" class="chart-box" role="img" aria-label="Centros (barras verticales)"></div>
+                  <div id="landingChartCentros" class="chart-box"></div>
                 </div>
               </div>
 
               <div class="panel">
                 <div class="chart-title">
                   <span class="material-icons icon--gold">stacked_bar_chart</span>
-                  <span class="chart-title__text">Canal</span>
+                  <span class="chart-title__text">Distribución por Canal (Global)</span>
                 </div>
                 <div class="panel__body">
-                  <div id="chartCanalV" class="chart-box" role="img" aria-label="Canal (barras verticales)"></div>
+                  <div id="landingChartCanal" class="chart-box"></div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Gráficos inferiores -->
-          <div class="chart-grid-lower">
-            <div class="panel">
-              <div class="chart-title">
-                <span class="material-icons icon--green">trending_up</span>
-                <span class="chart-title__text">Top 10 Performer – Camiones</span>
-              </div>
-              <div class="panel__body"><div id="chartTruckBest" class="chart-box"></div></div>
+          <!-- ========================================== -->
+          <!-- VISTA 2: PANEL ANALÍTICO DETALLADO         -->
+          <!-- ========================================== -->
+          <div id="detailedView" class="detailed-view hidden">
+            
+            <!-- Barra de Retorno al Resumen -->
+            <div class="detail-topbar-nav">
+              <button id="btnBackToLanding" class="btn-back-landing" type="button">
+                <span class="material-icons">arrow_back</span> Volver al Resumen Global
+              </button>
+              <span class="detail-indicator">Modo Detalle por Centro y Canal</span>
             </div>
 
-            <div class="panel">
-              <div class="chart-title">
-                <span class="material-icons icon--slate">trending_down</span>
-                <span class="chart-title__text">Top 10 Offender – Camiones</span>
+            <!-- Row 1: Filtro Centro + KPIs -->
+            <div class="row row--flush-next">
+              <div class="panel seg-card">
+                <div class="seg__label">Centro</div>
+                <select id="filterCentro" class="seg__select"></select>
               </div>
-              <div class="panel__body"><div id="chartTruckWorst" class="chart-box"></div></div>
+
+              <div class="kpi-row">
+                <div class="kpi-card">
+                  <div class="kpi-card__label"><span class="kpi-icon-badge"><span class="material-icons icon--slate">badge</span></span> Clientes</div>
+                  <div id="kpiClientes" class="kpi-card__value">–</div>
+                </div>
+                <div class="kpi-card">
+                  <div class="kpi-card__label"><span class="kpi-icon-badge"><span class="material-icons icon--blue">assignment</span></span> Pedidos</div>
+                  <div id="kpiPedidos" class="kpi-card__value">–</div>
+                </div>
+                <div class="kpi-card">
+                  <div class="kpi-card__label">
+                    <span class="kpi-icon-badge">
+                      <svg viewBox="0 0 32 32" width="20" height="20" aria-hidden="true" class="icon--green">
+                        <rect x="5" y="10" width="22" height="14" rx="3" fill="currentColor" opacity=".14"></rect>
+                        <path fill="currentColor" d="M12 10a4 4 0 1 1 8 0h3.5a3.5 3.5 0 0 1 3.5 3.5V22a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3v-8.5A3.5 3.5 0 0 1 8.5 10H12zm2 0h4a2 2 0 1 0-4 0z"></path>
+                        <text x="16" y="22" text-anchor="middle" font-size="10" font-weight="800" fill="currentColor">KG</text>
+                      </svg>
+                    </span> Kilogramos
+                  </div>
+                  <div id="kpiKg" class="kpi-card__value">–</div>
+                </div>
+                <div class="kpi-card">
+                  <div class="kpi-card__label"><span class="kpi-icon-badge"><span class="material-icons icon--gold">paid</span></span> Soles</div>
+                  <div id="kpiSoles" class="kpi-card__value">–</div>
+                </div>
+                <div class="kpi-card">
+                  <div class="kpi-card__label"><span class="kpi-icon-badge"><span class="material-icons icon--slate">local_shipping</span></span> Camiones</div>
+                  <div id="kpiCamiones" class="kpi-card__value">–</div>
+                </div>
+              </div>
             </div>
 
-            <div class="panel">
-              <div class="chart-title">
-                <span class="material-icons icon--green">leaderboard</span>
-                <span class="chart-title__text">Top 10 Performer – Rutas</span>
+            <!-- Row 2: Canal + PIs -->
+            <div class="row row--flush-next">
+              <div class="panel seg-card">
+                <div class="seg__label">Canal</div>
+                <div id="segCanal" class="seg__items" role="group" aria-label="Segmentación por Canal"></div>
               </div>
-              <div class="panel__body"><div id="chartRutaBest" class="chart-box"></div></div>
+
+              <div class="panel pi-card">
+                <div class="kpi-card__label"><span class="kpi-icon-badge"><span class="material-icons icon--slate">insights</span></span> Indicadores (PIs)</div>
+                <div class="pi-grid">
+                  <div class="pi-item"><div class="pi-item__label"><span class="material-icons icon--green">balance</span> Kg/Camión</div><div id="piKgCamion" class="pi-item__value">–</div></div>
+                  <div class="pi-item"><div class="pi-item__label"><span class="material-icons icon--green">scale</span> Kg/Cliente</div><div id="piKgCliente" class="pi-item__value">–</div></div>
+                  <div class="pi-item"><div class="pi-item__label"><span class="material-icons icon--slate">people_alt</span> Clientes/Camión</div><div id="piClientesCamion" class="pi-item__value">–</div></div>
+                </div>
+              </div>
             </div>
 
-            <div class="panel">
-              <div class="chart-title">
-                <span class="material-icons icon--slate">bar_chart</span>
-                <span class="chart-title__text">Top 10 Offender – Rutas</span>
+            <!-- Row 3: Métrica + Gráficos Centros/Canal -->
+            <div class="row">
+              <div class="panel seg-card">
+                <div class="seg__label">Métrica (para gráficos)</div>
+                <div id="segMetrica" class="seg__items" role="group" aria-label="Métrica de gráficos"></div>
               </div>
-              <div class="panel__body"><div id="chartRutaWorst" class="chart-box"></div></div>
+
+              <div class="charts-2col">
+                <div class="panel">
+                  <div class="chart-title">
+                    <span class="material-icons icon--blue">bar_chart</span>
+                    <span class="chart-title__text">Centros</span>
+                  </div>
+                  <div class="panel__body">
+                    <div id="chartCentrosV" class="chart-box" role="img" aria-label="Centros (barras verticales)"></div>
+                  </div>
+                </div>
+
+                <div class="panel">
+                  <div class="chart-title">
+                    <span class="material-icons icon--gold">stacked_bar_chart</span>
+                    <span class="chart-title__text">Canal</span>
+                  </div>
+                  <div class="panel__body">
+                    <div id="chartCanalV" class="chart-box" role="img" aria-label="Canal (barras verticales)"></div>
+                  </div>
+                </div>
+              </div>
             </div>
+
+            <!-- Gráficos inferiores -->
+            <div class="chart-grid-lower">
+              <div class="panel">
+                <div class="chart-title">
+                  <span class="material-icons icon--green">trending_up</span>
+                  <span class="chart-title__text">Top 10 Performer – Camiones</span>
+                </div>
+                <div class="panel__body"><div id="chartTruckBest" class="chart-box"></div></div>
+              </div>
+
+              <div class="panel">
+                <div class="chart-title">
+                  <span class="material-icons icon--slate">trending_down</span>
+                  <span class="chart-title__text">Top 10 Offender – Camiones</span>
+                </div>
+                <div class="panel__body"><div id="chartTruckWorst" class="chart-box"></div></div>
+              </div>
+
+              <div class="panel">
+                <div class="chart-title">
+                  <span class="material-icons icon--green">leaderboard</span>
+                  <span class="chart-title__text">Top 10 Performer – Rutas</span>
+                </div>
+                <div class="panel__body"><div id="chartRutaBest" class="chart-box"></div></div>
+              </div>
+
+              <div class="panel">
+                <div class="chart-title">
+                  <span class="material-icons icon--slate">bar_chart</span>
+                  <span class="chart-title__text">Top 10 Offender – Rutas</span>
+                </div>
+                <div class="panel__body"><div id="chartRutaWorst" class="chart-box"></div></div>
+              </div>
+            </div>
+
           </div>
 
         </section>
