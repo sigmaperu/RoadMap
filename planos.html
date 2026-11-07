@@ -5,28 +5,22 @@
   <title>RoadMap – Planos</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Fuentes + Material Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
+  <link rel="stylesheet" href="assets/css/styles.css?v=19.0">
 
-  <!-- Estilos globales -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=18.0">
-
-  <!-- Script modular global (Inyecta automáticamente sidebar y header) -->
   <script defer src="assets/js/main.js"></script>
 
   <style>
-    /* Contenedor del mapa optimizado y responsivo para móviles */
     .map-wrapper { 
       position: relative; 
       width: 100%; 
       height: calc(100vh - 140px); 
-      min-height: 450px; 
+      min-height: 520px; 
       display: flex; 
       flex-direction: column; 
     }
@@ -40,7 +34,6 @@
       background: #f8fafc;
     }
     
-    /* Toolbar flotante de filtros */
     .map-toolbar {
       position: absolute;
       top: 16px;
@@ -74,7 +67,7 @@
       padding: 14px 18px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.12);
       transition: all 0.25s ease;
-      width: 260px;
+      width: 280px;
     }
     .filters-floating--collapsed { display: none; }
     .filters-floating__row { display: flex; flex-direction: column; gap: 10px; }
@@ -99,7 +92,6 @@
     }
     .filter-group select:focus { border-color: var(--primary, #9C27B0); }
 
-    /* Marcadores personalizados con DivIcon y bolita central negra al marcar */
     .custom-pin {
       position: relative;
       width: 28px;
@@ -143,28 +135,20 @@
 
     .leaflet-popup-content-wrapper { border-radius: 12px; padding: 4px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
     .leaflet-popup-content { font-family: "Roboto", sans-serif; font-size: 0.85rem; color: #1e293b; line-height: 1.4; }
-
-    @media (max-width: 860px) {
-      .map-wrapper { height: calc(100vh - 110px); min-height: 400px; }
-    }
   </style>
 </head>
 
 <body data-title="Planos">
   <div class="app-shell">
-
-    <!-- Sidebar modular inyectado idéntico a la Agenda -->
+    <!-- Sidebar Modular Estándar (Idéntico a Agenda) -->
     <aside class="sidebar" id="app-sidebar"></aside>
 
     <div class="main-layout">
-      <!-- Header modular inyectado -->
       <div id="app-header"></div>
 
       <main class="content">
         <section class="page-section">
-
           <div class="map-wrapper">
-            <!-- Toolbar & Filtros flotantes -->
             <div class="map-toolbar">
               <button id="btnToggleFilters" class="btn-small-icon" type="button" title="Mostrar/ocultar filtros">
                 <span class="material-icons">tune</span>
@@ -190,17 +174,13 @@
 
             <div id="map"></div>
           </div>
-
         </section>
       </main>
-
     </div>
   </div>
 
-  <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
 
-  <!-- Script Planos -->
   <script>
   (() => {
     const CSV_URL = (window.RoadMapConfig && window.RoadMapConfig.CSV_URL) || "https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv";
@@ -531,6 +511,5 @@
     document.addEventListener("DOMContentLoaded",init);
   })();
   </script>
-
 </body>
 </html>
