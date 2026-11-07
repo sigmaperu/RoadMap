@@ -9,12 +9,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css?v=17.0">
+  <link rel="stylesheet" href="assets/css/styles.css?v=19.0">
 
   <script defer src="assets/js/main.js"></script>
 </head>
 <body data-title="Agenda">
   <div class="app-shell">
+    <!-- Sidebar Modular Estándar -->
     <aside class="sidebar" id="app-sidebar"></aside>
 
     <div class="main-layout">
@@ -27,7 +28,6 @@
             <!-- Barra de Filtros Estilizada y Moderna -->
             <div class="agenda-filters">
               <div class="agenda-filters-inner">
-                <!-- Selector de Centro Estilizado en Píldora -->
                 <div class="agenda-filters__group">
                   <div class="select-wrapper">
                     <span class="material-icons select-icon">business</span>
@@ -40,7 +40,6 @@
                   <span class="kpi-chip"><span class="material-icons">local_shipping</span> <strong id="kpiVehiculos">0</strong> Placas</span>
                 </div>
 
-                <!-- Acciones y Buscador -->
                 <div class="agenda-search-box">
                   <button id="viewToggleBtn" class="agenda-search-toggle" type="button" title="Cambiar vista (Tabla / Tarjetas)" style="background:#0f172a;">
                     <span class="material-icons" id="viewIcon">table_chart</span>
@@ -61,7 +60,7 @@
               </div>
             </div>
 
-            <!-- Tabla Rediseñada, Estilizada y Compacta -->
+            <!-- Tabla Tradicional Rediseñada -->
             <div class="agenda-table-wrapper" id="agendaResultsTable" style="display:none;">
               <table id="agendaTable" class="agenda-table">
                 <thead>
@@ -80,7 +79,7 @@
               </table>
             </div>
 
-            <!-- Vista Bento Grid (Tarjetas coloreadas por Estatus) -->
+            <!-- Vista Bento Grid -->
             <div id="agendaResultsCards" class="bento-grid" style="display:none;"></div>
 
           </div>
@@ -88,164 +87,6 @@
       </main>
     </div>
   </div>
-
-  <style>
-    /* Estilos generales de la barra y filtros */
-    .agenda-filters { display: flex; align-items: center; margin-bottom: 20px; width: 100%; }
-    .agenda-filters-inner { display: flex; flex: 1; align-items: center; gap: 12px; width: 100%; flex-wrap: nowrap; }
-    
-    /* Selector de Centro Estilizado (Tipo Píldora Corporativa) */
-    .agenda-filters__group { position: relative; min-width: 240px; }
-    .select-wrapper {
-      position: relative;
-      display: flex;
-      align-items: center;
-      background: #f8fafc;
-      border: 1px solid #cbd5e1;
-      border-radius: 999px;
-      padding: 0 14px 0 38px;
-      height: 38px;
-      transition: all 0.2s ease;
-    }
-    .select-wrapper:hover { border-color: var(--primary); background: #fff; }
-    .select-icon {
-      position: absolute;
-      left: 12px;
-      font-size: 18px;
-      color: var(--primary);
-    }
-    .select-wrapper select {
-      width: 100%;
-      border: none;
-      background: transparent;
-      font: inherit;
-      font-size: 0.88rem;
-      font-weight: 600;
-      color: #1e293b;
-      outline: none;
-      cursor: pointer;
-    }
-
-    .agenda-kpis { display: inline-flex; align-items: center; gap: 8px; }
-    .kpi-chip { background: #f1f5f9; color: #334155; padding: 6px 12px; border-radius: 999px; font-size: 0.8rem; font-weight: 500; display: inline-flex; align-items: center; gap: 5px; border: 1px solid #e2e8f0; }
-    .kpi-chip .material-icons { font-size: 16px; color: var(--primary); }
-
-    .agenda-search-box { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; }
-    
-    .agenda-search-bar { 
-      position: relative; 
-      overflow: hidden; 
-      max-width: 0; 
-      opacity: 0; 
-      transition: max-width 0.28s ease, opacity 0.22s ease; 
-      height: 38px; 
-      display: flex; 
-      align-items: center; 
-    }
-    .agenda-search-bar.agenda-search-bar--open { max-width: 280px; opacity: 1; }
-    .agenda-search-input {
-      height: 38px; padding: 0 14px; width: 280px;
-      border-radius: 999px; border: 1px solid #cbd5e1; background: #fff; font: inherit; font-size: 0.90rem; outline: none;
-    }
-    .agenda-search-input:focus { border-color: var(--primary); }
-
-    .agenda-search-toggle { 
-      border: none; border-radius: 999px; width: 38px; height: 38px; cursor: pointer; background: var(--primary); color: #fff; 
-      display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(156,39,176,0.3); transition: transform 0.15s; flex-shrink: 0;
-    }
-    .agenda-search-toggle:hover { transform: scale(1.05); }
-
-    /* ========================================== */
-    /* DISEÑO PROFESIONAL DE LA TABLA TRADICIONAL */
-    /* ========================================== */
-    .agenda-table-wrapper { 
-      margin-top: 12px; 
-      overflow-x: auto; 
-      border-radius: 12px; 
-      border: 1px solid #e2e8f0; 
-      background: #ffffff;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.02);
-    }
-    .agenda-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-    .agenda-table thead { background: #f8fafc; color: #475569; border-bottom: 2px solid #e2e8f0; }
-    .agenda-table th, .agenda-table td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; text-align: left; vertical-align: middle; }
-    .agenda-table th { font-weight: 600; white-space: nowrap; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; }
-    .agenda-th-icon { font-size: 15px; vertical-align: middle; margin-right: 6px; color: var(--primary); }
-    
-    .agenda-table tbody tr { transition: background-color 0.15s ease; }
-    .agenda-table tbody tr:hover { background-color: #f8fafc; }
-
-    .agenda-name { display: flex; flex-direction: column; gap: 2px; }
-    .agenda-name-text { font-weight: 600; color: #1e293b; }
-    .agenda-subtext { font-size: 0.75rem; color: #64748b; }
-
-    /* Botones de acción en tabla alineados */
-    .table-actions-cell { display: inline-flex; align-items: center; gap: 6px; justify-content: flex-end; width: 100%; }
-    .agenda-whatsapp-btn { border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; background: #25D366; color: #fff; display: inline-flex; align-items: center; justify-content: center; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 2px 5px rgba(37,211,102,0.3); }
-    .agenda-whatsapp-btn:hover { transform: scale(1.1); box-shadow: 0 4px 8px rgba(37,211,102,0.4); }
-    .agenda-whatsapp-btn svg { width: 14px; height: 14px; display: block; }
-
-    .agenda-map-icon { border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; background: #2563EB; color: #fff; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(37,99,235,0.3); transition: transform .15s ease, box-shadow 0.15s; }
-    .agenda-map-icon:hover { transform: scale(1.1); box-shadow: 0 4px 8px rgba(37,99,235,0.4); }
-    .agenda-map-icon svg { width: 14px; height: 14px; fill: currentColor; }
-
-    /* Estatus y Colores */
-    .status-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; box-shadow: 0 0 0 3px rgba(0,0,0,0.04); }
-    .status-verde { background-color: #10b981; } 
-    .status-rojo { background-color: #ef4444; } 
-    .status-naranja { background-color: #f59e0b; } 
-    .status-gris { background-color: #94a3b8; } 
-
-    /* Estilos Bento Grid */
-    .bento-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 16px;
-      margin-top: 16px;
-    }
-    .bento-card {
-      border: 1px solid #e2e8f0;
-      border-radius: 16px;
-      padding: 18px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-      transition: all 0.2s ease;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      position: relative;
-      overflow: hidden;
-    }
-    .bento-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
-
-    .bento-card.card-verde { background: #f0fdf4; border-color: #bbf7d0; }
-    .bento-card.card-verde::before { content: ""; position: absolute; top: 0; left: 0; bottom: 0; width: 4px; background: #10b981; }
-
-    .bento-card.card-rojo { background: #fef2f2; border-color: #fecaca; }
-    .bento-card.card-rojo::before { content: ""; position: absolute; top: 0; left: 0; bottom: 0; width: 4px; background: #ef4444; }
-
-    .bento-card.card-naranja { background: #fffbeb; border-color: #fde68a; }
-    .bento-card.card-naranja::before { content: ""; position: absolute; top: 0; left: 0; bottom: 0; width: 4px; background: #f59e0b; }
-
-    .bento-card.card-gris { background: #f8fafc; border-color: #e2e8f0; }
-    .bento-card.card-gris::before { content: ""; position: absolute; top: 0; left: 0; bottom: 0; width: 4px; background: #94a3b8; }
-
-    .bento-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .bento-badge-placa { background: rgba(255,255,255,0.8); color: var(--primary-dark, #7B1FA2); font-weight: 700; font-size: 0.82rem; padding: 4px 10px; border-radius: 999px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid rgba(0,0,0,0.05); }
-    .bento-title { font-size: 0.95rem; font-weight: 700; color: #0f172a; margin-bottom: 12px; line-height: 1.3; }
-    .bento-details { display: flex; flex-direction: column; gap: 6px; font-size: 0.82rem; color: #475569; background: rgba(255,255,255,0.6); padding: 10px 12px; border-radius: 10px; margin-bottom: 12px; border: 1px solid rgba(0,0,0,0.03); }
-    .bento-detail-row { display: flex; justify-content: space-between; align-items: center; }
-    .bento-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 10px; }
-    .bento-actions { display: flex; gap: 8px; }
-    .bento-btn { border: none; border-radius: 8px; padding: 6px 10px; font-size: 0.78rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: transform 0.1s; }
-    .bento-btn:hover { transform: scale(1.03); }
-    .bento-btn-map { background: #2563eb; color: #fff; }
-    .bento-btn-wa { background: #25d366; color: #fff; }
-
-    @media (max-width: 920px) {
-      .agenda-kpis { display: none; }
-      .bento-grid { grid-template-columns: 1fr; }
-    }
-  </style>
 
   <script>
   (() => {
@@ -452,7 +293,6 @@
 
         const tr = document.createElement("tr");
         
-        // Columna Estado
         const tdStatus = document.createElement("td");
         tdStatus.setAttribute("data-label", "Estado");
         tdStatus.style.textAlign = "center";
@@ -463,7 +303,6 @@
         tr.appendChild(td(placa,"Placa"));
         tr.appendChild(td(cliente,"Cliente"));
 
-        // Nombre y Dirección en la misma celda ordenados con jerarquía
         const tdNombre = document.createElement("td");
         tdNombre.setAttribute("data-label","Nombre");
         tdNombre.innerHTML = `
@@ -478,7 +317,6 @@
         tr.appendChild(td(ruta,"Ruta"));
         tr.appendChild(td(auxiliar,"Auxiliar"));
 
-        // Celda de Acciones (Mapa y WhatsApp alineados)
         const tdAcciones = document.createElement("td");
         tdAcciones.setAttribute("data-label","Acciones");
         
