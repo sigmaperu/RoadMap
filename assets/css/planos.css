@@ -1,0 +1,131 @@
+/* ==========================================================================
+   RoadMap - planos.css (Estilos específicos para Planos y Leaflet Map)
+   ========================================================================== */
+
+.map-wrapper { 
+  position: relative; 
+  width: 100%; 
+  height: calc(100vh - 140px); 
+  min-height: 520px; 
+  display: flex; 
+  flex-direction: column; 
+}
+
+#map { 
+  width: 100%; 
+  flex: 1; 
+  border-radius: 16px; 
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
+  overflow: hidden; 
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+/* Toolbar flotante de filtros */
+.map-toolbar {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn-small-icon {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  transition: all 0.2s ease;
+  color: var(--primary, #9C27B0);
+}
+.btn-small-icon:hover { background: #f8fafc; transform: scale(1.05); }
+
+.filters-floating {
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(8px);
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 14px 18px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+  transition: all 0.25s ease;
+  width: 280px;
+}
+.filters-floating--collapsed { display: none; }
+.filters-floating__row { display: flex; flex-direction: column; gap: 10px; }
+.filter-group { display: flex; flex-direction: column; gap: 4px; }
+.filter-group label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #64748b;
+  letter-spacing: 0.05em;
+}
+.filter-group select {
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  font-size: 0.85rem;
+  color: #1e293b;
+  outline: none;
+  cursor: pointer;
+}
+.filter-group select:focus { border-color: var(--primary, #9C27B0); }
+
+/* Marcadores personalizados con DivIcon y bolita central negra al marcar */
+.custom-pin {
+  position: relative;
+  width: 28px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.25));
+  transition: transform 0.2s;
+}
+.custom-pin:hover { transform: scale(1.1); }
+.custom-pin-body {
+  position: absolute;
+  top: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+}
+.custom-pin-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  transform: rotate(45deg);
+  transition: background-color 0.2s ease;
+}
+.pin-verde .custom-pin-body { background-color: #10b981; }
+.pin-rojo .custom-pin-body { background-color: #ef4444; }
+.pin-naranja .custom-pin-body { background-color: #f59e0b; }
+.pin-gris .custom-pin-body { background-color: #94a3b8; }
+
+.is-visited .custom-pin-dot {
+  background-color: #000000 !important;
+  box-shadow: 0 0 0 2px #ffffff;
+}
+
+.leaflet-popup-content-wrapper { border-radius: 12px; padding: 4px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+.leaflet-popup-content { font-family: "Roboto", sans-serif; font-size: 0.85rem; color: #1e293b; line-height: 1.4; }
+
+@media (max-width: 860px) {
+  .map-wrapper { height: calc(100vh - 110px); min-height: 400px; }
+}
