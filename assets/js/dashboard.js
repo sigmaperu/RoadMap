@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - dashboard.js (Control de Landing Ejecutiva e interactividad)
+   RoadMap - dashboard.js (Command Center Global & Detalle Analítico)
    ========================================================================== */
 
 (() => {
@@ -75,6 +75,7 @@
   const segCanal = document.getElementById("segCanal");
   const segMetrica= document.getElementById("segMetrica");
 
+  const lblTotalCentros = document.getElementById("lblTotalCentros");
   const kpiClientes = document.getElementById("kpiClientes");
   const kpiPedidos  = document.getElementById("kpiPedidos");
   const kpiKg       = document.getElementById("kpiKg");
@@ -125,9 +126,9 @@
       renderGlobalLanding();
     });
 
-    document.querySelectorAll(".landing-card-click").forEach(card => {
+    document.querySelectorAll(".cc-action-card").forEach(card => {
       card.addEventListener("click", () => {
-        const metric = card.getAttribute("data-target-metric");
+        const metric = card.getAttribute("data-metric");
         selectedMetrica = metric;
         
         [...segMetrica.querySelectorAll(".seg__chip")].forEach(chip => {
@@ -225,7 +226,9 @@
     const kg       = sumKg(rows);
     const soles    = sumSoles(rows);
     const camiones = countTrucks(rows);
+    const centrosCount = unique(rows.map(r => r[IDX.CENTRO] ?? "")).length;
 
+    lblTotalCentros.textContent = centrosCount;
     globalKpiClientes.textContent = clientes.toLocaleString("es-PE");
     globalKpiPedidos.textContent  = pedidos.toLocaleString("es-PE");
     globalKpiKg.textContent       = kg.toLocaleString("es-PE",{maximumFractionDigits:2});
