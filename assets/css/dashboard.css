@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - dashboard.css (Estilos limpios para Landing Ejecutiva y Detalle)
+   RoadMap - dashboard.css (Estilos del Command Center & Vista Analítica)
    ========================================================================== */
 
 :root {
@@ -12,7 +12,6 @@
   --chip-active:#111827;
   --chip-active-bg:#e0e7ff;
   --badge-bg:#eef2ff;
-  --badge-shadow:0 6px 14px rgba(0,0,0,.12);
   --card-shadow:0 1px 3px rgba(0,0,0,.1);
   --side-w: 240px;      
   --gap-rows: 16px;     
@@ -28,23 +27,27 @@
 .panel__body { padding:16px; }
 
 /* Control de Vistas */
-.executive-landing { display: flex; flex-direction: column; gap: 16px; }
-.executive-landing.hidden { display: none; }
+.cc-landing { display: flex; flex-direction: column; gap: 16px; }
+.cc-landing.hidden { display: none; }
 .detailed-view { display: flex; flex-direction: column; gap: var(--gap-rows); }
 .detailed-view.hidden { display: none; }
 
-/* Landing Hero Minimalista */
-.landing-hero-simple {
+/* Header Banner de la Landing */
+.cc-header-banner {
   background: #ffffff;
   border-radius: 16px;
-  padding: 20px 24px;
+  padding: 24px;
   box-shadow: var(--card-shadow);
   border: 1px solid #f1f5f9;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
-.landing-badge {
+@media (max-width: 860px) {
+  .cc-header-banner { flex-direction: column; align-items: flex-start; gap: 14px; }
+}
+
+.cc-badge {
   background: var(--badge-bg);
   color: var(--primary, #9C27B0);
   padding: 4px 10px;
@@ -58,78 +61,126 @@
   gap: 4px;
   margin-bottom: 6px;
 }
-.landing-hero-title h2 { font-size: 1.25rem; font-weight: 800; margin: 0 0 2px 0; color: #1e293b; }
-.landing-hero-title p { color: #64748b; font-size: 0.85rem; margin: 0; }
+.cc-header-info h1 { font-size: 1.35rem; font-weight: 800; margin: 0 0 2px 0; color: #1e293b; }
+.cc-header-info p { color: #64748b; font-size: 0.85rem; margin: 0; max-width: 650px; }
 
-/* Grids idénticos a tu imagen de referencia */
-.kpi-grid-top {
+.cc-stat-pill {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  color: #475569;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.cc-stat-pill strong { color: var(--primary, #9C27B0); }
+
+.cc-section-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0 2px 2px;
+}
+
+/* Grids idénticos a los de referencia */
+.cc-kpi-grid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: var(--gap-cards);
 }
 @media (max-width: 1024px) {
-  .kpi-grid-top { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cc-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-.pi-section-container {
+.cc-card {
   background: #fff;
   border-radius: 14px;
-  padding: 16px;
   box-shadow: var(--card-shadow);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
   border: 1px solid #f1f5f9;
 }
-.pi-section-header {
-  font-size: 0.9rem;
-  color: #374151;
+.cc-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.cc-icon-box {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: var(--badge-bg);
+}
+.icon-bg-blue { background: #e0f2fe; color: #0284c7; }
+.icon-bg-green { background: #dcfce7; color: #16a34a; }
+.icon-bg-gold { background: #fef3c7; color: #d97706; }
+.icon-bg-slate { background: #f1f5f9; color: #475569; }
+
+.cc-trend { font-size: 0.72rem; font-weight: 700; padding: 2px 6px; border-radius: 6px; }
+.trend-up { background: #dcfce7; color: #16a34a; }
+.trend-neutral { background: #f1f5f9; color: #64748b; }
+
+.cc-card-label { font-size: 0.88rem; color: #374151; font-weight: 800; }
+.cc-card-value {
+  font-size: clamp(1.1rem, 1.6vw, 1.45rem);
+  font-weight: 800;
+  line-height: 1.15;
+  color: #111827;
+  padding: 4px 0;
+}
+.cc-card-footer {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--primary, #9C27B0);
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-weight: 800;
-  margin-bottom: 12px;
+  justify-content: space-between;
+  margin-top: 6px;
+  border-top: 1px solid #f8fafc;
+  padding-top: 6px;
 }
-.pi-grid-top {
+
+/* Grids de PIs */
+.cc-pi-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--gap-cards);
 }
 @media (max-width: 1024px) {
-  .pi-grid-top { grid-template-columns: 1fr; }
+  .cc-pi-grid { grid-template-columns: 1fr; }
 }
 
-.pi-card-item {
+.cc-pi-card {
   background: #f9fafb;
   border: 1px solid #eef2f7;
   border-radius: 12px;
-  padding: 14px 16px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
-.pi-card-item .pi-item__value {
-  font-size: clamp(1.1rem, 1.6vw, 1.35rem);
-  font-weight: 800;
-  color: #111827;
-}
+.cc-pi-label { font-size: 0.8rem; color: #6b7280; display: flex; align-items: center; gap: 6px; font-weight: 800; }
+.cc-pi-value { font-size: clamp(1.2rem, 1.8vw, 1.45rem); font-weight: 800; color: #111827; }
+.cc-pi-sub { font-size: 0.75rem; color: #94a3b8; }
 
-/* Tarjetas interactivas con efecto hover */
-.landing-card-click {
+/* Tarjetas interactivas con hover */
+.cc-action-card {
   cursor: pointer;
-  position: relative;
   transition: all 0.2s ease;
 }
-.landing-card-click:hover {
+.cc-action-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(0,0,0,0.08);
   border-color: #cbd5e1;
-}
-.card-hint {
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: var(--primary, #9C27B0);
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  margin-top: 6px;
 }
 
 /* Topbar de Detalle */
@@ -160,7 +211,7 @@
 .btn-back-landing:hover { background: #f1f5f9; border-color: #94a3b8; }
 .detail-indicator { font-size: 0.85rem; font-weight: 600; color: #64748b; }
 
-/* Componentes del Panel Detallado */
+/* Estilos de la Vista Detallada */
 .row {
   display:grid;
   grid-template-columns:minmax(200px, var(--side-w)) 1fr;
