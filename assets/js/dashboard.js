@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - dashboard.js (Command Center Global & Detalle Analítico)
+   RoadMap - dashboard.js (Control de Dashboard SaaS & Renderizado Dinámico)
    ========================================================================== */
 
 (() => {
@@ -63,34 +63,15 @@
 
   let allRows = [];
   let selectedCentro = "Todos";
-  let selectedCanales = new Set(["Todos"]);
-  let selectedMetrica = "Pedidos";
+  let activeMetric = "Pedidos";
 
   // Elementos DOM
-  const executiveLanding = document.getElementById("executiveLanding");
-  const detailedView = document.getElementById("detailedView");
-  const btnBackToLanding = document.getElementById("btnBackToLanding");
-
   const filterCentro = document.getElementById("filterCentro");
-  const segCanal = document.getElementById("segCanal");
-  const segMetrica= document.getElementById("segMetrica");
-
-  const lblTotalCentros = document.getElementById("lblTotalCentros");
   const kpiClientes = document.getElementById("kpiClientes");
   const kpiPedidos  = document.getElementById("kpiPedidos");
   const kpiKg       = document.getElementById("kpiKg");
   const kpiSoles    = document.getElementById("kpiSoles");
   const kpiCamiones = document.getElementById("kpiCamiones");
-
-  const globalKpiClientes = document.getElementById("globalKpiClientes");
-  const globalKpiPedidos  = document.getElementById("globalKpiPedidos");
-  const globalKpiKg       = document.getElementById("globalKpiKg");
-  const globalKpiSoles    = document.getElementById("globalKpiSoles");
-  const globalKpiCamiones = document.getElementById("globalKpiCamiones");
-
-  const globalPiKgCamion = document.getElementById("globalPiKgCamion");
-  const globalPiKgCliente = document.getElementById("globalPiKgCliente");
-  const globalPiClientesCamion = document.getElementById("globalPiClientesCamion");
 
   const piKgCamion = document.getElementById("piKgCamion");
   const piKgCliente = document.getElementById("piKgCliente");
@@ -103,41 +84,42 @@
       allRows = rows;
       
       buildCentroFilter();
-      buildCanalSeg();
-      buildMetricaSeg();
-      setupNavigationEvents();
-
-      renderGlobalLanding();
+      setupInteractiveCards();
       render();
-      window.addEventListener("resize", () => {
-        renderGlobalCharts();
-        renderCharts();
-      });
+      window.addEventListener("resize", renderCharts);
     }catch(err){
       console.error("Error RoadMap.csv:", err);
       alert("No se pudo cargar RoadMap.csv para Dashboard");
     }
   }
 
-  function setupNavigationEvents(){
-    btnBackToLanding.addEventListener("click", () => {
-      detailedView.classList.add("hidden");
-      executiveLanding.classList.remove("hidden");
-      renderGlobalLanding();
-    });
-
-    document.querySelectorAll(".cc-action-card").forEach(card => {
+  function setupInteractiveCards(){
+    // Click en tarjetas KPI superiores para cambiar métrica activa
+    document.querySelectorAll(".fin-kpi-card").forEach(card => {
       card.addEventListener("click", () => {
         const metric = card.getAttribute("data-metric");
-        selectedMetrica = metric;
-        
-        [...segMetrica.querySelectorAll(".seg__chip")].forEach(chip => {
-          chip.setAttribute("aria-pressed", chip.textContent === metric ? "true" : "false");
-        });
+        if (metric) {
+          activeMetric = metric;
+          renderCharts();
+          // Scroll suave hacia los gráficos
+          document.querySelector(".fin-dark-panel").scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    });
 
-        executiveLanding.classList.add("hidden");
-        detailedView.classList.remove("hidden");
-        renderCharts();
+    // Pestañas superiores del header
+    document.querySelectorAll(".fin-tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".fin-tab").forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+      });
+    });
+
+    // Pestañas del panel oscuro inferior
+    document.querySelectorAll(".dark-tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".dark-tab").forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
       });
     });
   }
@@ -149,67 +131,12 @@
     filterCentro.addEventListener("change", () => { selectedCentro = filterCentro.value; render(); });
   }
 
-  function makeChip(label, active, onClick){
-    const btn = document.createElement("button");
-    btn.type="button"; btn.className="seg__chip";
-    btn.textContent = label;
-    btn.setAttribute("aria-pressed", active ? "true" : "false");
-    btn.addEventListener("click", () => onClick(btn, label));
-    return btn;
-  }
-
-  function buildCanalSeg(){
-    segCanal.innerHTML = "";
-    const canales = ["Todos", ...unique(allRows.map(r => r[IDX.CANAL] ?? "")).sort()];
-    canales.forEach(c => {
-      const chip = makeChip(c, selectedCanales.has(c), (btn, value) => {
-        if (value === "Todos"){
-          selectedCanales = new Set(["Todos"]);
-          [...segCanal.querySelectorAll(".seg__chip")]
-            .forEach(el => el.setAttribute("aria-pressed", el.textContent==="Todos" ? "true":"false"));
-        }else{
-          if (selectedCanales.has("Todos")) selectedCanales.delete("Todos");
-          if (selectedCanales.has(value)) selectedCanales.delete(value); else selectedCanales.add(value);
-          if (selectedCanales.size===0) selectedCanales.add("Todos");
-          [...segCanal.querySelectorAll(".seg__chip")]
-            .forEach(el => el.setAttribute("aria-pressed", selectedCanales.has(el.textContent) ? "true":"false"));
-        }
-        render();
-      });
-      segCanal.appendChild(chip);
-    });
-  }
-
-  function buildMetricaSeg(){
-    segMetrica.innerHTML = "";
-    const metricas = ["Clientes","Pedidos","Kilogramos","Soles","Camiones","Kg/Camión","Kg/Cliente","Clientes/Camión"];
-    metricas.forEach(m => {
-      const chip = makeChip(m, m===selectedMetrica, (btn, value) => {
-        selectedMetrica = value;
-        [...segMetrica.querySelectorAll(".seg__chip")]
-          .forEach(el => el.setAttribute("aria-pressed", el===btn ? "true":"false"));
-        renderCharts();
-      });
-      segMetrica.appendChild(chip);
-    });
-  }
-
-  function applyFiltersForCards(rows){
-    const canalesAll = selectedCanales.has("Todos");
+  function applyFilters(rows){
     return rows.filter(r => {
       const okC = (selectedCentro === "Todos" || (r[IDX.CENTRO] ?? "") === selectedCentro);
-      const okK = (canalesAll || selectedCanales.has(r[IDX.CANAL] ?? ""));
-      return okC && okK;
+      return okC;
     });
   }
-  function rowsForCentroChart(){
-    const canalesAll = selectedCanales.has("Todos");
-    return allRows.filter(r => (canalesAll || selectedCanales.has(r[IDX.CANAL] ?? "")));
-  }
-  function rowsForCanalChart(){
-    return allRows.filter(r => (selectedCentro === "Todos" || (r[IDX.CENTRO] ?? "") === selectedCentro));
-  }
-  function rowsForOthers(){ return applyFiltersForCards(allRows); }
 
   const countClientes = rows => unique(rows.filter(r => !isFRT(r)).map(r => r[IDX.CLIENTE] ?? "")).length;
   const countPedidos  = rows => unique(rows.filter(r => !isFRT(r)).map(r => r[IDX.PEDIDO]  ?? "")).length;
@@ -219,35 +146,8 @@
 
   function formatK(value){ return `S/ ${(value/1000).toLocaleString('en-US',{maximumFractionDigits:1})}K`; }
 
-  function renderGlobalLanding(){
-    const rows = allRows;
-    const clientes = countClientes(rows);
-    const pedidos  = countPedidos(rows);
-    const kg       = sumKg(rows);
-    const soles    = sumSoles(rows);
-    const camiones = countTrucks(rows);
-    const centrosCount = unique(rows.map(r => r[IDX.CENTRO] ?? "")).length;
-
-    lblTotalCentros.textContent = centrosCount;
-    globalKpiClientes.textContent = clientes.toLocaleString("es-PE");
-    globalKpiPedidos.textContent  = pedidos.toLocaleString("es-PE");
-    globalKpiKg.textContent       = kg.toLocaleString("es-PE",{maximumFractionDigits:2});
-    globalKpiSoles.textContent    = formatK(soles);
-    globalKpiCamiones.textContent = camiones.toLocaleString("es-PE");
-
-    const piKgCam = camiones ? (kg / camiones) : 0;
-    const piKgCli = clientes ? (kg / clientes) : 0;
-    const piCliCam= camiones ? (clientes / camiones) : 0;
-
-    globalPiKgCamion.textContent     = piKgCam.toLocaleString("es-PE",{maximumFractionDigits:2});
-    globalPiKgCliente.textContent    = piKgCli.toLocaleString("es-PE",{maximumFractionDigits:2});
-    globalPiClientesCamion.textContent = piCliCam.toLocaleString("es-PE",{maximumFractionDigits:2});
-
-    renderGlobalCharts();
-  }
-
   function renderKPIs(){
-    const rows = rowsForOthers();
+    const rows = applyFilters(allRows);
     const clientes = countClientes(rows);
     const pedidos  = countPedidos(rows);
     const kg       = sumKg(rows);
@@ -283,22 +183,14 @@
     }
   }
 
-  function getTitleAnchorLeft(panel, chartBox){
-    const titleText = panel.querySelector(".chart-title__text");
-    if (!titleText || !chartBox) return 160;
-    const tRect = titleText.getBoundingClientRect();
-    const cRect = chartBox.getBoundingClientRect();
-    return Math.round(tRect.left - cRect.left);
-  }
-
-  function chartH(containerId, series, { barColor="#2563eb", valueFmt, anchorLeft=160 } = {}){
+  function chartH(containerId, series, { barColor="#3b82f6", valueFmt } = {}){
     const container = document.getElementById(containerId);
     container.innerHTML = "";
     if (!series || series.length===0){ container.innerHTML='<div class="nodata">Sin datos</div>'; return; }
 
     const width = container.clientWidth || 740;
     const height = Math.max(260, 20 + series.length * 26);
-    const leftX = Math.max(anchorLeft, 120);
+    const leftX = 140;
     const padding = { top:10, right:24, bottom:10, left: leftX };
 
     const maxVal = Math.max(1, ...series.map(d=>d.value));
@@ -316,11 +208,11 @@
       const w = ((width - padding.left - padding.right) * d.value) / maxVal;
 
       const lbl = document.createElementNS(svgNS,"text");
-      lbl.setAttribute("x", leftX - 8);
+      lbl.setAttribute("x", leftX - 10);
       lbl.setAttribute("y", y + barH * 0.75);
       lbl.setAttribute("text-anchor","end");
       lbl.setAttribute("font-size","12");
-      lbl.setAttribute("fill","#374151");
+      lbl.setAttribute("fill","#cbd5e1");
       lbl.textContent = d.label;
       svg.appendChild(lbl);
 
@@ -338,7 +230,7 @@
       val.setAttribute("x", xVal);
       val.setAttribute("y", y + barH * 0.75);
       val.setAttribute("font-size","12");
-      val.setAttribute("fill","#111827");
+      val.setAttribute("fill","#f8fafc");
       val.textContent = valueFmt ? valueFmt(d.value) : d.value.toLocaleString("es-PE",{maximumFractionDigits:2});
       svg.appendChild(val);
     });
@@ -346,23 +238,17 @@
     container.appendChild(svg);
   }
 
-  function chartV_Centros_VLabels(containerId, series, { barColor="#2563eb", valueFmt } = {}){
+  function chartV(containerId, series, { barColor="#3b82f6", valueFmt } = {}){
     const container = document.getElementById(containerId);
     container.innerHTML = "";
     if (!series || series.length===0){ container.innerHTML='<div class="nodata">Sin datos</div>'; return; }
 
     const width = container.clientWidth || 760;
-    const n = series.length;
-    const maxLen = Math.max(0, ...series.map(d => String(d.label).length));
-    const fontSize = n > 14 ? 10 : (n > 9 || maxLen > 12 ? 11 : 12);
-    const charW = fontSize * 0.62;
-    const bottomPad = Math.max(140, Math.min(380, Math.round(charW * maxLen + 44)));
-    const baseHeight = 340;
-    const height = baseHeight + Math.max(0, bottomPad - 120);
-
-    const padding = { top:22, right:18, bottom: bottomPad, left:50 };
+    const height = 340;
+    const padding = { top:25, right:18, bottom:70, left:50 };
     const plotW = width - padding.left - padding.right;
     const plotH = height - padding.top - padding.bottom;
+    const n = series.length;
     const gap = 12;
     const barW = Math.max(16, Math.min(50, (plotW - gap * (n - 1)) / n));
     const maxVal = Math.max(1, ...series.map(d => d.value));
@@ -391,75 +277,16 @@
       val.setAttribute("y", Math.max(12, y - 6));
       val.setAttribute("text-anchor","middle");
       val.setAttribute("font-size","11");
-      val.setAttribute("fill","#111827");
-      val.textContent = valueFmt ? valueFmt(d.value) : d.value.toLocaleString("es-PE",{maximumFractionDigits:2});
-      svg.appendChild(val);
-
-      const label = document.createElementNS(svgNS,"text");
-      const lx = x + barW/2;
-      const labelBand = 26;
-      const ly = padding.top + plotH + Math.max(16, labelBand / 2);
-
-      label.setAttribute("transform", `translate(${lx},${ly}) rotate(90)`);
-      label.setAttribute("text-anchor","start");
-      label.setAttribute("font-size", String(fontSize));
-      label.setAttribute("fill","#374151");
-      label.textContent = d.label;
-      svg.appendChild(label);
-    });
-
-    container.appendChild(svg);
-  }
-
-  function chartV_Canal_HLabels(containerId, series, { barColor="#b45309", valueFmt } = {}){
-    const container = document.getElementById(containerId);
-    container.innerHTML = "";
-    if (!series || series.length===0){ container.innerHTML='<div class="nodata">Sin datos</div>'; return; }
-
-    const width = container.clientWidth || 760;
-    const n = series.length;
-    const height = Math.max(340, 320);
-    const padding = { top:22, right:18, bottom:70, left:50 };
-    const plotW = width - padding.left - padding.right;
-    const plotH = height - padding.top - padding.bottom;
-    const gap = 14;
-    const barW = Math.max(18, Math.min(52, (plotW - gap*(n-1)) / n));
-    const maxVal = Math.max(1, ...series.map(d => d.value));
-
-    const svgNS = "http://www.w3.org/2000/svg";
-    const svg = document.createElementNS(svgNS,"svg");
-    svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-    svg.setAttribute("width","100%"); svg.setAttribute("height","100%");
-
-    series.forEach((d,i)=>{
-      const x = padding.left + i * (barW + gap);
-      const h = (plotH * d.value) / maxVal;
-      const y = padding.top + (plotH - h);
-
-      const rect = document.createElementNS(svgNS,"rect");
-      rect.setAttribute("x", x);
-      rect.setAttribute("y", y);
-      rect.setAttribute("width", barW);
-      rect.setAttribute("height", Math.max(2,h));
-      rect.setAttribute("rx","4");
-      rect.setAttribute("fill", barColor);
-      svg.appendChild(rect);
-
-      const val = document.createElementNS(svgNS,"text");
-      val.setAttribute("x", x + barW/2);
-      val.setAttribute("y", Math.max(12, y - 6));
-      val.setAttribute("text-anchor","middle");
-      val.setAttribute("font-size","11");
-      val.setAttribute("fill","#111827");
+      val.setAttribute("fill","#f8fafc");
       val.textContent = valueFmt ? valueFmt(d.value) : d.value.toLocaleString("es-PE",{maximumFractionDigits:2});
       svg.appendChild(val);
 
       const label = document.createElementNS(svgNS,"text");
       label.setAttribute("x", x + barW/2);
-      label.setAttribute("y", height - 12);
+      label.setAttribute("y", height - 15);
       label.setAttribute("text-anchor","middle");
-      label.setAttribute("font-size","12");
-      label.setAttribute("fill","#374151");
+      label.setAttribute("font-size","11");
+      label.setAttribute("fill","#cbd5e1");
       label.textContent = d.label;
       svg.appendChild(label);
     });
@@ -467,7 +294,7 @@
     container.appendChild(svg);
   }
 
-  const topN    = (arr,n=10)=>[...arr].sort((a,b)=>b.value-a.value).slice(0,n);
+  const topN = (arr,n=10)=>[...arr].sort((a,b)=>b.value-a.value).slice(0,n);
   const bottomN = (arr,n=10)=>[...arr].sort((a,b)=>a.value-b.value).slice(0,n);
 
   function seriesByGroup(rows, keyFn, metricName){
@@ -483,72 +310,36 @@
     }));
   }
 
-  function getTrucksSeries(metricName, best=true){
-    const rows = rowsForOthers().filter(r => !isTruckExcluded(r));
-    let series = seriesByGroup(rows, r => r[IDX.PLACA] ?? "", metricName);
-    series = best ? topN(series,10) : bottomN(series.filter(d=>d.value>0),10);
-    return series;
-  }
-
-  function getRutasSeries(metricName, best=true){
-    const rows = rowsForOthers();
-    let series = seriesByGroup(rows, r => r[IDX.RUTA] ?? "", metricName).filter(d=>d.value>0);
-    series = best ? topN(series,10) : bottomN(series,10);
-    return series;
-  }
-
   function renderCharts(){
-    const metricName = selectedMetrica;
+    const rows = applyFilters(allRows);
+    const metricName = activeMetric;
     const isMoney = (metricName === "Soles");
     const valueFmt = (v) => isMoney
       ? new Intl.NumberFormat("es-PE",{style:"currency",currency:"PEN",maximumFractionDigits:2}).format(v)
       : v.toLocaleString("es-PE",{maximumFractionDigits:2});
 
-    {
-      const rows = rowsForCentroChart();
-      const map = new Map();
-      rows.forEach(r => { const k=r[IDX.CENTRO] ?? ""; if(!k) return; if(!map.has(k)) map.set(k,[]); map.get(k).push(r); });
-      const serie = Array.from(map.entries()).map(([label,group]) => ({ label, value: metricCalc(group, metricName) }));
-      chartV_Centros_VLabels("chartCentrosV", topN(serie, 10), { barColor:"#2563eb", valueFmt });
-    }
-
-    {
-      const rows = rowsForCanalChart();
-      const map = new Map();
-      rows.forEach(r => { const k=r[IDX.CANAL] ?? ""; if(!k) return; if(!map.has(k)) map.set(k,[]); map.get(k).push(r); });
-      const serie = Array.from(map.entries()).map(([label,group]) => ({ label, value: metricCalc(group, metricName) }));
-      chartV_Canal_HLabels("chartCanalV", topN(serie, 10), { barColor:"#b45309", valueFmt });
-    }
-
-    function renderHChart(panelId, color, series){
-      const el = document.getElementById(panelId);
-      const panel = el.closest('.panel');
-      const tAnchor = getTitleAnchorLeft(panel, el);
-      const leftShift = 24;
-      const anchorLeft = Math.max(120, tAnchor - leftShift);
-      chartH(panelId, series, { barColor: color, valueFmt, anchorLeft });
-    }
-
-    renderHChart('chartTruckBest',  '#16a34a', getTrucksSeries(metricName, true));
-    renderHChart('chartTruckWorst', '#9ca3af', getTrucksSeries(metricName, false));
-    renderHChart('chartRutaBest',   '#22c55e', getRutasSeries(metricName, true));
-    renderHChart('chartRutaWorst',  '#f59e0b', getRutasSeries(metricName, false));
-  }
-
-  function renderGlobalCharts(){
-    const rows = allRows;
+    // 1. Centros
     {
       const map = new Map();
       rows.forEach(r => { const k=r[IDX.CENTRO] ?? ""; if(!k) return; if(!map.has(k)) map.set(k,[]); map.get(k).push(r); });
-      const serie = Array.from(map.entries()).map(([label,group]) => ({ label, value: countPedidos(group) }));
-      chartV_Centros_VLabels("landingChartCentros", topN(serie, 10), { barColor:"#2563eb" });
+      const serie = Array.from(map.entries()).map(([label,group]) => ({ label, value: metricCalc(group, metricName) }));
+      chartV("chartCentrosV", topN(serie, 10), { barColor:"#3b82f6", valueFmt });
     }
+
+    // 2. Canales
     {
       const map = new Map();
       rows.forEach(r => { const k=r[IDX.CANAL] ?? ""; if(!k) return; if(!map.has(k)) map.set(k,[]); map.get(k).push(r); });
-      const serie = Array.from(map.entries()).map(([label,group]) => ({ label, value: countPedidos(group) }));
-      chartV_Canal_HLabels("landingChartCanal", topN(serie, 10), { barColor:"#b45309" });
+      const serie = Array.from(map.entries()).map(([label,group]) => ({ label, value: metricCalc(group, metricName) }));
+      chartV("chartCanalV", topN(serie, 10), { barColor:"#f59e0b", valueFmt });
     }
+
+    // 3. Camiones y Rutas
+    const truckRows = rows.filter(r => !isTruckExcluded(r));
+    chartH('chartTruckBest',  topN(seriesByGroup(truckRows, r => r[IDX.PLACA] ?? "", metricName), 10), { barColor:"#10b981", valueFmt });
+    chartH('chartTruckWorst', bottomN(seriesByGroup(truckRows, r => r[IDX.PLACA] ?? "", metricName).filter(d=>d.value>0), 10), { barColor:"#64748b", valueFmt });
+    chartH('chartRutaBest',   topN(seriesByGroup(rows, r => r[IDX.RUTA] ?? "", metricName).filter(d=>d.value>0), 10), { barColor:"#10b981", valueFmt });
+    chartH('chartRutaWorst',  bottomN(seriesByGroup(rows, r => r[IDX.RUTA] ?? "", metricName).filter(d=>d.value>0), 10), { barColor:"#f59e0b", valueFmt });
   }
 
   function render(){
