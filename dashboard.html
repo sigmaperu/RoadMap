@@ -11,9 +11,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   
-  <!-- Estilos globales y específicos del SaaS Dashboard -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=27.0">
-  <link rel="stylesheet" href="assets/css/dashboard.css?v=27.0">
+  <!-- Estilos globales y específicos del Dashboard SaaS -->
+  <link rel="stylesheet" href="assets/css/styles.css?v=28.0">
+  <link rel="stylesheet" href="assets/css/dashboard.css?v=28.0">
 
   <!-- Scripts -->
   <script defer src="assets/js/main.js"></script>
@@ -28,197 +28,163 @@
     <div class="main-layout">
       <div id="app-header"></div>
 
-      <main class="content">
-        <section class="page-section">
-
-          <!-- ========================================================== -->
-          <!-- HEADER ESTILO FINNOVA (SaaS Header & Action Tabs)         -->
-          <!-- ========================================================== -->
-          <div class="fin-header-section">
-            <div class="fin-title-area">
-              <h2>Command Center</h2>
-              <p>Monitoreo y análisis logístico consolidado en tiempo real.</p>
-            </div>
-
-            <!-- Pestañas de Navegación Interna / Filtro de Vistas -->
-            <div class="fin-tabs-bar" role="tablist">
-              <button class="fin-tab active" data-view="overview" role="tab" aria-selected="true">Overview</button>
-              <button class="fin-tab" data-view="centros" role="tab" aria-selected="false">Centros</button>
-              <button class="fin-tab" data-view="canales" role="tab" aria-selected="false">Canales</button>
-              <button class="fin-tab" data-view="flota" role="tab" aria-selected="false">Flota & Rutas</button>
-            </div>
-
-            <div class="fin-actions-right">
-              <div class="fin-search-pill">
-                <span class="material-icons">search</span>
-                <input type="text" id="globalSearchInput" placeholder="Buscar placa, cliente..." />
-              </div>
-              <button class="fin-btn-primary" type="button" id="btnExportReport">
-                <span class="material-icons">download</span> Exportar
-              </button>
-            </div>
+      <main class="content fixed-viewport-content">
+        
+        <!-- ========================================================== -->
+        <!-- HEADER ESTILO FINNOVA (Navegación por Pestañas Compactas)   -->
+        <!-- ========================================================== -->
+        <div class="fin-header-section">
+          <div class="fin-title-area">
+            <h2>Command Center</h2>
+            <p>Control logístico gerencial sin desbordes.</p>
           </div>
 
-          <!-- ========================================================== -->
-          <!-- FILA DE TARJETAS SUPERIORES (KPIs Estilo Tarjetas SaaS)    -->
-          <!-- ========================================================== -->
-          <div class="fin-kpi-grid">
-            
-            <!-- Card 1: Clientes -->
-            <div class="fin-kpi-card" data-metric="Clientes">
-              <div class="fin-kpi-top">
-                <span class="fin-kpi-title">Clientes Únicos</span>
-                <span class="fin-badge-icon badge-slate"><span class="material-icons">badge</span></span>
-              </div>
-              <div id="kpiClientes" class="fin-kpi-value">–</div>
-              <div class="fin-kpi-trend positive">
-                <span class="material-icons">arrow_upward</span> +4.2% este mes
-              </div>
-            </div>
-
-            <!-- Card 2: Pedidos -->
-            <div class="fin-kpi-card" data-metric="Pedidos">
-              <div class="fin-kpi-top">
-                <span class="fin-kpi-title">Pedidos Despachados</span>
-                <span class="fin-badge-icon badge-blue"><span class="material-icons">assignment</span></span>
-              </div>
-              <div id="kpiPedidos" class="fin-kpi-value">–</div>
-              <div class="fin-kpi-trend positive">
-                <span class="material-icons">arrow_upward</span> +8.1% vs ayer
-              </div>
-            </div>
-
-            <!-- Card 3: Kilogramos con Mini Gráfico -->
-            <div class="fin-kpi-card" data-metric="Kilogramos">
-              <div class="fin-kpi-top">
-                <span class="fin-kpi-title">Kilogramos Totales</span>
-                <span class="fin-badge-icon badge-green">
-                  <svg viewBox="0 0 32 32" width="16" height="16" aria-hidden="true" style="fill:#16a34a;">
-                    <rect x="5" y="10" width="22" height="14" rx="3" opacity=".14"></rect>
-                    <path d="M12 10a4 4 0 1 1 8 0h3.5a3.5 3.5 0 0 1 3.5 3.5V22a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3v-8.5A3.5 3.5 0 0 1 8.5 10H12zm2 0h4a2 2 0 1 0-4 0z"></path>
-                    <text x="16" y="22" text-anchor="middle" font-size="10" font-weight="800" fill="currentColor">KG</text>
-                  </svg>
-                </span>
-              </div>
-              <div id="kpiKg" class="fin-kpi-value">–</div>
-              <div class="fin-mini-chart" id="miniChartKg">
-                <!-- Mini barras estéticas simuladas -->
-                <span style="height: 40%;"></span>
-                <span style="height: 60%;"></span>
-                <span style="height: 55%;"></span>
-                <span style="height: 80%;"></span>
-                <span style="height: 95%;"></span>
-              </div>
-            </div>
-
-            <!-- Card 4: Soles con Línea de Tendencia -->
-            <div class="fin-kpi-card" data-metric="Soles">
-              <div class="fin-kpi-top">
-                <span class="fin-kpi-title">Facturación (PEN)</span>
-                <span class="fin-badge-icon badge-gold"><span class="material-icons">paid</span></span>
-              </div>
-              <div id="kpiSoles" class="fin-kpi-value">–</div>
-              <div class="fin-kpi-footer-trend">
-                <span class="positive"><span class="material-icons">trending_up</span> Estable</span>
-                <span class="sub-info">Meta alcista</span>
-              </div>
-            </div>
-
-            <!-- Card 5: Camiones Activos -->
-            <div class="fin-kpi-card" data-metric="Camiones">
-              <div class="fin-kpi-top">
-                <span class="fin-kpi-title">Flota Activa</span>
-                <span class="fin-badge-icon badge-slate"><span class="material-icons">local_shipping</span></span>
-              </div>
-              <div id="kpiCamiones" class="fin-kpi-value">–</div>
-              <div class="fin-kpi-trend neutral">
-                <span class="material-icons">check_circle</span> 100% operativos
-              </div>
-            </div>
-
+          <!-- Pestañas Principales para Dividir la Vista sin Scroll -->
+          <div class="fin-tabs-bar" role="tablist">
+            <button class="fin-tab active" data-target-tab="tab-overview" role="tab">Overview</button>
+            <button class="fin-tab" data-target-tab="tab-centros" role="tab">Centros</button>
+            <button class="fin-tab" data-target-tab="tab-canales" role="tab">Canales</button>
+            <button class="fin-tab" data-target-tab="tab-flota" role="tab">Flota & Rutas</button>
           </div>
 
-          <!-- ========================================================== -->
-          <!-- FILA SECUNDARIA: INDICADORES DE RENDIMIENTO (PIs)          -->
-          <!-- ========================================================== -->
-          <div class="fin-pi-row">
-            <div class="fin-pi-box">
-              <span class="fin-pi-label"><span class="material-icons icon--green">balance</span> Kg / Camión (Eficiencia)</span>
-              <div id="piKgCamion" class="fin-pi-val">–</div>
+          <div class="fin-actions-right">
+            <select id="filterCentro" class="fin-select-pill">
+              <option value="Todos">Todos los Centros</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- ========================================================== -->
+        <!-- FILA DE TARJETAS SUPERIORES (KPIs Compactos)               -->
+        <!-- ========================================================== -->
+        <div class="fin-kpi-grid">
+          <div class="fin-kpi-card" data-metric="Clientes">
+            <div class="fin-kpi-top">
+              <span class="fin-kpi-title">Clientes Únicos</span>
+              <span class="fin-badge-icon badge-slate"><span class="material-icons">badge</span></span>
             </div>
-            <div class="fin-pi-box">
-              <span class="fin-pi-label"><span class="material-icons icon--green">scale</span> Kg / Cliente (Drop Size)</span>
-              <div id="piKgCliente" class="fin-pi-val">–</div>
-            </div>
-            <div class="fin-pi-box">
-              <span class="fin-pi-label"><span class="material-icons icon--slate">people_alt</span> Clientes / Camión (Densidad)</span>
-              <div id="piClientesCamion" class="fin-pi-val">–</div>
-            </div>
+            <div id="kpiClientes" class="fin-kpi-value">–</div>
+            <div class="fin-kpi-trend positive"><span class="material-icons">arrow_upward</span> +4.2% act.</div>
           </div>
 
-          <!-- ========================================================== -->
-          <!-- PANEL INFERIOR OSCURO (Estilo Dashboard SaaS Card Principal) -->
-          <!-- ========================================================== -->
-          <div class="fin-dark-panel">
-            
-            <!-- Toolbar Superior del Panel -->
-            <div class="fin-dark-toolbar">
-              <div class="fin-dark-tabs">
-                <button class="dark-tab active" data-chart-target="centros">Distribución por Centros</button>
-                <button class="dark-tab" data-chart-target="canales">Análisis por Canales</button>
-                <button class="dark-tab" data-chart-target="flota">Rendimiento de Flota</button>
-              </div>
+          <div class="fin-kpi-card" data-metric="Pedidos">
+            <div class="fin-kpi-top">
+              <span class="fin-kpi-title">Pedidos Despachados</span>
+              <span class="fin-badge-icon badge-blue"><span class="material-icons">assignment</span></span>
+            </div>
+            <div id="kpiPedidos" class="fin-kpi-value">–</div>
+            <div class="fin-kpi-trend positive"><span class="material-icons">arrow_upward</span> +8.1% vs ayer</div>
+          </div>
 
-              <div class="fin-dark-filters">
-                <select id="filterCentro" class="fin-select-dark">
-                  <option value="Todos">Todos los Centros</option>
-                </select>
+          <div class="fin-kpi-card" data-metric="Kilogramos">
+            <div class="fin-kpi-top">
+              <span class="fin-kpi-title">Kilogramos Totales</span>
+              <span class="fin-badge-icon badge-green">
+                <svg viewBox="0 0 32 32" width="16" height="16" aria-hidden="true" style="fill:#10b981;">
+                  <rect x="5" y="10" width="22" height="14" rx="3" opacity=".14"></rect>
+                  <path d="M12 10a4 4 0 1 1 8 0h3.5a3.5 3.5 0 0 1 3.5 3.5V22a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3v-8.5A3.5 3.5 0 0 1 8.5 10H12zm2 0h4a2 2 0 1 0-4 0z"></path>
+                  <text x="16" y="22" text-anchor="middle" font-size="10" font-weight="800" fill="currentColor">KG</text>
+                </svg>
+              </span>
+            </div>
+            <div id="kpiKg" class="fin-kpi-value">–</div>
+            <div class="fin-kpi-trend positive">Volumen óptimo</div>
+          </div>
+
+          <div class="fin-kpi-card" data-metric="Soles">
+            <div class="fin-kpi-top">
+              <span class="fin-kpi-title">Facturación (PEN)</span>
+              <span class="fin-badge-icon badge-gold"><span class="material-icons">paid</span></span>
+            </div>
+            <div id="kpiSoles" class="fin-kpi-value">–</div>
+            <div class="fin-kpi-trend positive">Meta alcista</div>
+          </div>
+
+          <div class="fin-kpi-card" data-metric="Camiones">
+            <div class="fin-kpi-top">
+              <span class="fin-kpi-title">Flota Activa</span>
+              <span class="fin-badge-icon badge-slate"><span class="material-icons">local_shipping</span></span>
+            </div>
+            <div id="kpiCamiones" class="fin-kpi-value">–</div>
+            <div class="fin-kpi-trend neutral"><span class="material-icons">check_circle</span> 100% operativos</div>
+          </div>
+        </div>
+
+        <!-- ========================================================== -->
+        <!-- CONTENEDOR DE PESTAÑAS (Evita scroll vertical múltiple)    -->
+        <!-- ========================================================== -->
+        <div class="fin-tab-content-area">
+          
+          <!-- TAB 1: OVERVIEW & PIs -->
+          <div class="tab-pane active" id="tab-overview">
+            <div class="fin-pi-row">
+              <div class="fin-pi-box">
+                <span class="fin-pi-label"><span class="material-icons icon--green">balance</span> Kg / Camión (Eficiencia)</span>
+                <div id="piKgCamion" class="fin-pi-val">–</div>
+              </div>
+              <div class="fin-pi-box">
+                <span class="fin-pi-label"><span class="material-icons icon--green">scale</span> Kg / Cliente (Drop Size)</span>
+                <div id="piKgCliente" class="fin-pi-val">–</div>
+              </div>
+              <div class="fin-pi-box">
+                <span class="fin-pi-label"><span class="material-icons icon--slate">people_alt</span> Clientes / Camión (Densidad)</span>
+                <div id="piClientesCamion" class="fin-pi-val">–</div>
               </div>
             </div>
 
-            <!-- Cuerpo del Panel de Gráficos -->
-            <div class="fin-dark-content">
+            <!-- Panel Oscuro Compacto para Gráficos Principales -->
+            <div class="fin-dark-panel-compact">
               <div class="charts-2col">
                 <div class="dark-chart-wrapper">
-                  <div class="dark-chart-title">
-                    <span class="material-icons icon--blue">bar_chart</span> Volumen por Centro Operativo
-                  </div>
-                  <div id="chartCentrosV" class="chart-box"></div>
+                  <div class="dark-chart-title"><span class="material-icons icon--blue">bar_chart</span> Volumen por Centro Operativo</div>
+                  <div id="chartCentrosV" class="chart-box-compact"></div>
                 </div>
-
                 <div class="dark-chart-wrapper">
-                  <div class="dark-chart-title">
-                    <span class="material-icons icon--gold">stacked_bar_chart</span> Participación por Canal
-                  </div>
-                  <div id="chartCanalV" class="chart-box"></div>
+                  <div class="dark-chart-title"><span class="material-icons icon--gold">stacked_bar_chart</span> Participación por Canal</div>
+                  <div id="chartCanalV" class="chart-box-compact"></div>
                 </div>
               </div>
+            </div>
+          </div>
 
-              <!-- Gráficos Inferiores de Rendimiento (Top / Offender) -->
-              <div class="chart-grid-lower" style="margin-top: 20px;">
+          <!-- TAB 2: CENTROS -->
+          <div class="tab-pane" id="tab-centros">
+            <div class="fin-dark-panel-compact full-height">
+              <div class="dark-chart-wrapper full">
+                <div class="dark-chart-title"><span class="material-icons icon--blue">analytics</span> Desglose Analítico por Centros</div>
+                <div id="chartCentrosDetailed" class="chart-box-large"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 3: CANALES -->
+          <div class="tab-pane" id="tab-canales">
+            <div class="fin-dark-panel-compact full-height">
+              <div class="dark-chart-wrapper full">
+                <div class="dark-chart-title"><span class="material-icons icon--gold">donut_large</span> Desglose Analítico por Canales de Venta</div>
+                <div id="chartCanalesDetailed" class="chart-box-large"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 4: FLOTA & RUTAS -->
+          <div class="tab-pane" id="tab-flota">
+            <div class="fin-dark-panel-compact">
+              <div class="charts-2col">
                 <div class="dark-chart-wrapper">
                   <div class="dark-chart-title"><span class="material-icons icon--green">trending_up</span> Top 10 Performer – Camiones</div>
-                  <div id="chartTruckBest" class="chart-box"></div>
+                  <div id="chartTruckBest" class="chart-box-compact"></div>
                 </div>
                 <div class="dark-chart-wrapper">
                   <div class="dark-chart-title"><span class="material-icons icon--slate">trending_down</span> Top 10 Offender – Camiones</div>
-                  <div id="chartTruckWorst" class="chart-box"></div>
-                </div>
-                <div class="dark-chart-wrapper">
-                  <div class="dark-chart-title"><span class="material-icons icon--green">leaderboard</span> Top 10 Performer – Rutas</div>
-                  <div id="chartRutaBest" class="chart-box"></div>
-                </div>
-                <div class="dark-chart-wrapper">
-                  <div class="dark-chart-title"><span class="material-icons icon--slate">bar_chart</span> Top 10 Offender – Rutas</div>
-                  <div id="chartRutaWorst" class="chart-box"></div>
+                  <div id="chartTruckWorst" class="chart-box-compact"></div>
                 </div>
               </div>
-
             </div>
-
           </div>
 
-        </section>
+        </div>
+
       </main>
     </div>
   </div>
