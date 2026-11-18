@@ -2,22 +2,22 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>RoadMap – Executive Command Center</title>
+  <title>RoadMap – Interactive Command Center</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Fuentes + Material Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   
-  <!-- Estilos globales y específicos del Dashboard SaaS -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=28.0">
-  <link rel="stylesheet" href="assets/css/dashboard.css?v=28.0">
+  <!-- Estilos globales y específicos del Dashboard -->
+  <link rel="stylesheet" href="assets/css/styles.css?v=30.0">
+  <link rel="stylesheet" href="assets/css/dashboard.css?v=30.0">
 
   <!-- Scripts -->
   <script defer src="assets/js/main.js"></script>
-  <script defer src="assets/js/dashboard.js"></script>
+  <script defer src="assets/js/dashboard.js?v=30.0"></script>
 </head>
 
 <body data-title="Dashboard">
@@ -28,162 +28,250 @@
     <div class="main-layout">
       <div id="app-header"></div>
 
-      <main class="content fixed-viewport-content">
+      <main class="content fin-viewport">
         
         <!-- ========================================================== -->
-        <!-- HEADER ESTILO FINNOVA (Navegación por Pestañas Compactas)   -->
+        <!-- 1. BARRA SUPERIOR DE PÍLDORAS (Centros como Tabs, 0 combos) -->
         <!-- ========================================================== -->
-        <div class="fin-header-section">
-          <div class="fin-title-area">
-            <h2>Command Center</h2>
-            <p>Control logístico gerencial sin desbordes.</p>
-          </div>
-
-          <!-- Pestañas Principales para Dividir la Vista sin Scroll -->
-          <div class="fin-tabs-bar" role="tablist">
-            <button class="fin-tab active" data-target-tab="tab-overview" role="tab">Overview</button>
-            <button class="fin-tab" data-target-tab="tab-centros" role="tab">Centros</button>
-            <button class="fin-tab" data-target-tab="tab-canales" role="tab">Canales</button>
-            <button class="fin-tab" data-target-tab="tab-flota" role="tab">Flota & Rutas</button>
-          </div>
-
-          <div class="fin-actions-right">
-            <select id="filterCentro" class="fin-select-pill">
-              <option value="Todos">Todos los Centros</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- ========================================================== -->
-        <!-- FILA DE TARJETAS SUPERIORES (KPIs Compactos)               -->
-        <!-- ========================================================== -->
-        <div class="fin-kpi-grid">
-          <div class="fin-kpi-card" data-metric="Clientes">
-            <div class="fin-kpi-top">
-              <span class="fin-kpi-title">Clientes Únicos</span>
-              <span class="fin-badge-icon badge-slate"><span class="material-icons">badge</span></span>
+        <header class="fin-topbar">
+          <div class="fin-topbar__title">
+            <button id="btnResetAll" class="fin-back-circle" type="button" title="Restablecer vista global">
+              <span class="material-icons">restart_alt</span>
+            </button>
+            <div>
+              <h2>Operación Logística</h2>
+              <p id="activeContextSubtitle">Consolidado Global • Haz clic en cualquier tarjeta o barra para filtrar</p>
             </div>
-            <div id="kpiClientes" class="fin-kpi-value">–</div>
-            <div class="fin-kpi-trend positive"><span class="material-icons">arrow_upward</span> +4.2% act.</div>
           </div>
 
-          <div class="fin-kpi-card" data-metric="Pedidos">
-            <div class="fin-kpi-top">
-              <span class="fin-kpi-title">Pedidos Despachados</span>
-              <span class="fin-badge-icon badge-blue"><span class="material-icons">assignment</span></span>
-            </div>
-            <div id="kpiPedidos" class="fin-kpi-value">–</div>
-            <div class="fin-kpi-trend positive"><span class="material-icons">arrow_upward</span> +8.1% vs ayer</div>
+          <!-- Píldora Oscura de Centros (Al estilo Overview / Estimates / Invoices de Finnova) -->
+          <div id="centroPillsBar" class="fin-nav-pills" role="tablist" aria-label="Centros Operativos">
+            <!-- Se inyectan dinámicamente: Todos, ATE1, ATE2, CHANCAY, etc. -->
           </div>
 
-          <div class="fin-kpi-card" data-metric="Kilogramos">
-            <div class="fin-kpi-top">
-              <span class="fin-kpi-title">Kilogramos Totales</span>
-              <span class="fin-badge-icon badge-green">
-                <svg viewBox="0 0 32 32" width="16" height="16" aria-hidden="true" style="fill:#10b981;">
-                  <rect x="5" y="10" width="22" height="14" rx="3" opacity=".14"></rect>
-                  <path d="M12 10a4 4 0 1 1 8 0h3.5a3.5 3.5 0 0 1 3.5 3.5V22a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3v-8.5A3.5 3.5 0 0 1 8.5 10H12zm2 0h4a2 2 0 1 0-4 0z"></path>
-                  <text x="16" y="22" text-anchor="middle" font-size="10" font-weight="800" fill="currentColor">KG</text>
-                </svg>
-              </span>
-            </div>
-            <div id="kpiKg" class="fin-kpi-value">–</div>
-            <div class="fin-kpi-trend positive">Volumen óptimo</div>
+          <!-- Chips de Filtros Cruzados Activos -->
+          <div class="fin-topbar__right">
+            <div id="activeFilterBadges" class="fin-active-badges"></div>
           </div>
-
-          <div class="fin-kpi-card" data-metric="Soles">
-            <div class="fin-kpi-top">
-              <span class="fin-kpi-title">Facturación (PEN)</span>
-              <span class="fin-badge-icon badge-gold"><span class="material-icons">paid</span></span>
-            </div>
-            <div id="kpiSoles" class="fin-kpi-value">–</div>
-            <div class="fin-kpi-trend positive">Meta alcista</div>
-          </div>
-
-          <div class="fin-kpi-card" data-metric="Camiones">
-            <div class="fin-kpi-top">
-              <span class="fin-kpi-title">Flota Activa</span>
-              <span class="fin-badge-icon badge-slate"><span class="material-icons">local_shipping</span></span>
-            </div>
-            <div id="kpiCamiones" class="fin-kpi-value">–</div>
-            <div class="fin-kpi-trend neutral"><span class="material-icons">check_circle</span> 100% operativos</div>
-          </div>
-        </div>
+        </header>
 
         <!-- ========================================================== -->
-        <!-- CONTENEDOR DE PESTAÑAS (Evita scroll vertical múltiple)    -->
+        <!-- 2. LAS 4 MACRO-TARJETAS INTERACTIVAS (Métricas Madre)      -->
         <!-- ========================================================== -->
-        <div class="fin-tab-content-area">
+        <section class="fin-hero-cards" aria-label="Indicadores Principales">
           
-          <!-- TAB 1: OVERVIEW & PIs -->
-          <div class="tab-pane active" id="tab-overview">
-            <div class="fin-pi-row">
-              <div class="fin-pi-box">
-                <span class="fin-pi-label"><span class="material-icons icon--green">balance</span> Kg / Camión (Eficiencia)</span>
-                <div id="piKgCamion" class="fin-pi-val">–</div>
-              </div>
-              <div class="fin-pi-box">
-                <span class="fin-pi-label"><span class="material-icons icon--green">scale</span> Kg / Cliente (Drop Size)</span>
-                <div id="piKgCliente" class="fin-pi-val">–</div>
-              </div>
-              <div class="fin-pi-box">
-                <span class="fin-pi-label"><span class="material-icons icon--slate">people_alt</span> Clientes / Camión (Densidad)</span>
-                <div id="piClientesCamion" class="fin-pi-val">–</div>
-              </div>
+          <!-- Card 1: Clientes -->
+          <article class="fin-card" data-metric="Clientes">
+            <div class="fin-card__head">
+              <span class="fin-card__title">Clientes Únicos</span>
+              <span class="fin-card__icon icon-slate"><span class="material-icons">badge</span></span>
+            </div>
+            <div id="valClientes" class="fin-card__value">–</div>
+            <div id="subClientes" class="fin-card__sub">100% de la cartera activa</div>
+            <div id="miniChartClientes" class="fin-card__viz"></div>
+          </article>
+
+          <!-- Card 2: Pedidos (Activa por defecto) -->
+          <article class="fin-card is-active" data-metric="Pedidos">
+            <div class="fin-card__head">
+              <span class="fin-card__title">Pedidos Despachados</span>
+              <span class="fin-card__icon icon-blue"><span class="material-icons">assignment</span></span>
+            </div>
+            <div id="valPedidos" class="fin-card__value">–</div>
+            <div id="subPedidos" class="fin-card__sub">Seleccionado • Analizando entregas</div>
+            <div id="miniChartPedidos" class="fin-card__viz"></div>
+          </article>
+
+          <!-- Card 3: Kilogramos -->
+          <article class="fin-card" data-metric="Kilogramos">
+            <div class="fin-card__head">
+              <span class="fin-card__title">Volumen (Kilogramos)</span>
+              <span class="fin-card__icon icon-green"><span class="material-icons">scale</span></span>
+            </div>
+            <div id="valKilogramos" class="fin-card__value">–</div>
+            <div id="subKilogramos" class="fin-card__sub">Tonelaje bruto movilizado</div>
+            <div id="miniChartKilogramos" class="fin-card__viz"></div>
+          </article>
+
+          <!-- Card 4: Soles -->
+          <article class="fin-card" data-metric="Soles">
+            <div class="fin-card__head">
+              <span class="fin-card__title">Valorización (Soles)</span>
+              <span class="fin-card__icon icon-gold"><span class="material-icons">paid</span></span>
+            </div>
+            <div id="valSoles" class="fin-card__value">–</div>
+            <div id="subSoles" class="fin-card__sub">Facturación total en ruta</div>
+            <div id="miniChartSoles" class="fin-card__viz"></div>
+          </article>
+
+        </section>
+
+        <!-- ========================================================== -->
+        <!-- 3. CINTA MEDIA INTERACTIVA: FLOTA & PIs + CANALES CLICABLES-->
+        <!-- ========================================================== -->
+        <section class="fin-mid-strip">
+          <div class="fin-pi-pills">
+            <button type="button" class="fin-pi-pill" data-metric="Camiones">
+              <span class="material-icons icon--slate">local_shipping</span>
+              <span>Flota: <strong id="valCamiones">–</strong> u.</span>
+            </button>
+            <button type="button" class="fin-pi-pill" data-metric="Kg/Camión">
+              <span class="material-icons icon--green">balance</span>
+              <span>Kg/Camión: <strong id="valKgCamion">–</strong></span>
+            </button>
+            <button type="button" class="fin-pi-pill" data-metric="Kg/Cliente">
+              <span class="material-icons icon--green">shopping_bag</span>
+              <span>Kg/Cliente: <strong id="valKgCliente">–</strong></span>
+            </button>
+            <button type="button" class="fin-pi-pill" data-metric="Clientes/Camión">
+              <span class="material-icons icon--blue">people_alt</span>
+              <span>Cli/Camión: <strong id="valCliCamion">–</strong></span>
+            </button>
+          </div>
+
+          <!-- Píldoras rápidas de Canal (Click para filtrar por canal sin dropdown) -->
+          <div id="canalQuickPills" class="fin-canal-pills">
+            <!-- Se inyectan los canales como chips clicables -->
+          </div>
+        </section>
+
+        <!-- ========================================================== -->
+        <!-- 4. PANEL OSCURO INFERIOR ESTILO FINNOVA (Master-Detail)    -->
+        <!-- ========================================================== -->
+        <section class="fin-dark-stage">
+          
+          <!-- Cabecera con el "Notch" blanco recortado al centro -->
+          <div class="fin-dark-stage__header">
+            <div class="fin-dark-stage__title">
+              <span id="stageLeftTitle">Ranking por Centros</span>
+              <span id="stageMetricBadge" class="fin-metric-tag">Pedidos</span>
             </div>
 
-            <!-- Panel Oscuro Compacto para Gráficos Principales -->
-            <div class="fin-dark-panel-compact">
-              <div class="charts-2col">
-                <div class="dark-chart-wrapper">
-                  <div class="dark-chart-title"><span class="material-icons icon--blue">bar_chart</span> Volumen por Centro Operativo</div>
-                  <div id="chartCentrosV" class="chart-box-compact"></div>
-                </div>
-                <div class="dark-chart-wrapper">
-                  <div class="dark-chart-title"><span class="material-icons icon--gold">stacked_bar_chart</span> Participación por Canal</div>
-                  <div id="chartCanalV" class="chart-box-compact"></div>
-                </div>
-              </div>
+            <!-- Pestaña Blanca Recortada (Notch de Dimensiones) -->
+            <div class="fin-notch-tabs" role="tablist">
+              <button type="button" class="fin-notch-btn is-active" data-dimension="CENTRO">
+                Centros <span id="countDimCentro" class="notch-count">0</span>
+              </button>
+              <button type="button" class="fin-notch-btn" data-dimension="CANAL">
+                Canales <span id="countDimCanal" class="notch-count">0</span>
+              </button>
+              <button type="button" class="fin-notch-btn" data-dimension="PLACA">
+                Flota Top <span id="countDimPlaca" class="notch-count">0</span>
+              </button>
+              <button type="button" class="fin-notch-btn" data-dimension="RUTA">
+                Rutas <span id="countDimRuta" class="notch-count">0</span>
+              </button>
+            </div>
+
+            <!-- Switch Rápido Top Performers vs Offenders -->
+            <div class="fin-dark-stage__actions">
+              <button type="button" id="btnToggleOrder" class="fin-order-toggle" title="Alternar Top Performers / Offenders">
+                <span class="material-icons" id="orderIcon">trending_up</span>
+                <span id="orderLabel">Top Performers</span>
+              </button>
             </div>
           </div>
 
-          <!-- TAB 2: CENTROS -->
-          <div class="tab-pane" id="tab-centros">
-            <div class="fin-dark-panel-compact full-height">
-              <div class="dark-chart-wrapper full">
-                <div class="dark-chart-title"><span class="material-icons icon--blue">analytics</span> Desglose Analítico por Centros</div>
-                <div id="chartCentrosDetailed" class="chart-box-large"></div>
-              </div>
+          <!-- Cuerpo dividido: Lista Interactiva Izquierda + Tarjeta Morada Derecha -->
+          <div class="fin-dark-stage__body">
+            
+            <!-- Columna Izquierda: Lista Maestra Clicable (Estilo Unpaid Invoices) -->
+            <div id="masterRankingList" class="fin-master-list">
+              <!-- Filas generadas dinámicamente -->
             </div>
-          </div>
 
-          <!-- TAB 3: CANALES -->
-          <div class="tab-pane" id="tab-canales">
-            <div class="fin-dark-panel-compact full-height">
-              <div class="dark-chart-wrapper full">
-                <div class="dark-chart-title"><span class="material-icons icon--gold">donut_large</span> Desglose Analítico por Canales de Venta</div>
-                <div id="chartCanalesDetailed" class="chart-box-large"></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- TAB 4: FLOTA & RUTAS -->
-          <div class="tab-pane" id="tab-flota">
-            <div class="fin-dark-panel-compact">
-              <div class="charts-2col">
-                <div class="dark-chart-wrapper">
-                  <div class="dark-chart-title"><span class="material-icons icon--green">trending_up</span> Top 10 Performer – Camiones</div>
-                  <div id="chartTruckBest" class="chart-box-compact"></div>
+            <!-- Columna Derecha: Tarjeta Bento Morada de Inspección Profunda -->
+            <div class="fin-spotlight-card">
+              
+              <!-- Encabezado de la Tarjeta Derecha -->
+              <div class="fin-spotlight__top">
+                <div>
+                  <span class="fin-spotlight__eyebrow" id="spotEyebrow">INSPECCIÓN DETALLADA</span>
+                  <div class="fin-spotlight__title-row">
+                    <h3 id="spotTitle">Consolidado General</h3>
+                    <span id="spotShareBadge" class="fin-spot-badge">100% del total</span>
+                  </div>
                 </div>
-                <div class="dark-chart-wrapper">
-                  <div class="dark-chart-title"><span class="material-icons icon--slate">trending_down</span> Top 10 Offender – Camiones</div>
-                  <div id="chartTruckWorst" class="chart-box-compact"></div>
+                <div class="fin-spotlight__meta">
+                  <span class="fin-spotlight__eyebrow">OPERACIÓN</span>
+                  <strong id="spotSubContext">Todos los Centros y Canales</strong>
+                </div>
+                <div class="fin-spotlight__leader">
+                  <div class="fin-leader-avatar"><span class="material-icons" id="spotIcon">insights</span></div>
+                  <div>
+                    <strong id="spotLeaderTitle">Líder en Selección</strong>
+                    <span id="spotLeaderValue">–</span>
+                  </div>
                 </div>
               </div>
+
+              <!-- 4 Cajas Interiores Clicables (Al estilo $15,990 / $21,250 / $10,740 de Finnova) -->
+              <div class="fin-spotlight__grid">
+                <div class="fin-spot-box" data-spot-metric="Pedidos">
+                  <div class="fin-spot-box__top">
+                    <strong id="spotBoxPedidos">–</strong>
+                    <span class="material-icons">north_east</span>
+                  </div>
+                  <span class="fin-spot-box__label">Pedidos Despachados</span>
+                  <div class="fin-spot-bar"><span id="barSpotPedidos" style="width:100%"></span></div>
+                </div>
+
+                <div class="fin-spot-box" data-spot-metric="Kilogramos">
+                  <div class="fin-spot-box__top">
+                    <strong id="spotBoxKg">–</strong>
+                    <span class="material-icons">north_east</span>
+                  </div>
+                  <span class="fin-spot-box__label">Kilogramos Movilizados</span>
+                  <div class="fin-spot-bar"><span id="barSpotKg" style="width:100%"></span></div>
+                </div>
+
+                <div class="fin-spot-box" data-spot-metric="Soles">
+                  <div class="fin-spot-box__top">
+                    <strong id="spotBoxSoles">–</strong>
+                    <span class="material-icons">north_east</span>
+                  </div>
+                  <span class="fin-spot-box__label">Facturación Soles</span>
+                  <div class="fin-spot-bar"><span id="barSpotSoles" style="width:100%"></span></div>
+                </div>
+
+                <!-- 4ta Caja: Mini Desglose Cruzado Interactivo (Top 3 sub-ítems clicables) -->
+                <div class="fin-spot-box fin-spot-box--breakdown">
+                  <span class="fin-spot-box__label" id="spotBreakdownTitle">Desglose Rápido (Click para filtrar)</span>
+                  <div id="spotBreakdownList" class="fin-mini-breakdown"></div>
+                </div>
+              </div>
+
+              <!-- Pie de la Tarjeta Derecha (Sub Total / Total / Balance Due -> PIs + Acción) -->
+              <div class="fin-spotlight__footer">
+                <div class="fin-spot-foot-stat">
+                  <span>Flota Asignada</span>
+                  <strong id="spotFootCamiones">–</strong>
+                </div>
+                <div class="fin-spot-foot-stat">
+                  <span>Eficiencia (Kg / Camión)</span>
+                  <strong id="spotFootKgCam">–</strong>
+                </div>
+                <div class="fin-spot-foot-stat">
+                  <span>Drop Size (Kg / Cliente)</span>
+                  <strong id="spotFootKgCli">–</strong>
+                </div>
+                <div class="fin-spot-foot-stat">
+                  <span>Densidad (Clientes / Camión)</span>
+                  <strong id="spotFootCliCam">–</strong>
+                </div>
+
+                <div class="fin-spot-foot-actions">
+                  <button type="button" id="btnClearSelection" class="fin-pill-cta">
+                    Ver Total Global
+                  </button>
+                </div>
+              </div>
+
             </div>
+
           </div>
 
-        </div>
+        </section>
 
       </main>
     </div>
