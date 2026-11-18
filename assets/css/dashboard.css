@@ -1,213 +1,714 @@
 /* ==========================================================================
-   RoadMap - dashboard.css (Diseño SaaS Compacto - Sin Scroll Vertical)
+   RoadMap - dashboard.css (Arquitectura Cross-Filter Estilo Finnova - 0 Scroll)
    ========================================================================== */
 
 :root {
-  --fin-bg: #f8fafc;
-  --fin-card-bg: #ffffff;
-  --fin-dark-bg: #0f172a;
-  --fin-dark-card: #1e293b;
-  --fin-border: #e2e8f0;
-  --fin-dark-border: #334155;
-  --fin-text: #0f172a;
+  --fin-bg: #f4f6fb;
+  --fin-surface: #ffffff;
+  --fin-dark: #131629;
+  --fin-dark-elevated: #1e223d;
+  --fin-purple: #5b5ce2;
+  --fin-purple-soft: #6c6ff5;
+  --fin-purple-card: #5558da;
+  --fin-accent: #9C27B0;
+  --fin-text: #111827;
   --fin-muted: #64748b;
-  --fin-primary: #9C27B0;
-  
-  --icon-blue: #3b82f6;
-  --icon-green: #10b981;
-  --icon-gold: #f59e0b;
-  --icon-slate: #64748b;
-  
-  --card-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+  --fin-border: #e5e7eb;
 }
 
-body {
-  background-color: var(--fin-bg) !important;
-  font-family: 'Inter', sans-serif !important;
-  overflow: hidden !important; /* Bloquea el scroll general de la página */
-}
-
-.fixed-viewport-content {
-  height: calc(100vh - 80px);
+/* Bloqueo de Scroll en Escritorio para experiencia Single-Screen */
+.fin-viewport {
+  height: calc(100vh - 88px) !important;
+  max-height: calc(100vh - 88px) !important;
+  overflow: hidden !important;
+  background: var(--fin-bg);
+  padding: 12px 18px 14px !important;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  overflow: hidden !important;
-  padding: 12px 24px !important;
+  gap: 10px;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-/* Header Compacto Estilo Finnova */
-.fin-header-section {
+/* ==========================================================================
+   1. BARRA SUPERIOR (Píldoras de Centros sin Dropdowns)
+   ========================================================================== */
+.fin-topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--fin-card-bg);
-  padding: 12px 20px;
-  border-radius: 12px;
-  border: 1px solid var(--fin-border);
-  box-shadow: var(--card-shadow);
+  gap: 12px;
   flex-shrink: 0;
 }
 
-.fin-title-area h2 { font-size: 1.15rem; font-weight: 800; color: var(--fin-text); margin: 0; }
-.fin-title-area p { font-size: 0.78rem; color: var(--fin-muted); margin: 0; }
-
-/* Pestañas de Navegación del Header */
-.fin-tabs-bar {
+.fin-topbar__title {
   display: flex;
-  background: #f1f5f9;
-  padding: 3px;
-  border-radius: 999px;
-  border: 1px solid var(--fin-border);
-  gap: 3px;
+  align-items: center;
+  gap: 10px;
 }
-.fin-tab {
-  background: transparent;
-  border: none;
-  padding: 5px 14px;
-  border-radius: 999px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--fin-muted);
+
+.fin-back-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--fin-border);
+  background: var(--fin-surface);
+  color: var(--fin-text);
+  display: grid;
+  place-items: center;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
 }
-.fin-tab:hover { color: var(--fin-text); }
-.fin-tab.active {
-  background: var(--fin-card-bg);
-  color: var(--fin-primary);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+.fin-back-circle:hover {
+  background: var(--fin-purple);
+  color: #fff;
+  border-color: var(--fin-purple);
+  transform: rotate(-45deg);
+}
+.fin-back-circle .material-icons { font-size: 18px; }
+
+.fin-topbar__title h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--fin-text);
+  letter-spacing: -0.02em;
+}
+.fin-topbar__title p {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--fin-muted);
+  font-weight: 500;
 }
 
-.fin-select-pill {
-  background: #f8fafc;
-  color: var(--fin-text);
-  border: 1px solid var(--fin-border);
+/* Contenedor oscuro de píldoras tipo Finnova Topbar */
+.fin-nav-pills {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--fin-dark);
+  padding: 4px;
+  border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(19, 22, 41, 0.15);
+  overflow-x: auto;
+  max-width: 54vw;
+}
+.fin-nav-pills::-webkit-scrollbar { display: none; }
+
+.fin-nav-pill {
+  border: none;
+  background: transparent;
+  color: #94a3b8;
   padding: 6px 14px;
   border-radius: 999px;
+  font-size: 0.74rem;
   font-weight: 600;
-  font-size: 0.8rem;
-  outline: none;
   cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s ease;
+}
+.fin-nav-pill:hover { color: #ffffff; }
+.fin-nav-pill.is-active {
+  background: var(--fin-purple);
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(91, 92, 226, 0.45);
 }
 
-/* Grid Superior de KPIs (Compactos) */
-.fin-kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 12px;
-  flex-shrink: 0;
-}
-@media (max-width: 1200px) {
-  .fin-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-
-.fin-kpi-card {
-  background: var(--fin-card-bg);
-  border-radius: 12px;
-  padding: 12px 16px;
-  border: 1px solid var(--fin-border);
-  box-shadow: var(--card-shadow);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.fin-kpi-card:hover { border-color: #cbd5e1; transform: translateY(-1px); }
-
-.fin-kpi-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-.fin-kpi-title { font-size: 0.75rem; font-weight: 600; color: var(--fin-muted); }
-.fin-badge-icon { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; }
-.badge-slate { background: #f1f5f9; color: var(--icon-slate); }
-.badge-blue { background: #eff6ff; color: var(--icon-blue); }
-.badge-green { background: #ecfdf5; color: var(--icon-green); }
-.badge-gold { background: #fffbeb; color: var(--icon-gold); }
-
-.fin-kpi-value { font-size: 1.2rem; font-weight: 800; color: var(--fin-text); letter-spacing: -0.02em; }
-.fin-kpi-trend { font-size: 0.68rem; font-weight: 700; display: inline-flex; align-items: center; gap: 3px; }
-.fin-kpi-trend.positive { color: #10b981; }
-.fin-kpi-trend .material-icons { font-size: 12px; }
-
-/* Área de Pestañas Interiores (Contenedor de Vistas) */
-.fin-tab-content-area {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  position: relative;
-}
-
-.tab-pane {
-  display: none;
-  flex-direction: column;
-  gap: 12px;
-  height: 100%;
-}
-.tab-pane.active { display: flex; }
-
-/* Fila de PIs Compacta */
-.fin-pi-row {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  flex-shrink: 0;
-}
-.fin-pi-box {
-  background: var(--fin-card-bg);
-  border: 1px solid var(--fin-border);
-  border-radius: 12px;
-  padding: 10px 16px;
-  box-shadow: var(--card-shadow);
-  display: flex;
-  flex-direction: column;
-}
-.fin-pi-label { font-size: 0.72rem; font-weight: 700; color: var(--fin-muted); display: flex; align-items: center; gap: 6px; }
-.fin-pi-val { font-size: 1.05rem; font-weight: 800; color: var(--fin-text); }
-
-/* Panel Oscuro Principal (Encajado sin Scroll) */
-.fin-dark-panel-compact {
-  background: var(--fin-dark-bg);
-  border-radius: 16px;
-  padding: 16px 20px;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.2);
-  color: #fff;
-  border: 1px solid var(--fin-dark-border);
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-.fin-dark-panel-compact.full-height { height: 100%; }
-
-.dark-chart-wrapper {
-  background: var(--fin-dark-card);
-  border: 1px solid var(--fin-dark-border);
-  border-radius: 12px;
-  padding: 12px 16px;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-.dark-chart-wrapper.full { height: 100%; }
-
-.dark-chart-title {
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: #f1f5f9;
+.fin-active-badges {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 6px;
+}
+.fin-filter-chip {
+  background: #ede9fe;
+  color: #5b21b6;
+  border: 1px solid #c4b5fd;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+.fin-filter-chip .material-icons { font-size: 13px; }
+
+/* ==========================================================================
+   2. LAS 4 MACRO-TARJETAS BLANCAS CON MINI-GRÁFICOS SVG
+   ========================================================================== */
+.fin-hero-cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
   flex-shrink: 0;
 }
 
-.charts-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; height: 100%; }
-@media (max-width: 1200px) { .charts-2col { grid-template-columns: 1fr; } }
+.fin-card {
+  background: var(--fin-surface);
+  border-radius: 16px;
+  padding: 12px 16px;
+  border: 2px solid transparent;
+  box-shadow: 0 4px 16px rgba(17, 24, 39, 0.04);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 126px;
+  position: relative;
+  overflow: hidden;
+}
+.fin-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(17, 24, 39, 0.08);
+}
+.fin-card.is-active {
+  border-color: var(--fin-purple);
+  background: linear-gradient(180deg, #ffffff 0%, #f5f6ff 100%);
+  box-shadow: 0 8px 20px rgba(91, 92, 226, 0.14);
+}
 
-.chart-box-compact { width: 100%; height: calc(100% - 24px); min-height: 200px; overflow: hidden; }
-.chart-box-large { width: 100%; height: calc(100% - 24px); min-height: 380px; overflow: hidden; }
-.nodata { padding: 12px; color: #94a3b8; font-size: 0.85rem; }
+.fin-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.fin-card__title {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #374151;
+}
+.fin-card__icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+}
+.fin-card__icon .material-icons { font-size: 16px; }
+.icon-slate { background: #f1f5f9; color: #475569; }
+.icon-blue  { background: #e0e7ff; color: #4f46e5; }
+.icon-green { background: #dcfce7; color: #16a34a; }
+.icon-gold  { background: #fef3c7; color: #d97706; }
 
-/* Textos adaptados para modo oscuro */
-.fin-dark-panel-compact text { fill: #cbd5e1 !important; }
+.fin-card__value {
+  font-size: clamp(1.15rem, 1.55vw, 1.48rem);
+  font-weight: 800;
+  color: var(--fin-text);
+  letter-spacing: -0.02em;
+  margin: 2px 0;
+}
+.fin-card__sub {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--fin-muted);
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fin-card.is-active .fin-card__sub {
+  color: var(--fin-purple);
+  font-weight: 700;
+}
+
+.fin-card__viz {
+  height: 36px;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+
+/* ==========================================================================
+   3. CINTA MEDIA INTERACTIVA (PIs + Canales Clicables)
+   ========================================================================== */
+.fin-mid-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.fin-pi-pills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.fin-pi-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--fin-surface);
+  border: 1.5px solid var(--fin-border);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.fin-pi-pill .material-icons { font-size: 15px; }
+.fin-pi-pill strong { color: var(--fin-text); font-weight: 800; }
+.fin-pi-pill:hover { border-color: var(--fin-purple); transform: translateY(-1px); }
+.fin-pi-pill.is-active {
+  background: var(--fin-purple);
+  color: #fff;
+  border-color: var(--fin-purple);
+}
+.fin-pi-pill.is-active strong,
+.fin-pi-pill.is-active .material-icons { color: #fff !important; }
+
+.fin-canal-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+}
+.fin-canal-pills::-webkit-scrollbar { display: none; }
+
+.fin-canal-chip {
+  border: 1px solid var(--fin-border);
+  background: var(--fin-surface);
+  color: var(--fin-muted);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+.fin-canal-chip:hover { color: var(--fin-text); border-color: #cbd5e1; }
+.fin-canal-chip.is-active {
+  background: var(--fin-dark);
+  color: #ffffff;
+  border-color: var(--fin-dark);
+}
+
+/* ==========================================================================
+   4. PANEL OSCURO INFERIOR ESTILO FINNOVA (Master-Detail + Notch)
+   ========================================================================== */
+.fin-dark-stage {
+  flex: 1;
+  min-height: 0;
+  background: var(--fin-dark);
+  border-radius: 22px;
+  padding: 14px 18px 16px;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 14px 34px rgba(19, 22, 41, 0.22);
+  position: relative;
+  overflow: hidden;
+}
+
+.fin-dark-stage__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.fin-dark-stage__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.fin-metric-tag {
+  background: rgba(91, 92, 226, 0.25);
+  color: #a5b4fc;
+  border: 1px solid rgba(165, 180, 252, 0.25);
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+/* El Notch Blanco Central (Exactamente como All Invoices / Draft / Unpaid) */
+.fin-notch-tabs {
+  background: var(--fin-bg);
+  padding: 4px 6px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.06);
+}
+
+.fin-notch-btn {
+  border: none;
+  background: transparent;
+  color: #475569;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.18s ease;
+}
+.fin-notch-btn .notch-count {
+  background: #e2e8f0;
+  color: #334155;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 0.65rem;
+}
+.fin-notch-btn.is-active {
+  background: var(--fin-purple);
+  color: #ffffff;
+  box-shadow: 0 3px 10px rgba(91, 92, 226, 0.35);
+}
+.fin-notch-btn.is-active .notch-count {
+  background: #ffffff;
+  color: var(--fin-purple);
+}
+
+.fin-order-toggle {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #e2e8f0;
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: background 0.15s;
+}
+.fin-order-toggle:hover { background: rgba(255,255,255,0.14); }
+.fin-order-toggle .material-icons { font-size: 15px; color: #34d399; }
+
+/* Cuerpo del Panel Oscuro: Lista Izquierda (36%) + Tarjeta Morada Derecha (64%) */
+.fin-dark-stage__body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 35% 1fr;
+  gap: 14px;
+}
+
+/* Lista Maestra Izquierda */
+.fin-master-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.fin-master-list::-webkit-scrollbar { width: 4px; }
+.fin-master-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 999px; }
+
+.fin-list-item {
+  display: grid;
+  grid-template-columns: 30px 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.05);
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+.fin-list-item:hover {
+  background: rgba(255,255,255,0.08);
+  transform: translateX(2px);
+}
+.fin-list-item.is-selected {
+  background: var(--fin-purple);
+  border-color: #818cf8;
+  box-shadow: 0 6px 16px rgba(91, 92, 226, 0.4);
+}
+
+.fin-list-rank {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  color: #cbd5e1;
+  font-size: 0.7rem;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+}
+.fin-list-item.is-selected .fin-list-rank {
+  background: #ffffff;
+  color: var(--fin-purple);
+}
+
+.fin-list-info {
+  min-width: 0;
+}
+.fin-list-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #f8fafc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fin-list-sub {
+  font-size: 0.66rem;
+  color: #94a3b8;
+}
+.fin-list-item.is-selected .fin-list-sub { color: #e0e7ff; }
+
+.fin-list-badge {
+  background: rgba(255,255,255,0.08);
+  color: #cbd5e1;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+.fin-list-item.is-selected .fin-list-badge {
+  background: #ffffff;
+  color: var(--fin-dark);
+}
+
+.fin-list-val {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #ffffff;
+  text-align: right;
+}
+
+/* Tarjeta Derecha Morada (Bento Spotlight de Finnova) */
+.fin-spotlight-card {
+  background: linear-gradient(135deg, #5b5ce2 0%, #4647c7 100%);
+  border-radius: 18px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.25);
+  overflow: hidden;
+}
+
+.fin-spotlight__top {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.fin-spotlight__eyebrow {
+  display: block;
+  font-size: 0.63rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.72);
+  margin-bottom: 3px;
+}
+
+.fin-spotlight__title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.fin-spotlight__title-row h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.fin-spot-badge {
+  background: rgba(255,255,255,0.18);
+  color: #ffffff;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.fin-spotlight__meta strong {
+  font-size: 0.86rem;
+  color: #ffffff;
+}
+
+.fin-spotlight__leader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(19, 22, 41, 0.22);
+  padding: 8px 12px;
+  border-radius: 12px;
+}
+.fin-leader-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  display: grid;
+  place-items: center;
+}
+.fin-spotlight__leader strong {
+  display: block;
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.8);
+}
+.fin-spotlight__leader span {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+/* 4 Cajas Interiores del Spotlight */
+.fin-spotlight__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.fin-spot-box {
+  background: rgba(255,255,255,0.13);
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.fin-spot-box:hover {
+  background: rgba(255,255,255,0.22);
+  transform: translateY(-2px);
+}
+
+.fin-spot-box__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.fin-spot-box__top strong {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+.fin-spot-box__top .material-icons {
+  font-size: 15px;
+  color: rgba(255,255,255,0.75);
+}
+
+.fin-spot-box__label {
+  font-size: 0.68rem;
+  color: rgba(255,255,255,0.8);
+  font-weight: 600;
+}
+
+.fin-spot-bar {
+  height: 4px;
+  background: rgba(19, 22, 41, 0.3);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.fin-spot-bar span {
+  display: block;
+  height: 100%;
+  background: #ffffff;
+  border-radius: 999px;
+}
+
+/* 4ta caja: Mini desglose clicable */
+.fin-spot-box--breakdown {
+  cursor: default;
+  background: rgba(19, 22, 41, 0.25);
+  border-style: dashed;
+}
+.fin-mini-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.fin-mini-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.68rem;
+  padding: 3px 6px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.08);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.fin-mini-row:hover { background: rgba(255,255,255,0.22); }
+.fin-mini-row strong { color: #ffffff; }
+
+/* Pie de la Tarjeta Derecha */
+.fin-spotlight__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,0.18);
+  gap: 10px;
+}
+
+.fin-spot-foot-stat span {
+  display: block;
+  font-size: 0.65rem;
+  color: rgba(255,255,255,0.72);
+  margin-bottom: 2px;
+}
+.fin-spot-foot-stat strong {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.fin-pill-cta {
+  border: none;
+  background: #ffffff;
+  color: var(--fin-dark);
+  font-weight: 800;
+  font-size: 0.74rem;
+  padding: 8px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.fin-pill-cta:hover {
+  transform: scale(1.04);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* ==========================================================================
+   RESPONSIVE MÓVIL (En pantallas chicas sí habilitamos scroll vertical limpio)
+   ========================================================================== */
+@media (max-width: 1024px) {
+  .fin-viewport {
+    height: auto !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+  }
+  .fin-topbar { flex-direction: column; align-items: flex-start; }
+  .fin-nav-pills { max-width: 100%; width: 100%; }
+  .fin-hero-cards { grid-template-columns: repeat(2, 1fr); }
+  .fin-mid-strip { flex-direction: column; align-items: flex-start; }
+  .fin-pi-pills { flex-wrap: wrap; }
+  .fin-dark-stage__header { flex-direction: column; gap: 10px; align-items: flex-start; }
+  .fin-dark-stage__body { grid-template-columns: 1fr; }
+  .fin-master-list { max-height: 240px; }
+  .fin-spotlight__top { grid-template-columns: 1fr; }
+  .fin-spotlight__grid { grid-template-columns: repeat(2, 1fr); }
+  .fin-spotlight__footer { flex-wrap: wrap; }
+}
