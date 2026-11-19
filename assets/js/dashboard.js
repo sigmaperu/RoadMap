@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - dashboard.js (Zoom Fijo 10 + Fecha CSV + Captura Limpia + Texto Editable)
+   RoadMap - dashboard.js (Tarjetas Ampliadas + Líneas Canvas Precisas en Captura)
    ========================================================================== */
 
 (() => {
@@ -17,8 +17,8 @@
     "0374-ATE": {
       lat: -12.067013469355048,
       lng: -76.97943349160968,
-      calloutLat: -12.095,
-      calloutLng: -77.015,
+      calloutLat: -12.092,
+      calloutLng: -77.012,
       offsetClass: "cd-offset-ate",
       label: "0374-ATE"
     },
@@ -26,14 +26,14 @@
       lat: -12.045124965310059,
       lng: -76.93813036277461,
       calloutLat: -12.035,
-      calloutLng: -76.855,
+      calloutLng: -76.858,
       offsetClass: "cd-offset-ate2",
       label: "0780-ATE2"
     },
     "0754-CHANCAY": {
       lat: -11.551110366002629,
       lng: -77.27641679959045,
-      calloutLat: -11.500,
+      calloutLat: -11.505,
       calloutLng: -77.195,
       offsetClass: "cd-offset-chancay",
       label: "0754-CHANCAY"
@@ -145,7 +145,6 @@
   let map = null;
   let mapLayerGroup = null;
 
-  // Agregadores Certificados (Llave compuesta CENTRO|PLACA para unidades)
   const countClientes = rows => unique(rows.filter(r => !isFRT(r)).map(r => cleanStr(r[IDX.CLIENTE]))).length;
   const countPedidos  = rows => unique(rows.filter(r => !isFRT(r)).map(r => cleanStr(r[IDX.PEDIDO]))).length;
   const sumKg         = rows => rows.filter(r => !isFRT(r)).reduce((a, r) => a + toNum(r[IDX.KG]), 0);
@@ -198,9 +197,11 @@
   const REGIONAL_ZOOM   = 10;
 
   function initMap() {
+    // preferCanvas: true evita que las polilíneas SVG se desplacen al capturar con html2canvas
     map = L.map("geoDashboardMap", {
       zoomControl: false,
-      attributionControl: false
+      attributionControl: false,
+      preferCanvas: true
     }).setView(REGIONAL_CENTER, REGIONAL_ZOOM);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -249,7 +250,7 @@
         if (info.lat !== info.calloutLat || info.lng !== info.calloutLng) {
           L.polyline(
             [[info.lat, info.lng], [info.calloutLat, info.calloutLng]],
-            { color: "#8e24aa", weight: 2, dashArray: "4, 4", opacity: 0.85 }
+            { color: "#8e24aa", weight: 2.2, dashArray: "4, 4", opacity: 0.9 }
           ).addTo(mapLayerGroup);
         }
 
@@ -298,7 +299,7 @@
         cardMarker.addTo(mapLayerGroup);
       });
 
-      map.setView(REGIONAL_CENTER, REGIONAL_ZOOM, { animate: true });
+      map.setView(REGIONAL_CENTER, REGIONAL_ZOOM, { animate: false });
       return;
     }
 
@@ -315,7 +316,7 @@
       const originIcon = L.divIcon({
         className: "",
         html: `
-          <div class="cd-callout-card" style="transform:translate(-50%, -120%); min-width:110px; padding:5px 10px; background:#8e24aa; border-color:#fff;">
+          <div class="cd-callout-card" style="transform:translate(-50%, -120%); min-width:120px; padding:6px 12px; background:#8e24aa; border-color:#fff;">
             <div class="cd-callout-head" style="border:none; margin:0; padding:0; justify-content:center;">
               <span class="cd-callout-name" style="color:#fff;">CD ${state.selectedCenter}</span>
             </div>
@@ -614,7 +615,6 @@
           setTimeout(() => { icon.textContent = "photo_camera"; }, 2000);
 
         } catch (clipErr) {
-          // Respaldo: descarga PNG y deja el texto listo en el portapapeles
           try { await navigator.clipboard.writeText(shareMessage); } catch (_) {}
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
