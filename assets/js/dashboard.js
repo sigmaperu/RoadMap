@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - dashboard.js (FSE + MOD Amarillo sincronizado en tarjetas y mapa)
+   RoadMap - dashboard.js (Mapa Ampliado + Cero Solape Chancay/ATE2 + Píldora Reactiva)
    ========================================================================== */
 
 (() => {
@@ -11,28 +11,29 @@
   ].filter(Boolean);
 
   // Coordenadas exactas de los 3 Centros de Distribución (Región Lima)
+  // Con anclajes de callout bien separados para que Chancay, ATE2 y ATE nunca se solapen
   const CD_LOCATIONS = {
     "0374-ATE": {
       lat: -12.067013469355048,
       lng: -76.97943349160968,
-      calloutLat: -12.085,
-      calloutLng: -77.002,
+      calloutLat: -12.095,
+      calloutLng: -77.015,
       offsetClass: "cd-offset-ate",
       label: "0374-ATE"
     },
     "0780-ATE2": {
       lat: -12.045124965310059,
       lng: -76.93813036277461,
-      calloutLat: -12.025,
-      calloutLng: -76.908,
+      calloutLat: -12.035,
+      calloutLng: -76.855,
       offsetClass: "cd-offset-ate2",
       label: "0780-ATE2"
     },
     "0754-CHANCAY": {
       lat: -11.551110366002629,
       lng: -77.27641679959045,
-      calloutLat: -11.551110366002629,
-      calloutLng: -77.27641679959045,
+      calloutLat: -11.500,
+      calloutLng: -77.195,
       offsetClass: "cd-offset-chancay",
       label: "0754-CHANCAY"
     }
@@ -184,7 +185,7 @@
     map = L.map("geoDashboardMap", {
       zoomControl: false,
       attributionControl: false
-    }).setView([-11.82, -77.12], 9);
+    }).setView([-11.82, -77.08], 9);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19
@@ -204,7 +205,7 @@
 
     document.getElementById("hudActiveMetricBadge").textContent = `Métrica: ${state.activeMetric}`;
 
-    // MODO 1: VISTA GLOBAL REGIÓN LIMA (3 CDs con Callouts de 1 Columna)
+    // MODO 1: VISTA GLOBAL REGIÓN LIMA (3 CDs con Callouts de 1 Columna sin solape)
     if (!state.selectedCenter) {
       hudTitle.textContent    = "Región Lima • 3 Centros de Distribución";
       hudSubtitle.textContent = "Selecciona un indicador a la derecha o toca un CD para ver sus geoposiciones";
@@ -273,8 +274,8 @@
 
       if (bounds.length > 0) {
         map.fitBounds(bounds, {
-          paddingTopLeft: [130, 185],
-          paddingBottomRight: [130, 145],
+          paddingTopLeft: [110, 145],
+          paddingBottomRight: [140, 115],
           maxZoom: 9
         });
       }
@@ -378,17 +379,17 @@
     updateDashboard();
   }
 
+  /* ==========================================================================
+     PANEL DERECHO: TARJETAS EN 1 COLUMNA + PÍLDORA REACTIVA AL INDICADOR
+     ========================================================================== */
   function renderSidePanel() {
     const activeRows = getActiveRows();
-    const totalGlobalPed = Math.max(1, countPedidos(allRows));
 
     const cli = countClientes(activeRows);
     const ped = countPedidos(activeRows);
     const kg  = sumKg(activeRows);
     const sol = sumSoles(activeRows);
     const cam = countTrucks(activeRows);
-
-    const sharePct = Math.round((ped / totalGlobalPed) * 100);
 
     const eyebrowEl = document.getElementById("panelEyebrow");
     const titleEl   = document.getElementById("panelTitle");
@@ -403,14 +404,36 @@
       titleEl.textContent   = state.selectedChannelCode
         ? `${state.selectedCenter} • ${state.selectedChannelCode}`
         : state.selectedCenter;
-      shareEl.textContent   = `${sharePct}% de Pedidos Lima`;
+
+      // Píldora 100% reactiva al indicador seleccionado (state.activeMetric)
+      const activeMetricVal = metricCalc(activeRows, state.activeMetric);
+      const globalMetricVal = metricCalc(allRows, state.activeMetric);
+
+      if (state.activeMetric.includes("/")) {
+        // Para ratios (Kg/Camión, Kg/Cliente, Cli/Camión) mostramos variación vs promedio Lima
+        const diffPct = globalMetricVal ? Math.round(((activeMetricVal - globalMetricVal) / globalMetricVal) * 100) : 0;
+        const sign = diffPct >= 0 ? "+" : "";
+        shareEl.textContent = `${sign}${diffPct}% vs Prom. Lima`;
+      } else {
+        // Para métricas absolutas mostramos el % exacto de participación sobre Lima
+        const sharePct = globalMetricVal ? Math.round((activeMetricVal / globalMetricVal) * 100) : 0;
+        const shortMetricNames = {
+          Clientes: "Clientes",
+          Pedidos: "Pedidos",
+          Kilogramos: "Kg",
+          Soles: "Soles",
+          Camiones: "Flota"
+        };
+        const labelMetric = shortMetricNames[state.activeMetric] || state.activeMetric;
+        shareEl.textContent = `${sharePct}% de ${labelMetric} Lima`;
+      }
     }
 
     document.getElementById("valClientes").textContent   = cli.toLocaleString("es-PE");
     document.getElementById("valPedidos").textContent    = ped.toLocaleString("es-PE");
     document.getElementById("valKilogramos").textContent = formatMetric(kg, "Kilogramos", true);
     document.getElementById("valSoles").textContent      = formatMetric(sol, "Soles", true);
-    document.getElementById("valCamiones").textContent   = `${cam} unidades`;
+    document.getElementById("valCamiones").textContent   = `${cam} u.`;
 
     ["Clientes", "Pedidos", "Kilogramos", "Soles", "Camiones"].forEach(m => {
       const subEl = document.getElementById(`sub${m}`);
@@ -426,7 +449,7 @@
     document.getElementById("valKgCliente").textContent = kgCli.toLocaleString("es-PE", { maximumFractionDigits: 1 });
     document.getElementById("valCliCamion").textContent = cliCam.toLocaleString("es-PE", { maximumFractionDigits: 1 });
 
-    document.querySelectorAll(".geo-kpi-card").forEach(card => {
+    document.querySelectorAll(".geo-kpi-row-card").forEach(card => {
       card.classList.toggle("is-active", card.getAttribute("data-metric") === state.activeMetric);
     });
     document.querySelectorAll(".geo-pi-card").forEach(card => {
@@ -444,7 +467,7 @@
     tagEl.textContent = state.activeMetric;
 
     if (!state.selectedCenter) {
-      titleEl.textContent = "Comparativa por Centro (Click para abrir geoposiciones)";
+      titleEl.textContent = "Comparativa por Centro";
       const mapCenters = new Map();
       allRows.forEach(r => {
         const c = cleanStr(r[IDX.CENTRO]);
@@ -484,7 +507,7 @@
       });
 
     } else {
-      titleEl.textContent = `Canales en ${state.selectedCenter} (Click para filtrar puntos)`;
+      titleEl.textContent = `Canales en ${state.selectedCenter}`;
       const centerRows = allRows.filter(r => cleanStr(r[IDX.CENTRO]) === state.selectedCenter);
 
       const items = CHANNEL_CONFIG.map(ch => {
@@ -531,7 +554,7 @@
   }
 
   function bindEvents() {
-    document.querySelectorAll(".geo-kpi-card").forEach(card => {
+    document.querySelectorAll(".geo-kpi-row-card").forEach(card => {
       card.addEventListener("click", () => {
         state.activeMetric = card.getAttribute("data-metric");
         updateDashboard();
