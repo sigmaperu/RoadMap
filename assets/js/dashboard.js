@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - dashboard.js (Tarjetas Ampliadas + Líneas Canvas Precisas en Captura)
+   RoadMap - dashboard.js (Cards Ampliados + Líneas Exactas + Doble Captura)
    ========================================================================== */
 
 (() => {
@@ -13,31 +13,28 @@
   const DASHBOARD_PUBLIC_URL = "https://sigmaperu.github.io/RoadMap/dashboard.html";
 
   // Coordenadas exactas de los 3 Centros de Distribución (Región Lima)
-// Coordenadas exactas de los 3 Centros de Distribución (Región Lima)
-  // Posiciones calibradas para encuadre perfecto en Zoom 10 sin cortes ni solapes
+  // El centro geométrico de cada card ampliado coincide exactamente con (calloutLat, calloutLng)
+  // para que la línea conectora apunte directo desde el CD hasta el card sin desviaciones.
   const CD_LOCATIONS = {
     "0374-ATE": {
       lat: -12.067013469355048,
       lng: -76.97943349160968,
-      calloutLat: -12.020,
-      calloutLng: -77.035,
-      offsetClass: "cd-offset-ate",
+      calloutLat: -11.985,
+      calloutLng: -77.115,
       label: "0374-ATE"
     },
     "0780-ATE2": {
       lat: -12.045124965310059,
       lng: -76.93813036277461,
-      calloutLat: -12.035,
-      calloutLng: -76.858,
-      offsetClass: "cd-offset-ate2",
+      calloutLat: -12.015,
+      calloutLng: -76.745,
       label: "0780-ATE2"
     },
     "0754-CHANCAY": {
       lat: -11.551110366002629,
       lng: -77.27641679959045,
       calloutLat: -11.615,
-      calloutLng: -77.195,
-      offsetClass: "cd-offset-chancay",
+      calloutLng: -77.080,
       label: "0754-CHANCAY"
     }
   };
@@ -199,7 +196,6 @@
   const REGIONAL_ZOOM   = 10;
 
   function initMap() {
-    // preferCanvas: true evita que las polilíneas SVG se desplacen al capturar con html2canvas
     map = L.map("geoDashboardMap", {
       zoomControl: false,
       attributionControl: false,
@@ -240,6 +236,7 @@
         const mainVal = metricCalc(cdRows, state.activeMetric);
         const formattedMain = formatMetric(mainVal, state.activeMetric, true);
 
+        // 1) Punto exacto geográfico del CD
         const anchorIcon = L.divIcon({
           className: "",
           html: `<div class="cd-anchor-dot"></div>`,
@@ -249,10 +246,12 @@
         anchorMarker.on("click", () => openCenterGeopositions(cdCode));
         anchorMarker.addTo(mapLayerGroup);
 
+        // 2) Línea guía recta desde el CD hasta el centro de su tarjeta (calloutLat, calloutLng)
+        // Como la tarjeta está debajo en z-index o con borde sólido, la línea sale limpia desde el punto hasta el borde
         if (info.lat !== info.calloutLat || info.lng !== info.calloutLng) {
           L.polyline(
             [[info.lat, info.lng], [info.calloutLat, info.calloutLng]],
-            { color: "#8e24aa", weight: 2.2, dashArray: "4, 4", opacity: 0.9 }
+            { color: "#8e24aa", weight: 2.5, dashArray: "5, 5", opacity: 0.95 }
           ).addTo(mapLayerGroup);
         }
 
@@ -285,7 +284,7 @@
         const calloutIcon = L.divIcon({
           className: "",
           html: `
-            <div class="cd-callout-card ${info.offsetClass}">
+            <div class="cd-callout-card">
               <div class="cd-callout-head">
                 <span class="cd-callout-name">${info.label}</span>
                 <span class="cd-callout-mainval">${formattedMain}</span>
@@ -296,7 +295,7 @@
           iconSize: [0, 0]
         });
 
-        const cardMarker = L.marker([info.calloutLat, info.calloutLng], { icon: calloutIcon });
+        const cardMarker = L.marker([info.calloutLat, info.calloutLng], { icon: calloutIcon, zIndexOffset: 500 });
         cardMarker.on("click", () => openCenterGeopositions(cdCode));
         cardMarker.addTo(mapLayerGroup);
       });
@@ -318,7 +317,7 @@
       const originIcon = L.divIcon({
         className: "",
         html: `
-          <div class="cd-callout-card" style="transform:translate(-50%, -120%); min-width:120px; padding:6px 12px; background:#8e24aa; border-color:#fff;">
+          <div class="cd-callout-card" style="transform:translate(-50%, -145%); min-width:125px; padding:6px 12px; background:#8e24aa; border-color:#fff;">
             <div class="cd-callout-head" style="border:none; margin:0; padding:0; justify-content:center;">
               <span class="cd-callout-name" style="color:#fff;">CD ${state.selectedCenter}</span>
             </div>
@@ -562,9 +561,9 @@
   }
 
   /* ==========================================================================
-     CAPTURA LIMPIA + COPIA SECUENCIAL DE TEXTO EDITABLE PARA WHATSAPP WEB
+     CAPTURA DOBLE INDEPENDIENTE (1: MAPA • 2: INDICADORES • 3: TEXTO Y LINK)
      ========================================================================== */
-  function showToast(msg, duration = 3200) {
+  function showToast(msg, duration = 3000) {
     const toast = document.getElementById("shotToast");
     if (!toast) return;
     toast.textContent = msg;
@@ -573,11 +572,17 @@
     toast._timer = setTimeout(() => toast.classList.remove("is-visible"), duration);
   }
 
+  function canvasToBlobAsync(canvas) {
+    return new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+  }
+
   async function captureDashboardToClipboard() {
-    const target = document.getElementById("dashboardCaptureArea");
-    const btn = document.getElementById("btnCopyScreenshot");
-    const icon = document.getElementById("shotIcon");
-    if (!target || typeof html2canvas !== "function") return;
+    const mapEl   = document.querySelector(".geo-map-stage");
+    const panelEl = document.querySelector(".geo-side-panel");
+    const btn     = document.getElementById("btnCopyScreenshot");
+    const icon    = document.getElementById("shotIcon");
+
+    if (!mapEl || !panelEl || typeof html2canvas !== "function") return;
 
     const zoomCtrl = document.querySelector(".leaflet-control-zoom");
     btn.style.visibility = "hidden";
@@ -587,48 +592,75 @@
     const shareMessage = `Estos son los datos de la planificación del día ${fechaPlan}\n${DASHBOARD_PUBLIC_URL}`;
 
     try {
-      const canvas = await html2canvas(target, {
-        useCORS: true,
-        allowTaint: false,
-        scale: 2,
-        backgroundColor: "#f5f4f8"
-      });
+      // Renderizamos ambas capturas por separado en alta resolución (2x)
+      const [mapCanvas, panelCanvas] = await Promise.all([
+        html2canvas(mapEl, {
+          useCORS: true,
+          allowTaint: false,
+          scale: 2,
+          backgroundColor: "#e5e7eb"
+        }),
+        html2canvas(panelEl, {
+          useCORS: true,
+          allowTaint: false,
+          scale: 2,
+          backgroundColor: "#f5f4f8"
+        })
+      ]);
 
-      canvas.toBlob(async (blob) => {
-        if (!blob) return;
-        try {
-          // Paso 1: Copiar la imagen limpia para pegarla primero en WhatsApp
-          await navigator.clipboard.write([
-            new ClipboardItem({ "image/png": blob })
-          ]);
+      const [mapBlob, panelBlob] = await Promise.all([
+        canvasToBlobAsync(mapCanvas),
+        canvasToBlobAsync(panelCanvas)
+      ]);
 
-          icon.textContent = "check";
-          showToast("1/2 Imagen copiada • Pégala en WhatsApp (Ctrl+V)", 4000);
+      if (!mapBlob || !panelBlob) return;
 
-          // Paso 2: Tras 2.8 segundos, reemplazar el portapapeles con el texto editable
-          const copyTextAfterPaste = async () => {
-            try {
-              await navigator.clipboard.writeText(shareMessage);
-              showToast("2/2 Texto y link copiados • Pega en 'Escribe un mensaje'", 3500);
-            } catch (_) {}
-          };
+      try {
+        // 1/3: Copiar primero la captura del Mapa
+        await navigator.clipboard.write([
+          new ClipboardItem({ "image/png": mapBlob })
+        ]);
+        icon.textContent = "check";
+        showToast("1/3 Captura del MAPA copiada • Pega en WhatsApp (Ctrl+V)", 2900);
 
-          setTimeout(copyTextAfterPaste, 2800);
-          setTimeout(() => { icon.textContent = "photo_camera"; }, 2000);
+        // 2/3: A los 3.0 segundos, reemplazar portapapeles con la captura de Indicadores
+        setTimeout(async () => {
+          try {
+            await navigator.clipboard.write([
+              new ClipboardItem({ "image/png": panelBlob })
+            ]);
+            showToast("2/3 Captura de INDICADORES copiada • Vuelve a pegar (Ctrl+V)", 2900);
+          } catch (_) {}
+        }, 3000);
 
-        } catch (clipErr) {
-          try { await navigator.clipboard.writeText(shareMessage); } catch (_) {}
-          const url = URL.createObjectURL(blob);
+        // 3/3: A los 6.0 segundos, dejar listo el texto editable y el link
+        setTimeout(async () => {
+          try {
+            await navigator.clipboard.writeText(shareMessage);
+            showToast("3/3 Texto y link copiados • Pega en el mensaje (Ctrl+V)", 3200);
+          } catch (_) {}
+          icon.textContent = "photo_camera";
+        }, 6000);
+
+      } catch (clipErr) {
+        // Respaldo: descargar ambas imágenes y copiar texto al portapapeles
+        try { await navigator.clipboard.writeText(shareMessage); } catch (_) {}
+        const dateTag = fechaPlan.replace(/\//g, "-");
+        [
+          { blob: mapBlob, name: `RoadMap_1_Mapa_${dateTag}.png` },
+          { blob: panelBlob, name: `RoadMap_2_Indicadores_${dateTag}.png` }
+        ].forEach(item => {
+          const url = URL.createObjectURL(item.blob);
           const a = document.createElement("a");
           a.href = url;
-          a.download = `RoadMap_Dashboard_${fechaPlan.replace(/\//g, "-")}.png`;
+          a.download = item.name;
           a.click();
           URL.revokeObjectURL(url);
-          showToast("PNG descargado y texto copiado al portapapeles");
-        }
-      }, "image/png");
+        });
+        showToast("2 imágenes descargadas y texto copiado al portapapeles");
+      }
     } catch (err) {
-      console.error("Error generando captura:", err);
+      console.error("Error generando capturas:", err);
       showToast("No se pudo generar la captura");
     } finally {
       btn.style.visibility = "visible";
