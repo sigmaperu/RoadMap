@@ -15,12 +15,12 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
 
   <!-- Estilos globales y específicos del Dashboard -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=36.0">
-  <link rel="stylesheet" href="assets/css/dashboard.css?v=36.0">
+  <link rel="stylesheet" href="assets/css/styles.css?v=37.0">
+  <link rel="stylesheet" href="assets/css/dashboard.css?v=37.0">
 
   <!-- Scripts -->
   <script defer src="assets/js/main.js"></script>
-  <script defer src="assets/js/dashboard.js?v=36.0"></script>
+  <script defer src="assets/js/dashboard.js?v=37.0"></script>
 </head>
 
 <body data-title="Dashboard">
@@ -36,7 +36,7 @@
         <div class="geo-split-grid">
           
           <!-- ========================================================== -->
-          <!-- COLUMNA IZQUIERDA: MAPA REGIÓN LIMA / GEOPOSICIONES CANAL  -->
+          <!-- COLUMNA IZQUIERDA (AMPLIADA): MAPA REGIÓN LIMA             -->
           <!-- ========================================================== -->
           <section class="geo-map-stage">
             
@@ -58,73 +58,81 @@
               </div>
             </div>
 
-            <!-- Contenedor del Mapa Leaflet (Limpio, sin leyenda inferior redundante) -->
+            <!-- Contenedor del Mapa Leaflet -->
             <div id="geoDashboardMap"></div>
 
           </section>
 
           <!-- ========================================================== -->
-          <!-- COLUMNA DERECHA: PANEL DE TARJETAS KPI & PIs (TOTAL / CD)  -->
+          <!-- COLUMNA DERECHA (1 COLUMNA COMPACTA): KPIs, PIs Y DESGLOSE -->
           <!-- ========================================================== -->
           <aside class="geo-side-panel">
             
             <!-- Encabezado del Panel Derecho -->
             <div class="geo-panel-header">
-              <div>
+              <div class="geo-panel-title-wrap">
                 <span id="panelEyebrow" class="geo-eyebrow">CONSOLIDADO REGIONAL</span>
                 <h2 id="panelTitle">Región Lima (Total)</h2>
               </div>
               <span id="panelShareBadge" class="geo-share-badge">3 Centros • 100%</span>
             </div>
 
-            <!-- Grid de 5 KPIs Principales -->
-            <div class="geo-kpi-grid">
+            <!-- Lista Vertical de 5 KPIs Principales en 1 Sola Columna -->
+            <div class="geo-kpi-stack">
               
-              <article class="geo-kpi-card" data-metric="Clientes">
-                <div class="geo-kpi-top">
-                  <span class="geo-kpi-label">Clientes Únicos</span>
+              <article class="geo-kpi-row-card" data-metric="Clientes">
+                <div class="geo-kpi-left">
                   <span class="geo-kpi-icon ic-slate"><span class="material-icons">badge</span></span>
+                  <div>
+                    <span class="geo-kpi-label">Clientes Únicos</span>
+                    <span id="subClientes" class="geo-kpi-sub">Click para ver en mapa</span>
+                  </div>
                 </div>
                 <div id="valClientes" class="geo-kpi-val">–</div>
-                <div id="subClientes" class="geo-kpi-sub">Cartera atendida</div>
               </article>
 
-              <article class="geo-kpi-card is-active" data-metric="Pedidos">
-                <div class="geo-kpi-top">
-                  <span class="geo-kpi-label">Pedidos</span>
+              <article class="geo-kpi-row-card is-active" data-metric="Pedidos">
+                <div class="geo-kpi-left">
                   <span class="geo-kpi-icon ic-plum"><span class="material-icons">assignment</span></span>
+                  <div>
+                    <span class="geo-kpi-label">Pedidos</span>
+                    <span id="subPedidos" class="geo-kpi-sub">● Mostrando en mapa</span>
+                  </div>
                 </div>
                 <div id="valPedidos" class="geo-kpi-val">–</div>
-                <div id="subPedidos" class="geo-kpi-sub">● Mostrando en mapa</div>
               </article>
 
-              <article class="geo-kpi-card" data-metric="Kilogramos">
-                <div class="geo-kpi-top">
-                  <span class="geo-kpi-label">Kilogramos</span>
+              <article class="geo-kpi-row-card" data-metric="Kilogramos">
+                <div class="geo-kpi-left">
                   <span class="geo-kpi-icon ic-green"><span class="material-icons">scale</span></span>
+                  <div>
+                    <span class="geo-kpi-label">Kilogramos</span>
+                    <span id="subKilogramos" class="geo-kpi-sub">Click para ver en mapa</span>
+                  </div>
                 </div>
                 <div id="valKilogramos" class="geo-kpi-val">–</div>
-                <div id="subKilogramos" class="geo-kpi-sub">Peso total</div>
               </article>
 
-              <article class="geo-kpi-card" data-metric="Soles">
-                <div class="geo-kpi-top">
-                  <span class="geo-kpi-label">Soles (PEN)</span>
+              <article class="geo-kpi-row-card" data-metric="Soles">
+                <div class="geo-kpi-left">
                   <span class="geo-kpi-icon ic-gold"><span class="material-icons">paid</span></span>
+                  <div>
+                    <span class="geo-kpi-label">Soles (PEN)</span>
+                    <span id="subSoles" class="geo-kpi-sub">Click para ver en mapa</span>
+                  </div>
                 </div>
                 <div id="valSoles" class="geo-kpi-val">–</div>
-                <div id="subSoles" class="geo-kpi-sub">Valorización</div>
               </article>
 
-              <article class="geo-kpi-card geo-kpi-card--wide" data-metric="Camiones">
-                <div class="geo-kpi-top">
-                  <span class="geo-kpi-label">Flota Asignada (Unidades)</span>
+              <article class="geo-kpi-row-card" data-metric="Camiones">
+                <div class="geo-kpi-left">
                   <span class="geo-kpi-icon ic-plum"><span class="material-icons">local_shipping</span></span>
+                  <div>
+                    <span class="geo-kpi-label">Flota Asignada</span>
+                    <span id="subCamiones" class="geo-kpi-sub">Click para ver en mapa</span>
+                  </div>
                 </div>
-                <div class="geo-kpi-wide-row">
-                  <div id="valCamiones" class="geo-kpi-val">–</div>
-                  <span id="subCamiones" class="geo-kpi-sub">Click para ver en mapa</span>
-                </div>
+                <div id="valCamiones" class="geo-kpi-val">–</div>
               </article>
 
             </div>
@@ -134,15 +142,15 @@
               <div class="geo-section-label">Indicadores de Eficiencia (PIs)</div>
               <div class="geo-pi-grid">
                 <button type="button" class="geo-pi-card" data-metric="Kg/Camión">
-                  <span class="geo-pi-name">Kg / Camión</span>
+                  <span class="geo-pi-name">Kg / Cam</span>
                   <strong id="valKgCamion" class="geo-pi-val">–</strong>
                 </button>
                 <button type="button" class="geo-pi-card" data-metric="Kg/Cliente">
-                  <span class="geo-pi-name">Kg / Cliente</span>
+                  <span class="geo-pi-name">Kg / Cli</span>
                   <strong id="valKgCliente" class="geo-pi-val">–</strong>
                 </button>
                 <button type="button" class="geo-pi-card" data-metric="Clientes/Camión">
-                  <span class="geo-pi-name">Cli / Camión</span>
+                  <span class="geo-pi-name">Cli / Cam</span>
                   <strong id="valCliCamion" class="geo-pi-val">–</strong>
                 </button>
               </div>
@@ -151,7 +159,7 @@
             <!-- Desglose Rápido Inferior -->
             <div class="geo-breakdown-box">
               <div class="geo-breakdown-head">
-                <span id="breakdownTitle" class="geo-section-label">Comparativa por Centro (Click para ver mapa)</span>
+                <span id="breakdownTitle" class="geo-section-label">Comparativa por Centro</span>
                 <span id="breakdownMetricTag" class="geo-mini-tag">Pedidos</span>
               </div>
               <div id="geoBreakdownList" class="geo-breakdown-list"></div>
