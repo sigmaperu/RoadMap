@@ -148,43 +148,6 @@
 .geo-back-btn .material-icons { font-size: 15px; }
 .geo-back-btn.is-hidden { display: none; }
 
-/* Leyenda Inferior del Mapa */
-.geo-map-legend {
-  position: absolute;
-  bottom: 14px;
-  left: 14px;
-  z-index: 1000;
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(6px);
-  border: 1px solid var(--gd-border);
-  border-radius: 999px;
-  padding: 6px 14px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: #27272a;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
-}
-.legend-item { display: inline-flex; align-items: center; gap: 5px; }
-.dot-cd {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--gd-plum);
-  border: 2px solid #fff;
-  box-shadow: 0 0 0 1.5px var(--gd-plum);
-}
-.dot-ch {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  display: inline-block;
-  border: 1.5px solid #fff;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
-}
-
 /* ==========================================================================
    MARCADORES DE CD CON CALLOUTS EN 1 SOLA COLUMNA Y SIN MOVIMIENTO HOVER
    ========================================================================== */
@@ -218,9 +181,9 @@
 }
 
 /* Posiciones equilibradas para mantener los 3 CDs despejados dentro del encuadre */
-.cd-offset-chancay { transform: translate(12%, -50%); }    /* 0754-CHANCAY a la derecha de su pin */
-.cd-offset-ate     { transform: translate(-106%, 4%); }    /* 0374-ATE al suroeste */
-.cd-offset-ate2    { transform: translate(8%, -102%); }    /* 0780-ATE2 al noreste */
+.cd-offset-chancay { transform: translate(12%, -50%); }
+.cd-offset-ate     { transform: translate(-106%, 4%); }
+.cd-offset-ate2    { transform: translate(8%, -102%); }
 
 .cd-callout-head {
   display: flex;
@@ -516,8 +479,8 @@
   border-color: rgba(206, 147, 216, 0.35);
 }
 .geo-break-row.is-selected {
-  background: var(--gd-plum);
-  border-color: #e1bee7;
+  background: rgba(255, 255, 255, 0.16);
+  border-color: #ffffff;
 }
 
 .geo-break-top {
