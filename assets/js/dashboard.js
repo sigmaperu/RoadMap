@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - dashboard.js (Zoom Fijo 10 + Fecha CSV + Captura con Link)
+   RoadMap - dashboard.js (Zoom Fijo 10 + Fecha CSV + Captura Limpia + Texto Editable)
    ========================================================================== */
 
 (() => {
@@ -42,10 +42,10 @@
 
   // Paleta Oficial de Colores por Canal (Rojo DET, Azul FSE, Naranja MES, Amarillo MOD)
   const CHANNEL_CONFIG = [
-    { key: "DET", label: "DET", color: "#ef4444" }, // Rojo
-    { key: "FSE", label: "FSE", color: "#2563eb" }, // Azul
-    { key: "MES", label: "MES", color: "#f97316" }, // Naranja
-    { key: "MOD", label: "MOD", color: "#eab308" }  // Amarillo
+    { key: "DET", label: "DET", color: "#ef4444" },
+    { key: "FSE", label: "FSE", color: "#2563eb" },
+    { key: "MES", label: "MES", color: "#f97316" },
+    { key: "MOD", label: "MOD", color: "#eab308" }
   ];
 
   // Resumen completo de los otros 7 indicadores cuando se selecciona Flota Asignada (Camiones)
@@ -194,7 +194,6 @@
     });
   }
 
-  // Vista y Zoom exacto calibrado como en tu captura de referencia
   const REGIONAL_CENTER = [-11.815, -76.96];
   const REGIONAL_ZOOM   = 10;
 
@@ -224,7 +223,6 @@
     const hudMetricLabel = state.activeMetric === "Camiones" ? "Flota Asignada" : state.activeMetric;
     document.getElementById("hudActiveMetricBadge").textContent = `Métrica: ${hudMetricLabel}`;
 
-    // MODO 1: VISTA GLOBAL REGIÓN LIMA (3 CDs con Zoom Fijo 10)
     if (!state.selectedCenter) {
       hudTitle.textContent    = "Región Lima • 3 Centros de Distribución";
       hudSubtitle.textContent = state.activeMetric === "Camiones"
@@ -300,12 +298,10 @@
         cardMarker.addTo(mapLayerGroup);
       });
 
-      // Mantener siempre el nivel de zoom exacto (10)
       map.setView(REGIONAL_CENTER, REGIONAL_ZOOM, { animate: true });
       return;
     }
 
-    // MODO 2: GEOPOSICIONES DE ATENCIONES DEL DÍA POR CANAL
     const cdInfo = CD_LOCATIONS[state.selectedCenter];
     hudTitle.textContent    = `Geoposiciones • ${state.selectedCenter}`;
     hudSubtitle.textContent = state.selectedChannelCode
@@ -563,14 +559,14 @@
   }
 
   /* ==========================================================================
-     CAPTURA DE PANTALLA CON PIE EJECUTIVO (FECHA CSV + LINK DASHBOARD)
+     CAPTURA LIMPIA DEL DASHBOARD + TEXTO EDITABLE CON LINK EN PORTAPAPELES
      ========================================================================== */
   function showToast(msg) {
     const toast = document.getElementById("shotToast");
     if (!toast) return;
     toast.textContent = msg;
     toast.classList.add("is-visible");
-    setTimeout(() => toast.classList.remove("is-visible"), 2800);
+    setTimeout(() => toast.classList.remove("is-visible"), 3000);
   }
 
   async function captureDashboardToClipboard() {
@@ -584,58 +580,40 @@
     if (zoomCtrl) zoomCtrl.style.visibility = "hidden";
 
     const fechaPlan = window.RoadMapFechaOperativa || csvPlanningDate || "del día";
+    const shareMessage = `Estos son los datos de la planificación del día ${fechaPlan}\n${DASHBOARD_PUBLIC_URL}`;
 
     try {
-      const baseCanvas = await html2canvas(target, {
+      const canvas = await html2canvas(target, {
         useCORS: true,
         allowTaint: false,
         scale: 2,
         backgroundColor: "#f5f4f8"
       });
 
-      // Crear lienzo final añadiendo pie ejecutivo con texto y link del dashboard
-      const footerH = 72; // 36px reales a escala 2x
-      const finalCanvas = document.createElement("canvas");
-      finalCanvas.width = baseCanvas.width;
-      finalCanvas.height = baseCanvas.height + footerH;
-
-      const ctx = finalCanvas.getContext("2d");
-      ctx.drawImage(baseCanvas, 0, 0);
-
-      // Fondo grafito corporativo para el pie de imagen
-      ctx.fillStyle = "#16141c";
-      ctx.fillRect(0, baseCanvas.height, finalCanvas.width, footerH);
-
-      // Texto informativo izquierdo
-      ctx.fillStyle = "#e4e4e7";
-      ctx.font = "600 22px Inter, Roboto, sans-serif";
-      ctx.textBaseline = "middle";
-      const infoText = `Estos son los datos de la planificación del día ${fechaPlan}`;
-      ctx.fillText(infoText, 32, baseCanvas.height + footerH / 2);
-
-      // Link derecho en tono amatista claro
-      ctx.fillStyle = "#e1bee7";
-      ctx.font = "700 22px Inter, Roboto, sans-serif";
-      ctx.textAlign = "right";
-      ctx.fillText(DASHBOARD_PUBLIC_URL, finalCanvas.width - 32, baseCanvas.height + footerH / 2);
-
-      finalCanvas.toBlob(async (blob) => {
+      canvas.toBlob(async (blob) => {
         if (!blob) return;
         try {
+          // Escribimos simultáneamente la imagen limpia y el texto editable en el portapapeles
+          const textBlob = new Blob([shareMessage], { type: "text/plain" });
           await navigator.clipboard.write([
-            new ClipboardItem({ "image/png": blob })
+            new ClipboardItem({
+              "image/png": blob,
+              "text/plain": textBlob
+            })
           ]);
           icon.textContent = "check";
-          showToast(`Captura copiada (Planificación ${fechaPlan})`);
+          showToast(`Captura + texto copiados (${fechaPlan})`);
           setTimeout(() => { icon.textContent = "photo_camera"; }, 1800);
         } catch (clipErr) {
+          // Si el navegador no soporta múltiples MIME types a la vez, copiamos el texto y descargamos el PNG
+          try { await navigator.clipboard.writeText(shareMessage); } catch (_) {}
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
           a.href = url;
           a.download = `RoadMap_Dashboard_${fechaPlan.replace(/\//g, "-")}.png`;
           a.click();
           URL.revokeObjectURL(url);
-          showToast("Captura descargada en PNG");
+          showToast("Imagen descargada y texto copiado al portapapeles");
         }
       }, "image/png");
     } catch (err) {
@@ -687,7 +665,6 @@
       const { rows } = parseCSV(text);
       allRows = rows;
 
-      // Extraer fecha operativa del CSV como respaldo inmediato
       if (rows.length > 0 && rows[0][IDX.FECHA]) {
         const rawF = cleanStr(rows[0][IDX.FECHA]).split(" ")[0];
         if (/^\d{4}-\d{2}-\d{2}$/.test(rawF)) {
@@ -698,8 +675,8 @@
         }
         if (!window.RoadMapFechaOperativa) {
           window.RoadMapFechaOperativa = csvPlanningDate;
-          const badge = document.getElementById("header-date-badge");
-          if (badge) badge.textContent = csvPlanningDate;
+          const fechaEl = document.getElementById("topbarFecha");
+          if (fechaEl) fechaEl.textContent = csvPlanningDate;
         }
       }
 
