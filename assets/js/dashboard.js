@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - dashboard.js (ATE Desplazado Izquierda + 2 Botones de Captura)
+   RoadMap - dashboard.js (Cápsula Morada Esquina Derecha + Lista Sin Paréntesis)
    ========================================================================== */
 
 (() => {
@@ -11,7 +11,6 @@
   ].filter(Boolean);
 
   // Coordenadas exactas de los 3 Centros de Distribución (Región Lima)
-  // 0374-ATE movido más a la izquierda (-77.175) para dejar su pin y línea totalmente despejados
   const CD_LOCATIONS = {
     "0374-ATE": {
       lat: -12.067013469355048,
@@ -215,16 +214,19 @@
     const hudTitle    = document.getElementById("hudMapTitle");
     const hudSubtitle = document.getElementById("hudMapSubtitle");
     const btnBack     = document.getElementById("btnBackToRegion");
+    const cdCornerTag = document.getElementById("selectedCdBadge");
 
     const hudMetricLabel = state.activeMetric === "Camiones" ? "Flota Asignada" : state.activeMetric;
     document.getElementById("hudActiveMetricBadge").textContent = `Métrica: ${hudMetricLabel}`;
 
+    // MODO 1: VISTA GLOBAL REGIÓN LIMA
     if (!state.selectedCenter) {
       hudTitle.textContent    = "Región Lima • 3 Centros de Distribución";
       hudSubtitle.textContent = state.activeMetric === "Camiones"
         ? "Resumen integral de indicadores por Centro • Toca un CD para ver sus geoposiciones"
         : `Desglose por canal (${state.activeMetric}) • Toca un CD para ver sus geoposiciones`;
       btnBack.classList.add("is-hidden");
+      if (cdCornerTag) cdCornerTag.classList.add("is-hidden");
 
       const isFleetSelected = (state.activeMetric === "Camiones");
 
@@ -298,6 +300,7 @@
       return;
     }
 
+    // MODO 2: GEOPOSICIONES DEL CENTRO SELECCIONADO (Cápsula morada fija en esquina derecha)
     const cdInfo = CD_LOCATIONS[state.selectedCenter];
     hudTitle.textContent    = `Geoposiciones • ${state.selectedCenter}`;
     hudSubtitle.textContent = state.selectedChannelCode
@@ -305,22 +308,21 @@
       : "Puntos de atención coloreados por Canal (DET, FSE, MES, MOD)";
     btnBack.classList.remove("is-hidden");
 
+    if (cdCornerTag) {
+      cdCornerTag.textContent = `CD ${state.selectedCenter}`;
+      cdCornerTag.classList.remove("is-hidden");
+    }
+
     const bounds = [];
 
+    // Punto limpio del CD de origen (sin cápsula flotante encima del mapa)
     if (cdInfo) {
-      const originIcon = L.divIcon({
+      const originDotIcon = L.divIcon({
         className: "",
-        html: `
-          <div class="cd-callout-card" style="transform:translate(-50%, -145%); min-width:125px; padding:6px 12px; background:#8e24aa; border-color:#fff;">
-            <div class="cd-callout-head" style="border:none; margin:0; padding:0; justify-content:center;">
-              <span class="cd-callout-name" style="color:#fff;">CD ${state.selectedCenter}</span>
-            </div>
-          </div>
-          <div class="cd-anchor-dot"></div>
-        `,
+        html: `<div class="cd-anchor-dot"></div>`,
         iconSize: [0, 0]
       });
-      L.marker([cdInfo.lat, cdInfo.lng], { icon: originIcon }).addTo(mapLayerGroup);
+      L.marker([cdInfo.lat, cdInfo.lng], { icon: originDotIcon }).addTo(mapLayerGroup);
       bounds.push([cdInfo.lat, cdInfo.lng]);
     }
 
@@ -465,6 +467,9 @@
     renderBreakdownList();
   }
 
+  /* ==========================================================================
+     LISTA INFERIOR NEGRA LIMPIA (SIN PARÉNTESIS NI TEXTO EXTRA)
+     ========================================================================== */
   function renderBreakdownList() {
     const listEl  = document.getElementById("geoBreakdownList");
     const titleEl = document.getElementById("breakdownTitle");
@@ -486,7 +491,6 @@
         key: label,
         label,
         val: metricCalc(rows, state.activeMetric),
-        extra: `${countTrucks(rows)} u.`,
         color: "#10b981"
       })).sort((a, b) => b.val - a.val);
 
@@ -500,7 +504,7 @@
         row.className = "geo-break-row";
         row.innerHTML = `
           <div class="geo-break-top">
-            <strong>${it.label} <small style="color:#a1a1aa; font-weight:500;">(${it.extra})</small></strong>
+            <strong>${it.label}</strong>
             <div class="geo-break-nums">
               <span class="geo-break-pct">${pct}%</span>
               <span class="geo-break-val">${formatMetric(it.val, state.activeMetric, true)}</span>
@@ -522,7 +526,6 @@
           key: ch.key,
           label: ch.label,
           val: metricCalc(rows, state.activeMetric),
-          extra: `${countPedidos(rows)} ped.`,
           color: ch.color
         };
       }).filter(it => it.val > 0).sort((a, b) => b.val - a.val);
@@ -537,7 +540,7 @@
         row.className = `geo-break-row ${state.selectedChannelCode === it.key ? "is-selected" : ""}`;
         row.innerHTML = `
           <div class="geo-break-top">
-            <strong><i class="cd-ch-dot" style="background:${it.color};"></i> ${it.label} <small style="color:#e1bee7; font-weight:500;">(${it.extra})</small></strong>
+            <strong><i class="cd-ch-dot" style="background:${it.color};"></i> ${it.label}</strong>
             <div class="geo-break-nums">
               <span class="geo-break-pct">${pct}%</span>
               <span class="geo-break-val">${formatMetric(it.val, state.activeMetric, true)}</span>
@@ -555,9 +558,7 @@
   }
 
   /* ==========================================================================
-     CAPTURAS INDEPENDIENTES:
-     1) Mapa limpio (sin texto)
-     2) Zona blanca de indicadores (con encabezado "RESUMEN DE PLANIFICACION...")
+     CAPTURAS INDEPENDIENTES
      ========================================================================== */
   function showToast(msg, duration = 2600) {
     const toast = document.getElementById("shotToast");
@@ -626,7 +627,6 @@
         backgroundColor: "#f5f4f8"
       });
 
-      // Componer imagen final con margen limpio y encabezado "RESUMEN DE PLANIFICACIÓN PARA EL DÍA ..."
       const pad = 28;
       const headerH = 84;
       const finalCanvas = document.createElement("canvas");
@@ -637,7 +637,6 @@
       ctx.fillStyle = "#f5f4f8";
       ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
 
-      // Barra superior amatista/grafito con el título ejecutivo
       ctx.fillStyle = "#16141c";
       ctx.beginPath();
       ctx.roundRect(pad, pad, baseCanvas.width, headerH - 12, 20);
@@ -650,7 +649,6 @@
       const headerText = `RESUMEN DE PLANIFICACIÓN PARA EL DÍA ${fechaPlan}`;
       ctx.fillText(headerText, finalCanvas.width / 2, pad + (headerH - 12) / 2);
 
-      // Pegar debajo la captura limpia de la zona blanca de indicadores
       ctx.drawImage(baseCanvas, pad, pad + headerH);
 
       finalCanvas.toBlob(async (blob) => {
