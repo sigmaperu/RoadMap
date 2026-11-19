@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - dashboard.css (Tarjetas Ampliadas + Callouts Centrados)
+   RoadMap - dashboard.css (Capturas Separadas: Mapa vs Zona Blanca KPIs)
    ========================================================================== */
 
 :root {
@@ -27,7 +27,7 @@
 
 .geo-split-grid {
   display: grid;
-  grid-template-columns: 1fr 330px;
+  grid-template-columns: 1fr 336px;
   gap: 12px;
   height: 100%;
   min-height: 0;
@@ -214,7 +214,7 @@
   box-shadow: 0 12px 30px rgba(22, 20, 28, 0.45);
   width: max-content;
   min-width: 215px;
-  transform: translate(-50%, -50%); /* Centrado exacto en calloutLat/Lng para que la línea apunte directo al centro/borde */
+  transform: translate(-50%, -50%);
   cursor: pointer;
   transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
@@ -281,7 +281,7 @@
 }
 
 /* ==========================================================================
-   COLUMNA DERECHA (1 SOLA COLUMNA COMPACTA Y ESCALADA)
+   COLUMNA DERECHA: ZONA BLANCA DE INDICADORES (CAPTURABLE) + DESGLOSE
    ========================================================================== */
 .geo-side-panel {
   display: flex;
@@ -293,16 +293,24 @@
   background: var(--gd-bg);
 }
 
+.geo-white-capture-zone {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  background: var(--gd-bg);
+  border-radius: 14px;
+  flex-shrink: 0;
+}
+
 .geo-panel-header {
   background: var(--gd-surface);
   border-radius: 14px;
-  padding: 11px 13px;
+  padding: 10px 12px;
   border: 1px solid var(--gd-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  flex-shrink: 0;
+  gap: 6px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.03);
 }
 
@@ -311,7 +319,7 @@
 }
 .geo-panel-header h2 {
   margin: 0;
-  font-size: 1.02rem;
+  font-size: 0.98rem;
   font-weight: 800;
   color: var(--gd-text);
   white-space: nowrap;
@@ -319,23 +327,47 @@
   text-overflow: ellipsis;
 }
 
+.geo-panel-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
 .geo-share-badge {
   background: var(--gd-plum-soft);
   color: var(--gd-plum-deep);
   border: 1px solid #e1bee7;
-  padding: 3px 9px;
+  padding: 3px 8px;
   border-radius: 999px;
-  font-size: 0.65rem;
+  font-size: 0.64rem;
   font-weight: 800;
   white-space: nowrap;
-  flex-shrink: 0;
 }
+
+.geo-panel-shot-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--gd-border);
+  background: #f8fafc;
+  color: #3f3f46;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.geo-panel-shot-btn:hover {
+  background: var(--gd-plum);
+  color: #ffffff;
+  border-color: var(--gd-plum);
+}
+.geo-panel-shot-btn .material-icons { font-size: 14px; }
 
 .geo-kpi-stack {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  flex-shrink: 0;
 }
 
 .geo-kpi-row-card {
@@ -413,7 +445,6 @@
   border-radius: 12px;
   padding: 8px 11px;
   border: 1px solid var(--gd-border);
-  flex-shrink: 0;
 }
 .geo-section-label {
   font-size: 0.66rem;
