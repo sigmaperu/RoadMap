@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - dashboard.css (Mapa Ampliado + Panel 1 Columna Escalado • 0 Scroll)
+   RoadMap - dashboard.css (Mapa Ampliado + 7 Indicadores en CD + Screenshot)
    ========================================================================== */
 
 :root {
@@ -25,7 +25,6 @@
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-/* El mapa ocupa todo el ancho disponible dejando 330px exactos para el panel lateral */
 .geo-split-grid {
   display: grid;
   grid-template-columns: 1fr 330px;
@@ -113,7 +112,7 @@
 .geo-hud-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   flex-shrink: 0;
 }
 
@@ -149,6 +148,49 @@
 .geo-back-btn .material-icons { font-size: 14px; }
 .geo-back-btn.is-hidden { display: none; }
 
+/* Botón Screenshot en la barra del mapa */
+.geo-shot-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.geo-shot-btn:hover {
+  background: var(--gd-plum);
+  border-color: #e1bee7;
+}
+.geo-shot-btn .material-icons { font-size: 15px; }
+
+/* Toast de notificación de captura */
+.geo-shot-toast {
+  position: fixed;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--gd-dark);
+  color: #ffffff;
+  border: 1px solid var(--gd-emerald);
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 99999;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.geo-shot-toast.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 /* ==========================================================================
    MARCADORES DE CD CON CALLOUTS SEPARADOS (CERO SOLAPE) Y SIN HOVER SALTÓN
    ========================================================================== */
@@ -172,7 +214,7 @@
   padding: 7px 11px;
   box-shadow: 0 10px 26px rgba(22, 20, 28, 0.42);
   width: max-content;
-  min-width: 140px;
+  min-width: 156px;
   cursor: pointer;
   transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
@@ -181,16 +223,16 @@
   box-shadow: 0 12px 30px rgba(142, 36, 170, 0.55);
 }
 
-/* Posiciones separadas para que Chancay, ATE2 y ATE nunca se toquen */
-.cd-offset-chancay { transform: translate(6%, -50%); }     /* Noreste de Chancay */
-.cd-offset-ate2    { transform: translate(6%, -55%); }     /* Este-Noreste de ATE2 */
-.cd-offset-ate     { transform: translate(-105%, 8%); }    /* Suroeste de ATE */
+/* Posiciones calibradas para que Chancay, ATE2 y ATE nunca se toquen */
+.cd-offset-chancay { transform: translate(6%, -45%); }
+.cd-offset-ate2    { transform: translate(6%, -65%); }
+.cd-offset-ate     { transform: translate(-105%, 4%); }
 
 .cd-callout-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.14);
   padding-bottom: 4px;
   margin-bottom: 4px;
@@ -203,7 +245,7 @@
   white-space: nowrap;
 }
 .cd-callout-mainval {
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   font-weight: 800;
   color: #ffffff;
   white-space: nowrap;
@@ -212,16 +254,17 @@
 .cd-mini-channels {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 2.5px;
+  gap: 2px;
 }
 .cd-ch-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.64rem;
+  font-size: 0.62rem;
   color: #e4e4e7;
-  gap: 12px;
+  gap: 14px;
   white-space: nowrap;
+  line-height: 1.25;
 }
 .cd-ch-left {
   display: inline-flex;
@@ -231,8 +274,8 @@
   color: #a1a1aa;
 }
 .cd-ch-dot {
-  width: 7px;
-  height: 7px;
+  width: 6.5px;
+  height: 6.5px;
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -257,7 +300,7 @@
 .geo-panel-header {
   background: var(--gd-surface);
   border-radius: 14px;
-  padding: 10px 13px;
+  padding: 11px 13px;
   border: 1px solid var(--gd-border);
   display: flex;
   align-items: center;
@@ -270,17 +313,9 @@
 .geo-panel-title-wrap {
   min-width: 0;
 }
-.geo-eyebrow {
-  display: block;
-  font-size: 0.58rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  color: var(--gd-plum);
-  white-space: nowrap;
-}
 .geo-panel-header h2 {
-  margin: 1px 0 0;
-  font-size: 0.98rem;
+  margin: 0;
+  font-size: 1.02rem;
   font-weight: 800;
   color: var(--gd-text);
   white-space: nowrap;
@@ -292,9 +327,9 @@
   background: var(--gd-plum-soft);
   color: var(--gd-plum-deep);
   border: 1px solid #e1bee7;
-  padding: 3px 8px;
+  padding: 3px 9px;
   border-radius: 999px;
-  font-size: 0.64rem;
+  font-size: 0.65rem;
   font-weight: 800;
   white-space: nowrap;
   flex-shrink: 0;
