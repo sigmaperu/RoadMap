@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - dashboard.js (Mapa Geoespacial Lima + Callouts + Geoposiciones Canal)
+   RoadMap - dashboard.js (Mapa Geoespacial Lima + Callouts 1 Columna)
    ========================================================================== */
 
 (() => {
@@ -11,22 +11,22 @@
   ].filter(Boolean);
 
   // Coordenadas exactas de los 3 Centros de Distribución (Región Lima)
-  // Con desplazamiento visual de tarjeta (calloutLat, calloutLng) para evitar solape entre ATE y ATE2
+  // Con desplazamiento calibrado para mantener los 3 centros equilibrados y centrados
   const CD_LOCATIONS = {
     "0374-ATE": {
       lat: -12.067013469355048,
       lng: -76.97943349160968,
-      calloutLat: -12.095,
-      calloutLng: -77.015,
-      offsetClass: "cd-offset-sw",
+      calloutLat: -12.088,
+      calloutLng: -77.005,
+      offsetClass: "cd-offset-ate",
       label: "0374-ATE"
     },
     "0780-ATE2": {
       lat: -12.045124965310059,
       lng: -76.93813036277461,
-      calloutLat: -12.015,
-      calloutLng: -76.895,
-      offsetClass: "cd-offset-ne",
+      calloutLat: -12.022,
+      calloutLng: -76.905,
+      offsetClass: "cd-offset-ate2",
       label: "0780-ATE2"
     },
     "0754-CHANCAY": {
@@ -34,7 +34,7 @@
       lng: -77.27641679959045,
       calloutLat: -11.551110366002629,
       calloutLng: -77.27641679959045,
-      offsetClass: "cd-offset-center",
+      offsetClass: "cd-offset-chancay",
       label: "0754-CHANCAY"
     }
   };
@@ -42,7 +42,7 @@
   // Paleta Oficial de Colores por Canal (Rojo DET, Azul FOSE, Naranja MES, Violeta MOD)
   const CHANNEL_CONFIG = [
     { key: "DET",  label: "DET",  color: "#ef4444" }, // Rojo
-    { key: "FOSE", label: "FOSE", color: "#2563eb" }, // Azul (mapea FOSE y FSE)
+    { key: "FOSE", label: "FOSE", color: "#2563eb" }, // Azul
     { key: "MES",  label: "MES",  color: "#f97316" }, // Naranja
     { key: "MOD",  label: "MOD",  color: "#9333ea" }  // Violeta
   ];
@@ -104,7 +104,6 @@
     return { header, rows };
   }
 
-  // Índices CSV
   const IDX = {
     CENTRO: 1, PLACA: 2, CLIENTE: 3, NOMBRE: 4, RUTA: 6, PEDIDO: 7,
     KG: 10, SOLES: 11, DIRECCION: 15, LAT: 16, LNG: 17, CANAL: 19
@@ -123,15 +122,13 @@
   const unique = arr => Array.from(new Set(arr.filter(v => v !== "" && v != null)));
   const toNum = v => { const n = parseFloat(String(v ?? "0").replace(",", ".")); return isNaN(n) ? 0 : n; };
 
-  // Estado Global Interactivo
   let allRows = [];
   let state = {
-    selectedCenter: null, // null = Región Lima (3 CDs) | string = Centro específico (Geoposiciones)
-    selectedChannelCode: null, // "DET" | "FOSE" | "MES" | "MOD" | null
+    selectedCenter: null,
+    selectedChannelCode: null,
     activeMetric: "Pedidos"
   };
 
-  // Capas Leaflet
   let map = null;
   let mapLayerGroup = null;
 
@@ -184,14 +181,11 @@
     });
   }
 
-  /* ==========================================================================
-     INICIALIZACIÓN DEL MAPA LEAFLET (SIN API KEY)
-     ========================================================================== */
   function initMap() {
     map = L.map("geoDashboardMap", {
       zoomControl: false,
       attributionControl: false
-    }).setView([-11.85, -77.08], 9);
+    }).setView([-11.82, -77.08], 9);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19
@@ -201,9 +195,6 @@
     mapLayerGroup = L.layerGroup().addTo(map);
   }
 
-  /* ==========================================================================
-     RENDERIZADO DEL MAPA: MODO 3 CDs (CALLOUTS) vs MODO GEOPOSICIONES POR CANAL
-     ========================================================================== */
   function renderMapState() {
     if (!map) return;
     mapLayerGroup.clearLayers();
@@ -214,23 +205,20 @@
 
     document.getElementById("hudActiveMetricBadge").textContent = `Métrica: ${state.activeMetric}`;
 
-    // ========================================================================
-    // MODO 1: VISTA GLOBAL REGIÓN LIMA (3 CDs con Callouts y Minileyenda Canales)
-    // ========================================================================
+    // MODO 1: VISTA GLOBAL REGIÓN LIMA (3 CDs con Callouts de 1 Columna)
     if (!state.selectedCenter) {
       hudTitle.textContent    = "Región Lima • 3 Centros de Distribución";
       hudSubtitle.textContent = "Selecciona un indicador a la derecha o toca un CD para ver sus geoposiciones";
       btnBack.classList.add("is-hidden");
 
       const bounds = [];
-      const showChannelMiniLegend = (state.activeMetric !== "Camiones"); // Excluir canales cuando el indicador es Unidades/Camiones
+      const showChannelMiniLegend = (state.activeMetric !== "Camiones");
 
       Object.entries(CD_LOCATIONS).forEach(([cdCode, info]) => {
         const cdRows = allRows.filter(r => cleanStr(r[IDX.CENTRO]) === cdCode);
         const mainVal = metricCalc(cdRows, state.activeMetric);
         const formattedMain = formatMetric(mainVal, state.activeMetric, true);
 
-        // 1) Punto exacto geográfico del CD en el mapa
         const anchorIcon = L.divIcon({
           className: "",
           html: `<div class="cd-anchor-dot"></div>`,
@@ -240,7 +228,6 @@
         anchorMarker.on("click", () => openCenterGeopositions(cdCode));
         anchorMarker.addTo(mapLayerGroup);
 
-        // 2) Línea guía (Leader Line) si la tarjeta está desplazada (ATE y ATE2)
         if (info.lat !== info.calloutLat || info.lng !== info.calloutLng) {
           L.polyline(
             [[info.lat, info.lng], [info.calloutLat, info.calloutLng]],
@@ -248,7 +235,6 @@
           ).addTo(mapLayerGroup);
         }
 
-        // 3) Construir minileyenda de canales dentro de la tarjeta del CD
         let miniChannelsHtml = "";
         if (showChannelMiniLegend) {
           const chItems = CHANNEL_CONFIG.map(ch => {
@@ -286,15 +272,18 @@
         bounds.push([info.calloutLat, info.calloutLng]);
       });
 
+      // Encuadre centrado con margen superior e inferior para que Chancay y Ate queden bien centrados
       if (bounds.length > 0) {
-        map.fitBounds(bounds, { padding: [85, 85], maxZoom: 10 });
+        map.fitBounds(bounds, {
+          paddingTopLeft: [110, 125],
+          paddingBottomRight: [110, 110],
+          maxZoom: 10
+        });
       }
       return;
     }
 
-    // ========================================================================
-    // MODO 2: GEOPOSICIONES DE ATENCIONES DEL DÍA POR CANAL (CD SELECCIONADO)
-    // ========================================================================
+    // MODO 2: GEOPOSICIONES DE ATENCIONES DEL DÍA POR CANAL
     const cdInfo = CD_LOCATIONS[state.selectedCenter];
     hudTitle.textContent    = `Geoposiciones • ${state.selectedCenter}`;
     hudSubtitle.textContent = state.selectedChannelCode
@@ -304,12 +293,11 @@
 
     const bounds = [];
 
-    // Marcador de origen del CD
     if (cdInfo) {
       const originIcon = L.divIcon({
         className: "",
         html: `
-          <div class="cd-callout-card cd-offset-center" style="min-width:110px; padding:5px 10px; background:#8e24aa; border-color:#fff;">
+          <div class="cd-callout-card cd-offset-chancay" style="min-width:110px; padding:5px 10px; background:#8e24aa; border-color:#fff;">
             <div class="cd-callout-head" style="border:none; margin:0; padding:0; justify-content:center;">
               <span class="cd-callout-name" style="color:#fff;">CD ${state.selectedCenter}</span>
             </div>
@@ -322,7 +310,6 @@
       bounds.push([cdInfo.lat, cdInfo.lng]);
     }
 
-    // Agrupar atenciones por cliente único dentro del centro (y canal si está filtrado)
     const activeRows = getActiveRows().filter(r => !isFRT(r));
     const clientPoints = new Map();
 
@@ -380,7 +367,7 @@
     });
 
     if (bounds.length > 1) {
-      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
+      map.fitBounds(bounds, { padding: [55, 55], maxZoom: 14 });
     } else if (cdInfo) {
       map.setView([cdInfo.lat, cdInfo.lng], 12);
     }
@@ -392,9 +379,6 @@
     updateDashboard();
   }
 
-  /* ==========================================================================
-     RENDERIZADO DEL PANEL DERECHO (KPIs, PIs Y DESGLOSE POR CENTRO / CANAL)
-     ========================================================================== */
   function renderSidePanel() {
     const activeRows = getActiveRows();
     const totalGlobalPed = Math.max(1, countPedidos(allRows));
