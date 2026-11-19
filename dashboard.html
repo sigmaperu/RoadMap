@@ -15,12 +15,12 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
 
   <!-- Estilos globales y específicos del Dashboard -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=41.0">
-  <link rel="stylesheet" href="assets/css/dashboard.css?v=41.0">
+  <link rel="stylesheet" href="assets/css/styles.css?v=42.0">
+  <link rel="stylesheet" href="assets/css/dashboard.css?v=42.0">
 
   <!-- Scripts -->
   <script defer src="assets/js/main.js"></script>
-  <script defer src="assets/js/dashboard.js?v=41.0"></script>
+  <script defer src="assets/js/dashboard.js?v=42.0"></script>
 </head>
 
 <body data-title="Dashboard">
@@ -60,6 +60,9 @@
                 </button>
               </div>
             </div>
+
+            <!-- Cápsula Morada del Centro Seleccionado (Esquina derecha debajo de la barra negra) -->
+            <div id="selectedCdBadge" class="geo-cd-corner-badge is-hidden">CD 0374-ATE</div>
 
             <!-- Contenedor del Mapa Leaflet -->
             <div id="geoDashboardMap"></div>
@@ -168,7 +171,7 @@
 
             </div>
 
-            <!-- Desglose Rápido Inferior (Fuera de la captura de indicadores) -->
+            <!-- Desglose Rápido Inferior -->
             <div class="geo-breakdown-box">
               <div class="geo-breakdown-head">
                 <span id="breakdownTitle" class="geo-section-label">Comparativa por Centro</span>
