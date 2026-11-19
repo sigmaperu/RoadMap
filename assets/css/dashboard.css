@@ -1,6 +1,5 @@
 /* ==========================================================================
-   RoadMap - dashboard.css (Mapa Geoespacial Lima + Tarjetas Ejecutivas)
-   Paleta: Amatista (#8e24aa), Grafito (#16141c), Esmeralda (#10b981) y Ámbar
+   RoadMap - dashboard.css (Mapa Geoespacial Lima + Callouts Anti-Solape)
    ========================================================================== */
 
 :root {
@@ -28,7 +27,7 @@
 
 .geo-split-grid {
   display: grid;
-  grid-template-columns: 1.35fr 1fr;
+  grid-template-columns: 1.38fr 1fr;
   gap: 14px;
   height: 100%;
   min-height: 0;
@@ -43,7 +42,7 @@
   overflow: hidden;
   border: 1px solid var(--gd-border);
   box-shadow: 0 10px 30px rgba(22, 20, 28, 0.08);
-  background: #eae8ee;
+  background: #e5e7eb;
   height: 100%;
 }
 
@@ -53,7 +52,11 @@
   z-index: 1;
 }
 
-/* Barra HUD superior flotante sobre el mapa */
+/* Estilo suave al mapa base OSM para que resalten las tarjetas y pines */
+.leaflet-tile-pane {
+  filter: saturate(0.85) contrast(0.96) brightness(1.02);
+}
+
 .geo-map-hud {
   position: absolute;
   top: 14px;
@@ -115,7 +118,7 @@
 }
 
 .geo-metric-pill {
-  background: rgba(171, 71, 188, 0.25);
+  background: rgba(171, 71, 188, 0.28);
   border: 1px solid rgba(225, 190, 231, 0.35);
   color: #f3e5f5;
   padding: 4px 10px;
@@ -153,21 +156,20 @@
   bottom: 14px;
   left: 14px;
   z-index: 1000;
-  background: rgba(255, 255, 255, 0.94);
+  background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(6px);
   border: 1px solid var(--gd-border);
   border-radius: 999px;
   padding: 6px 14px;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   font-size: 0.7rem;
   font-weight: 700;
-  color: #3f3f46;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  color: #27272a;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
 }
-.legend-item { display: inline-flex; align-items: center; gap: 6px; }
-.legend-item.is-hidden { display: none; }
+.legend-item { display: inline-flex; align-items: center; gap: 5px; }
 .dot-cd {
   width: 10px;
   height: 10px;
@@ -176,70 +178,103 @@
   border: 2px solid #fff;
   box-shadow: 0 0 0 1.5px var(--gd-plum);
 }
-.grad-heat {
-  width: 36px;
-  height: 8px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, #10b981, #f59e0b, #ef4444);
+.dot-ch {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+  border: 1.5px solid #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
 }
 
-/* Marcadores Personalizados de los 3 CDs en el Mapa */
-.cd-map-marker {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  transform: translate(-50%, -100%);
+/* ==========================================================================
+   MARCADORES DE CD CON CALLOUTS ANTI-SOLAPE Y MINILEYENDA DE CANALES
+   ========================================================================== */
+.cd-anchor-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--gd-plum);
+  border: 2.5px solid #ffffff;
+  box-shadow: 0 0 0 4px rgba(142, 36, 170, 0.35), 0 3px 8px rgba(0,0,0,0.4);
+  transform: translate(-50%, -50%);
   cursor: pointer;
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-.cd-map-marker:hover {
-  transform: translate(-50%, -104%) scale(1.06);
+
+.cd-callout-card {
+  background: rgba(22, 20, 28, 0.95);
+  backdrop-filter: blur(6px);
+  color: #ffffff;
+  border: 2px solid var(--gd-plum);
+  border-radius: 14px;
+  padding: 8px 11px;
+  box-shadow: 0 10px 26px rgba(22, 20, 28, 0.42);
+  min-width: 152px;
+  cursor: pointer;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.18s;
+}
+.cd-callout-card:hover {
+  transform: scale(1.04);
+  border-color: #e1bee7;
   z-index: 9999 !important;
 }
 
-.cd-marker-pill {
-  background: var(--gd-dark);
-  color: #ffffff;
-  border: 2px solid var(--gd-plum);
-  border-radius: 12px;
-  padding: 6px 10px;
-  box-shadow: 0 6px 18px rgba(22, 20, 28, 0.35);
-  text-align: center;
-  min-width: 112px;
-  position: relative;
+/* Posiciones desplazadas para evitar que ATE y ATE2 se solapen */
+.cd-offset-center { transform: translate(-50%, -115%); }
+.cd-offset-sw     { transform: translate(-102%, 14%); }  /* 0374-ATE hacia Suroeste */
+.cd-offset-ne     { transform: translate(4%, -112%); }   /* 0780-ATE2 hacia Noreste */
+
+.cd-callout-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  padding-bottom: 4px;
+  margin-bottom: 5px;
 }
-.cd-marker-pill::after {
-  content: "";
-  position: absolute;
-  bottom: -7px;
-  left: 50%;
-  transform: translateX(-50%);
-  border-width: 7px 6px 0;
-  border-style: solid;
-  border-color: var(--gd-plum) transparent transparent transparent;
-}
-.cd-marker-name {
-  display: block;
-  font-size: 0.66rem;
-  font-weight: 700;
+.cd-callout-name {
+  font-size: 0.68rem;
+  font-weight: 800;
   color: #e1bee7;
   letter-spacing: 0.03em;
 }
-.cd-marker-val {
-  display: block;
-  font-size: 0.92rem;
+.cd-callout-mainval {
+  font-size: 0.94rem;
   font-weight: 800;
   color: #ffffff;
-  margin-top: 1px;
 }
-.cd-marker-pulse {
-  width: 12px;
-  height: 12px;
+
+/* Minileyenda de Canales dentro del Card del CD */
+.cd-mini-channels {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 3px 8px;
+}
+.cd-ch-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.64rem;
+  color: #e4e4e7;
+  gap: 4px;
+}
+.cd-ch-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  color: #a1a1aa;
+}
+.cd-ch-dot {
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: var(--gd-plum);
-  border: 2px solid #ffffff;
-  margin-top: 6px;
-  box-shadow: 0 0 0 4px rgba(142, 36, 170, 0.35);
+  flex-shrink: 0;
+}
+.cd-ch-item strong {
+  font-weight: 800;
+  color: #ffffff;
 }
 
 /* ==========================================================================
@@ -290,7 +325,6 @@
   font-weight: 800;
 }
 
-/* Grid de 5 KPIs */
 .geo-kpi-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -422,7 +456,7 @@
   color: #ffffff;
 }
 
-/* Caja Inferior de Desglose (CDs o Canales) */
+/* Caja Inferior de Desglose */
 .geo-breakdown-box {
   flex: 1;
   min-height: 0;
@@ -492,7 +526,7 @@
   justify-content: space-between;
   font-size: 0.76rem;
 }
-.geo-break-top strong { font-weight: 700; color: #ffffff; }
+.geo-break-top strong { font-weight: 700; color: #ffffff; display: inline-flex; align-items: center; gap: 6px; }
 .geo-break-nums { display: flex; align-items: center; gap: 8px; }
 .geo-break-pct { font-size: 0.68rem; color: #e1bee7; font-weight: 700; }
 .geo-break-val { font-weight: 800; color: #ffffff; }
@@ -506,7 +540,6 @@
 .geo-break-bar span {
   display: block;
   height: 100%;
-  background: var(--gd-emerald);
   border-radius: 999px;
 }
 
@@ -524,7 +557,7 @@
     height: auto;
   }
   .geo-map-stage {
-    height: 400px;
+    height: 430px;
   }
   .geo-side-panel {
     height: auto;
