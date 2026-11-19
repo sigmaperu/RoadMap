@@ -15,12 +15,12 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
 
   <!-- Estilos globales y específicos del Dashboard -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=37.0">
-  <link rel="stylesheet" href="assets/css/dashboard.css?v=37.0">
+  <link rel="stylesheet" href="assets/css/styles.css?v=38.0">
+  <link rel="stylesheet" href="assets/css/dashboard.css?v=38.0">
 
   <!-- Scripts -->
   <script defer src="assets/js/main.js"></script>
-  <script defer src="assets/js/dashboard.js?v=37.0"></script>
+  <script defer src="assets/js/dashboard.js?v=38.0"></script>
 </head>
 
 <body data-title="Dashboard">
@@ -51,7 +51,7 @@
               </div>
 
               <div class="geo-hud-actions">
-                <span id="hudActiveMetricBadge" class="geo-metric-pill">Métrica: Pedidos</span>
+                <span id="hudActiveMetricBadge" class="geo-metric-pill">Métrica: Flota Asignada</span>
                 <button type="button" id="btnBackToRegion" class="geo-back-btn is-hidden">
                   <span class="material-icons">zoom_out_map</span> Región Lima
                 </button>
@@ -91,12 +91,12 @@
                 <div id="valClientes" class="geo-kpi-val">–</div>
               </article>
 
-              <article class="geo-kpi-row-card is-active" data-metric="Pedidos">
+              <article class="geo-kpi-row-card" data-metric="Pedidos">
                 <div class="geo-kpi-left">
                   <span class="geo-kpi-icon ic-plum"><span class="material-icons">assignment</span></span>
                   <div>
                     <span class="geo-kpi-label">Pedidos</span>
-                    <span id="subPedidos" class="geo-kpi-sub">● Mostrando en mapa</span>
+                    <span id="subPedidos" class="geo-kpi-sub">Click para ver en mapa</span>
                   </div>
                 </div>
                 <div id="valPedidos" class="geo-kpi-val">–</div>
@@ -124,12 +124,12 @@
                 <div id="valSoles" class="geo-kpi-val">–</div>
               </article>
 
-              <article class="geo-kpi-row-card" data-metric="Camiones">
+              <article class="geo-kpi-row-card is-active" data-metric="Camiones">
                 <div class="geo-kpi-left">
                   <span class="geo-kpi-icon ic-plum"><span class="material-icons">local_shipping</span></span>
                   <div>
                     <span class="geo-kpi-label">Flota Asignada</span>
-                    <span id="subCamiones" class="geo-kpi-sub">Click para ver en mapa</span>
+                    <span id="subCamiones" class="geo-kpi-sub">● Mostrando en mapa</span>
                   </div>
                 </div>
                 <div id="valCamiones" class="geo-kpi-val">–</div>
@@ -160,7 +160,7 @@
             <div class="geo-breakdown-box">
               <div class="geo-breakdown-head">
                 <span id="breakdownTitle" class="geo-section-label">Comparativa por Centro</span>
-                <span id="breakdownMetricTag" class="geo-mini-tag">Pedidos</span>
+                <span id="breakdownMetricTag" class="geo-mini-tag">Flota Asignada</span>
               </div>
               <div id="geoBreakdownList" class="geo-breakdown-list"></div>
             </div>
