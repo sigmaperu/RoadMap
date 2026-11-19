@@ -15,12 +15,12 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
 
   <!-- Estilos globales y específicos del Dashboard -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=39.0">
-  <link rel="stylesheet" href="assets/css/dashboard.css?v=39.0">
+  <link rel="stylesheet" href="assets/css/styles.css?v=41.0">
+  <link rel="stylesheet" href="assets/css/dashboard.css?v=41.0">
 
   <!-- Scripts -->
   <script defer src="assets/js/main.js"></script>
-  <script defer src="assets/js/dashboard.js?v=39.0"></script>
+  <script defer src="assets/js/dashboard.js?v=41.0"></script>
 </head>
 
 <body data-title="Dashboard">
@@ -31,14 +31,14 @@
     <div class="main-layout">
       <div id="app-header"></div>
 
-      <main class="content geo-dash-viewport" id="dashboardCaptureArea">
+      <main class="content geo-dash-viewport">
         
         <div class="geo-split-grid">
           
           <!-- ========================================================== -->
           <!-- COLUMNA IZQUIERDA (AMPLIADA): MAPA REGIÓN LIMA             -->
           <!-- ========================================================== -->
-          <section class="geo-map-stage">
+          <section class="geo-map-stage" id="mapCaptureZone">
             
             <!-- Barra Flotante Superior sobre el Mapa -->
             <div class="geo-map-hud">
@@ -55,8 +55,8 @@
                 <button type="button" id="btnBackToRegion" class="geo-back-btn is-hidden">
                   <span class="material-icons">zoom_out_map</span> Región Lima
                 </button>
-                <button type="button" id="btnCopyScreenshot" class="geo-shot-btn" title="Copiar captura del dashboard al portapapeles">
-                  <span class="material-icons" id="shotIcon">photo_camera</span>
+                <button type="button" id="btnCopyMapShot" class="geo-shot-btn" title="Copiar captura solo del mapa">
+                  <span class="material-icons" id="mapShotIcon">photo_camera</span>
                 </button>
               </div>
             </div>
@@ -67,98 +67,108 @@
           </section>
 
           <!-- ========================================================== -->
-          <!-- COLUMNA DERECHA (1 COLUMNA COMPACTA): KPIs, PIs Y DESGLOSE -->
+          <!-- COLUMNA DERECHA: ZONA BLANCA (CAPTURABLE) + DESGLOSE       -->
           <!-- ========================================================== -->
           <aside class="geo-side-panel">
             
-            <!-- Encabezado Limpio del Panel Derecho (Sin subtítulo superior) -->
-            <div class="geo-panel-header">
-              <div class="geo-panel-title-wrap">
-                <h2 id="panelTitle">Región Lima (Total)</h2>
-              </div>
-              <span id="panelShareBadge" class="geo-share-badge">3 Centros • 100%</span>
-            </div>
-
-            <!-- Lista Vertical de 5 KPIs Principales en 1 Sola Columna -->
-            <div class="geo-kpi-stack">
+            <!-- Contenedor exclusivo de la Parte Blanca para captura limpia -->
+            <div class="geo-white-capture-zone" id="indicatorsCaptureZone">
               
-              <article class="geo-kpi-row-card" data-metric="Clientes">
-                <div class="geo-kpi-left">
-                  <span class="geo-kpi-icon ic-slate"><span class="material-icons">badge</span></span>
-                  <div>
-                    <span class="geo-kpi-label">Clientes Únicos</span>
-                    <span id="subClientes" class="geo-kpi-sub">Click para ver en mapa</span>
-                  </div>
+              <!-- Encabezado del Panel Derecho con Botón de Captura -->
+              <div class="geo-panel-header">
+                <div class="geo-panel-title-wrap">
+                  <h2 id="panelTitle">Región Lima (Total)</h2>
                 </div>
-                <div id="valClientes" class="geo-kpi-val">–</div>
-              </article>
-
-              <article class="geo-kpi-row-card" data-metric="Pedidos">
-                <div class="geo-kpi-left">
-                  <span class="geo-kpi-icon ic-plum"><span class="material-icons">assignment</span></span>
-                  <div>
-                    <span class="geo-kpi-label">Pedidos</span>
-                    <span id="subPedidos" class="geo-kpi-sub">Click para ver en mapa</span>
-                  </div>
+                <div class="geo-panel-header-actions">
+                  <span id="panelShareBadge" class="geo-share-badge">3 Centros • 100%</span>
+                  <button type="button" id="btnCopyIndicatorsShot" class="geo-panel-shot-btn" title="Copiar resumen de indicadores con encabezado">
+                    <span class="material-icons" id="indShotIcon">photo_camera</span>
+                  </button>
                 </div>
-                <div id="valPedidos" class="geo-kpi-val">–</div>
-              </article>
-
-              <article class="geo-kpi-row-card" data-metric="Kilogramos">
-                <div class="geo-kpi-left">
-                  <span class="geo-kpi-icon ic-green"><span class="material-icons">scale</span></span>
-                  <div>
-                    <span class="geo-kpi-label">Kilogramos</span>
-                    <span id="subKilogramos" class="geo-kpi-sub">Click para ver en mapa</span>
-                  </div>
-                </div>
-                <div id="valKilogramos" class="geo-kpi-val">–</div>
-              </article>
-
-              <article class="geo-kpi-row-card" data-metric="Soles">
-                <div class="geo-kpi-left">
-                  <span class="geo-kpi-icon ic-gold"><span class="material-icons">paid</span></span>
-                  <div>
-                    <span class="geo-kpi-label">Soles (PEN)</span>
-                    <span id="subSoles" class="geo-kpi-sub">Click para ver en mapa</span>
-                  </div>
-                </div>
-                <div id="valSoles" class="geo-kpi-val">–</div>
-              </article>
-
-              <article class="geo-kpi-row-card is-active" data-metric="Camiones">
-                <div class="geo-kpi-left">
-                  <span class="geo-kpi-icon ic-plum"><span class="material-icons">local_shipping</span></span>
-                  <div>
-                    <span class="geo-kpi-label">Flota Asignada</span>
-                    <span id="subCamiones" class="geo-kpi-sub">● Mostrando en mapa</span>
-                  </div>
-                </div>
-                <div id="valCamiones" class="geo-kpi-val">–</div>
-              </article>
-
-            </div>
-
-            <!-- Grid de 3 Indicadores de Eficiencia (PIs) -->
-            <div class="geo-pi-section">
-              <div class="geo-section-label">Indicadores de Eficiencia (PIs)</div>
-              <div class="geo-pi-grid">
-                <button type="button" class="geo-pi-card" data-metric="Kg/Camión">
-                  <span class="geo-pi-name">Kg / Cam</span>
-                  <strong id="valKgCamion" class="geo-pi-val">–</strong>
-                </button>
-                <button type="button" class="geo-pi-card" data-metric="Kg/Cliente">
-                  <span class="geo-pi-name">Kg / Cli</span>
-                  <strong id="valKgCliente" class="geo-pi-val">–</strong>
-                </button>
-                <button type="button" class="geo-pi-card" data-metric="Clientes/Camión">
-                  <span class="geo-pi-name">Cli / Cam</span>
-                  <strong id="valCliCamion" class="geo-pi-val">–</strong>
-                </button>
               </div>
+
+              <!-- Lista Vertical de 5 KPIs Principales -->
+              <div class="geo-kpi-stack">
+                
+                <article class="geo-kpi-row-card" data-metric="Clientes">
+                  <div class="geo-kpi-left">
+                    <span class="geo-kpi-icon ic-slate"><span class="material-icons">badge</span></span>
+                    <div>
+                      <span class="geo-kpi-label">Clientes Únicos</span>
+                      <span id="subClientes" class="geo-kpi-sub">Click para ver en mapa</span>
+                    </div>
+                  </div>
+                  <div id="valClientes" class="geo-kpi-val">–</div>
+                </article>
+
+                <article class="geo-kpi-row-card" data-metric="Pedidos">
+                  <div class="geo-kpi-left">
+                    <span class="geo-kpi-icon ic-plum"><span class="material-icons">assignment</span></span>
+                    <div>
+                      <span class="geo-kpi-label">Pedidos</span>
+                      <span id="subPedidos" class="geo-kpi-sub">Click para ver en mapa</span>
+                    </div>
+                  </div>
+                  <div id="valPedidos" class="geo-kpi-val">–</div>
+                </article>
+
+                <article class="geo-kpi-row-card" data-metric="Kilogramos">
+                  <div class="geo-kpi-left">
+                    <span class="geo-kpi-icon ic-green"><span class="material-icons">scale</span></span>
+                    <div>
+                      <span class="geo-kpi-label">Kilogramos</span>
+                      <span id="subKilogramos" class="geo-kpi-sub">Click para ver en mapa</span>
+                    </div>
+                  </div>
+                  <div id="valKilogramos" class="geo-kpi-val">–</div>
+                </article>
+
+                <article class="geo-kpi-row-card" data-metric="Soles">
+                  <div class="geo-kpi-left">
+                    <span class="geo-kpi-icon ic-gold"><span class="material-icons">paid</span></span>
+                    <div>
+                      <span class="geo-kpi-label">Soles (PEN)</span>
+                      <span id="subSoles" class="geo-kpi-sub">Click para ver en mapa</span>
+                    </div>
+                  </div>
+                  <div id="valSoles" class="geo-kpi-val">–</div>
+                </article>
+
+                <article class="geo-kpi-row-card is-active" data-metric="Camiones">
+                  <div class="geo-kpi-left">
+                    <span class="geo-kpi-icon ic-plum"><span class="material-icons">local_shipping</span></span>
+                    <div>
+                      <span class="geo-kpi-label">Flota Asignada</span>
+                      <span id="subCamiones" class="geo-kpi-sub">● Mostrando en mapa</span>
+                    </div>
+                  </div>
+                  <div id="valCamiones" class="geo-kpi-val">–</div>
+                </article>
+
+              </div>
+
+              <!-- Grid de 3 Indicadores de Eficiencia (PIs) -->
+              <div class="geo-pi-section">
+                <div class="geo-section-label">Indicadores de Eficiencia (PIs)</div>
+                <div class="geo-pi-grid">
+                  <button type="button" class="geo-pi-card" data-metric="Kg/Camión">
+                    <span class="geo-pi-name">Kg / Cam</span>
+                    <strong id="valKgCamion" class="geo-pi-val">–</strong>
+                  </button>
+                  <button type="button" class="geo-pi-card" data-metric="Kg/Cliente">
+                    <span class="geo-pi-name">Kg / Cli</span>
+                    <strong id="valKgCliente" class="geo-pi-val">–</strong>
+                  </button>
+                  <button type="button" class="geo-pi-card" data-metric="Clientes/Camión">
+                    <span class="geo-pi-name">Cli / Cam</span>
+                    <strong id="valCliCamion" class="geo-pi-val">–</strong>
+                  </button>
+                </div>
+              </div>
+
             </div>
 
-            <!-- Desglose Rápido Inferior -->
+            <!-- Desglose Rápido Inferior (Fuera de la captura de indicadores) -->
             <div class="geo-breakdown-box">
               <div class="geo-breakdown-head">
                 <span id="breakdownTitle" class="geo-section-label">Comparativa por Centro</span>
@@ -178,7 +188,7 @@
   <!-- Toast de confirmación de captura -->
   <div id="shotToast" class="geo-shot-toast">Imagen copiada al portapapeles</div>
 
-  <!-- Leaflet JS + html2canvas para captura de pantalla -->
+  <!-- Leaflet JS + html2canvas -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </body>
