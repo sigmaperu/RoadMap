@@ -15,12 +15,12 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
 
   <!-- Estilos globales y específicos del Dashboard -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=32.0">
-  <link rel="stylesheet" href="assets/css/dashboard.css?v=32.0">
+  <link rel="stylesheet" href="assets/css/styles.css?v=33.0">
+  <link rel="stylesheet" href="assets/css/dashboard.css?v=33.0">
 
   <!-- Scripts -->
   <script defer src="assets/js/main.js"></script>
-  <script defer src="assets/js/dashboard.js?v=32.0"></script>
+  <script defer src="assets/js/dashboard.js?v=33.0"></script>
 </head>
 
 <body data-title="Dashboard">
@@ -36,7 +36,7 @@
         <div class="geo-split-grid">
           
           <!-- ========================================================== -->
-          <!-- COLUMNA IZQUIERDA: MAPA INTERACTIVO REGIÓN LIMA / HEATMAP  -->
+          <!-- COLUMNA IZQUIERDA: MAPA REGIÓN LIMA / GEOPOSICIONES CANAL  -->
           <!-- ========================================================== -->
           <section class="geo-map-stage">
             
@@ -45,8 +45,8 @@
               <div class="geo-hud-status">
                 <span class="geo-pulse-dot"></span>
                 <div>
-                  <strong id="hudMapTitle">Región Lima • 3 Centros Operativos</strong>
-                  <span id="hudMapSubtitle">Haz clic en un CD del mapa para ver su mapa de calor de atenciones</span>
+                  <strong id="hudMapTitle">Región Lima • 3 Centros de Distribución</strong>
+                  <span id="hudMapSubtitle">Haz clic en un CD del mapa para ver sus geoposiciones por canal</span>
                 </div>
               </div>
 
@@ -61,10 +61,13 @@
             <!-- Contenedor del Mapa Leaflet -->
             <div id="geoDashboardMap"></div>
 
-            <!-- Leyenda Inferior Flotante -->
+            <!-- Leyenda Inferior Flotante (Colores por Canal) -->
             <div id="geoMapLegend" class="geo-map-legend">
-              <span class="legend-item"><i class="dot-cd"></i> Centro de Distribución (Click para detalle)</span>
-              <span class="legend-item is-hidden" id="legendHeat"><i class="grad-heat"></i> Densidad de Atenciones del Día</span>
+              <span class="legend-item" id="legendCdBase"><i class="dot-cd"></i> CD Origen</span>
+              <span class="legend-item"><i class="dot-ch" style="background:#ef4444;"></i> DET</span>
+              <span class="legend-item"><i class="dot-ch" style="background:#2563eb;"></i> FOSE</span>
+              <span class="legend-item"><i class="dot-ch" style="background:#f97316;"></i> MES</span>
+              <span class="legend-item"><i class="dot-ch" style="background:#9333ea;"></i> MOD</span>
             </div>
 
           </section>
@@ -80,10 +83,10 @@
                 <span id="panelEyebrow" class="geo-eyebrow">CONSOLIDADO REGIONAL</span>
                 <h2 id="panelTitle">Región Lima (Total)</h2>
               </div>
-              <span id="panelShareBadge" class="geo-share-badge">100% Operación</span>
+              <span id="panelShareBadge" class="geo-share-badge">3 Centros • 100%</span>
             </div>
 
-            <!-- Grid de 5 KPIs Principales (Clicables para cambiar el mapa) -->
+            <!-- Grid de 5 KPIs Principales -->
             <div class="geo-kpi-grid">
               
               <article class="geo-kpi-card" data-metric="Clientes">
@@ -101,7 +104,7 @@
                   <span class="geo-kpi-icon ic-plum"><span class="material-icons">assignment</span></span>
                 </div>
                 <div id="valPedidos" class="geo-kpi-val">–</div>
-                <div id="subPedidos" class="geo-kpi-sub">● Viendo en mapa</div>
+                <div id="subPedidos" class="geo-kpi-sub">● Mostrando en mapa</div>
               </article>
 
               <article class="geo-kpi-card" data-metric="Kilogramos">
@@ -129,7 +132,7 @@
                 </div>
                 <div class="geo-kpi-wide-row">
                   <div id="valCamiones" class="geo-kpi-val">–</div>
-                  <span id="subCamiones" class="geo-kpi-sub">Regla Centro + Placa</span>
+                  <span id="subCamiones" class="geo-kpi-sub">Click para ver en mapa</span>
                 </div>
               </article>
 
@@ -154,15 +157,13 @@
               </div>
             </div>
 
-            <!-- Desglose Rápido Inferior (CDs en vista Global / Canales en vista Centro) -->
+            <!-- Desglose Rápido Inferior -->
             <div class="geo-breakdown-box">
               <div class="geo-breakdown-head">
-                <span id="breakdownTitle" class="geo-section-label">Comparativa por Centro (Click para enfocar)</span>
+                <span id="breakdownTitle" class="geo-section-label">Comparativa por Centro (Click para ver mapa)</span>
                 <span id="breakdownMetricTag" class="geo-mini-tag">Pedidos</span>
               </div>
-              <div id="geoBreakdownList" class="geo-breakdown-list">
-                <!-- Se llena dinámicamente -->
-              </div>
+              <div id="geoBreakdownList" class="geo-breakdown-list"></div>
             </div>
 
           </aside>
@@ -173,8 +174,7 @@
     </div>
   </div>
 
-  <!-- Leaflet JS + Plugin Leaflet.heat para Mapa de Calor -->
+  <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
 </body>
 </html>
