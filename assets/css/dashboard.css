@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - dashboard.css (Capturas Separadas: Mapa vs Zona Blanca KPIs)
+   RoadMap - dashboard.css (Cápsula CD en Esquina Derecha + Lista Limpia)
    ========================================================================== */
 
 :root {
@@ -147,6 +147,27 @@
 }
 .geo-back-btn .material-icons { font-size: 14px; }
 .geo-back-btn.is-hidden { display: none; }
+
+/* Cápsula Morada del Centro Seleccionado en la esquina derecha debajo de la barra negra */
+.geo-cd-corner-badge {
+  position: absolute;
+  top: 66px;
+  right: 12px;
+  z-index: 1000;
+  background: var(--gd-plum);
+  color: #ffffff;
+  border: 2px solid #ffffff;
+  border-radius: 12px;
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  box-shadow: 0 8px 20px rgba(22, 20, 28, 0.32);
+  pointer-events: none;
+}
+.geo-cd-corner-badge.is-hidden {
+  display: none;
+}
 
 /* Botón Screenshot en la barra del mapa */
 .geo-shot-btn {
