@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - dashboard.js (Flota Default + Resumen Multi-Indicador en CD)
+   RoadMap - dashboard.js (Flota Default + 7 Indicadores en CD + Screenshot)
    ========================================================================== */
 
 (() => {
@@ -46,13 +46,15 @@
     { key: "MOD", label: "MOD", color: "#eab308" }  // Amarillo
   ];
 
-  // Resumen de indicadores que aparece en cada CD cuando la métrica activa es Flota Asignada (Camiones)
+  // Resumen completo de los otros 7 indicadores cuando se selecciona Flota Asignada (Camiones)
   const FLEET_SUMMARY_METRICS = [
-    { metric: "Clientes",   label: "Clientes", color: "#a1a1aa" },
-    { metric: "Pedidos",    label: "Pedidos",  color: "#ab47bc" },
-    { metric: "Kilogramos", label: "Peso",     color: "#10b981" },
-    { metric: "Soles",      label: "Soles",    color: "#f59e0b" },
-    { metric: "Kg/Camión",  label: "Kg / Cam", color: "#34d399" }
+    { metric: "Clientes",        label: "Clientes",  color: "#a1a1aa" },
+    { metric: "Pedidos",         label: "Pedidos",   color: "#ab47bc" },
+    { metric: "Kilogramos",      label: "Peso",      color: "#10b981" },
+    { metric: "Soles",           label: "Soles",     color: "#f59e0b" },
+    { metric: "Kg/Camión",       label: "Kg / Cam",  color: "#34d399" },
+    { metric: "Kg/Cliente",      label: "Kg / Cli",  color: "#6ee7b7" },
+    { metric: "Clientes/Camión", label: "Cli / Cam", color: "#e1bee7" }
   ];
 
   function normalizeChannelCode(raw) {
@@ -130,7 +132,6 @@
   const unique = arr => Array.from(new Set(arr.filter(v => v !== "" && v != null)));
   const toNum = v => { const n = parseFloat(String(v ?? "0").replace(",", ".")); return isNaN(n) ? 0 : n; };
 
-  // Estado Global: Arranca por defecto en "Camiones" (Flota Asignada)
   let allRows = [];
   let state = {
     selectedCenter: null,
@@ -197,7 +198,8 @@
     }).setView([-11.82, -77.08], 9);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19
+      maxZoom: 19,
+      crossOrigin: true
     }).addTo(map);
 
     L.control.zoom({ position: "bottomright" }).addTo(map);
@@ -247,7 +249,7 @@
           ).addTo(mapLayerGroup);
         }
 
-        // Si el indicador activo es Flota (Camiones), mostramos el resumen de los demás indicadores en 1 columna
+        // Si el indicador activo es Flota (Camiones), mostramos el resumen de los otros 7 indicadores en 1 columna
         // Si es cualquier otro indicador, mostramos el desglose por canal (DET, FSE, MES, MOD)
         let cardBodyHtml = "";
         if (isFleetSelected) {
@@ -299,8 +301,8 @@
 
       if (bounds.length > 0) {
         map.fitBounds(bounds, {
-          paddingTopLeft: [110, 145],
-          paddingBottomRight: [140, 115],
+          paddingTopLeft: [110, 155],
+          paddingBottomRight: [140, 125],
           maxZoom: 9
         });
       }
@@ -405,7 +407,7 @@
   }
 
   /* ==========================================================================
-     PANEL DERECHO: TARJETAS EN 1 COLUMNA + PÍLDORA REACTIVA AL INDICADOR
+     PANEL DERECHO: ENCABEZADO LIMPIO + TARJETAS + PÍLDORA REACTIVA
      ========================================================================== */
   function renderSidePanel() {
     const activeRows = getActiveRows();
@@ -416,17 +418,14 @@
     const sol = sumSoles(activeRows);
     const cam = countTrucks(activeRows);
 
-    const eyebrowEl = document.getElementById("panelEyebrow");
-    const titleEl   = document.getElementById("panelTitle");
-    const shareEl   = document.getElementById("panelShareBadge");
+    const titleEl = document.getElementById("panelTitle");
+    const shareEl = document.getElementById("panelShareBadge");
 
     if (!state.selectedCenter) {
-      eyebrowEl.textContent = "CONSOLIDADO REGIONAL";
-      titleEl.textContent   = "Región Lima (Total)";
-      shareEl.textContent   = "3 Centros • 100%";
+      titleEl.textContent = "Región Lima (Total)";
+      shareEl.textContent = "3 Centros • 100%";
     } else {
-      eyebrowEl.textContent = "DESGLOSE CENTRO DE DISTRIBUCIÓN";
-      titleEl.textContent   = state.selectedChannelCode
+      titleEl.textContent = state.selectedChannelCode
         ? `${state.selectedCenter} • ${state.selectedChannelCode}`
         : state.selectedCenter;
 
@@ -570,6 +569,64 @@
     }
   }
 
+  /* ==========================================================================
+     FUNCIÓN DE CAPTURA DE PANTALLA (COPIA IMAGEN AL PORTAPAPELES)
+     ========================================================================== */
+  function showToast(msg) {
+    const toast = document.getElementById("shotToast");
+    if (!toast) return;
+    toast.textContent = msg;
+    toast.classList.add("is-visible");
+    setTimeout(() => toast.classList.remove("is-visible"), 2600);
+  }
+
+  async function captureDashboardToClipboard() {
+    const target = document.getElementById("dashboardCaptureArea");
+    const btn = document.getElementById("btnCopyScreenshot");
+    const icon = document.getElementById("shotIcon");
+    if (!target || typeof html2canvas !== "function") return;
+
+    const zoomCtrl = document.querySelector(".leaflet-control-zoom");
+    btn.style.visibility = "hidden";
+    if (zoomCtrl) zoomCtrl.style.visibility = "hidden";
+
+    try {
+      const canvas = await html2canvas(target, {
+        useCORS: true,
+        allowTaint: false,
+        scale: 2,
+        backgroundColor: "#f5f4f8"
+      });
+
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+        try {
+          await navigator.clipboard.write([
+            new ClipboardItem({ "image/png": blob })
+          ]);
+          icon.textContent = "check";
+          showToast("Imagen copiada al portapapeles (Ctrl+V para pegar)");
+          setTimeout(() => { icon.textContent = "photo_camera"; }, 1800);
+        } catch (clipErr) {
+          // Respaldo automático de descarga si el navegador bloquea el portapapeles
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `RoadMap_Dashboard_${new Date().toISOString().slice(0, 10)}.png`;
+          a.click();
+          URL.revokeObjectURL(url);
+          showToast("Imagen descargada en PNG");
+        }
+      }, "image/png");
+    } catch (err) {
+      console.error("Error generando captura:", err);
+      showToast("No se pudo generar la captura");
+    } finally {
+      btn.style.visibility = "visible";
+      if (zoomCtrl) zoomCtrl.style.visibility = "visible";
+    }
+  }
+
   function updateDashboard() {
     renderMapState();
     renderSidePanel();
@@ -595,6 +652,8 @@
       state.selectedChannelCode = null;
       updateDashboard();
     });
+
+    document.getElementById("btnCopyScreenshot").addEventListener("click", captureDashboardToClipboard);
 
     window.addEventListener("resize", () => {
       if (map) map.invalidateSize();
