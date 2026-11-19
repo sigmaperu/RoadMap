@@ -18322,7 +18322,7 @@
     "LatitudActual": -12.05004,
     "LongitudActual": -77.02633,
     "FuenteCoordenada": "PARADA",
-    "DeliveryStatusRaw": "PENDING",
+    "DeliveryStatusRaw": "IN_PROGRESS",
     "MotivoNoEntrega": "",
     "MotivoCancelacion": "",
     "GreenMileRouteKey": "AZD-758",
