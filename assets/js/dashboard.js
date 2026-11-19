@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - dashboard.js (Cápsula Morada Esquina Derecha + Lista Sin Paréntesis)
+   RoadMap - dashboard.js (Iconos Fábrica en ATE/Chancay + Almacén en ATE2)
    ========================================================================== */
 
 (() => {
@@ -11,12 +11,14 @@
   ].filter(Boolean);
 
   // Coordenadas exactas de los 3 Centros de Distribución (Región Lima)
+  // icon: "factory" para ATE y CHANCAY; icon: "warehouse" para ATE2
   const CD_LOCATIONS = {
     "0374-ATE": {
       lat: -12.067013469355048,
       lng: -76.97943349160968,
       calloutLat: -11.985,
       calloutLng: -77.175,
+      icon: "factory",
       label: "0374-ATE"
     },
     "0780-ATE2": {
@@ -24,6 +26,7 @@
       lng: -76.93813036277461,
       calloutLat: -12.015,
       calloutLng: -76.745,
+      icon: "warehouse",
       label: "0780-ATE2"
     },
     "0754-CHANCAY": {
@@ -31,6 +34,7 @@
       lng: -77.27641679959045,
       calloutLat: -11.615,
       calloutLng: -77.080,
+      icon: "factory",
       label: "0754-CHANCAY"
     }
   };
@@ -207,6 +211,14 @@
     mapLayerGroup = L.layerGroup().addTo(map);
   }
 
+  function buildFacilityMarkerHtml(iconName, titleText) {
+    return `
+      <div class="cd-anchor-icon" title="${titleText}">
+        <span class="material-icons">${iconName}</span>
+      </div>
+    `;
+  }
+
   function renderMapState() {
     if (!map) return;
     mapLayerGroup.clearLayers();
@@ -235,12 +247,13 @@
         const mainVal = metricCalc(cdRows, state.activeMetric);
         const formattedMain = formatMetric(mainVal, state.activeMetric, true);
 
+        // Ícono de Fábrica (ATE/Chancay) o Almacén (ATE2) en las coordenadas exactas
         const anchorIcon = L.divIcon({
           className: "",
-          html: `<div class="cd-anchor-dot"></div>`,
+          html: buildFacilityMarkerHtml(info.icon, info.label),
           iconSize: [0, 0]
         });
-        const anchorMarker = L.marker([info.lat, info.lng], { icon: anchorIcon });
+        const anchorMarker = L.marker([info.lat, info.lng], { icon: anchorIcon, zIndexOffset: 600 });
         anchorMarker.on("click", () => openCenterGeopositions(cdCode));
         anchorMarker.addTo(mapLayerGroup);
 
@@ -300,7 +313,7 @@
       return;
     }
 
-    // MODO 2: GEOPOSICIONES DEL CENTRO SELECCIONADO (Cápsula morada fija en esquina derecha)
+    // MODO 2: GEOPOSICIONES DEL CENTRO SELECCIONADO
     const cdInfo = CD_LOCATIONS[state.selectedCenter];
     hudTitle.textContent    = `Geoposiciones • ${state.selectedCenter}`;
     hudSubtitle.textContent = state.selectedChannelCode
@@ -315,14 +328,14 @@
 
     const bounds = [];
 
-    // Punto limpio del CD de origen (sin cápsula flotante encima del mapa)
+    // Ícono de Fábrica o Almacén del CD origen en el mapa de detalle
     if (cdInfo) {
-      const originDotIcon = L.divIcon({
+      const originFacilityIcon = L.divIcon({
         className: "",
-        html: `<div class="cd-anchor-dot"></div>`,
+        html: buildFacilityMarkerHtml(cdInfo.icon, `CD ${state.selectedCenter}`),
         iconSize: [0, 0]
       });
-      L.marker([cdInfo.lat, cdInfo.lng], { icon: originDotIcon }).addTo(mapLayerGroup);
+      L.marker([cdInfo.lat, cdInfo.lng], { icon: originFacilityIcon, zIndexOffset: 700 }).addTo(mapLayerGroup);
       bounds.push([cdInfo.lat, cdInfo.lng]);
     }
 
@@ -467,9 +480,6 @@
     renderBreakdownList();
   }
 
-  /* ==========================================================================
-     LISTA INFERIOR NEGRA LIMPIA (SIN PARÉNTESIS NI TEXTO EXTRA)
-     ========================================================================== */
   function renderBreakdownList() {
     const listEl  = document.getElementById("geoBreakdownList");
     const titleEl = document.getElementById("breakdownTitle");
