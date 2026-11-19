@@ -212,16 +212,15 @@
   cursor: pointer;
   transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
-/* Efecto hover estático (sin scale ni desplazamiento para evitar vibraciones) */
 .cd-callout-card:hover {
   border-color: #f3e5f5;
   box-shadow: 0 12px 30px rgba(142, 36, 170, 0.55);
 }
 
-/* Posiciones fijas equilibradas para mantener los 3 CDs centrados */
-.cd-offset-chancay { transform: translate(-50%, -112%); }
-.cd-offset-ate     { transform: translate(-104%, 8%); }
-.cd-offset-ate2    { transform: translate(6%, -104%); }
+/* Posiciones equilibradas para mantener los 3 CDs despejados dentro del encuadre */
+.cd-offset-chancay { transform: translate(12%, -50%); }    /* 0754-CHANCAY a la derecha de su pin */
+.cd-offset-ate     { transform: translate(-106%, 4%); }    /* 0374-ATE al suroeste */
+.cd-offset-ate2    { transform: translate(8%, -102%); }    /* 0780-ATE2 al noreste */
 
 .cd-callout-head {
   display: flex;
@@ -246,7 +245,6 @@
   white-space: nowrap;
 }
 
-/* Minileyenda de Canales en 1 SOLA COLUMNA para evitar superposición de textos */
 .cd-mini-channels {
   display: grid;
   grid-template-columns: 1fr;
@@ -347,7 +345,6 @@
   flex-direction: column;
   justify-content: space-between;
 }
-/* Hover limpio sin desplazamiento vertical */
 .geo-kpi-card:hover {
   border-color: #d4d4d8;
 }
