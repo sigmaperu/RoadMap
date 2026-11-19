@@ -559,14 +559,15 @@
   }
 
   /* ==========================================================================
-     CAPTURA LIMPIA DEL DASHBOARD + TEXTO EDITABLE CON LINK EN PORTAPAPELES
+     CAPTURA LIMPIA + COPIA SECUENCIAL DE TEXTO EDITABLE PARA WHATSAPP WEB
      ========================================================================== */
-  function showToast(msg) {
+  function showToast(msg, duration = 3200) {
     const toast = document.getElementById("shotToast");
     if (!toast) return;
     toast.textContent = msg;
     toast.classList.add("is-visible");
-    setTimeout(() => toast.classList.remove("is-visible"), 3000);
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => toast.classList.remove("is-visible"), duration);
   }
 
   async function captureDashboardToClipboard() {
@@ -593,19 +594,27 @@
       canvas.toBlob(async (blob) => {
         if (!blob) return;
         try {
-          // Escribimos simultáneamente la imagen limpia y el texto editable en el portapapeles
-          const textBlob = new Blob([shareMessage], { type: "text/plain" });
+          // Paso 1: Copiar la imagen limpia para pegarla primero en WhatsApp
           await navigator.clipboard.write([
-            new ClipboardItem({
-              "image/png": blob,
-              "text/plain": textBlob
-            })
+            new ClipboardItem({ "image/png": blob })
           ]);
+
           icon.textContent = "check";
-          showToast(`Captura + texto copiados (${fechaPlan})`);
-          setTimeout(() => { icon.textContent = "photo_camera"; }, 1800);
+          showToast("1/2 Imagen copiada • Pégala en WhatsApp (Ctrl+V)", 4000);
+
+          // Paso 2: Tras 2.8 segundos, reemplazar el portapapeles con el texto editable
+          const copyTextAfterPaste = async () => {
+            try {
+              await navigator.clipboard.writeText(shareMessage);
+              showToast("2/2 Texto y link copiados • Pega en 'Escribe un mensaje'", 3500);
+            } catch (_) {}
+          };
+
+          setTimeout(copyTextAfterPaste, 2800);
+          setTimeout(() => { icon.textContent = "photo_camera"; }, 2000);
+
         } catch (clipErr) {
-          // Si el navegador no soporta múltiples MIME types a la vez, copiamos el texto y descargamos el PNG
+          // Respaldo: descarga PNG y deja el texto listo en el portapapeles
           try { await navigator.clipboard.writeText(shareMessage); } catch (_) {}
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
@@ -613,7 +622,7 @@
           a.download = `RoadMap_Dashboard_${fechaPlan.replace(/\//g, "-")}.png`;
           a.click();
           URL.revokeObjectURL(url);
-          showToast("Imagen descargada y texto copiado al portapapeles");
+          showToast("PNG descargado y texto copiado al portapapeles");
         }
       }, "image/png");
     } catch (err) {
