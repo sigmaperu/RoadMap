@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - dashboard.js (Mapa Ampliado + Cero Solape Chancay/ATE2 + Píldora Reactiva)
+   RoadMap - dashboard.js (Flota Default + Resumen Multi-Indicador en CD)
    ========================================================================== */
 
 (() => {
@@ -11,7 +11,6 @@
   ].filter(Boolean);
 
   // Coordenadas exactas de los 3 Centros de Distribución (Región Lima)
-  // Con anclajes de callout bien separados para que Chancay, ATE2 y ATE nunca se solapen
   const CD_LOCATIONS = {
     "0374-ATE": {
       lat: -12.067013469355048,
@@ -45,6 +44,15 @@
     { key: "FSE", label: "FSE", color: "#2563eb" }, // Azul
     { key: "MES", label: "MES", color: "#f97316" }, // Naranja
     { key: "MOD", label: "MOD", color: "#eab308" }  // Amarillo
+  ];
+
+  // Resumen de indicadores que aparece en cada CD cuando la métrica activa es Flota Asignada (Camiones)
+  const FLEET_SUMMARY_METRICS = [
+    { metric: "Clientes",   label: "Clientes", color: "#a1a1aa" },
+    { metric: "Pedidos",    label: "Pedidos",  color: "#ab47bc" },
+    { metric: "Kilogramos", label: "Peso",     color: "#10b981" },
+    { metric: "Soles",      label: "Soles",    color: "#f59e0b" },
+    { metric: "Kg/Camión",  label: "Kg / Cam", color: "#34d399" }
   ];
 
   function normalizeChannelCode(raw) {
@@ -122,11 +130,12 @@
   const unique = arr => Array.from(new Set(arr.filter(v => v !== "" && v != null)));
   const toNum = v => { const n = parseFloat(String(v ?? "0").replace(",", ".")); return isNaN(n) ? 0 : n; };
 
+  // Estado Global: Arranca por defecto en "Camiones" (Flota Asignada)
   let allRows = [];
   let state = {
     selectedCenter: null,
     selectedChannelCode: null,
-    activeMetric: "Pedidos"
+    activeMetric: "Camiones"
   };
 
   let map = null;
@@ -151,7 +160,7 @@
       case "Kg/Camión":       { const kg = sumKg(rows), cam = countTrucks(rows); return cam ? kg / cam : 0; }
       case "Kg/Cliente":      { const kg = sumKg(rows), cli = countClientes(rows); return cli ? kg / cli : 0; }
       case "Clientes/Camión": { const cli = countClientes(rows), cam = countTrucks(rows); return cam ? cli / cam : 0; }
-      default:                return countPedidos(rows);
+      default:                return countTrucks(rows);
     }
   }
 
@@ -203,16 +212,19 @@
     const hudSubtitle = document.getElementById("hudMapSubtitle");
     const btnBack     = document.getElementById("btnBackToRegion");
 
-    document.getElementById("hudActiveMetricBadge").textContent = `Métrica: ${state.activeMetric}`;
+    const hudMetricLabel = state.activeMetric === "Camiones" ? "Flota Asignada" : state.activeMetric;
+    document.getElementById("hudActiveMetricBadge").textContent = `Métrica: ${hudMetricLabel}`;
 
-    // MODO 1: VISTA GLOBAL REGIÓN LIMA (3 CDs con Callouts de 1 Columna sin solape)
+    // MODO 1: VISTA GLOBAL REGIÓN LIMA (3 CDs)
     if (!state.selectedCenter) {
       hudTitle.textContent    = "Región Lima • 3 Centros de Distribución";
-      hudSubtitle.textContent = "Selecciona un indicador a la derecha o toca un CD para ver sus geoposiciones";
+      hudSubtitle.textContent = state.activeMetric === "Camiones"
+        ? "Resumen integral de indicadores por Centro • Toca un CD para ver sus geoposiciones"
+        : `Desglose por canal (${state.activeMetric}) • Toca un CD para ver sus geoposiciones`;
       btnBack.classList.add("is-hidden");
 
       const bounds = [];
-      const showChannelMiniLegend = (state.activeMetric !== "Camiones");
+      const isFleetSelected = (state.activeMetric === "Camiones");
 
       Object.entries(CD_LOCATIONS).forEach(([cdCode, info]) => {
         const cdRows = allRows.filter(r => cleanStr(r[IDX.CENTRO]) === cdCode);
@@ -235,8 +247,21 @@
           ).addTo(mapLayerGroup);
         }
 
-        let miniChannelsHtml = "";
-        if (showChannelMiniLegend) {
+        // Si el indicador activo es Flota (Camiones), mostramos el resumen de los demás indicadores en 1 columna
+        // Si es cualquier otro indicador, mostramos el desglose por canal (DET, FSE, MES, MOD)
+        let cardBodyHtml = "";
+        if (isFleetSelected) {
+          const summaryItems = FLEET_SUMMARY_METRICS.map(sm => {
+            const smVal = metricCalc(cdRows, sm.metric);
+            return `
+              <div class="cd-ch-item">
+                <span class="cd-ch-left"><i class="cd-ch-dot" style="background:${sm.color};"></i>${sm.label}</span>
+                <strong>${formatMetric(smVal, sm.metric, true)}</strong>
+              </div>
+            `;
+          }).join("");
+          cardBodyHtml = `<div class="cd-mini-channels">${summaryItems}</div>`;
+        } else {
           const chItems = CHANNEL_CONFIG.map(ch => {
             const chRows = cdRows.filter(r => normalizeChannelCode(r[IDX.CANAL]) === ch.key);
             const chVal = metricCalc(chRows, state.activeMetric);
@@ -247,7 +272,7 @@
               </div>
             `;
           }).join("");
-          miniChannelsHtml = `<div class="cd-mini-channels">${chItems}</div>`;
+          cardBodyHtml = `<div class="cd-mini-channels">${chItems}</div>`;
         }
 
         const calloutIcon = L.divIcon({
@@ -258,7 +283,7 @@
                 <span class="cd-callout-name">${info.label}</span>
                 <span class="cd-callout-mainval">${formattedMain}</span>
               </div>
-              ${miniChannelsHtml}
+              ${cardBodyHtml}
             </div>
           `,
           iconSize: [0, 0]
@@ -356,7 +381,7 @@
           <div style="font-weight:700; color:#3f3f46; margin-bottom:4px;">${pt.nombre}</div>
           <div style="color:#71717a; font-size:11px; margin-bottom:6px;">${pt.direccion}</div>
           <div style="background:#f4f4f5; padding:5px 8px; border-radius:6px;">
-            <strong>${state.activeMetric}:</strong> ${formatMetric(val, state.activeMetric)}<br>
+            <strong>${hudMetricLabel}:</strong> ${formatMetric(val, state.activeMetric)}<br>
             <strong>Placa:</strong> ${pt.placa} • <strong>Ruta:</strong> ${pt.ruta}
           </div>
         </div>
@@ -405,17 +430,14 @@
         ? `${state.selectedCenter} • ${state.selectedChannelCode}`
         : state.selectedCenter;
 
-      // Píldora 100% reactiva al indicador seleccionado (state.activeMetric)
       const activeMetricVal = metricCalc(activeRows, state.activeMetric);
       const globalMetricVal = metricCalc(allRows, state.activeMetric);
 
       if (state.activeMetric.includes("/")) {
-        // Para ratios (Kg/Camión, Kg/Cliente, Cli/Camión) mostramos variación vs promedio Lima
         const diffPct = globalMetricVal ? Math.round(((activeMetricVal - globalMetricVal) / globalMetricVal) * 100) : 0;
         const sign = diffPct >= 0 ? "+" : "";
         shareEl.textContent = `${sign}${diffPct}% vs Prom. Lima`;
       } else {
-        // Para métricas absolutas mostramos el % exacto de participación sobre Lima
         const sharePct = globalMetricVal ? Math.round((activeMetricVal / globalMetricVal) * 100) : 0;
         const shortMetricNames = {
           Clientes: "Clientes",
@@ -464,7 +486,7 @@
     const titleEl = document.getElementById("breakdownTitle");
     const tagEl   = document.getElementById("breakdownMetricTag");
     listEl.innerHTML = "";
-    tagEl.textContent = state.activeMetric;
+    tagEl.textContent = state.activeMetric === "Camiones" ? "Flota" : state.activeMetric;
 
     if (!state.selectedCenter) {
       titleEl.textContent = "Comparativa por Centro";
