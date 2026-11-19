@@ -15,12 +15,12 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
 
   <!-- Estilos globales y específicos del Dashboard -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=35.0">
-  <link rel="stylesheet" href="assets/css/dashboard.css?v=35.0">
+  <link rel="stylesheet" href="assets/css/styles.css?v=36.0">
+  <link rel="stylesheet" href="assets/css/dashboard.css?v=36.0">
 
   <!-- Scripts -->
   <script defer src="assets/js/main.js"></script>
-  <script defer src="assets/js/dashboard.js?v=35.0"></script>
+  <script defer src="assets/js/dashboard.js?v=36.0"></script>
 </head>
 
 <body data-title="Dashboard">
@@ -46,7 +46,7 @@
                 <span class="geo-pulse-dot"></span>
                 <div>
                   <strong id="hudMapTitle">Región Lima • 3 Centros de Distribución</strong>
-                  <span id="hudMapSubtitle">Haz clic en un CD del mapa para ver sus geoposiciones por canal</span>
+                  <span id="hudMapSubtitle">Selecciona un indicador a la derecha o toca un CD para ver sus geoposiciones</span>
                 </div>
               </div>
 
@@ -58,17 +58,8 @@
               </div>
             </div>
 
-            <!-- Contenedor del Mapa Leaflet -->
+            <!-- Contenedor del Mapa Leaflet (Limpio, sin leyenda inferior redundante) -->
             <div id="geoDashboardMap"></div>
-
-            <!-- Leyenda Inferior Flotante (Colores por Canal: DET Rojo, FSE Azul, MES Naranja, MOD Amarillo) -->
-            <div id="geoMapLegend" class="geo-map-legend">
-              <span class="legend-item" id="legendCdBase"><i class="dot-cd"></i> CD Origen</span>
-              <span class="legend-item"><i class="dot-ch" style="background:#ef4444;"></i> DET</span>
-              <span class="legend-item"><i class="dot-ch" style="background:#2563eb;"></i> FSE</span>
-              <span class="legend-item"><i class="dot-ch" style="background:#f97316;"></i> MES</span>
-              <span class="legend-item"><i class="dot-ch" style="background:#eab308;"></i> MOD</span>
-            </div>
 
           </section>
 
