@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - dashboard.js (Mapa Geoespacial Lima + Callouts 1 Columna)
+   RoadMap - dashboard.js (Mapa Geoespacial Lima • FSE • MOD Amarillo • Zoom Calibrado)
    ========================================================================== */
 
 (() => {
@@ -11,21 +11,20 @@
   ].filter(Boolean);
 
   // Coordenadas exactas de los 3 Centros de Distribución (Región Lima)
-  // Con desplazamiento calibrado para mantener los 3 centros equilibrados y centrados
   const CD_LOCATIONS = {
     "0374-ATE": {
       lat: -12.067013469355048,
       lng: -76.97943349160968,
-      calloutLat: -12.088,
-      calloutLng: -77.005,
+      calloutLat: -12.085,
+      calloutLng: -77.002,
       offsetClass: "cd-offset-ate",
       label: "0374-ATE"
     },
     "0780-ATE2": {
       lat: -12.045124965310059,
       lng: -76.93813036277461,
-      calloutLat: -12.022,
-      calloutLng: -76.905,
+      calloutLat: -12.025,
+      calloutLng: -76.908,
       offsetClass: "cd-offset-ate2",
       label: "0780-ATE2"
     },
@@ -39,17 +38,17 @@
     }
   };
 
-  // Paleta Oficial de Colores por Canal (Rojo DET, Azul FOSE, Naranja MES, Violeta MOD)
+  // Paleta Oficial de Colores por Canal (Rojo DET, Azul FSE, Naranja MES, Amarillo MOD)
   const CHANNEL_CONFIG = [
-    { key: "DET",  label: "DET",  color: "#ef4444" }, // Rojo
-    { key: "FOSE", label: "FOSE", color: "#2563eb" }, // Azul
-    { key: "MES",  label: "MES",  color: "#f97316" }, // Naranja
-    { key: "MOD",  label: "MOD",  color: "#9333ea" }  // Violeta
+    { key: "DET", label: "DET", color: "#ef4444" }, // Rojo
+    { key: "FSE", label: "FSE", color: "#2563eb" }, // Azul
+    { key: "MES", label: "MES", color: "#f97316" }, // Naranja
+    { key: "MOD", label: "MOD", color: "#eab308" }  // Amarillo
   ];
 
   function normalizeChannelCode(raw) {
     const clean = String(raw ?? "").replace(/\s*\([^\)]*\)/g, "").trim().toUpperCase();
-    if (clean === "FSE" || clean.includes("FOSE")) return "FOSE";
+    if (clean === "FSE" || clean.includes("FOSE")) return "FSE";
     if (clean.includes("DET")) return "DET";
     if (clean.includes("MES")) return "MES";
     if (clean.includes("MOD")) return "MOD";
@@ -185,7 +184,7 @@
     map = L.map("geoDashboardMap", {
       zoomControl: false,
       attributionControl: false
-    }).setView([-11.82, -77.08], 9);
+    }).setView([-11.82, -77.12], 9);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19
@@ -272,12 +271,12 @@
         bounds.push([info.calloutLat, info.calloutLng]);
       });
 
-      // Encuadre centrado con margen superior e inferior para que Chancay y Ate queden bien centrados
+      // Zoom calibrado (maxZoom 9 y padding amplio para evitar que Chancay o Ate toquen los bordes)
       if (bounds.length > 0) {
         map.fitBounds(bounds, {
-          paddingTopLeft: [110, 125],
-          paddingBottomRight: [110, 110],
-          maxZoom: 10
+          paddingTopLeft: [130, 185],
+          paddingBottomRight: [130, 145],
+          maxZoom: 9
         });
       }
       return;
@@ -288,7 +287,7 @@
     hudTitle.textContent    = `Geoposiciones • ${state.selectedCenter}`;
     hudSubtitle.textContent = state.selectedChannelCode
       ? `Filtrado por Canal ${state.selectedChannelCode} • Click en pin para detalle`
-      : "Puntos de atención coloreados por Canal (DET, FOSE, MES, MOD)";
+      : "Puntos de atención coloreados por Canal (DET, FSE, MES, MOD)";
     btnBack.classList.remove("is-hidden");
 
     const bounds = [];
@@ -297,7 +296,7 @@
       const originIcon = L.divIcon({
         className: "",
         html: `
-          <div class="cd-callout-card cd-offset-chancay" style="min-width:110px; padding:5px 10px; background:#8e24aa; border-color:#fff;">
+          <div class="cd-callout-card" style="transform:translate(-50%, -120%); min-width:110px; padding:5px 10px; background:#8e24aa; border-color:#fff;">
             <div class="cd-callout-head" style="border:none; margin:0; padding:0; justify-content:center;">
               <span class="cd-callout-name" style="color:#fff;">CD ${state.selectedCenter}</span>
             </div>
@@ -337,6 +336,7 @@
     clientPoints.forEach(pt => {
       const color = getChannelColor(pt.canalCode);
       const val = metricCalc(pt.rows, state.activeMetric);
+      const textBadgeColor = pt.canalCode === "MOD" ? "#18181b" : "#ffffff";
 
       const marker = L.circleMarker([pt.lat, pt.lng], {
         radius: 6.5,
@@ -351,7 +351,7 @@
         <div style="font-family:'Inter',sans-serif; font-size:12px; line-height:1.45; min-width:190px;">
           <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
             <strong style="color:#18181b;">${pt.cod}</strong>
-            <span style="background:${color}; color:#fff; padding:1px 7px; border-radius:999px; font-size:10px; font-weight:700;">${pt.canalCode}</span>
+            <span style="background:${color}; color:${textBadgeColor}; padding:1px 7px; border-radius:999px; font-size:10px; font-weight:800;">${pt.canalCode}</span>
           </div>
           <div style="font-weight:700; color:#3f3f46; margin-bottom:4px;">${pt.nombre}</div>
           <div style="color:#71717a; font-size:11px; margin-bottom:6px;">${pt.direccion}</div>
@@ -367,7 +367,7 @@
     });
 
     if (bounds.length > 1) {
-      map.fitBounds(bounds, { padding: [55, 55], maxZoom: 14 });
+      map.fitBounds(bounds, { padding: [65, 65], maxZoom: 13 });
     } else if (cdInfo) {
       map.setView([cdInfo.lat, cdInfo.lng], 12);
     }
