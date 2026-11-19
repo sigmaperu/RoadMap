@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - dashboard.js (Mapa Geoespacial Lima • FSE • MOD Amarillo • Zoom Calibrado)
+   RoadMap - dashboard.js (FSE + MOD Amarillo sincronizado en tarjetas y mapa)
    ========================================================================== */
 
 (() => {
@@ -271,7 +271,6 @@
         bounds.push([info.calloutLat, info.calloutLng]);
       });
 
-      // Zoom calibrado (maxZoom 9 y padding amplio para evitar que Chancay o Ate toquen los bordes)
       if (bounds.length > 0) {
         map.fitBounds(bounds, {
           paddingTopLeft: [130, 185],
