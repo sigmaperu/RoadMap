@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - dashboard.css (Cápsula CD en Esquina Derecha + Lista Limpia)
+   RoadMap - dashboard.css (Iconos Fábrica/Almacén en Mapa + Cápsula CD)
    ========================================================================== */
 
 :root {
@@ -213,17 +213,28 @@
 }
 
 /* ==========================================================================
-   MARCADORES DE CD AMPLIADOS Y CENTRADOS SOBRE SU ANCLAJE DE LÍNEA
+   ICONOS GEOGRÁFICOS DE FÁBRICA (ATE/CHANCAY) Y ALMACÉN (ATE2) + CALLOUTS
    ========================================================================== */
-.cd-anchor-dot {
-  width: 14px;
-  height: 14px;
+.cd-anchor-icon {
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: var(--gd-plum);
+  color: #ffffff;
   border: 2.5px solid #ffffff;
-  box-shadow: 0 0 0 4px rgba(142, 36, 170, 0.35), 0 3px 8px rgba(0,0,0,0.4);
+  box-shadow: 0 0 0 4px rgba(142, 36, 170, 0.32), 0 4px 12px rgba(0, 0, 0, 0.45);
+  display: grid;
+  place-items: center;
   transform: translate(-50%, -50%);
   cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.cd-anchor-icon:hover {
+  background: var(--gd-plum-deep);
+}
+.cd-anchor-icon .material-icons {
+  font-size: 17px;
+  line-height: 1;
 }
 
 .cd-callout-card {
