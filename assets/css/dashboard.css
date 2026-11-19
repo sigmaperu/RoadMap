@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - dashboard.css (Mapa Ampliado + 7 Indicadores en CD + Screenshot)
+   RoadMap - dashboard.css (Tarjetas de Mapa Ampliadas + Encuadre Calibrado)
    ========================================================================== */
 
 :root {
@@ -192,11 +192,11 @@
 }
 
 /* ==========================================================================
-   MARCADORES DE CD CON CALLOUTS SEPARADOS (CERO SOLAPE) Y SIN HOVER SALTÓN
+   MARCADORES DE CD AMPLIADOS Y CON MAYOR LEGIBILIDAD
    ========================================================================== */
 .cd-anchor-dot {
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background: var(--gd-plum);
   border: 2.5px solid #ffffff;
@@ -206,46 +206,45 @@
 }
 
 .cd-callout-card {
-  background: rgba(22, 20, 28, 0.95);
-  backdrop-filter: blur(6px);
+  background: rgba(22, 20, 28, 0.96);
   color: #ffffff;
   border: 2px solid var(--gd-plum);
-  border-radius: 12px;
-  padding: 7px 11px;
-  box-shadow: 0 10px 26px rgba(22, 20, 28, 0.42);
+  border-radius: 14px;
+  padding: 10px 14px;
+  box-shadow: 0 12px 28px rgba(22, 20, 28, 0.45);
   width: max-content;
-  min-width: 156px;
+  min-width: 192px;
   cursor: pointer;
   transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
 .cd-callout-card:hover {
   border-color: #f3e5f5;
-  box-shadow: 0 12px 30px rgba(142, 36, 170, 0.55);
+  box-shadow: 0 14px 32px rgba(142, 36, 170, 0.55);
 }
 
-/* Posiciones calibradas para que Chancay, ATE2 y ATE nunca se toquen */
-.cd-offset-chancay { transform: translate(6%, -45%); }
-.cd-offset-ate2    { transform: translate(6%, -65%); }
-.cd-offset-ate     { transform: translate(-105%, 4%); }
+/* Posiciones calibradas para las tarjetas ampliadas */
+.cd-offset-chancay { transform: translate(4%, -46%); }
+.cd-offset-ate2    { transform: translate(4%, -62%); }
+.cd-offset-ate     { transform: translate(-103%, 4%); }
 
 .cd-callout-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
-  padding-bottom: 4px;
-  margin-bottom: 4px;
+  gap: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+  padding-bottom: 5px;
+  margin-bottom: 6px;
 }
 .cd-callout-name {
-  font-size: 0.66rem;
+  font-size: 0.78rem;
   font-weight: 800;
   color: #e1bee7;
   letter-spacing: 0.03em;
   white-space: nowrap;
 }
 .cd-callout-mainval {
-  font-size: 0.9rem;
+  font-size: 1.08rem;
   font-weight: 800;
   color: #ffffff;
   white-space: nowrap;
@@ -254,28 +253,28 @@
 .cd-mini-channels {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 2px;
+  gap: 3.5px;
 }
 .cd-ch-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.62rem;
+  font-size: 0.74rem;
   color: #e4e4e7;
-  gap: 14px;
+  gap: 18px;
   white-space: nowrap;
-  line-height: 1.25;
+  line-height: 1.3;
 }
 .cd-ch-left {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   font-weight: 600;
-  color: #a1a1aa;
+  color: #d4d4d8;
 }
 .cd-ch-dot {
-  width: 6.5px;
-  height: 6.5px;
+  width: 7.5px;
+  height: 7.5px;
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -335,7 +334,6 @@
   flex-shrink: 0;
 }
 
-/* Stack de 5 KPIs en 1 sola columna horizontal limpia */
 .geo-kpi-stack {
   display: flex;
   flex-direction: column;
@@ -413,7 +411,6 @@
   text-align: right;
 }
 
-/* Sección de PIs */
 .geo-pi-section {
   background: var(--gd-surface);
   border-radius: 12px;
@@ -464,7 +461,6 @@
   color: #ffffff;
 }
 
-/* Caja Inferior de Desglose */
 .geo-breakdown-box {
   flex: 1;
   min-height: 0;
@@ -557,9 +553,6 @@
   border-radius: 999px;
 }
 
-/* ==========================================================================
-   RESPONSIVE MÓVIL
-   ========================================================================== */
 @media (max-width: 1024px) {
   .geo-dash-viewport {
     height: auto !important;
