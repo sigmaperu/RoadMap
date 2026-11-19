@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>RoadMap – Interactive Command Center</title>
+  <title>RoadMap – Dashboard Geoespacial Lima</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Fuentes + Material Icons -->
@@ -10,14 +10,17 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
+
   <!-- Estilos globales y específicos del Dashboard -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=30.0">
-  <link rel="stylesheet" href="assets/css/dashboard.css?v=30.0">
+  <link rel="stylesheet" href="assets/css/styles.css?v=32.0">
+  <link rel="stylesheet" href="assets/css/dashboard.css?v=32.0">
 
   <!-- Scripts -->
   <script defer src="assets/js/main.js"></script>
-  <script defer src="assets/js/dashboard.js?v=30.0"></script>
+  <script defer src="assets/js/dashboard.js?v=32.0"></script>
 </head>
 
 <body data-title="Dashboard">
@@ -28,253 +31,150 @@
     <div class="main-layout">
       <div id="app-header"></div>
 
-      <main class="content fin-viewport">
+      <main class="content geo-dash-viewport">
         
-        <!-- ========================================================== -->
-        <!-- 1. BARRA SUPERIOR DE PÍLDORAS (Centros como Tabs, 0 combos) -->
-        <!-- ========================================================== -->
-        <header class="fin-topbar">
-          <div class="fin-topbar__title">
-            <button id="btnResetAll" class="fin-back-circle" type="button" title="Restablecer vista global">
-              <span class="material-icons">restart_alt</span>
-            </button>
-            <div>
-              <h2>Operación Logística</h2>
-              <p id="activeContextSubtitle">Consolidado Global • Haz clic en cualquier tarjeta o barra para filtrar</p>
-            </div>
-          </div>
-
-          <!-- Píldora Oscura de Centros (Al estilo Overview / Estimates / Invoices de Finnova) -->
-          <div id="centroPillsBar" class="fin-nav-pills" role="tablist" aria-label="Centros Operativos">
-            <!-- Se inyectan dinámicamente: Todos, ATE1, ATE2, CHANCAY, etc. -->
-          </div>
-
-          <!-- Chips de Filtros Cruzados Activos -->
-          <div class="fin-topbar__right">
-            <div id="activeFilterBadges" class="fin-active-badges"></div>
-          </div>
-        </header>
-
-        <!-- ========================================================== -->
-        <!-- 2. LAS 4 MACRO-TARJETAS INTERACTIVAS (Métricas Madre)      -->
-        <!-- ========================================================== -->
-        <section class="fin-hero-cards" aria-label="Indicadores Principales">
+        <div class="geo-split-grid">
           
-          <!-- Card 1: Clientes -->
-          <article class="fin-card" data-metric="Clientes">
-            <div class="fin-card__head">
-              <span class="fin-card__title">Clientes Únicos</span>
-              <span class="fin-card__icon icon-slate"><span class="material-icons">badge</span></span>
-            </div>
-            <div id="valClientes" class="fin-card__value">–</div>
-            <div id="subClientes" class="fin-card__sub">100% de la cartera activa</div>
-            <div id="miniChartClientes" class="fin-card__viz"></div>
-          </article>
-
-          <!-- Card 2: Pedidos (Activa por defecto) -->
-          <article class="fin-card is-active" data-metric="Pedidos">
-            <div class="fin-card__head">
-              <span class="fin-card__title">Pedidos Despachados</span>
-              <span class="fin-card__icon icon-blue"><span class="material-icons">assignment</span></span>
-            </div>
-            <div id="valPedidos" class="fin-card__value">–</div>
-            <div id="subPedidos" class="fin-card__sub">Seleccionado • Analizando entregas</div>
-            <div id="miniChartPedidos" class="fin-card__viz"></div>
-          </article>
-
-          <!-- Card 3: Kilogramos -->
-          <article class="fin-card" data-metric="Kilogramos">
-            <div class="fin-card__head">
-              <span class="fin-card__title">Volumen (Kilogramos)</span>
-              <span class="fin-card__icon icon-green"><span class="material-icons">scale</span></span>
-            </div>
-            <div id="valKilogramos" class="fin-card__value">–</div>
-            <div id="subKilogramos" class="fin-card__sub">Tonelaje bruto movilizado</div>
-            <div id="miniChartKilogramos" class="fin-card__viz"></div>
-          </article>
-
-          <!-- Card 4: Soles -->
-          <article class="fin-card" data-metric="Soles">
-            <div class="fin-card__head">
-              <span class="fin-card__title">Valorización (Soles)</span>
-              <span class="fin-card__icon icon-gold"><span class="material-icons">paid</span></span>
-            </div>
-            <div id="valSoles" class="fin-card__value">–</div>
-            <div id="subSoles" class="fin-card__sub">Facturación total en ruta</div>
-            <div id="miniChartSoles" class="fin-card__viz"></div>
-          </article>
-
-        </section>
-
-        <!-- ========================================================== -->
-        <!-- 3. CINTA MEDIA INTERACTIVA: FLOTA & PIs + CANALES CLICABLES-->
-        <!-- ========================================================== -->
-        <section class="fin-mid-strip">
-          <div class="fin-pi-pills">
-            <button type="button" class="fin-pi-pill" data-metric="Camiones">
-              <span class="material-icons icon--slate">local_shipping</span>
-              <span>Flota: <strong id="valCamiones">–</strong> u.</span>
-            </button>
-            <button type="button" class="fin-pi-pill" data-metric="Kg/Camión">
-              <span class="material-icons icon--green">balance</span>
-              <span>Kg/Camión: <strong id="valKgCamion">–</strong></span>
-            </button>
-            <button type="button" class="fin-pi-pill" data-metric="Kg/Cliente">
-              <span class="material-icons icon--green">shopping_bag</span>
-              <span>Kg/Cliente: <strong id="valKgCliente">–</strong></span>
-            </button>
-            <button type="button" class="fin-pi-pill" data-metric="Clientes/Camión">
-              <span class="material-icons icon--blue">people_alt</span>
-              <span>Cli/Camión: <strong id="valCliCamion">–</strong></span>
-            </button>
-          </div>
-
-          <!-- Píldoras rápidas de Canal (Click para filtrar por canal sin dropdown) -->
-          <div id="canalQuickPills" class="fin-canal-pills">
-            <!-- Se inyectan los canales como chips clicables -->
-          </div>
-        </section>
-
-        <!-- ========================================================== -->
-        <!-- 4. PANEL OSCURO INFERIOR ESTILO FINNOVA (Master-Detail)    -->
-        <!-- ========================================================== -->
-        <section class="fin-dark-stage">
-          
-          <!-- Cabecera con el "Notch" blanco recortado al centro -->
-          <div class="fin-dark-stage__header">
-            <div class="fin-dark-stage__title">
-              <span id="stageLeftTitle">Ranking por Centros</span>
-              <span id="stageMetricBadge" class="fin-metric-tag">Pedidos</span>
-            </div>
-
-            <!-- Pestaña Blanca Recortada (Notch de Dimensiones) -->
-            <div class="fin-notch-tabs" role="tablist">
-              <button type="button" class="fin-notch-btn is-active" data-dimension="CENTRO">
-                Centros <span id="countDimCentro" class="notch-count">0</span>
-              </button>
-              <button type="button" class="fin-notch-btn" data-dimension="CANAL">
-                Canales <span id="countDimCanal" class="notch-count">0</span>
-              </button>
-              <button type="button" class="fin-notch-btn" data-dimension="PLACA">
-                Flota Top <span id="countDimPlaca" class="notch-count">0</span>
-              </button>
-              <button type="button" class="fin-notch-btn" data-dimension="RUTA">
-                Rutas <span id="countDimRuta" class="notch-count">0</span>
-              </button>
-            </div>
-
-            <!-- Switch Rápido Top Performers vs Offenders -->
-            <div class="fin-dark-stage__actions">
-              <button type="button" id="btnToggleOrder" class="fin-order-toggle" title="Alternar Top Performers / Offenders">
-                <span class="material-icons" id="orderIcon">trending_up</span>
-                <span id="orderLabel">Top Performers</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Cuerpo dividido: Lista Interactiva Izquierda + Tarjeta Morada Derecha -->
-          <div class="fin-dark-stage__body">
+          <!-- ========================================================== -->
+          <!-- COLUMNA IZQUIERDA: MAPA INTERACTIVO REGIÓN LIMA / HEATMAP  -->
+          <!-- ========================================================== -->
+          <section class="geo-map-stage">
             
-            <!-- Columna Izquierda: Lista Maestra Clicable (Estilo Unpaid Invoices) -->
-            <div id="masterRankingList" class="fin-master-list">
-              <!-- Filas generadas dinámicamente -->
-            </div>
-
-            <!-- Columna Derecha: Tarjeta Bento Morada de Inspección Profunda -->
-            <div class="fin-spotlight-card">
-              
-              <!-- Encabezado de la Tarjeta Derecha -->
-              <div class="fin-spotlight__top">
+            <!-- Barra Flotante Superior sobre el Mapa -->
+            <div class="geo-map-hud">
+              <div class="geo-hud-status">
+                <span class="geo-pulse-dot"></span>
                 <div>
-                  <span class="fin-spotlight__eyebrow" id="spotEyebrow">INSPECCIÓN DETALLADA</span>
-                  <div class="fin-spotlight__title-row">
-                    <h3 id="spotTitle">Consolidado General</h3>
-                    <span id="spotShareBadge" class="fin-spot-badge">100% del total</span>
-                  </div>
-                </div>
-                <div class="fin-spotlight__meta">
-                  <span class="fin-spotlight__eyebrow">OPERACIÓN</span>
-                  <strong id="spotSubContext">Todos los Centros y Canales</strong>
-                </div>
-                <div class="fin-spotlight__leader">
-                  <div class="fin-leader-avatar"><span class="material-icons" id="spotIcon">insights</span></div>
-                  <div>
-                    <strong id="spotLeaderTitle">Líder en Selección</strong>
-                    <span id="spotLeaderValue">–</span>
-                  </div>
+                  <strong id="hudMapTitle">Región Lima • 3 Centros Operativos</strong>
+                  <span id="hudMapSubtitle">Haz clic en un CD del mapa para ver su mapa de calor de atenciones</span>
                 </div>
               </div>
 
-              <!-- 4 Cajas Interiores Clicables (Al estilo $15,990 / $21,250 / $10,740 de Finnova) -->
-              <div class="fin-spotlight__grid">
-                <div class="fin-spot-box" data-spot-metric="Pedidos">
-                  <div class="fin-spot-box__top">
-                    <strong id="spotBoxPedidos">–</strong>
-                    <span class="material-icons">north_east</span>
-                  </div>
-                  <span class="fin-spot-box__label">Pedidos Despachados</span>
-                  <div class="fin-spot-bar"><span id="barSpotPedidos" style="width:100%"></span></div>
-                </div>
-
-                <div class="fin-spot-box" data-spot-metric="Kilogramos">
-                  <div class="fin-spot-box__top">
-                    <strong id="spotBoxKg">–</strong>
-                    <span class="material-icons">north_east</span>
-                  </div>
-                  <span class="fin-spot-box__label">Kilogramos Movilizados</span>
-                  <div class="fin-spot-bar"><span id="barSpotKg" style="width:100%"></span></div>
-                </div>
-
-                <div class="fin-spot-box" data-spot-metric="Soles">
-                  <div class="fin-spot-box__top">
-                    <strong id="spotBoxSoles">–</strong>
-                    <span class="material-icons">north_east</span>
-                  </div>
-                  <span class="fin-spot-box__label">Facturación Soles</span>
-                  <div class="fin-spot-bar"><span id="barSpotSoles" style="width:100%"></span></div>
-                </div>
-
-                <!-- 4ta Caja: Mini Desglose Cruzado Interactivo (Top 3 sub-ítems clicables) -->
-                <div class="fin-spot-box fin-spot-box--breakdown">
-                  <span class="fin-spot-box__label" id="spotBreakdownTitle">Desglose Rápido (Click para filtrar)</span>
-                  <div id="spotBreakdownList" class="fin-mini-breakdown"></div>
-                </div>
+              <div class="geo-hud-actions">
+                <span id="hudActiveMetricBadge" class="geo-metric-pill">Métrica: Pedidos</span>
+                <button type="button" id="btnBackToRegion" class="geo-back-btn is-hidden">
+                  <span class="material-icons">zoom_out_map</span> Región Lima
+                </button>
               </div>
+            </div>
 
-              <!-- Pie de la Tarjeta Derecha (Sub Total / Total / Balance Due -> PIs + Acción) -->
-              <div class="fin-spotlight__footer">
-                <div class="fin-spot-foot-stat">
-                  <span>Flota Asignada</span>
-                  <strong id="spotFootCamiones">–</strong>
-                </div>
-                <div class="fin-spot-foot-stat">
-                  <span>Eficiencia (Kg / Camión)</span>
-                  <strong id="spotFootKgCam">–</strong>
-                </div>
-                <div class="fin-spot-foot-stat">
-                  <span>Drop Size (Kg / Cliente)</span>
-                  <strong id="spotFootKgCli">–</strong>
-                </div>
-                <div class="fin-spot-foot-stat">
-                  <span>Densidad (Clientes / Camión)</span>
-                  <strong id="spotFootCliCam">–</strong>
-                </div>
+            <!-- Contenedor del Mapa Leaflet -->
+            <div id="geoDashboardMap"></div>
 
-                <div class="fin-spot-foot-actions">
-                  <button type="button" id="btnClearSelection" class="fin-pill-cta">
-                    Ver Total Global
-                  </button>
-                </div>
+            <!-- Leyenda Inferior Flotante -->
+            <div id="geoMapLegend" class="geo-map-legend">
+              <span class="legend-item"><i class="dot-cd"></i> Centro de Distribución (Click para detalle)</span>
+              <span class="legend-item is-hidden" id="legendHeat"><i class="grad-heat"></i> Densidad de Atenciones del Día</span>
+            </div>
+
+          </section>
+
+          <!-- ========================================================== -->
+          <!-- COLUMNA DERECHA: PANEL DE TARJETAS KPI & PIs (TOTAL / CD)  -->
+          <!-- ========================================================== -->
+          <aside class="geo-side-panel">
+            
+            <!-- Encabezado del Panel Derecho -->
+            <div class="geo-panel-header">
+              <div>
+                <span id="panelEyebrow" class="geo-eyebrow">CONSOLIDADO REGIONAL</span>
+                <h2 id="panelTitle">Región Lima (Total)</h2>
               </div>
+              <span id="panelShareBadge" class="geo-share-badge">100% Operación</span>
+            </div>
+
+            <!-- Grid de 5 KPIs Principales (Clicables para cambiar el mapa) -->
+            <div class="geo-kpi-grid">
+              
+              <article class="geo-kpi-card" data-metric="Clientes">
+                <div class="geo-kpi-top">
+                  <span class="geo-kpi-label">Clientes Únicos</span>
+                  <span class="geo-kpi-icon ic-slate"><span class="material-icons">badge</span></span>
+                </div>
+                <div id="valClientes" class="geo-kpi-val">–</div>
+                <div id="subClientes" class="geo-kpi-sub">Cartera atendida</div>
+              </article>
+
+              <article class="geo-kpi-card is-active" data-metric="Pedidos">
+                <div class="geo-kpi-top">
+                  <span class="geo-kpi-label">Pedidos</span>
+                  <span class="geo-kpi-icon ic-plum"><span class="material-icons">assignment</span></span>
+                </div>
+                <div id="valPedidos" class="geo-kpi-val">–</div>
+                <div id="subPedidos" class="geo-kpi-sub">● Viendo en mapa</div>
+              </article>
+
+              <article class="geo-kpi-card" data-metric="Kilogramos">
+                <div class="geo-kpi-top">
+                  <span class="geo-kpi-label">Kilogramos</span>
+                  <span class="geo-kpi-icon ic-green"><span class="material-icons">scale</span></span>
+                </div>
+                <div id="valKilogramos" class="geo-kpi-val">–</div>
+                <div id="subKilogramos" class="geo-kpi-sub">Peso total</div>
+              </article>
+
+              <article class="geo-kpi-card" data-metric="Soles">
+                <div class="geo-kpi-top">
+                  <span class="geo-kpi-label">Soles (PEN)</span>
+                  <span class="geo-kpi-icon ic-gold"><span class="material-icons">paid</span></span>
+                </div>
+                <div id="valSoles" class="geo-kpi-val">–</div>
+                <div id="subSoles" class="geo-kpi-sub">Valorización</div>
+              </article>
+
+              <article class="geo-kpi-card geo-kpi-card--wide" data-metric="Camiones">
+                <div class="geo-kpi-top">
+                  <span class="geo-kpi-label">Flota Asignada (Unidades)</span>
+                  <span class="geo-kpi-icon ic-plum"><span class="material-icons">local_shipping</span></span>
+                </div>
+                <div class="geo-kpi-wide-row">
+                  <div id="valCamiones" class="geo-kpi-val">–</div>
+                  <span id="subCamiones" class="geo-kpi-sub">Regla Centro + Placa</span>
+                </div>
+              </article>
 
             </div>
 
-          </div>
+            <!-- Grid de 3 Indicadores de Eficiencia (PIs) -->
+            <div class="geo-pi-section">
+              <div class="geo-section-label">Indicadores de Eficiencia (PIs)</div>
+              <div class="geo-pi-grid">
+                <button type="button" class="geo-pi-card" data-metric="Kg/Camión">
+                  <span class="geo-pi-name">Kg / Camión</span>
+                  <strong id="valKgCamion" class="geo-pi-val">–</strong>
+                </button>
+                <button type="button" class="geo-pi-card" data-metric="Kg/Cliente">
+                  <span class="geo-pi-name">Kg / Cliente</span>
+                  <strong id="valKgCliente" class="geo-pi-val">–</strong>
+                </button>
+                <button type="button" class="geo-pi-card" data-metric="Clientes/Camión">
+                  <span class="geo-pi-name">Cli / Camión</span>
+                  <strong id="valCliCamion" class="geo-pi-val">–</strong>
+                </button>
+              </div>
+            </div>
 
-        </section>
+            <!-- Desglose Rápido Inferior (CDs en vista Global / Canales en vista Centro) -->
+            <div class="geo-breakdown-box">
+              <div class="geo-breakdown-head">
+                <span id="breakdownTitle" class="geo-section-label">Comparativa por Centro (Click para enfocar)</span>
+                <span id="breakdownMetricTag" class="geo-mini-tag">Pedidos</span>
+              </div>
+              <div id="geoBreakdownList" class="geo-breakdown-list">
+                <!-- Se llena dinámicamente -->
+              </div>
+            </div>
+
+          </aside>
+
+        </div>
 
       </main>
     </div>
   </div>
+
+  <!-- Leaflet JS + Plugin Leaflet.heat para Mapa de Calor -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
 </body>
 </html>
