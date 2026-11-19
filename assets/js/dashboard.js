@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - dashboard.js (Cards Ampliados + Líneas Exactas + Doble Captura)
+   RoadMap - dashboard.js (ATE Desplazado Izquierda + 2 Botones de Captura)
    ========================================================================== */
 
 (() => {
@@ -10,17 +10,14 @@
     'https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv'
   ].filter(Boolean);
 
-  const DASHBOARD_PUBLIC_URL = "https://sigmaperu.github.io/RoadMap/dashboard.html";
-
   // Coordenadas exactas de los 3 Centros de Distribución (Región Lima)
-  // El centro geométrico de cada card ampliado coincide exactamente con (calloutLat, calloutLng)
-  // para que la línea conectora apunte directo desde el CD hasta el card sin desviaciones.
+  // 0374-ATE movido más a la izquierda (-77.175) para dejar su pin y línea totalmente despejados
   const CD_LOCATIONS = {
     "0374-ATE": {
       lat: -12.067013469355048,
       lng: -76.97943349160968,
       calloutLat: -11.985,
-      calloutLng: -77.115,
+      calloutLng: -77.175,
       label: "0374-ATE"
     },
     "0780-ATE2": {
@@ -236,7 +233,6 @@
         const mainVal = metricCalc(cdRows, state.activeMetric);
         const formattedMain = formatMetric(mainVal, state.activeMetric, true);
 
-        // 1) Punto exacto geográfico del CD
         const anchorIcon = L.divIcon({
           className: "",
           html: `<div class="cd-anchor-dot"></div>`,
@@ -246,8 +242,6 @@
         anchorMarker.on("click", () => openCenterGeopositions(cdCode));
         anchorMarker.addTo(mapLayerGroup);
 
-        // 2) Línea guía recta desde el CD hasta el centro de su tarjeta (calloutLat, calloutLng)
-        // Como la tarjeta está debajo en z-index o con borde sólido, la línea sale limpia desde el punto hasta el borde
         if (info.lat !== info.calloutLat || info.lng !== info.calloutLng) {
           L.polyline(
             [[info.lat, info.lng], [info.calloutLat, info.calloutLng]],
@@ -561,9 +555,11 @@
   }
 
   /* ==========================================================================
-     CAPTURA DOBLE INDEPENDIENTE (1: MAPA • 2: INDICADORES • 3: TEXTO Y LINK)
+     CAPTURAS INDEPENDIENTES:
+     1) Mapa limpio (sin texto)
+     2) Zona blanca de indicadores (con encabezado "RESUMEN DE PLANIFICACION...")
      ========================================================================== */
-  function showToast(msg, duration = 3000) {
+  function showToast(msg, duration = 2600) {
     const toast = document.getElementById("shotToast");
     if (!toast) return;
     toast.textContent = msg;
@@ -572,99 +568,110 @@
     toast._timer = setTimeout(() => toast.classList.remove("is-visible"), duration);
   }
 
-  function canvasToBlobAsync(canvas) {
-    return new Promise(resolve => canvas.toBlob(resolve, "image/png"));
-  }
-
-  async function captureDashboardToClipboard() {
-    const mapEl   = document.querySelector(".geo-map-stage");
-    const panelEl = document.querySelector(".geo-side-panel");
-    const btn     = document.getElementById("btnCopyScreenshot");
-    const icon    = document.getElementById("shotIcon");
-
-    if (!mapEl || !panelEl || typeof html2canvas !== "function") return;
+  async function captureMapOnly() {
+    const mapEl = document.getElementById("mapCaptureZone");
+    const btn   = document.getElementById("btnCopyMapShot");
+    const icon  = document.getElementById("mapShotIcon");
+    if (!mapEl || typeof html2canvas !== "function") return;
 
     const zoomCtrl = document.querySelector(".leaflet-control-zoom");
     btn.style.visibility = "hidden";
     if (zoomCtrl) zoomCtrl.style.visibility = "hidden";
 
-    const fechaPlan = window.RoadMapFechaOperativa || csvPlanningDate || "del día";
-    const shareMessage = `Estos son los datos de la planificación del día ${fechaPlan}\n${DASHBOARD_PUBLIC_URL}`;
-
     try {
-      // Renderizamos ambas capturas por separado en alta resolución (2x)
-      const [mapCanvas, panelCanvas] = await Promise.all([
-        html2canvas(mapEl, {
-          useCORS: true,
-          allowTaint: false,
-          scale: 2,
-          backgroundColor: "#e5e7eb"
-        }),
-        html2canvas(panelEl, {
-          useCORS: true,
-          allowTaint: false,
-          scale: 2,
-          backgroundColor: "#f5f4f8"
-        })
-      ]);
+      const canvas = await html2canvas(mapEl, {
+        useCORS: true,
+        allowTaint: false,
+        scale: 2,
+        backgroundColor: "#e5e7eb"
+      });
 
-      const [mapBlob, panelBlob] = await Promise.all([
-        canvasToBlobAsync(mapCanvas),
-        canvasToBlobAsync(panelCanvas)
-      ]);
-
-      if (!mapBlob || !panelBlob) return;
-
-      try {
-        // 1/3: Copiar primero la captura del Mapa
-        await navigator.clipboard.write([
-          new ClipboardItem({ "image/png": mapBlob })
-        ]);
-        icon.textContent = "check";
-        showToast("1/3 Captura del MAPA copiada • Pega en WhatsApp (Ctrl+V)", 2900);
-
-        // 2/3: A los 3.0 segundos, reemplazar portapapeles con la captura de Indicadores
-        setTimeout(async () => {
-          try {
-            await navigator.clipboard.write([
-              new ClipboardItem({ "image/png": panelBlob })
-            ]);
-            showToast("2/3 Captura de INDICADORES copiada • Vuelve a pegar (Ctrl+V)", 2900);
-          } catch (_) {}
-        }, 3000);
-
-        // 3/3: A los 6.0 segundos, dejar listo el texto editable y el link
-        setTimeout(async () => {
-          try {
-            await navigator.clipboard.writeText(shareMessage);
-            showToast("3/3 Texto y link copiados • Pega en el mensaje (Ctrl+V)", 3200);
-          } catch (_) {}
-          icon.textContent = "photo_camera";
-        }, 6000);
-
-      } catch (clipErr) {
-        // Respaldo: descargar ambas imágenes y copiar texto al portapapeles
-        try { await navigator.clipboard.writeText(shareMessage); } catch (_) {}
-        const dateTag = fechaPlan.replace(/\//g, "-");
-        [
-          { blob: mapBlob, name: `RoadMap_1_Mapa_${dateTag}.png` },
-          { blob: panelBlob, name: `RoadMap_2_Indicadores_${dateTag}.png` }
-        ].forEach(item => {
-          const url = URL.createObjectURL(item.blob);
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+        try {
+          await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+          icon.textContent = "check";
+          showToast("Captura del mapa copiada al portapapeles");
+          setTimeout(() => { icon.textContent = "photo_camera"; }, 1800);
+        } catch (err) {
+          const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
           a.href = url;
-          a.download = item.name;
+          a.download = `RoadMap_Mapa_${new Date().toISOString().slice(0, 10)}.png`;
           a.click();
           URL.revokeObjectURL(url);
-        });
-        showToast("2 imágenes descargadas y texto copiado al portapapeles");
-      }
-    } catch (err) {
-      console.error("Error generando capturas:", err);
-      showToast("No se pudo generar la captura");
+          showToast("Captura del mapa descargada");
+        }
+      }, "image/png");
     } finally {
       btn.style.visibility = "visible";
       if (zoomCtrl) zoomCtrl.style.visibility = "visible";
+    }
+  }
+
+  async function captureWhiteIndicatorsWithHeader() {
+    const zoneEl = document.getElementById("indicatorsCaptureZone");
+    const btn    = document.getElementById("btnCopyIndicatorsShot");
+    const icon   = document.getElementById("indShotIcon");
+    if (!zoneEl || typeof html2canvas !== "function") return;
+
+    btn.style.visibility = "hidden";
+    const fechaPlan = window.RoadMapFechaOperativa || csvPlanningDate || "";
+
+    try {
+      const baseCanvas = await html2canvas(zoneEl, {
+        useCORS: true,
+        allowTaint: false,
+        scale: 2,
+        backgroundColor: "#f5f4f8"
+      });
+
+      // Componer imagen final con margen limpio y encabezado "RESUMEN DE PLANIFICACIÓN PARA EL DÍA ..."
+      const pad = 28;
+      const headerH = 84;
+      const finalCanvas = document.createElement("canvas");
+      finalCanvas.width = baseCanvas.width + pad * 2;
+      finalCanvas.height = baseCanvas.height + headerH + pad * 2;
+
+      const ctx = finalCanvas.getContext("2d");
+      ctx.fillStyle = "#f5f4f8";
+      ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+
+      // Barra superior amatista/grafito con el título ejecutivo
+      ctx.fillStyle = "#16141c";
+      ctx.beginPath();
+      ctx.roundRect(pad, pad, baseCanvas.width, headerH - 12, 20);
+      ctx.fill();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "800 22px Inter, Roboto, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      const headerText = `RESUMEN DE PLANIFICACIÓN PARA EL DÍA ${fechaPlan}`;
+      ctx.fillText(headerText, finalCanvas.width / 2, pad + (headerH - 12) / 2);
+
+      // Pegar debajo la captura limpia de la zona blanca de indicadores
+      ctx.drawImage(baseCanvas, pad, pad + headerH);
+
+      finalCanvas.toBlob(async (blob) => {
+        if (!blob) return;
+        try {
+          await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+          icon.textContent = "check";
+          showToast(`Resumen copiado (${fechaPlan})`);
+          setTimeout(() => { icon.textContent = "photo_camera"; }, 1800);
+        } catch (err) {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `Resumen_Planificacion_${fechaPlan.replace(/\//g, "-")}.png`;
+          a.click();
+          URL.revokeObjectURL(url);
+          showToast("Resumen descargado en PNG");
+        }
+      }, "image/png");
+    } finally {
+      btn.style.visibility = "visible";
     }
   }
 
@@ -694,7 +701,8 @@
       updateDashboard();
     });
 
-    document.getElementById("btnCopyScreenshot").addEventListener("click", captureDashboardToClipboard);
+    document.getElementById("btnCopyMapShot").addEventListener("click", captureMapOnly);
+    document.getElementById("btnCopyIndicatorsShot").addEventListener("click", captureWhiteIndicatorsWithHeader);
 
     window.addEventListener("resize", () => {
       if (map) map.invalidateSize();
