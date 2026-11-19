@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - dashboard.js (Flota Default + 7 Indicadores en CD + Screenshot)
+   RoadMap - dashboard.js (Zoom Fijo 10 + Fecha CSV + Captura con Link)
    ========================================================================== */
 
 (() => {
@@ -9,6 +9,8 @@
     './assets/data/RoadMap.csv',
     'https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv'
   ].filter(Boolean);
+
+  const DASHBOARD_PUBLIC_URL = "https://sigmaperu.github.io/RoadMap/dashboard.html";
 
   // Coordenadas exactas de los 3 Centros de Distribución (Región Lima)
   const CD_LOCATIONS = {
@@ -115,7 +117,7 @@
   }
 
   const IDX = {
-    CENTRO: 1, PLACA: 2, CLIENTE: 3, NOMBRE: 4, RUTA: 6, PEDIDO: 7,
+    FECHA: 0, CENTRO: 1, PLACA: 2, CLIENTE: 3, NOMBRE: 4, RUTA: 6, PEDIDO: 7,
     KG: 10, SOLES: 11, DIRECCION: 15, LAT: 16, LNG: 17, CANAL: 19
   };
 
@@ -133,6 +135,7 @@
   const toNum = v => { const n = parseFloat(String(v ?? "0").replace(",", ".")); return isNaN(n) ? 0 : n; };
 
   let allRows = [];
+  let csvPlanningDate = "";
   let state = {
     selectedCenter: null,
     selectedChannelCode: null,
@@ -191,11 +194,15 @@
     });
   }
 
+  // Vista y Zoom exacto calibrado como en tu captura de referencia
+  const REGIONAL_CENTER = [-11.815, -76.96];
+  const REGIONAL_ZOOM   = 10;
+
   function initMap() {
     map = L.map("geoDashboardMap", {
       zoomControl: false,
       attributionControl: false
-    }).setView([-11.82, -77.08], 9);
+    }).setView(REGIONAL_CENTER, REGIONAL_ZOOM);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
@@ -217,7 +224,7 @@
     const hudMetricLabel = state.activeMetric === "Camiones" ? "Flota Asignada" : state.activeMetric;
     document.getElementById("hudActiveMetricBadge").textContent = `Métrica: ${hudMetricLabel}`;
 
-    // MODO 1: VISTA GLOBAL REGIÓN LIMA (3 CDs)
+    // MODO 1: VISTA GLOBAL REGIÓN LIMA (3 CDs con Zoom Fijo 10)
     if (!state.selectedCenter) {
       hudTitle.textContent    = "Región Lima • 3 Centros de Distribución";
       hudSubtitle.textContent = state.activeMetric === "Camiones"
@@ -225,7 +232,6 @@
         : `Desglose por canal (${state.activeMetric}) • Toca un CD para ver sus geoposiciones`;
       btnBack.classList.add("is-hidden");
 
-      const bounds = [];
       const isFleetSelected = (state.activeMetric === "Camiones");
 
       Object.entries(CD_LOCATIONS).forEach(([cdCode, info]) => {
@@ -249,8 +255,6 @@
           ).addTo(mapLayerGroup);
         }
 
-        // Si el indicador activo es Flota (Camiones), mostramos el resumen de los otros 7 indicadores en 1 columna
-        // Si es cualquier otro indicador, mostramos el desglose por canal (DET, FSE, MES, MOD)
         let cardBodyHtml = "";
         if (isFleetSelected) {
           const summaryItems = FLEET_SUMMARY_METRICS.map(sm => {
@@ -294,18 +298,10 @@
         const cardMarker = L.marker([info.calloutLat, info.calloutLng], { icon: calloutIcon });
         cardMarker.on("click", () => openCenterGeopositions(cdCode));
         cardMarker.addTo(mapLayerGroup);
-
-        bounds.push([info.lat, info.lng]);
-        bounds.push([info.calloutLat, info.calloutLng]);
       });
 
-      if (bounds.length > 0) {
-        map.fitBounds(bounds, {
-          paddingTopLeft: [110, 155],
-          paddingBottomRight: [140, 125],
-          maxZoom: 9
-        });
-      }
+      // Mantener siempre el nivel de zoom exacto (10)
+      map.setView(REGIONAL_CENTER, REGIONAL_ZOOM, { animate: true });
       return;
     }
 
@@ -406,9 +402,6 @@
     updateDashboard();
   }
 
-  /* ==========================================================================
-     PANEL DERECHO: ENCABEZADO LIMPIO + TARJETAS + PÍLDORA REACTIVA
-     ========================================================================== */
   function renderSidePanel() {
     const activeRows = getActiveRows();
 
@@ -570,14 +563,14 @@
   }
 
   /* ==========================================================================
-     FUNCIÓN DE CAPTURA DE PANTALLA (COPIA IMAGEN AL PORTAPAPELES)
+     CAPTURA DE PANTALLA CON PIE EJECUTIVO (FECHA CSV + LINK DASHBOARD)
      ========================================================================== */
   function showToast(msg) {
     const toast = document.getElementById("shotToast");
     if (!toast) return;
     toast.textContent = msg;
     toast.classList.add("is-visible");
-    setTimeout(() => toast.classList.remove("is-visible"), 2600);
+    setTimeout(() => toast.classList.remove("is-visible"), 2800);
   }
 
   async function captureDashboardToClipboard() {
@@ -590,32 +583,59 @@
     btn.style.visibility = "hidden";
     if (zoomCtrl) zoomCtrl.style.visibility = "hidden";
 
+    const fechaPlan = window.RoadMapFechaOperativa || csvPlanningDate || "del día";
+
     try {
-      const canvas = await html2canvas(target, {
+      const baseCanvas = await html2canvas(target, {
         useCORS: true,
         allowTaint: false,
         scale: 2,
         backgroundColor: "#f5f4f8"
       });
 
-      canvas.toBlob(async (blob) => {
+      // Crear lienzo final añadiendo pie ejecutivo con texto y link del dashboard
+      const footerH = 72; // 36px reales a escala 2x
+      const finalCanvas = document.createElement("canvas");
+      finalCanvas.width = baseCanvas.width;
+      finalCanvas.height = baseCanvas.height + footerH;
+
+      const ctx = finalCanvas.getContext("2d");
+      ctx.drawImage(baseCanvas, 0, 0);
+
+      // Fondo grafito corporativo para el pie de imagen
+      ctx.fillStyle = "#16141c";
+      ctx.fillRect(0, baseCanvas.height, finalCanvas.width, footerH);
+
+      // Texto informativo izquierdo
+      ctx.fillStyle = "#e4e4e7";
+      ctx.font = "600 22px Inter, Roboto, sans-serif";
+      ctx.textBaseline = "middle";
+      const infoText = `Estos son los datos de la planificación del día ${fechaPlan}`;
+      ctx.fillText(infoText, 32, baseCanvas.height + footerH / 2);
+
+      // Link derecho en tono amatista claro
+      ctx.fillStyle = "#e1bee7";
+      ctx.font = "700 22px Inter, Roboto, sans-serif";
+      ctx.textAlign = "right";
+      ctx.fillText(DASHBOARD_PUBLIC_URL, finalCanvas.width - 32, baseCanvas.height + footerH / 2);
+
+      finalCanvas.toBlob(async (blob) => {
         if (!blob) return;
         try {
           await navigator.clipboard.write([
             new ClipboardItem({ "image/png": blob })
           ]);
           icon.textContent = "check";
-          showToast("Imagen copiada al portapapeles (Ctrl+V para pegar)");
+          showToast(`Captura copiada (Planificación ${fechaPlan})`);
           setTimeout(() => { icon.textContent = "photo_camera"; }, 1800);
         } catch (clipErr) {
-          // Respaldo automático de descarga si el navegador bloquea el portapapeles
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
           a.href = url;
-          a.download = `RoadMap_Dashboard_${new Date().toISOString().slice(0, 10)}.png`;
+          a.download = `RoadMap_Dashboard_${fechaPlan.replace(/\//g, "-")}.png`;
           a.click();
           URL.revokeObjectURL(url);
-          showToast("Imagen descargada en PNG");
+          showToast("Captura descargada en PNG");
         }
       }, "image/png");
     } catch (err) {
@@ -666,6 +686,23 @@
       const text = await loadCSVWithFallback();
       const { rows } = parseCSV(text);
       allRows = rows;
+
+      // Extraer fecha operativa del CSV como respaldo inmediato
+      if (rows.length > 0 && rows[0][IDX.FECHA]) {
+        const rawF = cleanStr(rows[0][IDX.FECHA]).split(" ")[0];
+        if (/^\d{4}-\d{2}-\d{2}$/.test(rawF)) {
+          const [y, m, d] = rawF.split("-");
+          csvPlanningDate = `${d}/${m}/${y}`;
+        } else {
+          csvPlanningDate = rawF.replace(/-/g, "/");
+        }
+        if (!window.RoadMapFechaOperativa) {
+          window.RoadMapFechaOperativa = csvPlanningDate;
+          const badge = document.getElementById("header-date-badge");
+          if (badge) badge.textContent = csvPlanningDate;
+        }
+      }
+
       bindEvents();
       updateDashboard();
     } catch (err) {
