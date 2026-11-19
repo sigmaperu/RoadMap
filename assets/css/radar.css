@@ -1,0 +1,539 @@
+/* ==========================================================================
+   RoadMap - radar.css (Radar de Distribución • Paleta Amatista & Grafito)
+   ========================================================================== */
+
+:root {
+  --rd-bg: #f5f4f8;
+  --rd-surface: #ffffff;
+  --rd-dark: #16141c;
+  --rd-dark-card: #211e2b;
+  --rd-plum: #8e24aa;
+  --rd-plum-deep: #6a1b9a;
+  --rd-plum-soft: #f3e5f5;
+  --rd-emerald: #10b981;
+  --rd-amber: #d97706;
+  --rd-red: #ef4444;
+  --rd-text: #18181b;
+  --rd-muted: #71717a;
+  --rd-border: #e4e4e7;
+}
+
+.radar-viewport {
+  height: calc(100vh - 88px) !important;
+  max-height: calc(100vh - 88px) !important;
+  overflow: hidden !important;
+  background: var(--rd-bg);
+  padding: 12px 16px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* ==========================================================================
+   1. BARRA SUPERIOR
+   ========================================================================== */
+.radar-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.radar-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.radar-badge-live {
+  background: var(--rd-dark);
+  color: #e1bee7;
+  border: 1px solid rgba(206, 147, 216, 0.3);
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--rd-emerald);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+}
+
+.radar-title-group h2 {
+  margin: 0;
+  font-size: 1.12rem;
+  font-weight: 800;
+  color: var(--rd-text);
+  letter-spacing: -0.02em;
+}
+.radar-title-group p {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--rd-muted);
+}
+
+.radar-center-pills {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--rd-dark);
+  padding: 4px;
+  border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(22, 20, 28, 0.14);
+}
+
+.radar-pill {
+  border: none;
+  background: transparent;
+  color: #a1a1aa;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+.radar-pill:hover { color: #ffffff; }
+.radar-pill.is-active {
+  background: linear-gradient(135deg, #9c27b0 0%, #6a1b9a 100%);
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   2. TARJETAS SUPERIORES DE HALLAZGOS (INSIGHTS)
+   ========================================================================== */
+.radar-highlights-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.radar-hl-card {
+  background: var(--rd-surface);
+  border: 1px solid var(--rd-border);
+  border-radius: 14px;
+  padding: 10px 13px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.radar-hl-card--alert {
+  border-color: #fecaca;
+  background: linear-gradient(180deg, #ffffff 0%, #fef2f2 100%);
+}
+
+.radar-hl-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 3px;
+}
+.radar-hl-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--rd-muted);
+}
+.radar-hl-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+}
+.radar-hl-icon .material-icons { font-size: 14px; }
+.ic-plum  { background: #f3e5f5; color: #8e24aa; }
+.ic-green { background: #dcfce7; color: #15803d; }
+.ic-amber { background: #fef3c7; color: #b45309; }
+.ic-slate { background: #f4f4f5; color: #3f3f46; }
+.ic-red   { background: #fee2e2; color: #dc2626; }
+
+.radar-hl-main {
+  font-size: 1.02rem;
+  font-weight: 800;
+  color: var(--rd-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.radar-hl-sub {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--rd-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+/* ==========================================================================
+   3. GRID PRINCIPAL DE 3 COLUMNAS ANALÍTICAS
+   ========================================================================== */
+.radar-main-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1.05fr 1.25fr 1fr;
+  gap: 12px;
+}
+
+.radar-right-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+}
+.radar-right-stack .radar-panel {
+  flex: 1;
+  min-height: 0;
+}
+
+.radar-panel {
+  background: var(--rd-surface);
+  border: 1px solid var(--rd-border);
+  border-radius: 16px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  overflow: hidden;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.03);
+}
+
+.radar-panel--dark {
+  background: var(--rd-dark);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.radar-panel__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.radar-panel__head h3 {
+  margin: 0;
+  font-size: 0.86rem;
+  font-weight: 800;
+  color: var(--rd-text);
+}
+.radar-panel--dark .radar-panel__head h3 { color: #ffffff; }
+
+.radar-panel__hint {
+  display: block;
+  font-size: 0.65rem;
+  color: var(--rd-muted);
+  margin-top: 1px;
+}
+.radar-panel--dark .radar-panel__hint { color: #a1a1aa; }
+
+.radar-mini-btn {
+  border: 1px solid #e1bee7;
+  background: var(--rd-plum-soft);
+  color: var(--rd-plum-deep);
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: 0.64rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.radar-mini-btn.is-hidden { display: none; }
+
+/* ==========================================================================
+   COLUMNA 1: RANGOS DE PESO (KG) CON BARRA APILADA POR CANAL
+   ========================================================================== */
+.radar-channel-legend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: #52525b;
+  flex-shrink: 0;
+}
+.radar-channel-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.radar-channel-legend i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.radar-ranges-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding-right: 2px;
+}
+
+.radar-range-row {
+  border: 1.5px solid var(--rd-border);
+  background: #fafafa;
+  border-radius: 11px;
+  padding: 7px 10px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.radar-range-row:hover {
+  border-color: var(--rd-plum);
+  background: #ffffff;
+}
+.radar-range-row.is-selected {
+  border-color: var(--rd-plum);
+  background: #faf5ff;
+}
+
+.radar-range-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.74rem;
+  margin-bottom: 4px;
+}
+.radar-range-top strong { color: var(--rd-text); font-weight: 800; }
+.radar-range-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #3f3f46;
+}
+.radar-range-pct {
+  background: #e4e4e7;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 0.62rem;
+}
+
+.radar-stacked-bar {
+  height: 7px;
+  background: #e4e4e7;
+  border-radius: 999px;
+  overflow: hidden;
+  display: flex;
+}
+.radar-stacked-seg { height: 100%; }
+
+.radar-range-ch-detail {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 0.61rem;
+  font-weight: 600;
+  color: var(--rd-muted);
+}
+
+/* ==========================================================================
+   COLUMNA 2: TABLA AUDITORÍA DE FLOTA (DISTANCIA, CARGA Y RADIO)
+   ========================================================================== */
+.radar-sort-pills {
+  display: inline-flex;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px;
+  border-radius: 999px;
+  gap: 2px;
+}
+.radar-sort-btn {
+  border: none;
+  background: transparent;
+  color: #a1a1aa;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 0.64rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.radar-sort-btn.is-active {
+  background: var(--rd-plum);
+  color: #ffffff;
+}
+
+.radar-table-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+.radar-table-wrap::-webkit-scrollbar { width: 4px; }
+.radar-table-wrap::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 999px; }
+
+.radar-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.72rem;
+}
+.radar-table th {
+  position: sticky;
+  top: 0;
+  background: var(--rd-dark);
+  color: #e1bee7;
+  font-size: 0.63rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 6px 6px;
+  text-align: right;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+}
+.radar-table th:first-child,
+.radar-table th:nth-child(2) { text-align: left; }
+
+.radar-table td {
+  padding: 6px 6px;
+  text-align: right;
+  color: #e4e4e7;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  white-space: nowrap;
+}
+.radar-table td:first-child {
+  text-align: left;
+  font-weight: 800;
+  color: #ffffff;
+}
+.radar-table td:nth-child(2) {
+  text-align: left;
+  font-size: 0.65rem;
+  color: #a1a1aa;
+}
+.radar-table tbody tr:hover {
+  background: rgba(142, 36, 170, 0.22);
+}
+
+.badge-warn-low {
+  background: rgba(239, 68, 68, 0.22);
+  color: #fca5a5;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 0.64rem;
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   COLUMNA 3: ZONAS COMPLEJAS DE TRÁFICO + TOP CLIENTES
+   ========================================================================== */
+.radar-tag-amber {
+  background: #fef3c7;
+  color: #b45309;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 800;
+}
+
+.radar-traffic-list,
+.radar-clients-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-right: 2px;
+}
+
+.radar-traffic-item {
+  border: 1px solid var(--rd-border);
+  border-radius: 10px;
+  padding: 7px 10px;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.radar-traffic-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.72rem;
+}
+.radar-traffic-top strong { color: var(--rd-text); font-weight: 800; }
+.traffic-level {
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 0.6rem;
+  font-weight: 800;
+}
+.lvl-critico { background: #fee2e2; color: #b91c1c; }
+.lvl-alto    { background: #ffedd5; color: #c2410c; }
+.lvl-medio   { background: #fef3c7; color: #b45309; }
+
+.radar-traffic-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.64rem;
+  color: var(--rd-muted);
+  font-weight: 600;
+}
+
+.radar-client-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 9px;
+  border-radius: 9px;
+  border: 1px solid var(--rd-border);
+  background: #ffffff;
+}
+.radar-client-info { min-width: 0; }
+.radar-client-name {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--rd-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.radar-client-sub {
+  font-size: 0.62rem;
+  color: var(--rd-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.radar-client-val {
+  text-align: right;
+  flex-shrink: 0;
+}
+.radar-client-val strong {
+  display: block;
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: var(--rd-plum-deep);
+}
+.radar-client-val span {
+  font-size: 0.6rem;
+  color: var(--rd-muted);
+  font-weight: 600;
+}
+
+@media (max-width: 1150px) {
+  .radar-viewport {
+    height: auto !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+  }
+  .radar-highlights-grid { grid-template-columns: repeat(2, 1fr); }
+  .radar-main-grid { grid-template-columns: 1fr; }
+}
