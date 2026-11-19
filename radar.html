@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>RoadMap – Radar de Distribución</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Fuentes + Material Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <!-- Estilos globales y específicos de Radar -->
+  <link rel="stylesheet" href="assets/css/styles.css?v=1.0">
+  <link rel="stylesheet" href="assets/css/radar.css?v=1.0">
+
+  <!-- Scripts -->
+  <script defer src="assets/js/main.js"></script>
+  <script defer src="assets/js/radar.js?v=1.0"></script>
+</head>
+
+<body data-title="Radar de Distribución">
+  <div class="app-shell">
+    <!-- Sidebar Modular Estándar -->
+    <aside class="sidebar" id="app-sidebar"></aside>
+
+    <div class="main-layout">
+      <div id="app-header"></div>
+
+      <main class="content radar-viewport">
+        
+        <!-- ========================================================== -->
+        <!-- 1. BARRA SUPERIOR: SELECTOR DE CENTRO Y HALLAZGOS CLAVE    -->
+        <!-- ========================================================== -->
+        <header class="radar-topbar">
+          <div class="radar-title-group">
+            <span class="radar-badge-live"><span class="pulse-dot"></span> INTELIGENCIA DE RUTEO</span>
+            <div>
+              <h2>Radar de Distribución Operativa</h2>
+              <p id="radarContextSub">Analizando distancia geoespacial, tramos de peso, flota y zonas críticas de tráfico</p>
+            </div>
+          </div>
+
+          <!-- Píldoras Interactivas por Centro (0 dropdowns) -->
+          <div id="radarCenterPills" class="radar-center-pills" role="tablist">
+            <button type="button" class="radar-pill is-active" data-center="Todos">● Región Lima (Global)</button>
+            <button type="button" class="radar-pill" data-center="0374-ATE">0374-ATE</button>
+            <button type="button" class="radar-pill" data-center="0780-ATE2">0780-ATE2</button>
+            <button type="button" class="radar-pill" data-center="0754-CHANCAY">0754-CHANCAY</button>
+          </div>
+        </header>
+
+        <!-- ========================================================== -->
+        <!-- 2. TARJETAS DE HALLAZGOS DESTACADOS (INSIGHTS AUTOMÁTICOS) -->
+        <!-- ========================================================== -->
+        <section class="radar-highlights-grid">
+          
+          <article class="radar-hl-card">
+            <div class="radar-hl-top">
+              <span class="radar-hl-label">Mayor Recorrido Est.</span>
+              <span class="radar-hl-icon ic-plum"><span class="material-icons">route</span></span>
+            </div>
+            <div id="hlMaxDistPlaca" class="radar-hl-main">–</div>
+            <div id="hlMaxDistSub" class="radar-hl-sub">Calculando distancia desde CD...</div>
+          </article>
+
+          <article class="radar-hl-card">
+            <div class="radar-hl-top">
+              <span class="radar-hl-label">Mayor Carga (Tonelaje)</span>
+              <span class="radar-hl-icon ic-green"><span class="material-icons">local_shipping</span></span>
+            </div>
+            <div id="hlMaxKgPlaca" class="radar-hl-main">–</div>
+            <div id="hlMaxKgSub" class="radar-hl-sub">–</div>
+          </article>
+
+          <article class="radar-hl-card">
+            <div class="radar-hl-top">
+              <span class="radar-hl-label">Mayor Capilaridad (Clientes)</span>
+              <span class="radar-hl-icon ic-amber"><span class="material-icons">storefront</span></span>
+            </div>
+            <div id="hlMaxCliPlaca" class="radar-hl-main">–</div>
+            <div id="hlMaxCliSub" class="radar-hl-sub">–</div>
+          </article>
+
+          <article class="radar-hl-card">
+            <div class="radar-hl-top">
+              <span class="radar-hl-label">Tramo de Peso Predominante</span>
+              <span class="radar-hl-icon ic-slate"><span class="material-icons">scale</span></span>
+            </div>
+            <div id="hlTopRange" class="radar-hl-main">–</div>
+            <div id="hlTopRangeSub" class="radar-hl-sub">–</div>
+          </article>
+
+          <article class="radar-hl-card radar-hl-card--alert">
+            <div class="radar-hl-top">
+              <span class="radar-hl-label">Foco de Congestión Vial</span>
+              <span class="radar-hl-icon ic-red"><span class="material-icons">traffic</span></span>
+            </div>
+            <div id="hlTopTrafficZone" class="radar-hl-main">–</div>
+            <div id="hlTopTrafficSub" class="radar-hl-sub">–</div>
+          </article>
+
+        </section>
+
+        <!-- ========================================================== -->
+        <!-- 3. CUERPO ANALÍTICO (RANGOS KG + DISTANCIA FLOTA + ZONAS)  -->
+        <!-- ========================================================== -->
+        <section class="radar-main-grid">
+          
+          <!-- COLUMNA 1: DISTRIBUCIÓN DE CLIENTES POR RANGOS DE KG Y CANAL -->
+          <article class="radar-panel">
+            <div class="radar-panel__head">
+              <div>
+                <h3>Clientes por Rango de Peso (Kg) y Canal</h3>
+                <span class="radar-panel__hint">Haz clic en un rango para filtrar el ranking de clientes a la derecha</span>
+              </div>
+              <button type="button" id="btnResetRangeFilter" class="radar-mini-btn is-hidden">Ver todos los rangos</button>
+            </div>
+
+            <!-- Leyenda de colores oficial de canales -->
+            <div class="radar-channel-legend">
+              <span><i style="background:#ef4444;"></i> DET</span>
+              <span><i style="background:#2563eb;"></i> FSE</span>
+              <span><i style="background:#f97316;"></i> MES</span>
+              <span><i style="background:#eab308;"></i> MOD</span>
+            </div>
+
+            <div id="kgRangesContainer" class="radar-ranges-list"></div>
+          </article>
+
+          <!-- COLUMNA 2: RANKING DE FLOTA (DISTANCIA, CARGA Y EFICIENCIA) -->
+          <article class="radar-panel radar-panel--dark">
+            <div class="radar-panel__head">
+              <div>
+                <h3>Auditoría de Flota por Unidad</h3>
+                <span class="radar-panel__hint">Distancia geodésica desde su CD, radio máximo y densidad</span>
+              </div>
+              <div class="radar-sort-pills">
+                <button type="button" class="radar-sort-btn is-active" data-sort="dist">Km</button>
+                <button type="button" class="radar-sort-btn" data-sort="kg">Kg</button>
+                <button type="button" class="radar-sort-btn" data-sort="cli">Clientes</button>
+                <button type="button" class="radar-sort-btn" data-sort="low">Subutilizadas</button>
+              </div>
+            </div>
+
+            <div class="radar-table-wrap">
+              <table class="radar-table">
+                <thead>
+                  <tr>
+                    <th>Placa</th>
+                    <th>CD</th>
+                    <th>Clientes</th>
+                    <th>Peso (Kg)</th>
+                    <th>Recorrido</th>
+                    <th>Radio Max</th>
+                  </tr>
+                </thead>
+                <tbody id="fleetRadarBody"></tbody>
+              </table>
+            </div>
+          </article>
+
+          <!-- COLUMNA 3: ZONAS DE COMPLEJIDAD VIAL + TOP CLIENTES VOLUMEN -->
+          <div class="radar-right-stack">
+            
+            <!-- Bloque Superior: Zonas Complejas por Tráfico en Lima -->
+            <article class="radar-panel">
+              <div class="radar-panel__head">
+                <div>
+                  <h3>Zonas Complejas por Tráfico Vial</h3>
+                  <span class="radar-panel__hint">Corredores de alta fricción detectados por geoposición</span>
+                </div>
+                <span class="radar-tag-amber">Lima & Norte</span>
+              </div>
+              <div id="trafficZonesList" class="radar-traffic-list"></div>
+            </article>
+
+            <!-- Bloque Inferior: Top Clientes por Volumen (Pareto) -->
+            <article class="radar-panel">
+              <div class="radar-panel__head">
+                <div>
+                  <h3 id="topClientsTitle">Top Clientes de Mayor Volumen</h3>
+                  <span id="topClientsHint" class="radar-panel__hint">Principales receptores por tonelaje asignado</span>
+                </div>
+              </div>
+              <div id="topClientsList" class="radar-clients-list"></div>
+            </article>
+
+          </div>
+
+        </section>
+
+      </main>
+    </div>
+  </div>
+</body>
+</html>
