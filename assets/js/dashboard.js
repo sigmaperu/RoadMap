@@ -13,12 +13,14 @@
   const DASHBOARD_PUBLIC_URL = "https://sigmaperu.github.io/RoadMap/dashboard.html";
 
   // Coordenadas exactas de los 3 Centros de Distribución (Región Lima)
+// Coordenadas exactas de los 3 Centros de Distribución (Región Lima)
+  // Posiciones calibradas para encuadre perfecto en Zoom 10 sin cortes ni solapes
   const CD_LOCATIONS = {
     "0374-ATE": {
       lat: -12.067013469355048,
       lng: -76.97943349160968,
-      calloutLat: -12.092,
-      calloutLng: -77.012,
+      calloutLat: -12.020,
+      calloutLng: -77.035,
       offsetClass: "cd-offset-ate",
       label: "0374-ATE"
     },
@@ -33,7 +35,7 @@
     "0754-CHANCAY": {
       lat: -11.551110366002629,
       lng: -77.27641679959045,
-      calloutLat: -11.505,
+      calloutLat: -11.615,
       calloutLng: -77.195,
       offsetClass: "cd-offset-chancay",
       label: "0754-CHANCAY"
