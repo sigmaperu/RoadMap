@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - dashboard.css (Tarjetas de Mapa Ampliadas + Encuadre Calibrado)
+   RoadMap - dashboard.css (Tarjetas Ampliadas + Callouts Centrados)
    ========================================================================== */
 
 :root {
@@ -176,11 +176,11 @@
   background: var(--gd-dark);
   color: #ffffff;
   border: 1px solid var(--gd-emerald);
-  padding: 8px 18px;
+  padding: 9px 20px;
   border-radius: 999px;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 700;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.35);
   opacity: 0;
   pointer-events: none;
   z-index: 99999;
@@ -192,7 +192,7 @@
 }
 
 /* ==========================================================================
-   MARCADORES DE CD AMPLIADOS Y CON MAYOR LEGIBILIDAD
+   MARCADORES DE CD AMPLIADOS Y CENTRADOS SOBRE SU ANCLAJE DE LÍNEA
    ========================================================================== */
 .cd-anchor-dot {
   width: 14px;
@@ -209,42 +209,38 @@
   background: rgba(22, 20, 28, 0.96);
   color: #ffffff;
   border: 2px solid var(--gd-plum);
-  border-radius: 14px;
-  padding: 10px 14px;
-  box-shadow: 0 12px 28px rgba(22, 20, 28, 0.45);
+  border-radius: 15px;
+  padding: 11px 15px;
+  box-shadow: 0 12px 30px rgba(22, 20, 28, 0.45);
   width: max-content;
-  min-width: 192px;
+  min-width: 215px;
+  transform: translate(-50%, -50%); /* Centrado exacto en calloutLat/Lng para que la línea apunte directo al centro/borde */
   cursor: pointer;
   transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
 .cd-callout-card:hover {
   border-color: #f3e5f5;
-  box-shadow: 0 14px 32px rgba(142, 36, 170, 0.55);
+  box-shadow: 0 14px 34px rgba(142, 36, 170, 0.58);
 }
-
-/* Posiciones calibradas para las tarjetas ampliadas */
-.cd-offset-chancay { transform: translate(4%, -46%); }
-.cd-offset-ate2    { transform: translate(4%, -62%); }
-.cd-offset-ate     { transform: translate(-103%, 4%); }
 
 .cd-callout-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
-  padding-bottom: 5px;
-  margin-bottom: 6px;
+  gap: 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  padding-bottom: 6px;
+  margin-bottom: 7px;
 }
 .cd-callout-name {
-  font-size: 0.78rem;
+  font-size: 0.84rem;
   font-weight: 800;
   color: #e1bee7;
   letter-spacing: 0.03em;
   white-space: nowrap;
 }
 .cd-callout-mainval {
-  font-size: 1.08rem;
+  font-size: 1.16rem;
   font-weight: 800;
   color: #ffffff;
   white-space: nowrap;
@@ -253,28 +249,28 @@
 .cd-mini-channels {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 3.5px;
+  gap: 4.5px;
 }
 .cd-ch-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.74rem;
+  font-size: 0.80rem;
   color: #e4e4e7;
-  gap: 18px;
+  gap: 22px;
   white-space: nowrap;
-  line-height: 1.3;
+  line-height: 1.32;
 }
 .cd-ch-left {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   font-weight: 600;
   color: #d4d4d8;
 }
 .cd-ch-dot {
-  width: 7.5px;
-  height: 7.5px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -294,6 +290,7 @@
   height: 100%;
   min-height: 0;
   overflow: hidden;
+  background: var(--gd-bg);
 }
 
 .geo-panel-header {
