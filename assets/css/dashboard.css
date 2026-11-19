@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - dashboard.css (Mapa Geoespacial Lima + Callouts Anti-Solape)
+   RoadMap - dashboard.css (Mapa Geoespacial Lima • Callouts 1 Columna • Sin Saltos)
    ========================================================================== */
 
 :root {
@@ -52,7 +52,6 @@
   z-index: 1;
 }
 
-/* Estilo suave al mapa base OSM para que resalten las tarjetas y pines */
 .leaflet-tile-pane {
   filter: saturate(0.85) contrast(0.96) brightness(1.02);
 }
@@ -140,12 +139,11 @@
   align-items: center;
   gap: 4px;
   box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-  transition: transform 0.15s ease, background 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 .geo-back-btn:hover {
   background: var(--gd-plum-soft);
   color: var(--gd-plum-deep);
-  transform: scale(1.03);
 }
 .geo-back-btn .material-icons { font-size: 15px; }
 .geo-back-btn.is-hidden { display: none; }
@@ -188,11 +186,11 @@
 }
 
 /* ==========================================================================
-   MARCADORES DE CD CON CALLOUTS ANTI-SOLAPE Y MINILEYENDA DE CANALES
+   MARCADORES DE CD CON CALLOUTS EN 1 SOLA COLUMNA Y SIN MOVIMIENTO HOVER
    ========================================================================== */
 .cd-anchor-dot {
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
   border-radius: 50%;
   background: var(--gd-plum);
   border: 2.5px solid #ffffff;
@@ -206,30 +204,31 @@
   backdrop-filter: blur(6px);
   color: #ffffff;
   border: 2px solid var(--gd-plum);
-  border-radius: 14px;
-  padding: 8px 11px;
+  border-radius: 13px;
+  padding: 8px 12px;
   box-shadow: 0 10px 26px rgba(22, 20, 28, 0.42);
-  min-width: 152px;
+  width: max-content;
+  min-width: 146px;
   cursor: pointer;
-  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.18s;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
+/* Efecto hover estático (sin scale ni desplazamiento para evitar vibraciones) */
 .cd-callout-card:hover {
-  transform: scale(1.04);
-  border-color: #e1bee7;
-  z-index: 9999 !important;
+  border-color: #f3e5f5;
+  box-shadow: 0 12px 30px rgba(142, 36, 170, 0.55);
 }
 
-/* Posiciones desplazadas para evitar que ATE y ATE2 se solapen */
-.cd-offset-center { transform: translate(-50%, -115%); }
-.cd-offset-sw     { transform: translate(-102%, 14%); }  /* 0374-ATE hacia Suroeste */
-.cd-offset-ne     { transform: translate(4%, -112%); }   /* 0780-ATE2 hacia Noreste */
+/* Posiciones fijas equilibradas para mantener los 3 CDs centrados */
+.cd-offset-chancay { transform: translate(-50%, -112%); }
+.cd-offset-ate     { transform: translate(-104%, 8%); }
+.cd-offset-ate2    { transform: translate(6%, -104%); }
 
 .cd-callout-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  gap: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
   padding-bottom: 4px;
   margin-bottom: 5px;
 }
@@ -238,31 +237,34 @@
   font-weight: 800;
   color: #e1bee7;
   letter-spacing: 0.03em;
+  white-space: nowrap;
 }
 .cd-callout-mainval {
-  font-size: 0.94rem;
+  font-size: 0.92rem;
   font-weight: 800;
   color: #ffffff;
+  white-space: nowrap;
 }
 
-/* Minileyenda de Canales dentro del Card del CD */
+/* Minileyenda de Canales en 1 SOLA COLUMNA para evitar superposición de textos */
 .cd-mini-channels {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 3px 8px;
+  grid-template-columns: 1fr;
+  gap: 3px;
 }
 .cd-ch-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.64rem;
+  font-size: 0.67rem;
   color: #e4e4e7;
-  gap: 4px;
+  gap: 12px;
+  white-space: nowrap;
 }
 .cd-ch-left {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   font-weight: 600;
   color: #a1a1aa;
 }
@@ -275,10 +277,11 @@
 .cd-ch-item strong {
   font-weight: 800;
   color: #ffffff;
+  text-align: right;
 }
 
 /* ==========================================================================
-   COLUMNA DERECHA: PANEL DE TARJETAS KPI, PIs Y DESGLOSE
+   COLUMNA DERECHA: PANEL DE TARJETAS KPI, PIs Y DESGLOSE (SIN MOVIMIENTO)
    ========================================================================== */
 .geo-side-panel {
   display: flex;
@@ -339,13 +342,13 @@
   padding: 10px 14px;
   box-shadow: 0 3px 12px rgba(24, 24, 27, 0.04);
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: border-color 0.18s ease, background-color 0.18s ease;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
+/* Hover limpio sin desplazamiento vertical */
 .geo-kpi-card:hover {
-  transform: translateY(-2px);
   border-color: #d4d4d8;
 }
 .geo-kpi-card.is-active {
@@ -431,7 +434,7 @@
   padding: 8px 10px;
   text-align: left;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 .geo-pi-card:hover { border-color: var(--gd-plum); background: #fff; }
 .geo-pi-card.is-active {
@@ -509,7 +512,7 @@
   flex-direction: column;
   gap: 4px;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 .geo-break-row:hover {
   background: rgba(142, 36, 170, 0.28);
@@ -557,7 +560,7 @@
     height: auto;
   }
   .geo-map-stage {
-    height: 430px;
+    height: 450px;
   }
   .geo-side-panel {
     height: auto;
