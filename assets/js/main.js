@@ -88,6 +88,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+// 3. Inyección automática del Favicon en todas las páginas
+  if (!document.querySelector("link[rel*='icon']")) {
+    const favicon = document.createElement("link");
+    favicon.rel = "icon";
+    favicon.type = "image/png";
+    favicon.href = "assets/img/logotipo.png"; // Cambia el nombre si tienes un icono cuadrado distinto en assets/img/
+    document.head.appendChild(favicon);
+  }
+
 function setActiveNavLink() {
   const currentPath = window.location.pathname.split("/").pop() || "index.html";
   document.querySelectorAll(".sidebar__nav a, .gm-nav a").forEach(link => {
