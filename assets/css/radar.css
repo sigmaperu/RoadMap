@@ -666,3 +666,25 @@
   .radar-kpi-strip--5, .radar-kpi-strip--4 { grid-template-columns: repeat(2, 1fr); }
   .radar-split-2col, .radar-split-2col--quality, .radar-split-3col { grid-template-columns: 1fr; }
 }
+
+/* Botón compacto de descarga CSV en KPI de Ventanas Inválidas */
+.radar-export-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: var(--rd-plum);
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 2px 9px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.radar-export-btn:hover {
+  background: var(--rd-plum-deep);
+}
+.radar-export-btn .material-icons {
+  font-size: 13px;
+}
