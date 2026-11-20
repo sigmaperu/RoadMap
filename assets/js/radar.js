@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - radar.js (Auditoría Preventiva con Ventanas Horarias Columna S)
+   RoadMap - radar.js (Auditoría Preventiva por Placa + Ventanas Horarias)
    ========================================================================== */
 
 (() => {
@@ -10,7 +10,7 @@
     'https://raw.githubusercontent.com/sigmaperu/RoadMap/main/RoadMap.csv'
   ].filter(Boolean);
 
-  // Coordenadas reales de los 3 Centros de Distribución (Región Lima)
+  // Coordenadas exactas de los 3 Centros de Distribución (Región Lima)
   const CD_COORDS = {
     "0374-ATE":     { lat: -12.067013469355048, lng: -76.97943349160968 },
     "0780-ATE2":    { lat: -12.045124965310059, lng: -76.93813036277461 },
@@ -103,7 +103,7 @@
     return "OTRO";
   }
 
-  // Parser de Ventana Horaria en una sola columna (Columna S: "08:00 - 12:00", "08:00 a 13:00", etc.)
+  // Parser de Ventana Horaria ("08:00 - 12:00", "08:00 a 13:00", etc.)
   function parseTimeWindow(rawWin) {
     const raw = String(rawWin ?? "").trim();
     if (!raw) return { raw, status: "MISSING", startMin: null, endMin: null, durationMin: 0 };
@@ -210,7 +210,6 @@
     };
   }
 
-  // Índices exactos de RoadMap.csv incluyendo Columna S (índice 18) para Ventana Horaria
   let IDX = {
     FECHA: 0, CENTRO: 1, PLACA: 2, CLIENTE: 3, NOMBRE: 4, RUTA: 6, PEDIDO: 7,
     SKU_COD: 8, SKU_DESC: 9, KG: 10, SOLES: 11, DIRECCION: 15, LAT: 16, LNG: 17,
@@ -248,7 +247,7 @@
   };
 
   /* ==========================================================================
-     1. AUDITORÍA DE CALIDAD DE DATOS (INCLUYE VALIDACIÓN DE VENTANAS COL S)
+     1. AUDITORÍA DE CALIDAD DE DATOS Y RECONCILIACIÓN
      ========================================================================== */
   function auditDataQuality(rows) {
     const total = rows.length;
@@ -256,7 +255,6 @@
     const validRows = rows.filter(r => !isFRT(r));
 
     const emptyPlate = validRows.filter(r => !cleanStr(r[IDX.PLACA]));
-    const emptyRoute = validRows.filter(r => !cleanStr(r[IDX.RUTA]));
     const zeroOrNegKg = validRows.filter(r => toNum(r[IDX.KG]) <= 0);
     const badCoords = validRows.filter(r => {
       const lat = parseFloat(String(r[IDX.LAT] ?? "").replace(",", "."));
@@ -295,7 +293,7 @@
 
     const checks = [
       {
-        title: "Ventanas Horarias Inválidas o Invertidas (Columna S)",
+        title: "Ventanas Horarias Inválidas o Invertidas",
         count: badWindows.length,
         pct: validRows.length ? ((badWindows.length / validRows.length) * 100).toFixed(2) : "0.00",
         sev: badWindows.length > 0 ? "crit" : "ok",
@@ -366,7 +364,7 @@
   }
 
   /* ==========================================================================
-     2. MOTOR ANALÍTICO CON VENTANAS HORARIAS (COL S) INTEGRADO
+     2. MOTOR ANALÍTICO CONCENTRADO POR PLACA / CENTRO
      ========================================================================== */
   function analyzeOperation(filteredRows) {
     const clientsMap = new Map();
@@ -391,7 +389,6 @@
           nombre: cleanStr(r[IDX.NOMBRE]) || cli,
           centro,
           placa: upperStr(r[IDX.PLACA]),
-          ruta: cleanStr(r[IDX.RUTA]) || "-",
           canal: normalizeChannelCode(r[IDX.CANAL]),
           lat, lng,
           distFromCd,
@@ -406,19 +403,17 @@
     });
     const clients = Array.from(clientsMap.values());
 
-    // Agrupación por Ruta + Placa + Centro
-    const routesMap = new Map();
+    // Agrupación directa por Centro + Placa (Sin fragmentar por ruta comercial)
+    const unitsMap = new Map();
     filteredRows.filter(r => !isTruckExcluded(r)).forEach(r => {
       const centro = cleanStr(r[IDX.CENTRO]);
-      const ruta   = cleanStr(r[IDX.RUTA]) || "SIN-RUTA";
       const placa  = upperStr(r[IDX.PLACA]);
-      const key    = `${centro}|${ruta}|${placa}`;
+      const key    = `${centro}|${placa}`;
 
-      if (!routesMap.has(key)) {
-        routesMap.set(key, {
+      if (!unitsMap.has(key)) {
+        unitsMap.set(key, {
           key,
           centro,
-          ruta,
           placa,
           kg: 0,
           soles: 0,
@@ -427,19 +422,19 @@
           stopsMap: new Map()
         });
       }
-      const rt = routesMap.get(key);
-      rt.kg += toNum(r[IDX.KG]);
-      rt.soles += toNum(r[IDX.SOLES]);
+      const unit = unitsMap.get(key);
+      unit.kg += toNum(r[IDX.KG]);
+      unit.soles += toNum(r[IDX.SOLES]);
       const ped = cleanStr(r[IDX.PEDIDO]);
-      if (ped) rt.pedidosSet.add(ped);
-      rt.channelsSet.add(normalizeChannelCode(r[IDX.CANAL]));
+      if (ped) unit.pedidosSet.add(ped);
+      unit.channelsSet.add(normalizeChannelCode(r[IDX.CANAL]));
 
       const cli = cleanStr(r[IDX.CLIENTE]);
       const lat = parseFloat(String(r[IDX.LAT] ?? "").replace(",", "."));
       const lng = parseFloat(String(r[IDX.LNG] ?? "").replace(",", "."));
       if (cli) {
-        if (!rt.stopsMap.has(cli)) {
-          rt.stopsMap.set(cli, {
+        if (!unit.stopsMap.has(cli)) {
+          unit.stopsMap.set(cli, {
             cod: cli,
             nombre: cleanStr(r[IDX.NOMBRE]) || cli,
             canal: normalizeChannelCode(r[IDX.CANAL]),
@@ -448,22 +443,22 @@
             kg: 0
           });
         }
-        rt.stopsMap.get(cli).kg += toNum(r[IDX.KG]);
+        unit.stopsMap.get(cli).kg += toNum(r[IDX.KG]);
       }
     });
 
     const allOutliers = [];
 
-    const routeAudits = Array.from(routesMap.values()).map(rt => {
-      const stops = Array.from(rt.stopsMap.values());
+    const unitAudits = Array.from(unitsMap.values()).map(unit => {
+      const stops = Array.from(unit.stopsMap.values());
       const validStops = stops.filter(s => !isNaN(s.lat) && !isNaN(s.lng) && s.lat !== 0 && s.lng !== 0);
       const missingCoordsCount = stops.length - validStops.length;
 
-      // Análisis estructural de ventanas en esta ruta
+      // Análisis estructural de ventanas por placa
       const criticalWinStops = stops.filter(s => s.win.status === "VALID" && (s.win.isNarrow || s.win.isEarlyClose));
       const invalidWinStops  = stops.filter(s => s.win.status === "REVERSED" || s.win.status === "INVALID_FORMAT" || s.win.status === "INVALID_TIME");
 
-      // Centroide e IQR geográfico
+      // Centroide e IQR geográfico de la placa
       let centLat = 0, centLng = 0;
       if (validStops.length > 0) {
         centLat = validStops.reduce((s, p) => s + p.lat, 0) / validStops.length;
@@ -480,19 +475,18 @@
       const iqr = q3 - q1;
       const outlierThreshold = Math.max(4.5, q3 + 1.5 * iqr);
 
-      const routeOutliers = distsToCentroid.filter(d => validStops.length >= 4 && d.distToCentroid > outlierThreshold);
-      routeOutliers.forEach(o => {
+      const unitOutliers = distsToCentroid.filter(d => validStops.length >= 4 && d.distToCentroid > outlierThreshold);
+      unitOutliers.forEach(o => {
         allOutliers.push({
           ...o,
-          centro: rt.centro,
-          ruta: rt.ruta,
-          placa: rt.placa,
+          centro: unit.centro,
+          placa: unit.placa,
           thresholdKm: outlierThreshold
         });
       });
 
       // Distancia lineal acumulada desde CD
-      const cdPos = CD_COORDS[rt.centro];
+      const cdPos = CD_COORDS[unit.centro];
       let linearRouteKm = 0;
       if (cdPos && validStops.length > 0) {
         const unvisited = [...validStops];
@@ -513,17 +507,17 @@
       }
 
       const maxClientKg = stops.reduce((m, s) => Math.max(m, s.kg), 0);
-      const maxClientShare = rt.kg > 0 ? (maxClientKg / rt.kg) * 100 : 0;
+      const maxClientShare = unit.kg > 0 ? (maxClientKg / unit.kg) * 100 : 0;
 
       // ======================================================================
-      // PLANNING RISK SCORE (0-100) CON 5 DIMENSIONES ACTIVAS (REDISTRIBUIDAS):
+      // PLANNING RISK SCORE (0-100) POR PLACA CON 5 DIMENSIONES ACTIVAS:
       // Geografía: 33% | Ventanas Horarias: 33% | Complejidad/Canal: 14%
       // Balance Carga: 12% | Calidad de Datos: 8%
       // ======================================================================
-      const geoScore  = Math.min(100, (routeOutliers.length * 32) + (linearRouteKm > 65 ? 25 : 0));
+      const geoScore  = Math.min(100, (unitOutliers.length * 32) + (linearRouteKm > 65 ? 25 : 0));
       const winScore  = Math.min(100, (criticalWinStops.length * 18) + (invalidWinStops.length * 45));
-      const compScore = Math.min(100, (stops.length > 35 ? 45 : stops.length > 25 ? 25 : 10) + (rt.channelsSet.size >= 3 ? 25 : 0));
-      const balScore  = Math.min(100, (rt.kg < 400 ? 65 : 0) + (maxClientShare > 50 ? 35 : 0));
+      const compScore = Math.min(100, (stops.length > 35 ? 45 : stops.length > 25 ? 25 : 10) + (unit.channelsSet.size >= 3 ? 25 : 0));
+      const balScore  = Math.min(100, (unit.kg < 400 ? 65 : 0) + (maxClientShare > 50 ? 35 : 0));
       const dqScore   = Math.min(100, (missingCoordsCount * 40) + (invalidWinStops.length * 35));
 
       const riskScore = Math.round(
@@ -539,35 +533,35 @@
       if ((missingCoordsCount > 0 && validStops.length === 0) || invalidWinStops.length > 0) {
         semaphore = "NEGRO";
         semClass = "sem-negro";
-      } else if (riskScore >= 61 || routeOutliers.length >= 2 || criticalWinStops.length >= 5) {
+      } else if (riskScore >= 61 || unitOutliers.length >= 2 || criticalWinStops.length >= 5) {
         semaphore = "ROJO";
         semClass = "sem-rojo";
-      } else if (riskScore >= 31 || routeOutliers.length === 1 || criticalWinStops.length >= 2 || rt.kg < 400) {
+      } else if (riskScore >= 31 || unitOutliers.length === 1 || criticalWinStops.length >= 2 || unit.kg < 400) {
         semaphore = "AMARILLO";
         semClass = "sem-amarillo";
       }
 
       let finding = "Sin anomalías geográficas ni ventanas críticas.";
       if (invalidWinStops.length > 0) {
-        finding = `${invalidWinStops.length} ventana(s) inválida(s) en Col S → Corregir horario antes de liberar.`;
+        finding = `${invalidWinStops.length} ventana(s) inválida(s) → Corregir horario antes de liberar.`;
       } else if (missingCoordsCount > 0) {
         finding = `${missingCoordsCount} cliente(s) sin coordenada válida → Corregir Lat/Lng.`;
-      } else if (routeOutliers.length > 0 && criticalWinStops.length > 0) {
-        finding = `${routeOutliers.length} atípico(s) geo + ${criticalWinStops.length} ventana(s) restrictiva(s) → Priorizar salida y evaluar traslado.`;
+      } else if (unitOutliers.length > 0 && criticalWinStops.length > 0) {
+        finding = `${unitOutliers.length} atípico(s) geo + ${criticalWinStops.length} ventana(s) restrictiva(s) → Priorizar salida y evaluar traslado.`;
       } else if (criticalWinStops.length >= 3) {
-        finding = `${criticalWinStops.length} clientes con cierre temprano/ventana estrecha → Ordenar primeros en secuencia.`;
-      } else if (routeOutliers.length > 0) {
-        finding = `${routeOutliers.length} cliente(s) alejado(s) > ${outlierThreshold.toFixed(1)} km del centroide → Evaluar reasignación.`;
-      } else if (rt.kg < 400) {
-        finding = `Carga baja (${rt.kg.toFixed(0)} kg) → Evaluar consolidación con ruta cercana.`;
+        finding = `${criticalWinStops.length} clientes con cierre temprano/ventana estrecha → Atender primero.`;
+      } else if (unitOutliers.length > 0) {
+        finding = `${unitOutliers.length} cliente(s) alejado(s) > ${outlierThreshold.toFixed(1)} km del centroide → Evaluar reasignación.`;
+      } else if (unit.kg < 400) {
+        finding = `Carga baja (${unit.kg.toFixed(0)} kg) → Evaluar consolidación con unidad cercana.`;
       }
 
       return {
-        ...rt,
+        ...unit,
         clientCount: stops.length,
-        orderCount: rt.pedidosSet.size,
+        orderCount: unit.pedidosSet.size,
         linearRouteKm,
-        outliersCount: routeOutliers.length,
+        outliersCount: unitOutliers.length,
         criticalWinCount: criticalWinStops.length,
         invalidWinCount: invalidWinStops.length,
         missingCoordsCount,
@@ -624,7 +618,7 @@
       };
     }).filter(z => z.clientCount > 0).sort((a, b) => b.clientCount - a.clientCount);
 
-    return { clients, routeAudits, allOutliers, products, rangeStats, trafficStats };
+    return { clients, unitAudits, allOutliers, products, rangeStats, trafficStats };
   }
 
   /* ==========================================================================
@@ -646,21 +640,21 @@
     renderTabProductos(op);
   }
 
-  function renderTabRiesgo({ routeAudits, allOutliers }) {
-    const rojos     = routeAudits.filter(r => r.semaphore === "ROJO");
-    const amarillos = routeAudits.filter(r => r.semaphore === "AMARILLO");
-    const verdes    = routeAudits.filter(r => r.semaphore === "VERDE");
-    const negros    = routeAudits.filter(r => r.semaphore === "NEGRO");
+  function renderTabRiesgo({ unitAudits, allOutliers }) {
+    const rojos     = unitAudits.filter(u => u.semaphore === "ROJO");
+    const amarillos = unitAudits.filter(u => u.semaphore === "AMARILLO");
+    const verdes    = unitAudits.filter(u => u.semaphore === "VERDE");
+    const negros    = unitAudits.filter(u => u.semaphore === "NEGRO");
 
-    const criticalRoutes = [...rojos, ...amarillos, ...negros];
-    const exposedKg = criticalRoutes.reduce((s, r) => s + r.kg, 0);
-    const exposedCli = criticalRoutes.reduce((s, r) => s + r.clientCount, 0);
+    const criticalUnits = [...rojos, ...amarillos, ...negros];
+    const exposedKg = criticalUnits.reduce((s, u) => s + u.kg, 0);
+    const exposedCli = criticalUnits.reduce((s, u) => s + u.clientCount, 0);
 
-    document.getElementById("execRutasVal").textContent = `${routeAudits.length} rutas / placas`;
+    document.getElementById("execRutasVal").textContent = `${unitAudits.length} placas`;
     document.getElementById("execRutasSub").textContent = `Centro: ${state.selectedCenter}`;
 
-    document.getElementById("execIncVal").textContent = `${criticalRoutes.length} rutas observadas`;
-    document.getElementById("execIncSub").textContent = `${allOutliers.length} atípicos IQR • ${routeAudits.reduce((s, r) => s + r.criticalWinCount, 0)} vent. crít.`;
+    document.getElementById("execIncVal").textContent = `${criticalUnits.length} placas observadas`;
+    document.getElementById("execIncSub").textContent = `${allOutliers.length} atípicos IQR • ${unitAudits.reduce((s, u) => s + u.criticalWinCount, 0)} vent. crít.`;
 
     document.getElementById("execExpVal").textContent = `${(exposedKg / 1000).toFixed(1)} T`;
     document.getElementById("execExpSub").textContent = `${exposedCli} clientes comprometidos`;
@@ -672,34 +666,34 @@
       <span class="sem-dot sem-negro" title="Negras (Info insuficiente/inválida)">${negros.length}</span>
     `;
 
-    let sorted = [...routeAudits];
+    let sorted = [...unitAudits];
     if (state.riskSort === "risk") sorted.sort((a, b) => b.riskScore - a.riskScore || b.kg - a.kg);
     else if (state.riskSort === "win") sorted.sort((a, b) => b.criticalWinCount - a.criticalWinCount || b.riskScore - a.riskScore);
     else if (state.riskSort === "outliers") sorted.sort((a, b) => b.outliersCount - a.outliersCount || b.riskScore - a.riskScore);
     else if (state.riskSort === "kg") sorted.sort((a, b) => b.kg - a.kg);
 
-    document.getElementById("riskRadarBody").innerHTML = sorted.map((r, idx) => {
-      const riskCls = r.riskScore >= 61 ? "risk-high" : r.riskScore >= 31 ? "risk-med" : "risk-low";
+    document.getElementById("riskRadarBody").innerHTML = sorted.map((u, idx) => {
+      const riskCls = u.riskScore >= 61 ? "risk-high" : u.riskScore >= 31 ? "risk-med" : "risk-low";
       return `
         <tr>
           <td>#${idx + 1}</td>
-          <td>${r.centro}</td>
-          <td>${r.ruta}</td>
-          <td>${r.placa}</td>
-          <td>${r.clientCount}</td>
-          <td>${r.kg.toLocaleString("es-PE", { maximumFractionDigits: 0 })} kg</td>
+          <td>${u.centro}</td>
+          <td style="text-align:left; font-weight:800; color:#fff;">${u.placa}</td>
+          <td>${u.clientCount}</td>
+          <td>${u.orderCount}</td>
+          <td>${u.kg.toLocaleString("es-PE", { maximumFractionDigits: 0 })} kg</td>
           <td><span class="badge-na">Pend. raw</span></td>
-          <td>${r.criticalWinCount > 0 ? `<strong style="color:#fde047;">${r.criticalWinCount}</strong>` : "0"}</td>
-          <td>${r.outliersCount > 0 ? `<strong style="color:#fca5a5;">${r.outliersCount}</strong>` : "0"}</td>
-          <td><span class="risk-pill ${riskCls}">${r.riskScore}/100</span></td>
-          <td><span class="sem-dot ${r.semClass}">${r.semaphore}</span></td>
-          <td>${r.finding}</td>
+          <td>${u.linearRouteKm.toFixed(1)} km</td>
+          <td>${u.criticalWinCount > 0 ? `<strong style="color:#fde047;">${u.criticalWinCount}</strong>` : "0"}</td>
+          <td>${u.outliersCount > 0 ? `<strong style="color:#fca5a5;">${u.outliersCount}</strong>` : "0"}</td>
+          <td><span class="risk-pill ${riskCls}">${u.riskScore}/100</span></td>
+          <td><span class="sem-dot ${u.semClass}">${u.semaphore}</span></td>
+          <td>${u.finding}</td>
         </tr>
       `;
     }).join("");
   }
 
-  // PESTAÑA 2: EVALUACIÓN ESTRUCTURAL DE VENTANAS HORARIAS (COL S)
   function renderTabVentanas({ clients }) {
     const validWin  = clients.filter(c => c.win.status === "VALID");
     const narrowWin = validWin.filter(c => c.win.isNarrow);
@@ -707,7 +701,7 @@
     const badOrMiss = clients.filter(c => c.win.status !== "VALID");
 
     document.getElementById("winValidVal").textContent  = `${validWin.length} / ${clients.length} cli.`;
-    document.getElementById("winValidSub").textContent  = `${clients.length ? Math.round((validWin.length / clients.length) * 100) : 0}% con horario estructurado en Col S`;
+    document.getElementById("winValidSub").textContent  = `${clients.length ? Math.round((validWin.length / clients.length) * 100) : 0}% con horario estructurado`;
 
     document.getElementById("winNarrowVal").textContent = `${narrowWin.length} clientes`;
     document.getElementById("winNarrowSub").textContent = `${(narrowWin.reduce((s, c) => s + c.kg, 0) / 1000).toFixed(1)} T en ventanas <= 2h`;
@@ -716,9 +710,8 @@
     document.getElementById("winEarlySub").textContent  = `${(earlyWin.reduce((s, c) => s + c.kg, 0) / 1000).toFixed(1)} T con cierre <= 11:00 AM`;
 
     document.getElementById("winBadVal").textContent    = `${badOrMiss.length} registros`;
-    document.getElementById("winBadSub").textContent    = `Sin dato o formato inválido en Col S`;
+    document.getElementById("winBadSub").textContent    = `Sin dato o formato inválido`;
 
-    // Agrupar franjas exactas detectadas en Columna S
     const bracketMap = new Map();
     clients.forEach(c => {
       const label = c.win.status === "VALID" ? `${c.win.startStr} - ${c.win.endStr}` : (c.win.raw || "Sin Ventana Informada");
@@ -766,7 +759,6 @@
       `;
     }).join("");
 
-    // Tabla derecha: Clientes prioritarios por ventana estrecha o cierre temprano
     const priorityClients = validWin
       .filter(c => c.win.isNarrow || c.win.isEarlyClose)
       .sort((a, b) => a.win.endMin - b.win.endMin || a.win.durationMin - b.win.durationMin);
@@ -778,7 +770,7 @@
             <tr>
               <td style="color:#fff; font-weight:700; max-width:165px; overflow:hidden; text-overflow:ellipsis;">${c.nombre}</td>
               <td>${c.centro}</td>
-              <td>${c.placa}</td>
+              <td style="text-align:left; font-weight:800; color:#fff;">${c.placa}</td>
               <td style="text-align:right; color:#fde047; font-weight:800;">${c.win.startStr} - ${c.win.endStr}</td>
               <td>${hrs} h</td>
               <td>${c.kg.toLocaleString("es-PE", { maximumFractionDigits: 1 })} kg</td>
@@ -788,7 +780,7 @@
       : `<tr><td colspan="6" style="text-align:center; color:#a1a1aa; padding:16px;">No se detectaron ventanas restrictivas (&le;2h) ni cierres tempranos (&le;11:00) en este filtro.</td></tr>`;
   }
 
-  function renderTabCalidad(dq, { routeAudits }) {
+  function renderTabCalidad(dq, { unitAudits }) {
     document.getElementById("dqScoreBadge").textContent = `Integridad: ${dq.integrityPct}%`;
 
     document.getElementById("dataQualityList").innerHTML = dq.checks.map(chk => `
@@ -810,12 +802,12 @@
       <div class="rec-box"><span>Peso Total Archivo Raw</span><strong>${dq.totalKgRaw.toLocaleString("es-PE", { maximumFractionDigits: 1 })} kg</strong></div>
       <div class="rec-box"><span>Peso Válido Analizado</span><strong>${dq.totalKgValid.toLocaleString("es-PE", { maximumFractionDigits: 1 })} kg</strong></div>
       <div class="rec-box"><span>Diferencia de Reconciliación</span><strong>${diffKg.toFixed(2)} kg</strong></div>
-      <div class="rec-box"><span>Rutas Evaluadas / Bloqueadas</span><strong>${routeAudits.filter(r => r.semaphore !== "NEGRO").length} / ${routeAudits.filter(r => r.semaphore === "NEGRO").length}</strong></div>
+      <div class="rec-box"><span>Placas Evaluadas / Bloqueadas</span><strong>${unitAudits.filter(u => u.semaphore !== "NEGRO").length} / ${unitAudits.filter(u => u.semaphore === "NEGRO").length}</strong></div>
     `;
 
     document.getElementById("coverageLimitationsList").innerHTML = `
-      <li><strong>Granularidad:</strong> Línea de pedido/producto (Fecha + Centro + Pedido + Cliente + SKU + Placa + Ruta).</li>
-      <li><strong>Dimensiones Evaluadas (5/6):</strong> Calidad de datos, Geografía (Haversine + IQR), Ventanas Horarias (Columna S), Complejidad/Canal y Balance de carga.</li>
+      <li><strong>Granularidad:</strong> Línea de pedido/producto consolidada por Centro y Placa.</li>
+      <li><strong>Dimensiones Evaluadas (5/6):</strong> Calidad de datos, Geografía (Haversine + IQR), Ventanas Horarias, Complejidad/Canal y Balance de carga.</li>
       <li><strong>Bloqueado por dato faltante (1/6):</strong> Capacidad vehicular máxima por placa (pendiente raw) y hora de salida/secuencia para simulación dinámica de llegada.</li>
     `;
   }
@@ -832,12 +824,12 @@
               <span class="traffic-level lvl-alto">+${o.distToCentroid.toFixed(1)} km</span>
             </div>
             <div class="outlier-sub">
-              <span>${o.centro} • ${o.placa} (${o.ruta})</span>
+              <span>${o.centro} • ${o.placa}</span>
               <span>Umbral IQR: ${o.thresholdKm.toFixed(1)} km • ${o.kg.toFixed(1)} kg</span>
             </div>
           </div>
         `).join("")
-      : `<div style="padding:12px; color:#71717a; font-size:0.75rem;">Ningún cliente supera el umbral relativo Q3 + 1.5×IQR en su ruta.</div>`;
+      : `<div style="padding:12px; color:#71717a; font-size:0.75rem;">Ningún cliente supera el umbral relativo Q3 + 1.5×IQR en su unidad.</div>`;
 
     const totalCli = Math.max(1, clients.length);
     document.getElementById("kgRangesContainer").innerHTML = rangeStats.map(rng => {
