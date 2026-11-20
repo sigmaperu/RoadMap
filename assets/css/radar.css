@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - radar.css (Radar de Distribución • Paleta Amatista & Grafito)
+   RoadMap - radar.css (Radar de Distribución Multi-Pestaña • Sin Scroll)
    ========================================================================== */
 
 :root {
@@ -31,7 +31,7 @@
 }
 
 /* ==========================================================================
-   1. BARRA SUPERIOR
+   1. BARRA SUPERIOR (PESTAÑAS DE SEGMENTO + CENTROS)
    ========================================================================== */
 .radar-topbar {
   display: flex;
@@ -41,44 +41,40 @@
   flex-shrink: 0;
 }
 
-.radar-title-group {
+.radar-tabs-nav {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 6px;
+  background: var(--rd-surface);
+  padding: 4px;
+  border-radius: 14px;
+  border: 1px solid var(--rd-border);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
 }
 
-.radar-badge-live {
-  background: var(--rd-dark);
-  color: #e1bee7;
-  border: 1px solid rgba(206, 147, 216, 0.3);
-  padding: 5px 11px;
-  border-radius: 999px;
-  font-size: 0.65rem;
-  font-weight: 800;
-  letter-spacing: 0.05em;
+.radar-tab-btn {
+  border: none;
+  background: transparent;
+  color: #52525b;
+  padding: 7px 14px;
+  border-radius: 10px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  transition: background-color 0.16s ease, color 0.16s ease;
 }
-.pulse-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--rd-emerald);
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
-}
-
-.radar-title-group h2 {
-  margin: 0;
-  font-size: 1.12rem;
-  font-weight: 800;
+.radar-tab-btn .material-icons { font-size: 16px; }
+.radar-tab-btn:hover {
+  background: #f4f4f5;
   color: var(--rd-text);
-  letter-spacing: -0.02em;
 }
-.radar-title-group p {
-  margin: 0;
-  font-size: 0.72rem;
-  color: var(--rd-muted);
+.radar-tab-btn.is-active {
+  background: linear-gradient(135deg, #9c27b0 0%, #6a1b9a 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(142, 36, 170, 0.28);
 }
 
 .radar-center-pills {
@@ -95,122 +91,129 @@
   border: none;
   background: transparent;
   color: #a1a1aa;
-  padding: 6px 14px;
+  padding: 6px 13px;
   border-radius: 999px;
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.16s ease;
+  transition: color 0.16s ease, background-color 0.16s ease;
 }
 .radar-pill:hover { color: #ffffff; }
 .radar-pill.is-active {
-  background: linear-gradient(135deg, #9c27b0 0%, #6a1b9a 100%);
+  background: var(--rd-plum);
   color: #ffffff;
 }
 
 /* ==========================================================================
-   2. TARJETAS SUPERIORES DE HALLAZGOS (INSIGHTS)
+   2. CONTENEDOR DE PESTAÑAS
    ========================================================================== */
-.radar-highlights-grid {
+.radar-tabs-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.radar-pane {
+  display: none;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  gap: 10px;
+}
+.radar-pane.is-active {
+  display: flex;
+}
+
+/* Strip de 4 KPIs Superiores por Pestaña */
+.radar-kpi-strip--4 {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
   flex-shrink: 0;
 }
 
-.radar-hl-card {
+.r-stat-card {
   background: var(--rd-surface);
   border: 1px solid var(--rd-border);
   border-radius: 14px;
-  padding: 10px 13px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  padding: 10px 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  gap: 2px;
 }
-.radar-hl-card--alert {
+.r-stat-card--warn {
   border-color: #fecaca;
   background: linear-gradient(180deg, #ffffff 0%, #fef2f2 100%);
 }
-
-.radar-hl-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 3px;
+.r-stat-card--plum {
+  border-color: #e1bee7;
+  background: linear-gradient(180deg, #ffffff 0%, #faf5ff 100%);
 }
-.radar-hl-label {
+
+.r-stat-lbl {
   font-size: 0.68rem;
   font-weight: 700;
   color: var(--rd-muted);
 }
-.radar-hl-icon {
-  width: 24px;
-  height: 24px;
-  border-radius: 7px;
-  display: grid;
-  place-items: center;
-}
-.radar-hl-icon .material-icons { font-size: 14px; }
-.ic-plum  { background: #f3e5f5; color: #8e24aa; }
-.ic-green { background: #dcfce7; color: #15803d; }
-.ic-amber { background: #fef3c7; color: #b45309; }
-.ic-slate { background: #f4f4f5; color: #3f3f46; }
-.ic-red   { background: #fee2e2; color: #dc2626; }
-
-.radar-hl-main {
-  font-size: 1.02rem;
+.r-stat-val {
+  font-size: 1.04rem;
   font-weight: 800;
   color: var(--rd-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.radar-hl-sub {
-  font-size: 0.65rem;
+.r-stat-sub {
+  font-size: 0.64rem;
   font-weight: 600;
   color: var(--rd-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-top: 2px;
 }
 
-/* ==========================================================================
-   3. GRID PRINCIPAL DE 3 COLUMNAS ANALÍTICAS
-   ========================================================================== */
-.radar-main-grid {
+/* Layouts interiores de pestaña */
+.radar-card-full {
   flex: 1;
   min-height: 0;
-  display: grid;
-  grid-template-columns: 1.05fr 1.25fr 1fr;
-  gap: 12px;
-}
-
-.radar-right-stack {
+  background: var(--rd-surface);
+  border-radius: 16px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  min-height: 0;
+  overflow: hidden;
 }
-.radar-right-stack .radar-panel {
+.radar-card-full--dark {
+  background: var(--rd-dark);
+  color: #ffffff;
+}
+
+.radar-split-2col {
   flex: 1;
   min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.radar-split-2col--ranges {
+  grid-template-columns: 1.05fr 1fr;
 }
 
 .radar-panel {
   background: var(--rd-surface);
   border: 1px solid var(--rd-border);
   border-radius: 16px;
-  padding: 12px 14px;
+  padding: 13px 15px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 9px;
   min-height: 0;
   overflow: hidden;
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.03);
 }
-
 .radar-panel--dark {
   background: var(--rd-dark);
   color: #ffffff;
@@ -226,142 +229,67 @@
 }
 .radar-panel__head h3 {
   margin: 0;
-  font-size: 0.86rem;
+  font-size: 0.9rem;
   font-weight: 800;
   color: var(--rd-text);
 }
-.radar-panel--dark .radar-panel__head h3 { color: #ffffff; }
+.radar-panel--dark .radar-panel__head h3,
+.radar-card-full--dark .radar-panel__head h3 { color: #ffffff; }
 
 .radar-panel__hint {
   display: block;
-  font-size: 0.65rem;
+  font-size: 0.66rem;
   color: var(--rd-muted);
-  margin-top: 1px;
+  margin-top: 2px;
 }
-.radar-panel--dark .radar-panel__hint { color: #a1a1aa; }
+.radar-panel--dark .radar-panel__hint,
+.radar-card-full--dark .radar-panel__hint { color: #a1a1aa; }
 
-.radar-mini-btn {
-  border: 1px solid #e1bee7;
+.radar-tag-plum {
   background: var(--rd-plum-soft);
   color: var(--rd-plum-deep);
-  border-radius: 999px;
   padding: 3px 9px;
+  border-radius: 999px;
   font-size: 0.64rem;
   font-weight: 800;
+}
+.radar-tag-amber {
+  background: #fef3c7;
+  color: #b45309;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.64rem;
+  font-weight: 800;
+}
+.radar-mini-btn {
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 0.65rem;
+  font-weight: 700;
   cursor: pointer;
 }
 .radar-mini-btn.is-hidden { display: none; }
 
 /* ==========================================================================
-   COLUMNA 1: RANGOS DE PESO (KG) CON BARRA APILADA POR CANAL
-   ========================================================================== */
-.radar-channel-legend {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 0.66rem;
-  font-weight: 700;
-  color: #52525b;
-  flex-shrink: 0;
-}
-.radar-channel-legend span {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-.radar-channel-legend i {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-}
-
-.radar-ranges-list {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  padding-right: 2px;
-}
-
-.radar-range-row {
-  border: 1.5px solid var(--rd-border);
-  background: #fafafa;
-  border-radius: 11px;
-  padding: 7px 10px;
-  cursor: pointer;
-  transition: border-color 0.15s ease, background-color 0.15s ease;
-}
-.radar-range-row:hover {
-  border-color: var(--rd-plum);
-  background: #ffffff;
-}
-.radar-range-row.is-selected {
-  border-color: var(--rd-plum);
-  background: #faf5ff;
-}
-
-.radar-range-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.74rem;
-  margin-bottom: 4px;
-}
-.radar-range-top strong { color: var(--rd-text); font-weight: 800; }
-.radar-range-stats {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.68rem;
-  font-weight: 700;
-  color: #3f3f46;
-}
-.radar-range-pct {
-  background: #e4e4e7;
-  padding: 1px 6px;
-  border-radius: 999px;
-  font-size: 0.62rem;
-}
-
-.radar-stacked-bar {
-  height: 7px;
-  background: #e4e4e7;
-  border-radius: 999px;
-  overflow: hidden;
-  display: flex;
-}
-.radar-stacked-seg { height: 100%; }
-
-.radar-range-ch-detail {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 4px;
-  font-size: 0.61rem;
-  font-weight: 600;
-  color: var(--rd-muted);
-}
-
-/* ==========================================================================
-   COLUMNA 2: TABLA AUDITORÍA DE FLOTA (DISTANCIA, CARGA Y RADIO)
+   TABLAS Y LISTAS DE DATOS
    ========================================================================== */
 .radar-sort-pills {
   display: inline-flex;
   background: rgba(255, 255, 255, 0.08);
-  padding: 2px;
+  padding: 3px;
   border-radius: 999px;
-  gap: 2px;
+  gap: 3px;
 }
 .radar-sort-btn {
   border: none;
   background: transparent;
   color: #a1a1aa;
-  padding: 3px 8px;
+  padding: 4px 10px;
   border-radius: 999px;
-  font-size: 0.64rem;
+  font-size: 0.68rem;
   font-weight: 700;
   cursor: pointer;
 }
@@ -375,158 +303,228 @@
   min-height: 0;
   overflow-y: auto;
 }
-.radar-table-wrap::-webkit-scrollbar { width: 4px; }
+.radar-table-wrap::-webkit-scrollbar { width: 5px; }
 .radar-table-wrap::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 999px; }
 
 .radar-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
 }
 .radar-table th {
   position: sticky;
   top: 0;
   background: var(--rd-dark);
   color: #e1bee7;
-  font-size: 0.63rem;
+  font-size: 0.65rem;
   font-weight: 700;
   text-transform: uppercase;
-  padding: 6px 6px;
+  padding: 8px 8px;
   text-align: right;
   border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  z-index: 2;
 }
 .radar-table th:first-child,
 .radar-table th:nth-child(2) { text-align: left; }
 
 .radar-table td {
-  padding: 6px 6px;
+  padding: 7px 8px;
   text-align: right;
   color: #e4e4e7;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   white-space: nowrap;
 }
-.radar-table td:first-child {
-  text-align: left;
-  font-weight: 800;
-  color: #ffffff;
-}
-.radar-table td:nth-child(2) {
-  text-align: left;
-  font-size: 0.65rem;
-  color: #a1a1aa;
-}
-.radar-table tbody tr:hover {
-  background: rgba(142, 36, 170, 0.22);
-}
+.radar-table td:first-child { text-align: left; color: #a1a1aa; }
+.radar-table td:nth-child(2) { text-align: left; font-weight: 800; color: #ffffff; }
+.radar-table tbody tr:hover { background: rgba(142, 36, 170, 0.22); }
 
 .badge-warn-low {
   background: rgba(239, 68, 68, 0.22);
   color: #fca5a5;
-  padding: 1px 6px;
+  padding: 2px 7px;
   border-radius: 999px;
-  font-size: 0.64rem;
+  font-size: 0.68rem;
   font-weight: 700;
 }
 
 /* ==========================================================================
-   COLUMNA 3: ZONAS COMPLEJAS DE TRÁFICO + TOP CLIENTES
+   LISTAS DE PRODUCTOS (SKUs)
    ========================================================================== */
-.radar-tag-amber {
-  background: #fef3c7;
-  color: #b45309;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 0.62rem;
-  font-weight: 800;
-}
-
-.radar-traffic-list,
-.radar-clients-list {
+.radar-sku-list {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding-right: 2px;
+  gap: 7px;
+  padding-right: 3px;
 }
 
-.radar-traffic-item {
+.sku-row-card {
   border: 1px solid var(--rd-border);
-  border-radius: 10px;
-  padding: 7px 10px;
   background: #fafafa;
+  border-radius: 11px;
+  padding: 8px 11px;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
 }
-.radar-traffic-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.72rem;
-}
-.radar-traffic-top strong { color: var(--rd-text); font-weight: 800; }
-.traffic-level {
-  padding: 1px 7px;
-  border-radius: 999px;
-  font-size: 0.6rem;
-  font-weight: 800;
-}
-.lvl-critico { background: #fee2e2; color: #b91c1c; }
-.lvl-alto    { background: #ffedd5; color: #c2410c; }
-.lvl-medio   { background: #fef3c7; color: #b45309; }
-
-.radar-traffic-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.64rem;
-  color: var(--rd-muted);
-  font-weight: 600;
+.radar-panel--dark .sku-row-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
-.radar-client-item {
+.sku-row-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  padding: 6px 9px;
-  border-radius: 9px;
-  border: 1px solid var(--rd-border);
-  background: #ffffff;
+  gap: 10px;
+  font-size: 0.74rem;
 }
-.radar-client-info { min-width: 0; }
-.radar-client-name {
-  font-size: 0.72rem;
+.sku-row-name {
   font-weight: 700;
   color: var(--rd-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.radar-client-sub {
-  font-size: 0.62rem;
-  color: var(--rd-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.radar-client-val {
-  text-align: right;
+.radar-panel--dark .sku-row-name { color: #ffffff; }
+
+.sku-row-metrics {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   flex-shrink: 0;
-}
-.radar-client-val strong {
-  display: block;
-  font-size: 0.76rem;
+  font-size: 0.7rem;
   font-weight: 800;
   color: var(--rd-plum-deep);
 }
-.radar-client-val span {
-  font-size: 0.6rem;
+.radar-panel--dark .sku-row-metrics { color: #fde047; }
+
+.sku-bar-bg {
+  height: 4px;
+  background: #e4e4e7;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.radar-panel--dark .sku-bar-bg { background: rgba(0, 0, 0, 0.35); }
+.sku-bar-fill {
+  height: 100%;
+  background: var(--rd-plum);
+  border-radius: 999px;
+}
+.radar-panel--dark .sku-bar-fill { background: #f59e0b; }
+
+.sku-row-sub {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.63rem;
   color: var(--rd-muted);
   font-weight: 600;
 }
+.radar-panel--dark .sku-row-sub { color: #a1a1aa; }
+
+/* ==========================================================================
+   RANGOS DE PESO & ZONAS DE TRÁFICO
+   ========================================================================== */
+.radar-channel-legend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: #52525b;
+}
+.radar-channel-legend span { display: inline-flex; align-items: center; gap: 4px; }
+.radar-channel-legend i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+.radar-ranges-list,
+.radar-traffic-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding-right: 2px;
+}
+
+.radar-range-row,
+.radar-traffic-item {
+  border: 1.5px solid var(--rd-border);
+  background: #fafafa;
+  border-radius: 11px;
+  padding: 8px 11px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.radar-range-row:hover,
+.radar-traffic-item:hover {
+  border-color: var(--rd-plum);
+  background: #ffffff;
+}
+.radar-range-row.is-selected,
+.radar-traffic-item.is-selected {
+  border-color: var(--rd-plum);
+  background: #faf5ff;
+}
+
+.radar-range-top,
+.radar-traffic-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.76rem;
+  margin-bottom: 4px;
+}
+.radar-range-top strong,
+.radar-traffic-top strong { color: var(--rd-text); font-weight: 800; }
+
+.radar-range-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #3f3f46;
+}
+.radar-range-pct {
+  background: #e4e4e7;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 0.64rem;
+}
+
+.radar-stacked-bar {
+  height: 7px;
+  background: #e4e4e7;
+  border-radius: 999px;
+  overflow: hidden;
+  display: flex;
+}
+.radar-stacked-seg { height: 100%; }
+
+.radar-range-ch-detail,
+.radar-traffic-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 0.64rem;
+  font-weight: 600;
+  color: var(--rd-muted);
+}
+
+.traffic-level {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 800;
+}
+.lvl-critico { background: #fee2e2; color: #b91c1c; }
+.lvl-alto    { background: #ffedd5; color: #c2410c; }
+.lvl-medio   { background: #fef3c7; color: #b45309; }
 
 @media (max-width: 1150px) {
   .radar-viewport {
@@ -534,6 +532,8 @@
     max-height: none !important;
     overflow-y: auto !important;
   }
-  .radar-highlights-grid { grid-template-columns: repeat(2, 1fr); }
-  .radar-main-grid { grid-template-columns: 1fr; }
+  .radar-topbar { flex-direction: column; align-items: flex-start; }
+  .radar-kpi-strip--4 { grid-template-columns: repeat(2, 1fr); }
+  .radar-split-2col,
+  .radar-split-2col--ranges { grid-template-columns: 1fr; }
 }
