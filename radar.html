@@ -12,12 +12,12 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
   <!-- Estilos globales y específicos de Radar -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=4.0">
-  <link rel="stylesheet" href="assets/css/radar.css?v=4.0">
+  <link rel="stylesheet" href="assets/css/styles.css?v=5.0">
+  <link rel="stylesheet" href="assets/css/radar.css?v=5.0">
 
   <!-- Scripts -->
   <script defer src="assets/js/main.js"></script>
-  <script defer src="assets/js/radar.js?v=4.0"></script>
+  <script defer src="assets/js/radar.js?v=5.0"></script>
 </head>
 
 <body data-title="Radar de Distribución">
@@ -72,7 +72,7 @@
         <div class="radar-tabs-body">
 
           <!-- ======================================================== -->
-          <!-- PESTAÑA 1: RADAR DE RIESGO & SEMÁFORO OPERATIVO          -->
+          <!-- PESTAÑA 1: RADAR DE RIESGO & SEMÁFORO POR PLACA          -->
           <!-- ======================================================== -->
           <section class="radar-pane is-active" id="tab-riesgo">
             
@@ -80,15 +80,15 @@
               <div class="r-stat-card">
                 <span class="r-stat-lbl">Cobertura Evaluable</span>
                 <strong class="r-stat-val">5 / 6 Dim.</strong>
-                <span class="r-stat-sub">Ventanas (Col S) Activa • Falta Capacidad</span>
+                <span class="r-stat-sub">Ventanas Activa • Falta Capacidad</span>
               </div>
               <div class="r-stat-card">
-                <span class="r-stat-lbl">Rutas / Placas Auditadas</span>
+                <span class="r-stat-lbl">Unidades / Placas Auditadas</span>
                 <strong id="execRutasVal" class="r-stat-val">–</strong>
                 <span id="execRutasSub" class="r-stat-sub">–</span>
               </div>
               <div class="r-stat-card r-stat-card--warn">
-                <span class="r-stat-lbl">Rutas con Riesgo Alto / Medio</span>
+                <span class="r-stat-lbl">Placas con Riesgo Alto / Medio</span>
                 <strong id="execIncVal" class="r-stat-val">–</strong>
                 <span id="execIncSub" class="r-stat-sub">–</span>
               </div>
@@ -98,7 +98,7 @@
                 <span id="execExpSub" class="r-stat-sub">–</span>
               </div>
               <div class="r-stat-card r-stat-card--dark">
-                <span class="r-stat-lbl">Semáforo de Rutas</span>
+                <span class="r-stat-lbl">Semáforo de Flota</span>
                 <div class="semaphore-pills" id="execSemaphoreCounts">
                   <span class="sem-dot sem-rojo" title="Riesgo Alto/Crítico">0</span>
                   <span class="sem-dot sem-amarillo" title="Requiere Revisión">0</span>
@@ -112,7 +112,7 @@
             <div class="radar-card-full radar-card-full--dark">
               <div class="radar-panel__head">
                 <div>
-                  <h3>Radar General de Rutas & Planning Risk Score (0–100)</h3>
+                  <h3>Radar General por Placa & Planning Risk Score (0–100)</h3>
                   <span class="radar-panel__hint">Pesos ajustados: Geografía (33%) • Ventanas Horarias (33%) • Complejidad (14%) • Balance Carga (12%) • Calidad (8%) | Capacidad: NO EVALUABLE</span>
                 </div>
                 <div class="radar-sort-pills">
@@ -129,11 +129,12 @@
                     <tr>
                       <th>Pos</th>
                       <th>Centro</th>
-                      <th>Ruta</th>
                       <th>Placa</th>
                       <th>Cli.</th>
+                      <th>Ped.</th>
                       <th>Peso (Kg)</th>
                       <th>Capacidad</th>
+                      <th>Recorrido Lineal</th>
                       <th>Vent. Crít.</th>
                       <th>Atípicos</th>
                       <th>Risk Score</th>
@@ -148,7 +149,7 @@
           </section>
 
           <!-- ======================================================== -->
-          <!-- PESTAÑA 2: EVALUACIÓN ESTRUCTURAL DE VENTANAS (COL S)    -->
+          <!-- PESTAÑA 2: EVALUACIÓN ESTRUCTURAL DE VENTANAS HORARIAS   -->
           <!-- ======================================================== -->
           <section class="radar-pane" id="tab-ventanas">
             <div class="radar-kpi-strip radar-kpi-strip--4">
@@ -165,7 +166,7 @@
               <div class="r-stat-card r-stat-card--plum">
                 <span class="r-stat-lbl">Cierre Temprano (&le; 11:00 AM)</span>
                 <strong id="winEarlyVal" class="r-stat-val">–</strong>
-                <span id="winEarlySub" class="r-stat-sub">Requieren prioridad en secuencia</span>
+                <span id="winEarlySub" class="r-stat-sub">Requieren prioridad de salida</span>
               </div>
               <div class="r-stat-card">
                 <span class="r-stat-lbl">Ventanas Inválidas / Sin Dato</span>
@@ -175,11 +176,10 @@
             </div>
 
             <div class="radar-split-2col">
-              <!-- Izquierda: Distribución por Franja Horaria y Rigidez -->
               <article class="radar-panel">
                 <div class="radar-panel__head">
                   <div>
-                    <h3>Distribución de Ventanas Horarias (Columna S)</h3>
+                    <h3>Distribución de Ventanas Horarias</h3>
                     <span class="radar-panel__hint">Agrupación de franjas detectadas y clientes/kilogramos comprometidos</span>
                   </div>
                   <span class="radar-tag-plum">Evaluación Estructural</span>
@@ -187,14 +187,13 @@
                 <div id="windowBracketsList" class="radar-scroll-list"></div>
               </article>
 
-              <!-- Derecha: Rutas con Mayor Superposición de Ventanas Restrictivas -->
               <article class="radar-panel radar-panel--dark">
                 <div class="radar-panel__head">
                   <div>
                     <h3>Clientes Prioritarios por Ventana Restrictiva / Temprana</h3>
-                    <span class="radar-panel__hint">Entregas con cierre &le; 11:00 AM o amplitud &le; 2h que compiten en ruta</span>
+                    <span class="radar-panel__hint">Entregas con cierre &le; 11:00 AM o amplitud &le; 2h que compiten por turno</span>
                   </div>
-                  <span class="radar-tag-amber">Prioridad de Secuencia</span>
+                  <span class="radar-tag-amber">Prioridad de Atención</span>
                 </div>
                 <div class="radar-table-wrap">
                   <table class="radar-table">
@@ -203,7 +202,7 @@
                         <th>Cliente</th>
                         <th>Centro</th>
                         <th>Placa</th>
-                        <th>Ventana (Col S)</th>
+                        <th>Ventana Horaria</th>
                         <th>Amplitud</th>
                         <th>Peso (Kg)</th>
                       </tr>
@@ -225,7 +224,7 @@
                 <div class="radar-panel__head">
                   <div>
                     <h3>Auditoría de Calidad de Datos (RoadMap.csv)</h3>
-                    <span class="radar-panel__hint">Validación de geoposiciones, ventanas (Col S), pesos, placas y duplicidades</span>
+                    <span class="radar-panel__hint">Validación de geoposiciones, ventanas horarias, pesos, placas y duplicidades</span>
                   </div>
                   <span id="dqScoreBadge" class="radar-tag-plum">Integridad: –%</span>
                 </div>
@@ -236,7 +235,7 @@
                 <div class="radar-panel__head">
                   <div>
                     <h3>Control de Consistencia del Análisis</h3>
-                    <span class="radar-panel__hint">Reconciliación matemática exacta contra el raw original</span>
+                    <span class="radar-panel__hint">Reconciliación matemática exacta contra el archivo original</span>
                   </div>
                   <span id="reconcilStatusBadge" class="radar-tag-emerald">APROBADA</span>
                 </div>
@@ -261,8 +260,8 @@
               <article class="radar-panel">
                 <div class="radar-panel__head">
                   <div>
-                    <h3>Atípicos Geográficos por Ruta (IQR)</h3>
-                    <span class="radar-panel__hint">Clientes alejados &gt; Q3 + 1.5×IQR respecto al centroide de su placa</span>
+                    <h3>Atípicos Geográficos por Placa (IQR)</h3>
+                    <span class="radar-panel__hint">Clientes alejados &gt; Q3 + 1.5×IQR respecto al centroide de su unidad</span>
                   </div>
                   <span id="outliersCountTag" class="radar-tag-amber">0 detectados</span>
                 </div>
