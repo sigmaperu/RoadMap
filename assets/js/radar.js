@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - radar.js (Radar de Distribución Multi-Pestaña • Productos, Flota, Rangos, Tráfico)
+   RoadMap - radar.js (Auditoría Preventiva con Ventanas Horarias Columna S)
    ========================================================================== */
 
 (() => {
@@ -17,7 +17,7 @@
     "0754-CHANCAY": { lat: -11.551110366002629, lng: -77.27641679959045 }
   };
 
-  // Corredores Viales de Lima Metropolitana y Norte Chico con historial de complejidad vial
+  // Corredores Viales Críticos (Lima Metropolitana & Norte Chico)
   const TRAFFIC_CORRIDORS = [
     {
       id: "CARRETERA_CENTRAL",
@@ -77,7 +77,6 @@
     }
   ];
 
-  // Tramos de Peso (Drop Size por Cliente)
   const WEIGHT_RANGES = [
     { id: "0-1",     label: "0 a 1 kg",         min: 0,   max: 1 },
     { id: "1-5",     label: "1 a 5 kg",         min: 1,   max: 5 },
@@ -104,6 +103,48 @@
     return "OTRO";
   }
 
+  // Parser de Ventana Horaria en una sola columna (Columna S: "08:00 - 12:00", "08:00 a 13:00", etc.)
+  function parseTimeWindow(rawWin) {
+    const raw = String(rawWin ?? "").trim();
+    if (!raw) return { raw, status: "MISSING", startMin: null, endMin: null, durationMin: 0 };
+
+    const matches = raw.match(/(\d{1,2}):(\d{2})/g);
+    if (!matches || matches.length < 2) {
+      return { raw, status: "INVALID_FORMAT", startMin: null, endMin: null, durationMin: 0 };
+    }
+
+    const toMins = hhmm => {
+      const [h, m] = hhmm.split(":").map(Number);
+      if (h < 0 || h > 23 || m < 0 || m > 59) return null;
+      return h * 60 + m;
+    };
+
+    const startMin = toMins(matches[0]);
+    const endMin   = toMins(matches[1]);
+    if (startMin === null || endMin === null) {
+      return { raw, status: "INVALID_TIME", startMin: null, endMin: null, durationMin: 0 };
+    }
+    if (startMin >= endMin) {
+      return { raw, status: "REVERSED", startMin, endMin, durationMin: endMin - startMin };
+    }
+
+    const durationMin = endMin - startMin;
+    const isNarrow = durationMin <= 120; // <= 2 horas
+    const isEarlyClose = endMin <= 11 * 60; // Cierra <= 11:00 AM
+
+    return {
+      raw,
+      status: "VALID",
+      startStr: matches[0],
+      endStr: matches[1],
+      startMin,
+      endMin,
+      durationMin,
+      isNarrow,
+      isEarlyClose
+    };
+  }
+
   function haversineKm(lat1, lon1, lat2, lon2) {
     const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -114,6 +155,17 @@
       Math.sin(dLon / 2) * Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
+  }
+
+  function getQuantile(sortedArr, q) {
+    if (!sortedArr.length) return 0;
+    const pos = (sortedArr.length - 1) * q;
+    const base = Math.floor(pos);
+    const rest = pos - base;
+    if (sortedArr[base + 1] !== undefined) {
+      return sortedArr[base] + rest * (sortedArr[base + 1] - sortedArr[base]);
+    }
+    return sortedArr[base];
   }
 
   async function fetchWithTimeout(url, ms = 15000) {
@@ -158,22 +210,20 @@
     };
   }
 
-  // Índices base + detección automática de columnas de SKU/Producto
+  // Índices exactos de RoadMap.csv incluyendo Columna S (índice 18) para Ventana Horaria
   let IDX = {
-    CENTRO: 1, PLACA: 2, CLIENTE: 3, NOMBRE: 4, RUTA: 6, PEDIDO: 7,
-    SKU_COD: 8, SKU_DESC: 9, KG: 10, SOLES: 11, DIRECCION: 15, LAT: 16, LNG: 17, CANAL: 19
+    FECHA: 0, CENTRO: 1, PLACA: 2, CLIENTE: 3, NOMBRE: 4, RUTA: 6, PEDIDO: 7,
+    SKU_COD: 8, SKU_DESC: 9, KG: 10, SOLES: 11, DIRECCION: 15, LAT: 16, LNG: 17,
+    VENTANA: 18, CANAL: 19
   };
 
-  function detectProductColumns(header) {
+  function detectColumns(header) {
     if (!header || !header.length) return;
     header.forEach((h, i) => {
       const u = String(h).trim().toUpperCase();
-      if (u.includes("MATERIAL") || u.includes("COD_PROD") || u === "SKU" || u === "CODIGO") {
-        IDX.SKU_COD = i;
-      }
-      if (u.includes("DESCRIP") || u.includes("PRODUCTO") || u.includes("MATERIAL_DESC") || u === "ARTICULO") {
-        IDX.SKU_DESC = i;
-      }
+      if (u.includes("MATERIAL") || u.includes("COD_PROD") || u === "SKU") IDX.SKU_COD = i;
+      if (u.includes("DESCRIP") || u.includes("PRODUCTO") || u === "ARTICULO") IDX.SKU_DESC = i;
+      if (u.includes("VENTANA") || u.includes("HORARIO")) IDX.VENTANA = i;
     });
   }
 
@@ -192,28 +242,135 @@
 
   let allRows = [];
   let state = {
-    activeTab: "tab-flota",
+    activeTab: "tab-riesgo",
     selectedCenter: "Todos",
-    fleetSort: "dist",
-    selectedRangeId: null,
-    selectedTrafficId: null
+    riskSort: "risk"
   };
 
-  function getFilteredRows() {
-    return allRows.filter(r => {
-      if (isFRT(r)) return false;
-      if (state.selectedCenter !== "Todos" && cleanStr(r[IDX.CENTRO]) !== state.selectedCenter) return false;
-      return true;
+  /* ==========================================================================
+     1. AUDITORÍA DE CALIDAD DE DATOS (INCLUYE VALIDACIÓN DE VENTANAS COL S)
+     ========================================================================== */
+  function auditDataQuality(rows) {
+    const total = rows.length;
+    const frtRows = rows.filter(r => isFRT(r));
+    const validRows = rows.filter(r => !isFRT(r));
+
+    const emptyPlate = validRows.filter(r => !cleanStr(r[IDX.PLACA]));
+    const emptyRoute = validRows.filter(r => !cleanStr(r[IDX.RUTA]));
+    const zeroOrNegKg = validRows.filter(r => toNum(r[IDX.KG]) <= 0);
+    const badCoords = validRows.filter(r => {
+      const lat = parseFloat(String(r[IDX.LAT] ?? "").replace(",", "."));
+      const lng = parseFloat(String(r[IDX.LNG] ?? "").replace(",", "."));
+      return isNaN(lat) || isNaN(lng) || lat === 0 || lng === 0 || lat < -13.5 || lat > -10.5 || lng < -78.0 || lng > -75.5;
     });
+
+    const badWindows = validRows.filter(r => {
+      const w = parseTimeWindow(r[IDX.VENTANA]);
+      return w.status === "REVERSED" || w.status === "INVALID_FORMAT" || w.status === "INVALID_TIME";
+    });
+    const missingWindows = validRows.filter(r => parseTimeWindow(r[IDX.VENTANA]).status === "MISSING");
+
+    const plateCenters = new Map();
+    validRows.filter(r => !isTruckExcluded(r)).forEach(r => {
+      const p = upperStr(r[IDX.PLACA]);
+      const c = cleanStr(r[IDX.CENTRO]);
+      if (!plateCenters.has(p)) plateCenters.set(p, new Set());
+      plateCenters.get(p).add(c);
+    });
+    const multiCenterPlates = Array.from(plateCenters.entries()).filter(([, set]) => set.size > 1);
+
+    const orderPlates = new Map();
+    validRows.forEach(r => {
+      const ped = cleanStr(r[IDX.PEDIDO]);
+      const p = upperStr(r[IDX.PLACA]);
+      if (!ped) return;
+      if (!orderPlates.has(ped)) orderPlates.set(ped, new Set());
+      orderPlates.get(ped).add(p);
+    });
+    const splitOrders = Array.from(orderPlates.entries()).filter(([, set]) => set.size > 1);
+
+    const totalKgRaw = rows.reduce((s, r) => s + toNum(r[IDX.KG]), 0);
+    const totalKgValid = validRows.reduce((s, r) => s + toNum(r[IDX.KG]), 0);
+    const totalKgExcluded = frtRows.reduce((s, r) => s + toNum(r[IDX.KG]), 0);
+
+    const checks = [
+      {
+        title: "Ventanas Horarias Inválidas o Invertidas (Columna S)",
+        count: badWindows.length,
+        pct: validRows.length ? ((badWindows.length / validRows.length) * 100).toFixed(2) : "0.00",
+        sev: badWindows.length > 0 ? "crit" : "ok",
+        desc: badWindows.length > 0
+          ? `Ej: Cliente ${cleanStr(badWindows[0][IDX.CLIENTE])} tiene ventana "${cleanStr(badWindows[0][IDX.VENTANA])}".`
+          : `Sin ventanas invertidas. (${missingWindows.length} líneas sin ventana informada).`
+      },
+      {
+        title: "Coordenadas Vacías, Cero o Fuera de Lima",
+        count: badCoords.length,
+        pct: validRows.length ? ((badCoords.length / validRows.length) * 100).toFixed(2) : "0.00",
+        sev: badCoords.length > 0 ? "crit" : "ok",
+        desc: badCoords.length > 0
+          ? `Ej: Cliente ${cleanStr(badCoords[0][IDX.CLIENTE])} (${cleanStr(badCoords[0][IDX.NOMBRE])}) con Lat/Lng inválida.`
+          : "Todas las entregas válidas tienen geoposición dentro de Región Lima."
+      },
+      {
+        title: "Registros Ficticios / Excluidos (FRT-001)",
+        count: frtRows.length,
+        pct: total ? ((frtRows.length / total) * 100).toFixed(2) : "0.00",
+        sev: frtRows.length > 0 ? "warn" : "ok",
+        desc: `Se excluyen ${frtRows.length} filas (${totalKgExcluded.toFixed(1)} kg) de FRT-001 según regla operativa.`
+      },
+      {
+        title: "Líneas con Peso Cero o Negativo (<= 0 kg)",
+        count: zeroOrNegKg.length,
+        pct: validRows.length ? ((zeroOrNegKg.length / validRows.length) * 100).toFixed(2) : "0.00",
+        sev: zeroOrNegKg.length > 0 ? "warn" : "ok",
+        desc: zeroOrNegKg.length > 0
+          ? `Ej: Pedido ${cleanStr(zeroOrNegKg[0][IDX.PEDIDO])} registra ${zeroOrNegKg[0][IDX.KG]} kg.`
+          : "Sin líneas con peso nulo o negativo."
+      },
+      {
+        title: "Pedidos Divididos en Múltiples Placas",
+        count: splitOrders.length,
+        pct: orderPlates.size ? ((splitOrders.length / orderPlates.size) * 100).toFixed(2) : "0.00",
+        sev: splitOrders.length > 0 ? "warn" : "ok",
+        desc: splitOrders.length > 0
+          ? `Pedido ${splitOrders[0][0]} asignado a placas: ${Array.from(splitOrders[0][1]).join(", ")}.`
+          : "Cada pedido está asignado íntegro a una sola placa."
+      },
+      {
+        title: "Placas Asignadas a Múltiples Centros",
+        count: multiCenterPlates.length,
+        pct: plateCenters.size ? ((multiCenterPlates.length / plateCenters.size) * 100).toFixed(2) : "0.00",
+        sev: multiCenterPlates.length > 0 ? "crit" : "ok",
+        desc: multiCenterPlates.length > 0
+          ? `Placa ${multiCenterPlates[0][0]} figura en centros: ${Array.from(multiCenterPlates[0][1]).join(" y ")}.`
+          : "Ninguna placa física opera simultáneamente en dos centros."
+      }
+    ];
+
+    const issueRowsCount = badCoords.length + badWindows.length + zeroOrNegKg.length + emptyPlate.length;
+    const integrityPct = validRows.length
+      ? Math.max(0, 100 - ((issueRowsCount / validRows.length) * 100)).toFixed(1)
+      : "100.0";
+
+    return {
+      total,
+      validCount: validRows.length,
+      excludedCount: frtRows.length,
+      totalKgRaw,
+      totalKgValid,
+      totalKgExcluded,
+      integrityPct,
+      checks
+    };
   }
 
   /* ==========================================================================
-     PROCESAMIENTO DE DATOS POR SEGMENTO
+     2. MOTOR ANALÍTICO CON VENTANAS HORARIAS (COL S) INTEGRADO
      ========================================================================== */
-  function computeAnalytics(rows) {
-    // 1. Clientes Únicos
+  function analyzeOperation(filteredRows) {
     const clientsMap = new Map();
-    rows.forEach(r => {
+    filteredRows.forEach(r => {
       const cli = cleanStr(r[IDX.CLIENTE]);
       if (!cli) return;
       const centro = cleanStr(r[IDX.CENTRO]);
@@ -227,15 +384,18 @@
         const distFromCd = (!isNaN(lat) && !isNaN(lng) && cdPos)
           ? haversineKm(cdPos.lat, cdPos.lng, lat, lng)
           : 0;
+        const winParsed = parseTimeWindow(r[IDX.VENTANA]);
 
         clientsMap.set(cli, {
           cod: cli,
           nombre: cleanStr(r[IDX.NOMBRE]) || cli,
           centro,
           placa: upperStr(r[IDX.PLACA]),
+          ruta: cleanStr(r[IDX.RUTA]) || "-",
           canal: normalizeChannelCode(r[IDX.CANAL]),
           lat, lng,
           distFromCd,
+          win: winParsed,
           kg: 0,
           soles: 0
         });
@@ -246,209 +406,474 @@
     });
     const clients = Array.from(clientsMap.values());
 
-    // 2. Mix de Productos (SKUs)
+    // Agrupación por Ruta + Placa + Centro
+    const routesMap = new Map();
+    filteredRows.filter(r => !isTruckExcluded(r)).forEach(r => {
+      const centro = cleanStr(r[IDX.CENTRO]);
+      const ruta   = cleanStr(r[IDX.RUTA]) || "SIN-RUTA";
+      const placa  = upperStr(r[IDX.PLACA]);
+      const key    = `${centro}|${ruta}|${placa}`;
+
+      if (!routesMap.has(key)) {
+        routesMap.set(key, {
+          key,
+          centro,
+          ruta,
+          placa,
+          kg: 0,
+          soles: 0,
+          pedidosSet: new Set(),
+          channelsSet: new Set(),
+          stopsMap: new Map()
+        });
+      }
+      const rt = routesMap.get(key);
+      rt.kg += toNum(r[IDX.KG]);
+      rt.soles += toNum(r[IDX.SOLES]);
+      const ped = cleanStr(r[IDX.PEDIDO]);
+      if (ped) rt.pedidosSet.add(ped);
+      rt.channelsSet.add(normalizeChannelCode(r[IDX.CANAL]));
+
+      const cli = cleanStr(r[IDX.CLIENTE]);
+      const lat = parseFloat(String(r[IDX.LAT] ?? "").replace(",", "."));
+      const lng = parseFloat(String(r[IDX.LNG] ?? "").replace(",", "."));
+      if (cli) {
+        if (!rt.stopsMap.has(cli)) {
+          rt.stopsMap.set(cli, {
+            cod: cli,
+            nombre: cleanStr(r[IDX.NOMBRE]) || cli,
+            canal: normalizeChannelCode(r[IDX.CANAL]),
+            win: parseTimeWindow(r[IDX.VENTANA]),
+            lat, lng,
+            kg: 0
+          });
+        }
+        rt.stopsMap.get(cli).kg += toNum(r[IDX.KG]);
+      }
+    });
+
+    const allOutliers = [];
+
+    const routeAudits = Array.from(routesMap.values()).map(rt => {
+      const stops = Array.from(rt.stopsMap.values());
+      const validStops = stops.filter(s => !isNaN(s.lat) && !isNaN(s.lng) && s.lat !== 0 && s.lng !== 0);
+      const missingCoordsCount = stops.length - validStops.length;
+
+      // Análisis estructural de ventanas en esta ruta
+      const criticalWinStops = stops.filter(s => s.win.status === "VALID" && (s.win.isNarrow || s.win.isEarlyClose));
+      const invalidWinStops  = stops.filter(s => s.win.status === "REVERSED" || s.win.status === "INVALID_FORMAT" || s.win.status === "INVALID_TIME");
+
+      // Centroide e IQR geográfico
+      let centLat = 0, centLng = 0;
+      if (validStops.length > 0) {
+        centLat = validStops.reduce((s, p) => s + p.lat, 0) / validStops.length;
+        centLng = validStops.reduce((s, p) => s + p.lng, 0) / validStops.length;
+      }
+
+      const distsToCentroid = validStops.map(s => ({
+        ...s,
+        distToCentroid: haversineKm(centLat, centLng, s.lat, s.lng)
+      }));
+      const sortedDists = distsToCentroid.map(d => d.distToCentroid).sort((a, b) => a - b);
+      const q1 = getQuantile(sortedDists, 0.25);
+      const q3 = getQuantile(sortedDists, 0.75);
+      const iqr = q3 - q1;
+      const outlierThreshold = Math.max(4.5, q3 + 1.5 * iqr);
+
+      const routeOutliers = distsToCentroid.filter(d => validStops.length >= 4 && d.distToCentroid > outlierThreshold);
+      routeOutliers.forEach(o => {
+        allOutliers.push({
+          ...o,
+          centro: rt.centro,
+          ruta: rt.ruta,
+          placa: rt.placa,
+          thresholdKm: outlierThreshold
+        });
+      });
+
+      // Distancia lineal acumulada desde CD
+      const cdPos = CD_COORDS[rt.centro];
+      let linearRouteKm = 0;
+      if (cdPos && validStops.length > 0) {
+        const unvisited = [...validStops];
+        let curLat = cdPos.lat;
+        let curLng = cdPos.lng;
+        while (unvisited.length > 0) {
+          let bestIdx = 0, bestD = Infinity;
+          for (let i = 0; i < unvisited.length; i++) {
+            const d = haversineKm(curLat, curLng, unvisited[i].lat, unvisited[i].lng);
+            if (d < bestD) { bestD = d; bestIdx = i; }
+          }
+          linearRouteKm += bestD;
+          curLat = unvisited[bestIdx].lat;
+          curLng = unvisited[bestIdx].lng;
+          unvisited.splice(bestIdx, 1);
+        }
+        linearRouteKm += haversineKm(curLat, curLng, cdPos.lat, cdPos.lng);
+      }
+
+      const maxClientKg = stops.reduce((m, s) => Math.max(m, s.kg), 0);
+      const maxClientShare = rt.kg > 0 ? (maxClientKg / rt.kg) * 100 : 0;
+
+      // ======================================================================
+      // PLANNING RISK SCORE (0-100) CON 5 DIMENSIONES ACTIVAS (REDISTRIBUIDAS):
+      // Geografía: 33% | Ventanas Horarias: 33% | Complejidad/Canal: 14%
+      // Balance Carga: 12% | Calidad de Datos: 8%
+      // ======================================================================
+      const geoScore  = Math.min(100, (routeOutliers.length * 32) + (linearRouteKm > 65 ? 25 : 0));
+      const winScore  = Math.min(100, (criticalWinStops.length * 18) + (invalidWinStops.length * 45));
+      const compScore = Math.min(100, (stops.length > 35 ? 45 : stops.length > 25 ? 25 : 10) + (rt.channelsSet.size >= 3 ? 25 : 0));
+      const balScore  = Math.min(100, (rt.kg < 400 ? 65 : 0) + (maxClientShare > 50 ? 35 : 0));
+      const dqScore   = Math.min(100, (missingCoordsCount * 40) + (invalidWinStops.length * 35));
+
+      const riskScore = Math.round(
+        (geoScore  * 0.33) +
+        (winScore  * 0.33) +
+        (compScore * 0.14) +
+        (balScore  * 0.12) +
+        (dqScore   * 0.08)
+      );
+
+      let semaphore = "VERDE";
+      let semClass = "sem-verde";
+      if ((missingCoordsCount > 0 && validStops.length === 0) || invalidWinStops.length > 0) {
+        semaphore = "NEGRO";
+        semClass = "sem-negro";
+      } else if (riskScore >= 61 || routeOutliers.length >= 2 || criticalWinStops.length >= 5) {
+        semaphore = "ROJO";
+        semClass = "sem-rojo";
+      } else if (riskScore >= 31 || routeOutliers.length === 1 || criticalWinStops.length >= 2 || rt.kg < 400) {
+        semaphore = "AMARILLO";
+        semClass = "sem-amarillo";
+      }
+
+      let finding = "Sin anomalías geográficas ni ventanas críticas.";
+      if (invalidWinStops.length > 0) {
+        finding = `${invalidWinStops.length} ventana(s) inválida(s) en Col S → Corregir horario antes de liberar.`;
+      } else if (missingCoordsCount > 0) {
+        finding = `${missingCoordsCount} cliente(s) sin coordenada válida → Corregir Lat/Lng.`;
+      } else if (routeOutliers.length > 0 && criticalWinStops.length > 0) {
+        finding = `${routeOutliers.length} atípico(s) geo + ${criticalWinStops.length} ventana(s) restrictiva(s) → Priorizar salida y evaluar traslado.`;
+      } else if (criticalWinStops.length >= 3) {
+        finding = `${criticalWinStops.length} clientes con cierre temprano/ventana estrecha → Ordenar primeros en secuencia.`;
+      } else if (routeOutliers.length > 0) {
+        finding = `${routeOutliers.length} cliente(s) alejado(s) > ${outlierThreshold.toFixed(1)} km del centroide → Evaluar reasignación.`;
+      } else if (rt.kg < 400) {
+        finding = `Carga baja (${rt.kg.toFixed(0)} kg) → Evaluar consolidación con ruta cercana.`;
+      }
+
+      return {
+        ...rt,
+        clientCount: stops.length,
+        orderCount: rt.pedidosSet.size,
+        linearRouteKm,
+        outliersCount: routeOutliers.length,
+        criticalWinCount: criticalWinStops.length,
+        invalidWinCount: invalidWinStops.length,
+        missingCoordsCount,
+        riskScore,
+        semaphore,
+        semClass,
+        finding
+      };
+    });
+
+    // Mix de Productos
     const productsMap = new Map();
-    rows.forEach(r => {
+    filteredRows.forEach(r => {
       const cod = cleanStr(r[IDX.SKU_COD]);
       const desc = cleanStr(r[IDX.SKU_DESC]);
       const key = desc || cod;
       if (!key) return;
-
       if (!productsMap.has(key)) {
-        productsMap.set(key, {
-          cod,
-          nombre: desc || cod,
-          clientesSet: new Set(),
-          pedidosSet: new Set(),
-          kg: 0,
-          soles: 0
-        });
+        productsMap.set(key, { cod, nombre: desc || cod, clientesSet: new Set(), pedidosSet: new Set(), kg: 0, soles: 0 });
       }
       const p = productsMap.get(key);
-      const cli = cleanStr(r[IDX.CLIENTE]);
-      const ped = cleanStr(r[IDX.PEDIDO]);
-      if (cli) p.clientesSet.add(cli);
-      if (ped) p.pedidosSet.add(ped);
+      if (cleanStr(r[IDX.CLIENTE])) p.clientesSet.add(cleanStr(r[IDX.CLIENTE]));
+      if (cleanStr(r[IDX.PEDIDO])) p.pedidosSet.add(cleanStr(r[IDX.PEDIDO]));
       p.kg += toNum(r[IDX.KG]);
       p.soles += toNum(r[IDX.SOLES]);
     });
-
     const products = Array.from(productsMap.values()).map(p => ({
       ...p,
       clientCount: p.clientesSet.size,
       orderCount: p.pedidosSet.size
     }));
 
-    // 3. Rangos de Peso (Kg)
+    // Rangos de Peso
     const rangeStats = WEIGHT_RANGES.map(rng => {
-      const matching = clients.filter(c => {
-        if (rng.min === 0) return c.kg >= 0 && c.kg <= rng.max;
-        return c.kg > rng.min && c.kg <= rng.max;
-      });
+      const matching = clients.filter(c => rng.min === 0 ? (c.kg >= 0 && c.kg <= rng.max) : (c.kg > rng.min && c.kg <= rng.max));
       const byChannel = { DET: 0, FSE: 0, MES: 0, MOD: 0 };
-      matching.forEach(c => {
-        if (byChannel[c.canal] !== undefined) byChannel[c.canal]++;
-      });
+      matching.forEach(c => { if (byChannel[c.canal] !== undefined) byChannel[c.canal]++; });
       return {
         ...rng,
         count: matching.length,
         totalKg: matching.reduce((s, c) => s + c.kg, 0),
-        byChannel,
-        clients: matching
+        byChannel
       };
     });
 
-    // 4. Flota por Unidad (Llave compuesta CENTRO|PLACA)
-    const fleetMap = new Map();
-    rows.filter(r => !isTruckExcluded(r)).forEach(r => {
-      const centro = cleanStr(r[IDX.CENTRO]);
-      const placa = upperStr(r[IDX.PLACA]);
-      const key = `${centro}|${placa}`;
-      if (!fleetMap.has(key)) {
-        fleetMap.set(key, {
-          key,
-          placa,
-          centro,
-          kg: 0,
-          soles: 0,
-          pedidosSet: new Set(),
-          stopsMap: new Map()
-        });
-      }
-      const u = fleetMap.get(key);
-      u.kg += toNum(r[IDX.KG]);
-      u.soles += toNum(r[IDX.SOLES]);
-      const ped = cleanStr(r[IDX.PEDIDO]);
-      if (ped) u.pedidosSet.add(ped);
-
-      const cli = cleanStr(r[IDX.CLIENTE]);
-      const lat = parseFloat(String(r[IDX.LAT] ?? "").replace(",", "."));
-      const lng = parseFloat(String(r[IDX.LNG] ?? "").replace(",", "."));
-      if (cli && !isNaN(lat) && !isNaN(lng) && !u.stopsMap.has(cli)) {
-        u.stopsMap.set(cli, { lat, lng });
-      }
-    });
-
-    const fleetList = Array.from(fleetMap.values()).map(u => {
-      const stops = Array.from(u.stopsMap.values());
-      const cdPos = CD_COORDS[u.centro];
-      let estRouteKm = 0;
-      let maxRadiusKm = 0;
-
-      if (cdPos && stops.length > 0) {
-        const unvisited = [...stops];
-        let curLat = cdPos.lat;
-        let curLng = cdPos.lng;
-
-        while (unvisited.length > 0) {
-          let bestIdx = 0;
-          let bestDist = Infinity;
-          for (let i = 0; i < unvisited.length; i++) {
-            const dFromCd = haversineKm(cdPos.lat, cdPos.lng, unvisited[i].lat, unvisited[i].lng);
-            if (dFromCd > maxRadiusKm) maxRadiusKm = dFromCd;
-
-            const dStep = haversineKm(curLat, curLng, unvisited[i].lat, unvisited[i].lng);
-            if (dStep < bestDist) {
-              bestDist = dStep;
-              bestIdx = i;
-            }
-          }
-          estRouteKm += bestDist;
-          curLat = unvisited[bestIdx].lat;
-          curLng = unvisited[bestIdx].lng;
-          unvisited.splice(bestIdx, 1);
-        }
-        estRouteKm = (estRouteKm + haversineKm(curLat, curLng, cdPos.lat, cdPos.lng)) * 1.28;
-      }
-
-      const clientCount = u.stopsMap.size || unique(rows.filter(r => cleanStr(r[IDX.CENTRO]) === u.centro && upperStr(r[IDX.PLACA]) === u.placa).map(r => r[IDX.CLIENTE])).length;
-      const densityKgKm = estRouteKm > 0 ? (u.kg / estRouteKm) : 0;
-
-      return {
-        ...u,
-        clientCount,
-        orderCount: u.pedidosSet.size,
-        estRouteKm,
-        maxRadiusKm,
-        densityKgKm
-      };
-    });
-
-    // 5. Zonas Críticas de Tráfico
+    // Tráfico vial
     const trafficStats = TRAFFIC_CORRIDORS.map(zone => {
-      const zoneClients = clients.filter(c => !isNaN(c.lat) && !isNaN(c.lng) && zone.check(c.lat, c.lng));
+      const zClients = clients.filter(c => !isNaN(c.lat) && !isNaN(c.lng) && zone.check(c.lat, c.lng));
       return {
         ...zone,
-        clientCount: zoneClients.length,
-        totalKg: zoneClients.reduce((s, c) => s + c.kg, 0),
-        platesCount: new Set(zoneClients.map(c => c.placa)).size,
-        clients: zoneClients
+        clientCount: zClients.length,
+        totalKg: zClients.reduce((s, c) => s + c.kg, 0),
+        platesCount: new Set(zClients.map(c => c.placa)).size
       };
     }).filter(z => z.clientCount > 0).sort((a, b) => b.clientCount - a.clientCount);
 
-    return { clients, products, rangeStats, fleetList, trafficStats };
+    return { clients, routeAudits, allOutliers, products, rangeStats, trafficStats };
   }
 
   /* ==========================================================================
-     RENDERIZADO POR PESTAÑA
+     3. RENDERIZADO DE LAS 5 PESTAÑAS
      ========================================================================== */
   function renderAll() {
-    const rows = getFilteredRows();
-    const data = computeAnalytics(rows);
+    const dq = auditDataQuality(allRows);
+    const filteredRows = allRows.filter(r => {
+      if (isFRT(r)) return false;
+      if (state.selectedCenter !== "Todos" && cleanStr(r[IDX.CENTRO]) !== state.selectedCenter) return false;
+      return true;
+    });
+    const op = analyzeOperation(filteredRows);
 
-    renderTabFlota(data);
-    renderTabProductos(data);
-    renderTabRangos(data);
-    renderTabTrafico(data);
+    renderTabRiesgo(op);
+    renderTabVentanas(op);
+    renderTabCalidad(dq, op);
+    renderTabGeo(op);
+    renderTabProductos(op);
   }
 
-  // PESTAÑA 1: FLOTA & RECORRIDOS
-  function renderTabFlota({ fleetList }) {
-    const byDist = [...fleetList].sort((a, b) => b.estRouteKm - a.estRouteKm);
-    const byKg   = [...fleetList].sort((a, b) => b.kg - a.kg);
-    const byCli  = [...fleetList].sort((a, b) => b.clientCount - a.clientCount);
-    const lowUnits = fleetList.filter(u => u.kg < 450);
+  function renderTabRiesgo({ routeAudits, allOutliers }) {
+    const rojos     = routeAudits.filter(r => r.semaphore === "ROJO");
+    const amarillos = routeAudits.filter(r => r.semaphore === "AMARILLO");
+    const verdes    = routeAudits.filter(r => r.semaphore === "VERDE");
+    const negros    = routeAudits.filter(r => r.semaphore === "NEGRO");
 
-    document.getElementById("flotaMaxDistVal").textContent = byDist[0] ? `${byDist[0].placa} • ${byDist[0].estRouteKm.toFixed(1)} km` : "–";
-    document.getElementById("flotaMaxDistSub").textContent = byDist[0] ? `${byDist[0].centro} • Radio máx: ${byDist[0].maxRadiusKm.toFixed(1)} km` : "";
+    const criticalRoutes = [...rojos, ...amarillos, ...negros];
+    const exposedKg = criticalRoutes.reduce((s, r) => s + r.kg, 0);
+    const exposedCli = criticalRoutes.reduce((s, r) => s + r.clientCount, 0);
 
-    document.getElementById("flotaMaxKgVal").textContent   = byKg[0] ? `${byKg[0].placa} • ${(byKg[0].kg / 1000).toFixed(2)} T` : "–";
-    document.getElementById("flotaMaxKgSub").textContent   = byKg[0] ? `${byKg[0].centro} • ${byKg[0].clientCount} clientes` : "";
+    document.getElementById("execRutasVal").textContent = `${routeAudits.length} rutas / placas`;
+    document.getElementById("execRutasSub").textContent = `Centro: ${state.selectedCenter}`;
 
-    document.getElementById("flotaMaxCliVal").textContent  = byCli[0] ? `${byCli[0].placa} • ${byCli[0].clientCount} cli.` : "–";
-    document.getElementById("flotaMaxCliSub").textContent  = byCli[0] ? `${byCli[0].centro} • ${byCli[0].kg.toLocaleString("es-PE", { maximumFractionDigits: 0 })} kg` : "";
+    document.getElementById("execIncVal").textContent = `${criticalRoutes.length} rutas observadas`;
+    document.getElementById("execIncSub").textContent = `${allOutliers.length} atípicos IQR • ${routeAudits.reduce((s, r) => s + r.criticalWinCount, 0)} vent. crít.`;
 
-    document.getElementById("flotaLowCountVal").textContent = `${lowUnits.length} unidades`;
-    document.getElementById("flotaLowCountSub").textContent = lowUnits.length ? `Ej: ${lowUnits.slice(0, 3).map(u => u.placa).join(", ")}` : "Toda la flota con carga óptima";
+    document.getElementById("execExpVal").textContent = `${(exposedKg / 1000).toFixed(1)} T`;
+    document.getElementById("execExpSub").textContent = `${exposedCli} clientes comprometidos`;
 
-    let sorted = [...fleetList];
-    if (state.fleetSort === "dist") sorted.sort((a, b) => b.estRouteKm - a.estRouteKm);
-    else if (state.fleetSort === "kg") sorted.sort((a, b) => b.kg - a.kg);
-    else if (state.fleetSort === "cli") sorted.sort((a, b) => b.clientCount - a.clientCount);
-    else if (state.fleetSort === "dens") sorted.sort((a, b) => b.densityKgKm - a.densityKgKm);
-    else if (state.fleetSort === "low") sorted.sort((a, b) => a.kg - b.kg);
+    document.getElementById("execSemaphoreCounts").innerHTML = `
+      <span class="sem-dot sem-rojo" title="Rojas (Alto/Crítico)">${rojos.length}</span>
+      <span class="sem-dot sem-amarillo" title="Amarillas (Revisión)">${amarillos.length}</span>
+      <span class="sem-dot sem-verde" title="Verdes (Sin alertas)">${verdes.length}</span>
+      <span class="sem-dot sem-negro" title="Negras (Info insuficiente/inválida)">${negros.length}</span>
+    `;
 
-    const tbody = document.getElementById("fleetRadarBody");
-    tbody.innerHTML = sorted.map((u, idx) => {
-      const isLow = u.kg < 450;
+    let sorted = [...routeAudits];
+    if (state.riskSort === "risk") sorted.sort((a, b) => b.riskScore - a.riskScore || b.kg - a.kg);
+    else if (state.riskSort === "win") sorted.sort((a, b) => b.criticalWinCount - a.criticalWinCount || b.riskScore - a.riskScore);
+    else if (state.riskSort === "outliers") sorted.sort((a, b) => b.outliersCount - a.outliersCount || b.riskScore - a.riskScore);
+    else if (state.riskSort === "kg") sorted.sort((a, b) => b.kg - a.kg);
+
+    document.getElementById("riskRadarBody").innerHTML = sorted.map((r, idx) => {
+      const riskCls = r.riskScore >= 61 ? "risk-high" : r.riskScore >= 31 ? "risk-med" : "risk-low";
       return `
         <tr>
           <td>#${idx + 1}</td>
-          <td>${u.placa}</td>
-          <td style="text-align:left; color:#e1bee7; font-weight:600;">${u.centro}</td>
-          <td>${u.clientCount}</td>
-          <td>${u.orderCount}</td>
-          <td>${isLow ? `<span class="badge-warn-low">${u.kg.toFixed(0)} kg</span>` : `${u.kg.toLocaleString("es-PE", { maximumFractionDigits: 0 })} kg`}</td>
-          <td>S/ ${u.soles.toLocaleString("es-PE", { maximumFractionDigits: 0 })}</td>
-          <td><strong>${u.estRouteKm.toFixed(1)} km</strong></td>
-          <td>${u.maxRadiusKm.toFixed(1)} km</td>
-          <td>${u.densityKgKm.toFixed(1)} kg/km</td>
+          <td>${r.centro}</td>
+          <td>${r.ruta}</td>
+          <td>${r.placa}</td>
+          <td>${r.clientCount}</td>
+          <td>${r.kg.toLocaleString("es-PE", { maximumFractionDigits: 0 })} kg</td>
+          <td><span class="badge-na">Pend. raw</span></td>
+          <td>${r.criticalWinCount > 0 ? `<strong style="color:#fde047;">${r.criticalWinCount}</strong>` : "0"}</td>
+          <td>${r.outliersCount > 0 ? `<strong style="color:#fca5a5;">${r.outliersCount}</strong>` : "0"}</td>
+          <td><span class="risk-pill ${riskCls}">${r.riskScore}/100</span></td>
+          <td><span class="sem-dot ${r.semClass}">${r.semaphore}</span></td>
+          <td>${r.finding}</td>
         </tr>
       `;
     }).join("");
   }
 
-  // PESTAÑA 2: MIX DE PRODUCTOS (SKUs)
+  // PESTAÑA 2: EVALUACIÓN ESTRUCTURAL DE VENTANAS HORARIAS (COL S)
+  function renderTabVentanas({ clients }) {
+    const validWin  = clients.filter(c => c.win.status === "VALID");
+    const narrowWin = validWin.filter(c => c.win.isNarrow);
+    const earlyWin  = validWin.filter(c => c.win.isEarlyClose);
+    const badOrMiss = clients.filter(c => c.win.status !== "VALID");
+
+    document.getElementById("winValidVal").textContent  = `${validWin.length} / ${clients.length} cli.`;
+    document.getElementById("winValidSub").textContent  = `${clients.length ? Math.round((validWin.length / clients.length) * 100) : 0}% con horario estructurado en Col S`;
+
+    document.getElementById("winNarrowVal").textContent = `${narrowWin.length} clientes`;
+    document.getElementById("winNarrowSub").textContent = `${(narrowWin.reduce((s, c) => s + c.kg, 0) / 1000).toFixed(1)} T en ventanas <= 2h`;
+
+    document.getElementById("winEarlyVal").textContent  = `${earlyWin.length} clientes`;
+    document.getElementById("winEarlySub").textContent  = `${(earlyWin.reduce((s, c) => s + c.kg, 0) / 1000).toFixed(1)} T con cierre <= 11:00 AM`;
+
+    document.getElementById("winBadVal").textContent    = `${badOrMiss.length} registros`;
+    document.getElementById("winBadSub").textContent    = `Sin dato o formato inválido en Col S`;
+
+    // Agrupar franjas exactas detectadas en Columna S
+    const bracketMap = new Map();
+    clients.forEach(c => {
+      const label = c.win.status === "VALID" ? `${c.win.startStr} - ${c.win.endStr}` : (c.win.raw || "Sin Ventana Informada");
+      if (!bracketMap.has(label)) {
+        bracketMap.set(label, {
+          label,
+          status: c.win.status,
+          isNarrow: c.win.isNarrow,
+          isEarlyClose: c.win.isEarlyClose,
+          count: 0,
+          kg: 0
+        });
+      }
+      const b = bracketMap.get(label);
+      b.count++;
+      b.kg += c.kg;
+    });
+
+    const brackets = Array.from(bracketMap.values()).sort((a, b) => b.count - a.count);
+    const maxB = Math.max(1, brackets[0]?.count || 1);
+
+    document.getElementById("windowBracketsList").innerHTML = brackets.map(b => {
+      const wPct = Math.round((b.count / maxB) * 100);
+      const tag = b.status !== "VALID"
+        ? `<span class="traffic-level lvl-critico">REVISAR</span>`
+        : (b.isNarrow || b.isEarlyClose)
+          ? `<span class="traffic-level lvl-alto">RESTRICTIVA</span>`
+          : `<span class="traffic-level lvl-medio">ESTÁNDAR</span>`;
+
+      return `
+        <div class="sku-row-card">
+          <div class="sku-row-top">
+            <span class="sku-row-name">${b.label}</span>
+            <div style="display:flex; align-items:center; gap:6px;">
+              ${tag}
+              <strong style="font-size:0.72rem; color:#18181b;">${b.count} cli.</strong>
+            </div>
+          </div>
+          <div class="sku-bar-bg"><div class="sku-bar-fill" style="width:${wPct}%"></div></div>
+          <div class="sku-row-sub">
+            <span>Participación: ${clients.length ? ((b.count / clients.length) * 100).toFixed(1) : 0}% de cartera</span>
+            <span>${(b.kg / 1000).toFixed(2)} T comprometidas</span>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    // Tabla derecha: Clientes prioritarios por ventana estrecha o cierre temprano
+    const priorityClients = validWin
+      .filter(c => c.win.isNarrow || c.win.isEarlyClose)
+      .sort((a, b) => a.win.endMin - b.win.endMin || a.win.durationMin - b.win.durationMin);
+
+    document.getElementById("priorityWindowsBody").innerHTML = priorityClients.length
+      ? priorityClients.slice(0, 60).map(c => {
+          const hrs = (c.win.durationMin / 60).toFixed(1);
+          return `
+            <tr>
+              <td style="color:#fff; font-weight:700; max-width:165px; overflow:hidden; text-overflow:ellipsis;">${c.nombre}</td>
+              <td>${c.centro}</td>
+              <td>${c.placa}</td>
+              <td style="text-align:right; color:#fde047; font-weight:800;">${c.win.startStr} - ${c.win.endStr}</td>
+              <td>${hrs} h</td>
+              <td>${c.kg.toLocaleString("es-PE", { maximumFractionDigits: 1 })} kg</td>
+            </tr>
+          `;
+        }).join("")
+      : `<tr><td colspan="6" style="text-align:center; color:#a1a1aa; padding:16px;">No se detectaron ventanas restrictivas (&le;2h) ni cierres tempranos (&le;11:00) en este filtro.</td></tr>`;
+  }
+
+  function renderTabCalidad(dq, { routeAudits }) {
+    document.getElementById("dqScoreBadge").textContent = `Integridad: ${dq.integrityPct}%`;
+
+    document.getElementById("dataQualityList").innerHTML = dq.checks.map(chk => `
+      <div class="dq-item dq-item--${chk.sev}">
+        <div class="dq-top">
+          <strong>${chk.title}</strong>
+          <span class="dq-count">${chk.count} reg. (${chk.pct}%)</span>
+        </div>
+        <div class="dq-desc">${chk.desc}</div>
+      </div>
+    `).join("");
+
+    const diffKg = Math.abs(dq.totalKgRaw - (dq.totalKgValid + dq.totalKgExcluded));
+    document.getElementById("reconcilStatusBadge").textContent = diffKg < 0.01 ? "CONCILIACIÓN APROBADA" : "OBSERVADA";
+
+    document.getElementById("reconciliationGrid").innerHTML = `
+      <div class="rec-box"><span>Total Registros Raw</span><strong>${dq.total.toLocaleString("es-PE")} filas</strong></div>
+      <div class="rec-box"><span>Registros Válidos / Excluidos</span><strong>${dq.validCount.toLocaleString("es-PE")} / ${dq.excludedCount}</strong></div>
+      <div class="rec-box"><span>Peso Total Archivo Raw</span><strong>${dq.totalKgRaw.toLocaleString("es-PE", { maximumFractionDigits: 1 })} kg</strong></div>
+      <div class="rec-box"><span>Peso Válido Analizado</span><strong>${dq.totalKgValid.toLocaleString("es-PE", { maximumFractionDigits: 1 })} kg</strong></div>
+      <div class="rec-box"><span>Diferencia de Reconciliación</span><strong>${diffKg.toFixed(2)} kg</strong></div>
+      <div class="rec-box"><span>Rutas Evaluadas / Bloqueadas</span><strong>${routeAudits.filter(r => r.semaphore !== "NEGRO").length} / ${routeAudits.filter(r => r.semaphore === "NEGRO").length}</strong></div>
+    `;
+
+    document.getElementById("coverageLimitationsList").innerHTML = `
+      <li><strong>Granularidad:</strong> Línea de pedido/producto (Fecha + Centro + Pedido + Cliente + SKU + Placa + Ruta).</li>
+      <li><strong>Dimensiones Evaluadas (5/6):</strong> Calidad de datos, Geografía (Haversine + IQR), Ventanas Horarias (Columna S), Complejidad/Canal y Balance de carga.</li>
+      <li><strong>Bloqueado por dato faltante (1/6):</strong> Capacidad vehicular máxima por placa (pendiente raw) y hora de salida/secuencia para simulación dinámica de llegada.</li>
+    `;
+  }
+
+  function renderTabGeo({ clients, allOutliers, rangeStats, trafficStats }) {
+    document.getElementById("outliersCountTag").textContent = `${allOutliers.length} detectados`;
+
+    const sortedOutliers = [...allOutliers].sort((a, b) => b.distToCentroid - a.distToCentroid);
+    document.getElementById("geoOutliersList").innerHTML = sortedOutliers.length
+      ? sortedOutliers.map(o => `
+          <div class="outlier-card">
+            <div class="outlier-top">
+              <strong>${o.nombre}</strong>
+              <span class="traffic-level lvl-alto">+${o.distToCentroid.toFixed(1)} km</span>
+            </div>
+            <div class="outlier-sub">
+              <span>${o.centro} • ${o.placa} (${o.ruta})</span>
+              <span>Umbral IQR: ${o.thresholdKm.toFixed(1)} km • ${o.kg.toFixed(1)} kg</span>
+            </div>
+          </div>
+        `).join("")
+      : `<div style="padding:12px; color:#71717a; font-size:0.75rem;">Ningún cliente supera el umbral relativo Q3 + 1.5×IQR en su ruta.</div>`;
+
+    const totalCli = Math.max(1, clients.length);
+    document.getElementById("kgRangesContainer").innerHTML = rangeStats.map(rng => {
+      const pct = Math.round((rng.count / totalCli) * 100);
+      const segsHtml = ["DET", "FSE", "MES", "MOD"].map(ch => {
+        const w = rng.count > 0 ? (rng.byChannel[ch] / rng.count) * 100 : 0;
+        return `<div class="radar-stacked-seg" style="width:${w}%; background:${CHANNEL_COLORS[ch]};"></div>`;
+      }).join("");
+      return `
+        <div class="radar-range-row">
+          <div class="radar-range-top">
+            <strong>${rng.label}</strong>
+            <span style="font-size:0.68rem; font-weight:700;">${rng.count} cli. (${pct}%) • ${(rng.totalKg / 1000).toFixed(1)} T</span>
+          </div>
+          <div class="radar-stacked-bar">${segsHtml}</div>
+          <div class="radar-range-ch-detail">
+            <span>DET: <b>${rng.byChannel.DET}</b> • FSE: <b>${rng.byChannel.FSE}</b> • MES: <b>${rng.byChannel.MES}</b> • MOD: <b>${rng.byChannel.MOD}</b></span>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    document.getElementById("trafficZonesList").innerHTML = trafficStats.map(z => `
+      <div class="radar-traffic-item">
+        <div class="radar-traffic-top">
+          <strong>${z.name}</strong>
+          <span class="traffic-level ${z.cls}">${z.level}</span>
+        </div>
+        <div class="radar-traffic-meta">
+          <span>${z.reason}</span>
+          <span><b>${z.clientCount}</b> cli. • <b>${(z.totalKg / 1000).toFixed(1)} T</b> • <b>${z.platesCount}</b> u.</span>
+        </div>
+      </div>
+    `).join("");
+  }
+
   function renderTabProductos({ clients, products }) {
     const totalCli = Math.max(1, clients.length);
     const byClients = [...products].sort((a, b) => b.clientCount - a.clientCount || b.kg - a.kg);
@@ -462,12 +887,10 @@
       document.getElementById("prodTopCliName").textContent = byClients[0].nombre;
       document.getElementById("prodTopCliSub").textContent  = `En ${byClients[0].clientCount} clientes (${cov}% cobertura) • ${byClients[0].kg.toFixed(0)} kg`;
     }
-
     if (byKg[0]) {
       document.getElementById("prodTopKgName").textContent = byKg[0].nombre;
       document.getElementById("prodTopKgSub").textContent  = `${(byKg[0].kg / 1000).toFixed(2)} T • ${byKg[0].clientCount} clientes`;
     }
-
     if (leastSold[0]) {
       document.getElementById("prodLowCliName").textContent = leastSold[0].nombre;
       document.getElementById("prodLowCliSub").textContent  = `Solo en ${leastSold[0].clientCount} cliente(s) • ${leastSold[0].kg.toFixed(1)} kg`;
@@ -475,15 +898,14 @@
 
     const maxCliCount = Math.max(1, byClients[0]?.clientCount || 1);
 
-    // Top 15 más vendidos (por cobertura de clientes)
-    document.getElementById("topProductsList").innerHTML = byClients.slice(0, 15).map((p, i) => {
+    document.getElementById("topProductsList").innerHTML = byClients.slice(0, 18).map((p, i) => {
       const covPct = Math.round((p.clientCount / totalCli) * 100);
       const barW = Math.round((p.clientCount / maxCliCount) * 100);
       return `
         <div class="sku-row-card">
           <div class="sku-row-top">
             <span class="sku-row-name">#${i + 1} ${p.nombre}</span>
-            <span class="sku-row-metrics">${p.clientCount} cli. (${covPct}%)</span>
+            <span style="font-weight:800; color:#6a1b9a; font-size:0.7rem;">${p.clientCount} cli. (${covPct}%)</span>
           </div>
           <div class="sku-bar-bg"><div class="sku-bar-fill" style="width:${barW}%"></div></div>
           <div class="sku-row-sub">
@@ -494,14 +916,13 @@
       `;
     }).join("");
 
-    // Top 15 menos vendidos (oportunidades de impulsar venta)
-    document.getElementById("lowProductsList").innerHTML = leastSold.slice(0, 15).map((p, i) => {
+    document.getElementById("lowProductsList").innerHTML = leastSold.slice(0, 18).map((p, i) => {
       const covPct = ((p.clientCount / totalCli) * 100).toFixed(1);
       return `
         <div class="sku-row-card">
           <div class="sku-row-top">
             <span class="sku-row-name">#${i + 1} ${p.nombre}</span>
-            <span class="sku-row-metrics">${p.clientCount} cli. (${covPct}%)</span>
+            <span style="font-weight:800; color:#fde047; font-size:0.7rem;">${p.clientCount} cli. (${covPct}%)</span>
           </div>
           <div class="sku-bar-bg"><div class="sku-bar-fill" style="width:${Math.max(5, Math.round((p.clientCount / maxCliCount) * 100))}%"></div></div>
           <div class="sku-row-sub">
@@ -513,156 +934,18 @@
     }).join("");
   }
 
-  // PESTAÑA 3: RANGOS DE PESO & CLIENTES
-  function renderTabRangos({ clients, rangeStats }) {
-    const container = document.getElementById("kgRangesContainer");
-    const btnReset  = document.getElementById("btnResetRangeFilter");
-    btnReset.classList.toggle("is-hidden", !state.selectedRangeId);
-
-    const totalCli = Math.max(1, clients.length);
-
-    container.innerHTML = "";
-    rangeStats.forEach(rng => {
-      const pct = Math.round((rng.count / totalCli) * 100);
-      const isSel = state.selectedRangeId === rng.id;
-
-      const segsHtml = ["DET", "FSE", "MES", "MOD"].map(ch => {
-        const w = rng.count > 0 ? (rng.byChannel[ch] / rng.count) * 100 : 0;
-        return `<div class="radar-stacked-seg" style="width:${w}%; background:${CHANNEL_COLORS[ch]};"></div>`;
-      }).join("");
-
-      const row = document.createElement("div");
-      row.className = `radar-range-row ${isSel ? "is-selected" : ""}`;
-      row.innerHTML = `
-        <div class="radar-range-top">
-          <strong>${rng.label}</strong>
-          <div class="radar-range-stats">
-            <span>${rng.count} clientes</span>
-            <span>${(rng.totalKg / 1000).toFixed(1)} T</span>
-            <span class="radar-range-pct">${pct}%</span>
-          </div>
-        </div>
-        <div class="radar-stacked-bar">${segsHtml}</div>
-        <div class="radar-range-ch-detail">
-          <span>DET: <b>${rng.byChannel.DET}</b> • FSE: <b>${rng.byChannel.FSE}</b> • MES: <b>${rng.byChannel.MES}</b> • MOD: <b>${rng.byChannel.MOD}</b></span>
-          <span>Prom: ${rng.count ? (rng.totalKg / rng.count).toFixed(1) : 0} kg/cli</span>
-        </div>
-      `;
-      row.addEventListener("click", () => {
-        state.selectedRangeId = (state.selectedRangeId === rng.id) ? null : rng.id;
-        renderTabRangos({ clients, rangeStats });
-      });
-      container.appendChild(row);
-    });
-
-    // Tabla derecha de clientes del rango seleccionado (o todos)
-    let listClients = [...clients];
-    const titleEl = document.getElementById("rangeDetailTitle");
-    const subEl   = document.getElementById("rangeDetailSub");
-
-    if (state.selectedRangeId) {
-      const found = rangeStats.find(r => r.id === state.selectedRangeId);
-      listClients = found ? [...found.clients] : [];
-      titleEl.textContent = `Clientes en Rango: ${found?.label || ""}`;
-      subEl.textContent   = `${listClients.length} puntos de venta en este tramo`;
-    } else {
-      titleEl.textContent = "Todos los Clientes (Top por Peso)";
-      subEl.textContent   = "Haz clic en un rango a la izquierda para filtrar";
-    }
-
-    listClients.sort((a, b) => b.kg - a.kg);
-    document.getElementById("rangeClientsBody").innerHTML = listClients.slice(0, 60).map(c => {
-      const chColor = CHANNEL_COLORS[c.canal] || "#a1a1aa";
-      return `
-        <tr>
-          <td style="color:#fff; font-weight:700; max-width:170px; overflow:hidden; text-overflow:ellipsis;">${c.nombre}</td>
-          <td style="text-align:left;"><span style="color:${chColor}; font-weight:800;">● ${c.canal}</span></td>
-          <td>${c.placa}</td>
-          <td>${c.distFromCd.toFixed(1)} km</td>
-          <td><strong>${c.kg.toLocaleString("es-PE", { maximumFractionDigits: 1 })} kg</strong></td>
-          <td>S/ ${c.soles.toLocaleString("es-PE", { maximumFractionDigits: 0 })}</td>
-        </tr>
-      `;
-    }).join("");
-  }
-
-  // PESTAÑA 4: ZONAS CRÍTICAS & TRÁFICO VIAL
-  function renderTabTrafico({ trafficStats }) {
-    const listEl = document.getElementById("trafficZonesList");
-    listEl.innerHTML = "";
-
-    if (!trafficStats.length) {
-      listEl.innerHTML = `<div style="padding:14px; color:#71717a; font-size:0.78rem;">No se detectaron entregas en corredores críticos para este filtro.</div>`;
-      document.getElementById("trafficClientsBody").innerHTML = "";
-      return;
-    }
-
-    // Si no hay zona seleccionada o ya no existe en el filtro actual, seleccionar la primera
-    if (!state.selectedTrafficId || !trafficStats.some(z => z.id === state.selectedTrafficId)) {
-      state.selectedTrafficId = trafficStats[0].id;
-    }
-
-    trafficStats.forEach(z => {
-      const isSel = z.id === state.selectedTrafficId;
-      const div = document.createElement("div");
-      div.className = `radar-traffic-item ${isSel ? "is-selected" : ""}`;
-      div.innerHTML = `
-        <div class="radar-traffic-top">
-          <strong>${z.name}</strong>
-          <span class="traffic-level ${z.cls}">${z.level}</span>
-        </div>
-        <div class="radar-traffic-meta">
-          <span>${z.reason}</span>
-          <span><b>${z.clientCount}</b> cli. • <b>${(z.totalKg / 1000).toFixed(1)} T</b> • <b>${z.platesCount}</b> u.</span>
-        </div>
-      `;
-      div.addEventListener("click", () => {
-        state.selectedTrafficId = z.id;
-        renderTabTrafico({ trafficStats });
-      });
-      listEl.appendChild(div);
-    });
-
-    const activeZone = trafficStats.find(z => z.id === state.selectedTrafficId) || trafficStats[0];
-    document.getElementById("trafficDetailTitle").textContent = activeZone.name;
-    document.getElementById("trafficDetailSub").textContent   = `${activeZone.clientCount} entregas programadas • ${activeZone.platesCount} unidades involucradas`;
-    document.getElementById("trafficZoneBadge").textContent   = activeZone.level;
-
-    const zClients = [...activeZone.clients].sort((a, b) => b.kg - a.kg);
-    document.getElementById("trafficClientsBody").innerHTML = zClients.slice(0, 60).map(c => {
-      const chColor = CHANNEL_COLORS[c.canal] || "#a1a1aa";
-      return `
-        <tr>
-          <td style="color:#fff; font-weight:700; max-width:180px; overflow:hidden; text-overflow:ellipsis;">${c.nombre}</td>
-          <td style="text-align:left;"><span style="color:${chColor}; font-weight:800;">● ${c.canal}</span></td>
-          <td style="text-align:left; color:#e1bee7;">${c.centro}</td>
-          <td>${c.placa}</td>
-          <td><strong>${c.kg.toLocaleString("es-PE", { maximumFractionDigits: 1 })} kg</strong></td>
-        </tr>
-      `;
-    }).join("");
-  }
-
-  /* ==========================================================================
-     EVENTOS DE NAVEGACIÓN POR PESTAÑAS Y FILTROS
-     ========================================================================== */
   function bindEvents() {
-    // Cambio de pestaña
     document.querySelectorAll(".radar-tab-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         document.querySelectorAll(".radar-tab-btn").forEach(b => b.classList.remove("is-active"));
         btn.classList.add("is-active");
-
         const targetId = btn.getAttribute("data-tab");
         state.activeTab = targetId;
-
-        document.querySelectorAll(".radar-pane").forEach(pane => pane.classList.remove("is-active"));
-        const targetPane = document.getElementById(targetId);
-        if (targetPane) targetPane.classList.add("is-active");
+        document.querySelectorAll(".radar-pane").forEach(p => p.classList.remove("is-active"));
+        document.getElementById(targetId)?.classList.add("is-active");
       });
     });
 
-    // Filtro por Centro
     document.querySelectorAll(".radar-pill").forEach(pill => {
       pill.addEventListener("click", () => {
         document.querySelectorAll(".radar-pill").forEach(p => p.classList.remove("is-active"));
@@ -672,20 +955,13 @@
       });
     });
 
-    // Ordenamiento de flota
     document.querySelectorAll(".radar-sort-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         document.querySelectorAll(".radar-sort-btn").forEach(b => b.classList.remove("is-active"));
         btn.classList.add("is-active");
-        state.fleetSort = btn.getAttribute("data-sort");
+        state.riskSort = btn.getAttribute("data-sort");
         renderAll();
       });
-    });
-
-    // Limpiar filtro de rango
-    document.getElementById("btnResetRangeFilter").addEventListener("click", () => {
-      state.selectedRangeId = null;
-      renderAll();
     });
   }
 
@@ -693,7 +969,7 @@
     try {
       const text = await loadCSVWithFallback();
       const { header, rows } = parseCSV(text);
-      detectProductColumns(header);
+      detectColumns(header);
       allRows = rows;
       bindEvents();
       renderAll();
