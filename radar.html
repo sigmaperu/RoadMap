@@ -12,12 +12,12 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
   <!-- Estilos globales y específicos de Radar -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=6.0">
-  <link rel="stylesheet" href="assets/css/radar.css?v=6.0">
+  <link rel="stylesheet" href="assets/css/styles.css?v=7.0">
+  <link rel="stylesheet" href="assets/css/radar.css?v=7.0">
 
   <!-- Scripts -->
   <script defer src="assets/js/main.js"></script>
-  <script defer src="assets/js/radar.js?v=6.0"></script>
+  <script defer src="assets/js/radar.js?v=7.0"></script>
 </head>
 
 <body data-title="Radar de Distribución">
@@ -100,12 +100,12 @@
               <div class="r-stat-card r-stat-card--dark">
                 <span class="r-stat-lbl">Semáforo de Flota</span>
                 <div class="semaphore-pills" id="execSemaphoreCounts">
-                  <span class="sem-dot sem-rojo" title="Riesgo Alto/Crítico">0</span>
-                  <span class="sem-dot sem-amarillo" title="Requiere Revisión">0</span>
-                  <span class="sem-dot sem-verde" title="Sin Alertas">0</span>
-                  <span class="sem-dot sem-negro" title="100% sin coordenadas">0</span>
+                  <span class="sem-dot sem-rojo" title="Rojo: Score >= 61">0</span>
+                  <span class="sem-dot sem-amarillo" title="Amarillo: Score 31 - 60">0</span>
+                  <span class="sem-dot sem-verde" title="Verde: Score <= 30">0</span>
+                  <span class="sem-dot sem-negro" title="Negro: 100% sin coordenadas">0</span>
                 </div>
-                <span class="r-stat-sub" style="color:#a1a1aa;">Rojo • Amarillo • Verde • Negro</span>
+                <span class="r-stat-sub" style="color:#a1a1aa;">Rojo (&ge;61) • Amar. (31-60) • Verde (&le;30)</span>
               </div>
             </div>
 
@@ -113,7 +113,7 @@
               <div class="radar-panel__head">
                 <div>
                   <h3>Radar General por Placa & Planning Risk Score (0–100)</h3>
-                  <span class="radar-panel__hint">Haz clic en cualquier placa para auditar cliente por cliente sus defectos de VH, coordenadas o dispersión</span>
+                  <span class="radar-panel__hint">Semáforo estrictamente alineado al puntaje: Rojo (&ge;61) • Amarillo (31–60) • Verde (&le;30) | Clic en placa para detalle</span>
                 </div>
                 <div class="radar-sort-pills">
                   <button type="button" class="radar-sort-btn is-active" data-sort="risk">Mayor Riesgo</button>
@@ -170,9 +170,14 @@
                 <span id="winEarlySub" class="r-stat-sub">Requieren prioridad de salida</span>
               </div>
               <div class="r-stat-card">
-                <span class="r-stat-lbl">Ventanas Inválidas / Sin Dato</span>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:6px;">
+                  <span class="r-stat-lbl">Ventanas Inválidas / Sin Dato</span>
+                  <button type="button" id="btnExportWinIssues" class="radar-export-btn" title="Descargar CSV con clientes sin VH o con VH inválida">
+                    <span class="material-icons">download</span> CSV
+                  </button>
+                </div>
                 <strong id="winBadVal" class="r-stat-val">–</strong>
-                <span id="winBadSub" class="r-stat-sub">Simulación completa: NO EVALUABLE</span>
+                <span id="winBadSub" class="r-stat-sub">Clic en CSV para descargar incidencias</span>
               </div>
             </div>
 
@@ -181,7 +186,7 @@
                 <div class="radar-panel__head">
                   <div>
                     <h3>Distribución de Ventanas Horarias</h3>
-                    <span class="radar-panel__hint">Agrupación de franjas detectadas y clientes/kilogramos comprometidos</span>
+                    <span class="radar-panel__hint">Agrupación de franjas detectadas (formato 24h) y clientes/kilogramos comprometidos</span>
                   </div>
                   <span class="radar-tag-plum">Evaluación Estructural</span>
                 </div>
@@ -377,13 +382,11 @@
     </header>
 
     <div class="drawer-body">
-      <!-- Desglose del Risk Score por Dimensión -->
       <section class="drawer-section">
         <h4>Desglose de Riesgo por Dimensión Evaluable</h4>
         <div id="drawerScoreGrid" class="drawer-score-grid"></div>
       </section>
 
-      <!-- Defectos y Alertas Específicas por Cliente -->
       <section class="drawer-section">
         <div class="drawer-sec-head">
           <h4>Defectos y Alertas por Cliente</h4>
@@ -392,7 +395,6 @@
         <div id="drawerDefectsList" class="drawer-defects-list"></div>
       </section>
 
-      <!-- Listado Completo de Clientes de la Placa -->
       <section class="drawer-section">
         <div class="drawer-sec-head">
           <h4>Cartera Asignada a la Placa</h4>
