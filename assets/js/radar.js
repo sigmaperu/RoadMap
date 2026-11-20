@@ -103,42 +103,64 @@
     return "OTRO";
   }
 
-  // Parser de Ventana Horaria ("08:00 - 12:00", "08:00 a 13:00", etc.)
+// Parser de Ventana Horaria con soporte completo para sufijos AM / PM y reloj 24h
   function parseTimeWindow(rawWin) {
     const raw = String(rawWin ?? "").trim();
     if (!raw) return { raw, status: "MISSING", startMin: null, endMin: null, durationMin: 0 };
 
-    const matches = raw.match(/(\d{1,2}):(\d{2})/g);
-    if (!matches || matches.length < 2) {
+    // Captura HH:MM seguido opcionalmente de AM / PM / a.m. / p.m.
+    const matches = Array.from(raw.matchAll(/(\d{1,2}):(\d{2})\s*([AaPp]\.?\s*[Mm]\.?)?/g));
+    if (matches.length < 2) {
       return { raw, status: "INVALID_FORMAT", startMin: null, endMin: null, durationMin: 0 };
     }
 
-    const toMins = hhmm => {
-      const [h, m] = hhmm.split(":").map(Number);
-      if (h < 0 || h > 23 || m < 0 || m > 59) return null;
-      return h * 60 + m;
+    const parsePart = (m) => {
+      let h = parseInt(m[1], 10);
+      const min = parseInt(m[2], 10);
+      const mer = (m[3] || "").replace(/[\.\s]/g, "").toUpperCase();
+
+      if (min < 0 || min > 59) return null;
+
+      if (mer === "AM" || mer === "PM") {
+        if (h < 1 || h > 12) return null;
+        if (mer === "AM" && h === 12) h = 0;
+        if (mer === "PM" && h !== 12) h += 12;
+      } else {
+        if (h < 0 || h > 23) return null;
+      }
+
+      const hh = String(h).padStart(2, "0");
+      const mm = String(min).padStart(2, "0");
+      return { mins: h * 60 + min, str24: `${hh}:${mm}` };
     };
 
-    const startMin = toMins(matches[0]);
-    const endMin   = toMins(matches[1]);
-    if (startMin === null || endMin === null) {
+    const startObj = parsePart(matches[0]);
+    const endObj   = parsePart(matches[1]);
+
+    if (!startObj || !endObj) {
       return { raw, status: "INVALID_TIME", startMin: null, endMin: null, durationMin: 0 };
     }
-    if (startMin >= endMin) {
-      return { raw, status: "REVERSED", startMin, endMin, durationMin: endMin - startMin };
+    if (startObj.mins >= endObj.mins) {
+      return {
+        raw,
+        status: "REVERSED",
+        startMin: startObj.mins,
+        endMin: endObj.mins,
+        durationMin: endObj.mins - startObj.mins
+      };
     }
 
-    const durationMin = endMin - startMin;
-    const isNarrow = durationMin <= 120; // <= 2 horas
-    const isEarlyClose = endMin <= 11 * 60; // Cierra <= 11:00 AM
+    const durationMin  = endObj.mins - startObj.mins;
+    const isNarrow     = durationMin <= 120;      // <= 2 horas
+    const isEarlyClose = endObj.mins <= 11 * 60;  // Cierra <= 11:00 AM
 
     return {
       raw,
       status: "VALID",
-      startStr: matches[0],
-      endStr: matches[1],
-      startMin,
-      endMin,
+      startStr: startObj.str24,
+      endStr: endObj.str24,
+      startMin: startObj.mins,
+      endMin: endObj.mins,
       durationMin,
       isNarrow,
       isEarlyClose
