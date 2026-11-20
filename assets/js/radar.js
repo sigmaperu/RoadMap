@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - radar.js (Semáforo Negro Estricto + Auditoría Detallada al Clic)
+   RoadMap - radar.js (Semáforo Coherente con Risk Score + Exportador CSV VH)
    ========================================================================== */
 
 (() => {
@@ -103,12 +103,11 @@
     return "OTRO";
   }
 
-// Parser de Ventana Horaria con soporte completo para sufijos AM / PM y reloj 24h
+  // Parser de Ventana Horaria con soporte completo AM / PM y reloj 24h
   function parseTimeWindow(rawWin) {
     const raw = String(rawWin ?? "").trim();
     if (!raw) return { raw, status: "MISSING", startMin: null, endMin: null, durationMin: 0 };
 
-    // Captura HH:MM seguido opcionalmente de AM / PM / a.m. / p.m.
     const matches = Array.from(raw.matchAll(/(\d{1,2}):(\d{2})\s*([AaPp]\.?\s*[Mm]\.?)?/g));
     if (matches.length < 2) {
       return { raw, status: "INVALID_FORMAT", startMin: null, endMin: null, durationMin: 0 };
@@ -239,8 +238,8 @@
 
   let IDX = {
     FECHA: 0, CENTRO: 1, PLACA: 2, CLIENTE: 3, NOMBRE: 4, RUTA: 6, PEDIDO: 7,
-    SKU_COD: 8, SKU_DESC: 9, KG: 10, SOLES: 11, DIRECCION: 15, LAT: 16, LNG: 17,
-    VENTANA: 18, CANAL: 19
+    SKU_COD: 8, SKU_DESC: 9, KG: 10, SOLES: 11, CIUDAD: 14, DIRECCION: 15,
+    LAT: 16, LNG: 17, VENTANA: 18, CANAL: 19
   };
 
   function detectColumns(header) {
@@ -250,6 +249,7 @@
       if (u.includes("MATERIAL") || u.includes("COD_PROD") || u === "SKU") IDX.SKU_COD = i;
       if (u.includes("DESCRIP") || u.includes("PRODUCTO") || u === "ARTICULO") IDX.SKU_DESC = i;
       if (u.includes("VENTANA") || u.includes("HORARIO")) IDX.VENTANA = i;
+      if (u.includes("DISTRITO") || u.includes("CIUDAD") || u.includes("POBLAC")) IDX.CIUDAD = i;
     });
   }
 
@@ -267,6 +267,7 @@
 
   let allRows = [];
   let currentUnitAuditsMap = new Map();
+  let lastAnalyzedClients = [];
   let state = {
     activeTab: "tab-riesgo",
     selectedCenter: "Todos",
@@ -391,13 +392,14 @@
   }
 
   /* ==========================================================================
-     2. MOTOR ANALÍTICO POR PLACA CON DETECCIÓN DE DEFECTOS POR CLIENTE
+     2. MOTOR ANALÍTICO POR PLACA CON COHERENCIA ESTRICTA SCORE <-> SEMÁFORO
      ========================================================================== */
   function analyzeOperation(filteredRows) {
     const clientsMap = new Map();
     filteredRows.forEach(r => {
       const cli = cleanStr(r[IDX.CLIENTE]);
       if (!cli) return;
+      const fecha = cleanStr(r[IDX.FECHA]).split(" ")[0];
       const centro = cleanStr(r[IDX.CENTRO]);
       const lat = parseFloat(String(r[IDX.LAT] ?? "").replace(",", "."));
       const lng = parseFloat(String(r[IDX.LNG] ?? "").replace(",", "."));
@@ -412,11 +414,15 @@
         const winParsed = parseTimeWindow(r[IDX.VENTANA]);
 
         clientsMap.set(cli, {
+          fecha,
           cod: cli,
           nombre: cleanStr(r[IDX.NOMBRE]) || cli,
           centro,
+          ruta: cleanStr(r[IDX.RUTA]) || "-",
           placa: upperStr(r[IDX.PLACA]),
           canal: normalizeChannelCode(r[IDX.CANAL]),
+          ciudad: cleanStr(r[IDX.CIUDAD]) || "-",
+          direccion: cleanStr(r[IDX.DIRECCION]) || "-",
           lat, lng,
           hasValidCoord: isValidCoord(lat, lng),
           distFromCd,
@@ -490,7 +496,7 @@
       const criticalWinStops = stops.filter(s => s.win.status === "VALID" && (s.win.isNarrow || s.win.isEarlyClose));
       const invalidWinStops  = stops.filter(s => s.win.status === "REVERSED" || s.win.status === "INVALID_FORMAT" || s.win.status === "INVALID_TIME");
 
-      // Centroide e IQR geográfico de la placa
+      // Centroide e IQR geográfico
       let centLat = 0, centLng = 0;
       if (validStops.length > 0) {
         centLat = validStops.reduce((s, p) => s + p.lat, 0) / validStops.length;
@@ -519,7 +525,7 @@
         });
       });
 
-      // Lista detallada de defectos y alertas por cliente para el Drawer al hacer clic
+      // Defectos detallados por cliente
       const clientDefects = [];
       stops.forEach(s => {
         if (!s.hasValidCoord) {
@@ -593,13 +599,13 @@
       const maxClientShare = unit.kg > 0 ? (maxClientKg / unit.kg) * 100 : 0;
 
       // Puntajes por Dimensión Evaluable (0-100)
-      const geoScore  = Math.min(100, (unitOutliers.length * 32) + (linearRouteKm > 65 ? 25 : 0));
-      const winScore  = Math.min(100, (criticalWinStops.length * 16) + (invalidWinStops.length * 35));
+      const geoScore  = Math.min(100, (unitOutliers.length * 34) + (linearRouteKm > 65 ? 25 : 0));
+      const winScore  = Math.min(100, (criticalWinStops.length * 18) + (invalidWinStops.length * 35));
       const compScore = Math.min(100, (stops.length > 35 ? 45 : stops.length > 25 ? 25 : 10) + (unit.channelsSet.size >= 3 ? 25 : 0));
       const balScore  = Math.min(100, (unit.kg < 400 ? 65 : 0) + (maxClientShare > 50 ? 35 : 0));
       const dqScore   = Math.min(100, (missingCoordStops.length * 35) + (invalidWinStops.length * 35));
 
-      const riskScore = Math.round(
+      let riskScore = Math.round(
         (geoScore  * 0.33) +
         (winScore  * 0.33) +
         (compScore * 0.14) +
@@ -607,34 +613,35 @@
         (dqScore   * 0.08)
       );
 
+      // Si hay condiciones críticas múltiples (ej. >= 2 atípicos geo o >= 5 ventanas críticas),
+      // aseguramos piso de riesgo Alto (>= 61) para mantener coherencia total entre Score y Color.
+      if (unitOutliers.length >= 2 || criticalWinStops.length >= 5) {
+        riskScore = Math.max(riskScore, 62);
+      }
+
       // ======================================================================
-      // SEMÁFORO NEGRO ESTRICTO (ELIMINA SESGOS):
-      // Solo es NEGRO si 0% de sus paradas tienen coordenadas válidas (imposible evaluar geográficamente).
-      // Defectos parciales de VH o coordenadas puntuales suman al Risk Score (Amarillo/Rojo) sin bloquear toda la placa en Negro.
+      // SEMÁFORO 100% COHERENTE CON EL PLANNING RISK SCORE:
+      // - NEGRO: 100% sin coordenadas válidas (no evaluable)
+      // - ROJO: Score >= 61
+      // - AMARILLO: Score 31 a 60
+      // - VERDE: Score <= 30
       // ======================================================================
       let semaphore = "VERDE";
       let semClass = "sem-verde";
       if (validStops.length === 0) {
         semaphore = "NEGRO";
         semClass = "sem-negro";
-      } else if (riskScore >= 61 || unitOutliers.length >= 2 || criticalWinStops.length >= 5) {
+      } else if (riskScore >= 61) {
         semaphore = "ROJO";
         semClass = "sem-rojo";
-      } else if (
-        riskScore >= 31 ||
-        unitOutliers.length === 1 ||
-        criticalWinStops.length >= 2 ||
-        missingCoordStops.length > 0 ||
-        invalidWinStops.length > 0 ||
-        unit.kg < 400
-      ) {
+      } else if (riskScore >= 31) {
         semaphore = "AMARILLO";
         semClass = "sem-amarillo";
       }
 
       const dataDefectsCount = missingCoordStops.length + invalidWinStops.length;
 
-      let finding = "Sin anomalías geográficas ni ventanas críticas.";
+      let finding = "Operación estable sin alertas relevantes.";
       if (validStops.length === 0) {
         finding = `100% de clientes (${stops.length}) sin coordenada válida → Corregir Lat/Lng.`;
       } else if (dataDefectsCount > 0) {
@@ -719,7 +726,69 @@
   }
 
   /* ==========================================================================
-     3. DRAWER DE DETALLE AL HACER CLIC EN UNA PLACA
+     3. EXPORTADOR CSV DE INCIDENCIAS DE VENTANAS HORARIAS
+     ========================================================================== */
+  function exportWindowIssuesCSV() {
+    const issues = lastAnalyzedClients.filter(c => c.win.status !== "VALID");
+    if (!issues.length) {
+      alert("No hay clientes sin ventana horaria o con ventana inválida en el filtro actual.");
+      return;
+    }
+
+    const esc = val => `"${String(val ?? "").replace(/"/g, '""')}"`;
+
+    const headers = [
+      "Fecha",
+      "Centro",
+      "Ruta",
+      "Placa",
+      "Codigo_Cliente",
+      "Nombre_Cliente",
+      "Canal",
+      "Kg_Totales",
+      "Ciudad_Distrito",
+      "Direccion",
+      "Ventana_Original",
+      "Tipo_Incidencia_VH"
+    ];
+
+    const lines = [headers.join(",")];
+    issues.forEach(c => {
+      const tipo = c.win.status === "MISSING"
+        ? "SIN VENTANA HORARIA"
+        : c.win.status === "REVERSED"
+          ? "VENTANA INVERTIDA (INICIO >= FIN)"
+          : "FORMATO DE HORA INVALIDO";
+
+      lines.push([
+        esc(c.fecha),
+        esc(c.centro),
+        esc(c.ruta),
+        esc(c.placa),
+        esc(c.cod),
+        esc(c.nombre),
+        esc(c.canal),
+        c.kg.toFixed(2),
+        esc(c.ciudad),
+        esc(c.direccion),
+        esc(c.win.raw || "VACIO"),
+        esc(tipo)
+      ].join(","));
+    });
+
+    const csvContent = "\uFEFF" + lines.join("\r\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const centerTag = state.selectedCenter === "Todos" ? "Global_Lima" : state.selectedCenter;
+    a.href = url;
+    a.download = `Incidencias_Ventanas_Horarias_${centerTag}_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  /* ==========================================================================
+     4. DRAWER DE DETALLE AL HACER CLIC EN UNA PLACA
      ========================================================================== */
   function openPlateDetailDrawer(unitKey) {
     const unit = currentUnitAuditsMap.get(unitKey);
@@ -738,7 +807,6 @@
     document.getElementById("drawerPlateSub").textContent =
       `${unit.clientCount} clientes • ${unit.orderCount} pedidos • ${unit.kg.toLocaleString("es-PE", { maximumFractionDigits: 1 })} kg • Recorrido est: ${unit.linearRouteKm.toFixed(1)} km`;
 
-    // Desglose de puntajes
     document.getElementById("drawerScoreGrid").innerHTML = `
       <div class="d-score-box"><span>Geografía (33%)</span><strong>${unit.dimScores.geoScore}/100</strong></div>
       <div class="d-score-box"><span>Ventanas VH (33%)</span><strong>${unit.dimScores.winScore}/100</strong></div>
@@ -748,7 +816,6 @@
       <div class="d-score-box"><span>Capacidad Vehic.</span><strong>Pend. raw</strong></div>
     `;
 
-    // Defectos por cliente
     document.getElementById("drawerDefectsCount").textContent = `${unit.clientDefects.length} observados`;
     const defectsListEl = document.getElementById("drawerDefectsList");
     defectsListEl.innerHTML = unit.clientDefects.length
@@ -763,7 +830,6 @@
         `).join("")
       : `<div style="padding:10px; font-size:0.72rem; color:#15803d; background:#f0fdf4; border-radius:9px; font-weight:600;">Esta unidad no presenta defectos de VH, coordenadas faltantes ni atípicos geográficos.</div>`;
 
-    // Tabla completa de clientes de la placa
     document.getElementById("drawerAllClientsCount").textContent = `${unit.stops.length} clientes`;
     const sortedStops = [...unit.stops].sort((a, b) => b.kg - a.kg);
     document.getElementById("drawerClientsBody").innerHTML = sortedStops.map(s => {
@@ -796,7 +862,7 @@
   }
 
   /* ==========================================================================
-     4. RENDERIZADO DE LAS 5 PESTAÑAS
+     5. RENDERIZADO DE LAS 5 PESTAÑAS
      ========================================================================== */
   function renderAll() {
     const dq = auditDataQuality(allRows);
@@ -807,6 +873,7 @@
     });
     const op = analyzeOperation(filteredRows);
 
+    lastAnalyzedClients = op.clients;
     currentUnitAuditsMap.clear();
     op.unitAudits.forEach(u => currentUnitAuditsMap.set(u.key, u));
 
@@ -837,10 +904,10 @@
     document.getElementById("execExpSub").textContent = `${exposedCli} clientes comprometidos`;
 
     document.getElementById("execSemaphoreCounts").innerHTML = `
-      <span class="sem-dot sem-rojo" title="Rojas (Alto/Crítico)">${rojos.length}</span>
-      <span class="sem-dot sem-amarillo" title="Amarillas (Revisión)">${amarillos.length}</span>
-      <span class="sem-dot sem-verde" title="Verdes (Sin alertas)">${verdes.length}</span>
-      <span class="sem-dot sem-negro" title="Negras (100% sin coordenadas)">${negros.length}</span>
+      <span class="sem-dot sem-rojo" title="Rojo: Score >= 61">${rojos.length}</span>
+      <span class="sem-dot sem-amarillo" title="Amarillo: Score 31 - 60">${amarillos.length}</span>
+      <span class="sem-dot sem-verde" title="Verde: Score <= 30">${verdes.length}</span>
+      <span class="sem-dot sem-negro" title="Negro: 100% sin coordenadas">${negros.length}</span>
     `;
 
     let sorted = [...unitAudits];
@@ -894,8 +961,8 @@
     document.getElementById("winEarlyVal").textContent  = `${earlyWin.length} clientes`;
     document.getElementById("winEarlySub").textContent  = `${(earlyWin.reduce((s, c) => s + c.kg, 0) / 1000).toFixed(1)} T con cierre <= 11:00 AM`;
 
-    document.getElementById("winBadVal").textContent    = `${badOrMiss.length} registros`;
-    document.getElementById("winBadSub").textContent    = `Sin dato o formato inválido`;
+    document.getElementById("winBadVal").textContent    = `${badOrMiss.length} clientes`;
+    document.getElementById("winBadSub").textContent    = `Sin VH o formato inválido (Descargable en CSV)`;
 
     const bracketMap = new Map();
     clients.forEach(c => {
@@ -991,8 +1058,8 @@
     `;
 
     document.getElementById("coverageLimitationsList").innerHTML = `
-      <li><strong>Granularidad:</strong> Línea de pedido/producto consolidada por Centro y Placa.</li>
-      <li><strong>Regla Semáforo Negro:</strong> Solo aplica cuando el 100% de paradas de una placa carecen de geoposición válida.</li>
+      <li><strong>Regla de Semáforo:</strong> Rojo (&ge;61), Amarillo (31–60), Verde (&le;30) y Negro solo si 100% de clientes no tienen geoposición.</li>
+      <li><strong>Dimensiones Evaluadas (5/6):</strong> Calidad de datos, Geografía (Haversine + IQR), Ventanas Horarias (AM/PM y 24h), Complejidad/Canal y Balance de carga.</li>
       <li><strong>Bloqueado por dato faltante (1/6):</strong> Capacidad vehicular máxima por placa (pendiente raw) y hora de salida/secuencia.</li>
     `;
   }
@@ -1140,6 +1207,8 @@
         renderAll();
       });
     });
+
+    document.getElementById("btnExportWinIssues").addEventListener("click", exportWindowIssuesCSV);
 
     document.getElementById("btnClosePlateDrawer").addEventListener("click", closePlateDetailDrawer);
     document.getElementById("plateDrawerBackdrop").addEventListener("click", closePlateDetailDrawer);
