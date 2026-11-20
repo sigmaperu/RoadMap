@@ -12,12 +12,12 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
   <!-- Estilos globales y específicos de Radar -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=5.0">
-  <link rel="stylesheet" href="assets/css/radar.css?v=5.0">
+  <link rel="stylesheet" href="assets/css/styles.css?v=6.0">
+  <link rel="stylesheet" href="assets/css/radar.css?v=6.0">
 
   <!-- Scripts -->
   <script defer src="assets/js/main.js"></script>
-  <script defer src="assets/js/radar.js?v=5.0"></script>
+  <script defer src="assets/js/radar.js?v=6.0"></script>
 </head>
 
 <body data-title="Radar de Distribución">
@@ -103,7 +103,7 @@
                   <span class="sem-dot sem-rojo" title="Riesgo Alto/Crítico">0</span>
                   <span class="sem-dot sem-amarillo" title="Requiere Revisión">0</span>
                   <span class="sem-dot sem-verde" title="Sin Alertas">0</span>
-                  <span class="sem-dot sem-negro" title="Info Insuficiente">0</span>
+                  <span class="sem-dot sem-negro" title="100% sin coordenadas">0</span>
                 </div>
                 <span class="r-stat-sub" style="color:#a1a1aa;">Rojo • Amarillo • Verde • Negro</span>
               </div>
@@ -113,18 +113,19 @@
               <div class="radar-panel__head">
                 <div>
                   <h3>Radar General por Placa & Planning Risk Score (0–100)</h3>
-                  <span class="radar-panel__hint">Pesos ajustados: Geografía (33%) • Ventanas Horarias (33%) • Complejidad (14%) • Balance Carga (12%) • Calidad (8%) | Capacidad: NO EVALUABLE</span>
+                  <span class="radar-panel__hint">Haz clic en cualquier placa para auditar cliente por cliente sus defectos de VH, coordenadas o dispersión</span>
                 </div>
                 <div class="radar-sort-pills">
                   <button type="button" class="radar-sort-btn is-active" data-sort="risk">Mayor Riesgo</button>
                   <button type="button" class="radar-sort-btn" data-sort="win">Ventanas Críticas</button>
                   <button type="button" class="radar-sort-btn" data-sort="outliers">Atípicos Geo</button>
+                  <button type="button" class="radar-sort-btn" data-sort="dq">Defectos Dato</button>
                   <button type="button" class="radar-sort-btn" data-sort="kg">Mayor Kg</button>
                 </div>
               </div>
 
               <div class="radar-table-wrap">
-                <table class="radar-table">
+                <table class="radar-table radar-table--clickable">
                   <thead>
                     <tr>
                       <th>Pos</th>
@@ -354,5 +355,66 @@
       </main>
     </div>
   </div>
+
+  <!-- ======================================================================== -->
+  <!-- DRAWER LATERAL DE AUDITORÍA DETALLADA POR PLACA (AL HACER CLIC EN FILA)  -->
+  <!-- ======================================================================== -->
+  <div id="plateDrawerBackdrop" class="plate-drawer-backdrop"></div>
+  <aside id="plateDetailDrawer" class="plate-detail-drawer" aria-hidden="true">
+    <header class="drawer-head">
+      <div>
+        <div class="drawer-badges">
+          <span id="drawerCenterTag" class="drawer-cd-tag">–</span>
+          <span id="drawerSemaphoreTag" class="sem-dot sem-verde">VERDE</span>
+          <span id="drawerRiskTag" class="risk-pill risk-low">0/100</span>
+        </div>
+        <h2 id="drawerPlateTitle">Placa –</h2>
+        <p id="drawerPlateSub">–</p>
+      </div>
+      <button type="button" id="btnClosePlateDrawer" class="drawer-close-btn" title="Cerrar detalle">
+        <span class="material-icons">close</span>
+      </button>
+    </header>
+
+    <div class="drawer-body">
+      <!-- Desglose del Risk Score por Dimensión -->
+      <section class="drawer-section">
+        <h4>Desglose de Riesgo por Dimensión Evaluable</h4>
+        <div id="drawerScoreGrid" class="drawer-score-grid"></div>
+      </section>
+
+      <!-- Defectos y Alertas Específicas por Cliente -->
+      <section class="drawer-section">
+        <div class="drawer-sec-head">
+          <h4>Defectos y Alertas por Cliente</h4>
+          <span id="drawerDefectsCount" class="radar-tag-amber">0 observados</span>
+        </div>
+        <div id="drawerDefectsList" class="drawer-defects-list"></div>
+      </section>
+
+      <!-- Listado Completo de Clientes de la Placa -->
+      <section class="drawer-section">
+        <div class="drawer-sec-head">
+          <h4>Cartera Asignada a la Placa</h4>
+          <span id="drawerAllClientsCount" class="radar-tag-plum">0 clientes</span>
+        </div>
+        <div class="drawer-mini-table-wrap">
+          <table class="drawer-mini-table">
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Canal</th>
+                <th>Ventana (VH)</th>
+                <th>Lat / Lng</th>
+                <th>Peso</th>
+              </tr>
+            </thead>
+            <tbody id="drawerClientsBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </aside>
+
 </body>
 </html>
