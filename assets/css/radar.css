@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - radar.css (Radar de Distribución Multi-Pestaña • Sin Scroll)
+   RoadMap - radar.css (Radar de Auditoría Preventiva + Ventanas Columna S)
    ========================================================================== */
 
 :root {
@@ -31,20 +31,20 @@
 }
 
 /* ==========================================================================
-   1. BARRA SUPERIOR (PESTAÑAS DE SEGMENTO + CENTROS)
+   1. BARRA SUPERIOR (PESTAÑAS + CENTROS)
    ========================================================================== */
 .radar-topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   flex-shrink: 0;
 }
 
 .radar-tabs-nav {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   background: var(--rd-surface);
   padding: 4px;
   border-radius: 14px;
@@ -56,21 +56,19 @@
   border: none;
   background: transparent;
   color: #52525b;
-  padding: 7px 14px;
+  padding: 7px 11px;
   border-radius: 10px;
-  font-size: 0.76rem;
+  font-size: 0.72rem;
   font-weight: 700;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   transition: background-color 0.16s ease, color 0.16s ease;
+  white-space: nowrap;
 }
-.radar-tab-btn .material-icons { font-size: 16px; }
-.radar-tab-btn:hover {
-  background: #f4f4f5;
-  color: var(--rd-text);
-}
+.radar-tab-btn .material-icons { font-size: 15px; }
+.radar-tab-btn:hover { background: #f4f4f5; color: var(--rd-text); }
 .radar-tab-btn.is-active {
   background: linear-gradient(135deg, #9c27b0 0%, #6a1b9a 100%);
   color: #ffffff;
@@ -85,27 +83,26 @@
   padding: 4px;
   border-radius: 999px;
   box-shadow: 0 4px 14px rgba(22, 20, 28, 0.14);
+  flex-shrink: 0;
 }
 
 .radar-pill {
   border: none;
   background: transparent;
   color: #a1a1aa;
-  padding: 6px 13px;
+  padding: 5px 11px;
   border-radius: 999px;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
   cursor: pointer;
   transition: color 0.16s ease, background-color 0.16s ease;
+  white-space: nowrap;
 }
 .radar-pill:hover { color: #ffffff; }
-.radar-pill.is-active {
-  background: var(--rd-plum);
-  color: #ffffff;
-}
+.radar-pill.is-active { background: var(--rd-plum); color: #ffffff; }
 
 /* ==========================================================================
-   2. CONTENEDOR DE PESTAÑAS
+   2. PESTAÑAS Y TARJETAS KPI
    ========================================================================== */
 .radar-tabs-body {
   flex: 1;
@@ -121,11 +118,14 @@
   flex-direction: column;
   gap: 10px;
 }
-.radar-pane.is-active {
-  display: flex;
-}
+.radar-pane.is-active { display: flex; }
 
-/* Strip de 4 KPIs Superiores por Pestaña */
+.radar-kpi-strip--5 {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  flex-shrink: 0;
+}
 .radar-kpi-strip--4 {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -137,10 +137,11 @@
   background: var(--rd-surface);
   border: 1px solid var(--rd-border);
   border-radius: 14px;
-  padding: 10px 14px;
+  padding: 9px 13px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: 2px;
 }
 .r-stat-card--warn {
@@ -151,14 +152,20 @@
   border-color: #e1bee7;
   background: linear-gradient(180deg, #ffffff 0%, #faf5ff 100%);
 }
+.r-stat-card--dark {
+  background: var(--rd-dark);
+  border-color: rgba(255, 255, 255, 0.1);
+}
 
 .r-stat-lbl {
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   font-weight: 700;
   color: var(--rd-muted);
 }
+.r-stat-card--dark .r-stat-lbl { color: #e1bee7; }
+
 .r-stat-val {
-  font-size: 1.04rem;
+  font-size: 1.02rem;
   font-weight: 800;
   color: var(--rd-text);
   white-space: nowrap;
@@ -166,7 +173,7 @@
   text-overflow: ellipsis;
 }
 .r-stat-sub {
-  font-size: 0.64rem;
+  font-size: 0.62rem;
   font-weight: 600;
   color: var(--rd-muted);
   white-space: nowrap;
@@ -174,16 +181,36 @@
   text-overflow: ellipsis;
 }
 
-/* Layouts interiores de pestaña */
+/* Semáforo en KPI */
+.semaphore-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 2px 0;
+}
+.sem-dot {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+.sem-rojo     { background: #ef4444; color: #ffffff; }
+.sem-amarillo { background: #eab308; color: #18181b; }
+.sem-verde    { background: #10b981; color: #ffffff; }
+.sem-negro    { background: #3f3f46; color: #e4e4e7; border: 1px solid #71717a; }
+
+/* ==========================================================================
+   3. CONTENEDORES PRINCIPALES Y TABLAS
+   ========================================================================== */
 .radar-card-full {
   flex: 1;
   min-height: 0;
   background: var(--rd-surface);
   border-radius: 16px;
-  padding: 14px 16px;
+  padding: 13px 15px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 9px;
   overflow: hidden;
 }
 .radar-card-full--dark {
@@ -198,18 +225,24 @@
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
-.radar-split-2col--ranges {
-  grid-template-columns: 1.05fr 1fr;
+.radar-split-2col--quality { grid-template-columns: 1.15fr 0.85fr; }
+
+.radar-split-3col {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1.05fr 1.05fr 0.9fr;
+  gap: 12px;
 }
 
 .radar-panel {
   background: var(--rd-surface);
   border: 1px solid var(--rd-border);
   border-radius: 16px;
-  padding: 13px 15px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  gap: 8px;
   min-height: 0;
   overflow: hidden;
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.03);
@@ -229,7 +262,7 @@
 }
 .radar-panel__head h3 {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 800;
   color: var(--rd-text);
 }
@@ -238,50 +271,24 @@
 
 .radar-panel__hint {
   display: block;
-  font-size: 0.66rem;
+  font-size: 0.64rem;
   color: var(--rd-muted);
   margin-top: 2px;
 }
 .radar-panel--dark .radar-panel__hint,
 .radar-card-full--dark .radar-panel__hint { color: #a1a1aa; }
 
-.radar-tag-plum {
-  background: var(--rd-plum-soft);
-  color: var(--rd-plum-deep);
-  padding: 3px 9px;
-  border-radius: 999px;
-  font-size: 0.64rem;
-  font-weight: 800;
-}
-.radar-tag-amber {
-  background: #fef3c7;
-  color: #b45309;
-  padding: 3px 9px;
-  border-radius: 999px;
-  font-size: 0.64rem;
-  font-weight: 800;
-}
-.radar-mini-btn {
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  background: rgba(255, 255, 255, 0.12);
-  color: #ffffff;
-  border-radius: 999px;
-  padding: 3px 10px;
-  font-size: 0.65rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-.radar-mini-btn.is-hidden { display: none; }
+.radar-tag-plum    { background: var(--rd-plum-soft); color: var(--rd-plum-deep); padding: 3px 9px; border-radius: 999px; font-size: 0.64rem; font-weight: 800; }
+.radar-tag-amber   { background: #fef3c7; color: #b45309; padding: 3px 9px; border-radius: 999px; font-size: 0.64rem; font-weight: 800; }
+.radar-tag-emerald { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); padding: 3px 9px; border-radius: 999px; font-size: 0.64rem; font-weight: 800; }
 
-/* ==========================================================================
-   TABLAS Y LISTAS DE DATOS
-   ========================================================================== */
 .radar-sort-pills {
   display: inline-flex;
   background: rgba(255, 255, 255, 0.08);
   padding: 3px;
   border-radius: 999px;
   gap: 3px;
+  flex-shrink: 0;
 }
 .radar-sort-btn {
   border: none;
@@ -289,14 +296,11 @@
   color: #a1a1aa;
   padding: 4px 10px;
   border-radius: 999px;
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   font-weight: 700;
   cursor: pointer;
 }
-.radar-sort-btn.is-active {
-  background: var(--rd-plum);
-  color: #ffffff;
-}
+.radar-sort-btn.is-active { background: var(--rd-plum); color: #ffffff; }
 
 .radar-table-wrap {
   flex: 1;
@@ -309,48 +313,73 @@
 .radar-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
 }
 .radar-table th {
   position: sticky;
   top: 0;
   background: var(--rd-dark);
   color: #e1bee7;
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   font-weight: 700;
   text-transform: uppercase;
-  padding: 8px 8px;
+  padding: 7px 6px;
   text-align: right;
   border-bottom: 1px solid rgba(255, 255, 255, 0.14);
   z-index: 2;
+  white-space: nowrap;
 }
-.radar-table th:first-child,
-.radar-table th:nth-child(2) { text-align: left; }
+.radar-table th:nth-child(1),
+.radar-table th:nth-child(2),
+.radar-table th:nth-child(3),
+.radar-table th:nth-child(4),
+.radar-table th:last-child { text-align: left; }
 
 .radar-table td {
-  padding: 7px 8px;
+  padding: 6px 6px;
   text-align: right;
   color: #e4e4e7;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   white-space: nowrap;
 }
-.radar-table td:first-child { text-align: left; color: #a1a1aa; }
-.radar-table td:nth-child(2) { text-align: left; font-weight: 800; color: #ffffff; }
+.radar-table td:nth-child(1) { text-align: left; color: #a1a1aa; }
+.radar-table td:nth-child(2) { text-align: left; color: #e1bee7; font-weight: 600; }
+.radar-table td:nth-child(3) { text-align: left; color: #d4d4d8; }
+.radar-table td:nth-child(4) { text-align: left; font-weight: 800; color: #ffffff; }
+.radar-table td:last-child {
+  text-align: left;
+  white-space: normal;
+  min-width: 220px;
+  font-size: 0.67rem;
+  color: #d4d4d8;
+  line-height: 1.25;
+}
 .radar-table tbody tr:hover { background: rgba(142, 36, 170, 0.22); }
 
-.badge-warn-low {
-  background: rgba(239, 68, 68, 0.22);
-  color: #fca5a5;
-  padding: 2px 7px;
-  border-radius: 999px;
-  font-size: 0.68rem;
-  font-weight: 700;
+.badge-na {
+  background: rgba(255, 255, 255, 0.08);
+  color: #a1a1aa;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 0.62rem;
+  font-weight: 600;
 }
 
+.risk-pill {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 800;
+}
+.risk-high { background: rgba(239, 68, 68, 0.24); color: #fca5a5; }
+.risk-med  { background: rgba(234, 179, 8, 0.24); color: #fde047; }
+.risk-low  { background: rgba(16, 185, 129, 0.24); color: #6ee7b7; }
+
 /* ==========================================================================
-   LISTAS DE PRODUCTOS (SKUs)
+   CALIDAD DE DATOS Y RECONCILIACIÓN
    ========================================================================== */
-.radar-sku-list {
+.radar-dq-list,
+.radar-scroll-list {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -360,61 +389,131 @@
   padding-right: 3px;
 }
 
+.dq-item {
+  border: 1px solid var(--rd-border);
+  border-radius: 11px;
+  padding: 8px 11px;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.dq-item--warn { border-left: 4px solid var(--rd-amber); background: #fffbeb; }
+.dq-item--crit { border-left: 4px solid var(--rd-red); background: #fef2f2; }
+.dq-item--ok   { border-left: 4px solid var(--rd-emerald); }
+
+.dq-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.74rem;
+}
+.dq-top strong { font-weight: 800; color: var(--rd-text); }
+.dq-count {
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #e4e4e7;
+  color: #18181b;
+}
+.dq-desc { font-size: 0.66rem; color: #52525b; }
+
+.reconcil-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  flex-shrink: 0;
+}
+.rec-box {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+.rec-box span { display: block; font-size: 0.62rem; color: #a1a1aa; }
+.rec-box strong { display: block; font-size: 0.92rem; font-weight: 800; color: #ffffff; margin-top: 2px; }
+
+.reconcil-notes-box {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 11px;
+  padding: 10px 12px;
+}
+.reconcil-notes-box h4 {
+  margin: 0 0 6px;
+  font-size: 0.74rem;
+  color: #e1bee7;
+}
+.reconcil-notes-box ul {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 0.68rem;
+  color: #d4d4d8;
+  line-height: 1.45;
+}
+
+/* ==========================================================================
+   TARJETAS DE VENTANAS, ATÍPICOS, RANGOS, TRÁFICO Y SKUs
+   ========================================================================== */
+.radar-channel-legend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #52525b;
+}
+.radar-channel-legend span { display: inline-flex; align-items: center; gap: 4px; }
+.radar-channel-legend i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+.radar-range-row,
+.radar-traffic-item,
+.outlier-card,
 .sku-row-card {
   border: 1px solid var(--rd-border);
   background: #fafafa;
-  border-radius: 11px;
-  padding: 8px 11px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  border-radius: 10px;
+  padding: 8px 10px;
 }
+.radar-panel--dark .radar-traffic-item,
 .radar-panel--dark .sku-row-card {
   background: rgba(255, 255, 255, 0.05);
   border-color: rgba(255, 255, 255, 0.08);
 }
 
+.radar-range-top,
+.radar-traffic-top,
+.outlier-top,
 .sku-row-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  font-size: 0.74rem;
+  gap: 8px;
+  font-size: 0.73rem;
+  margin-bottom: 3px;
 }
-.sku-row-name {
-  font-weight: 700;
-  color: var(--rd-text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+.radar-range-top strong,
+.outlier-top strong,
+.sku-row-name { font-weight: 800; color: var(--rd-text); }
+.radar-panel--dark .radar-traffic-top strong,
 .radar-panel--dark .sku-row-name { color: #ffffff; }
 
-.sku-row-metrics {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-  font-size: 0.7rem;
-  font-weight: 800;
-  color: var(--rd-plum-deep);
-}
-.radar-panel--dark .sku-row-metrics { color: #fde047; }
-
-.sku-bar-bg {
-  height: 4px;
+.radar-stacked-bar {
+  height: 6px;
   background: #e4e4e7;
   border-radius: 999px;
   overflow: hidden;
+  display: flex;
+  margin: 4px 0;
 }
-.radar-panel--dark .sku-bar-bg { background: rgba(0, 0, 0, 0.35); }
-.sku-bar-fill {
-  height: 100%;
-  background: var(--rd-plum);
-  border-radius: 999px;
-}
-.radar-panel--dark .sku-bar-fill { background: #f59e0b; }
+.radar-stacked-seg { height: 100%; }
 
+.radar-range-ch-detail,
+.radar-traffic-meta,
+.outlier-sub,
 .sku-row-sub {
   display: flex;
   justify-content: space-between;
@@ -422,118 +521,28 @@
   color: var(--rd-muted);
   font-weight: 600;
 }
+.radar-panel--dark .radar-traffic-meta,
 .radar-panel--dark .sku-row-sub { color: #a1a1aa; }
 
-/* ==========================================================================
-   RANGOS DE PESO & ZONAS DE TRÁFICO
-   ========================================================================== */
-.radar-channel-legend {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 0.66rem;
-  font-weight: 700;
-  color: #52525b;
-}
-.radar-channel-legend span { display: inline-flex; align-items: center; gap: 4px; }
-.radar-channel-legend i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-
-.radar-ranges-list,
-.radar-traffic-list {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  padding-right: 2px;
-}
-
-.radar-range-row,
-.radar-traffic-item {
-  border: 1.5px solid var(--rd-border);
-  background: #fafafa;
-  border-radius: 11px;
-  padding: 8px 11px;
-  cursor: pointer;
-  transition: border-color 0.15s ease, background-color 0.15s ease;
-}
-.radar-range-row:hover,
-.radar-traffic-item:hover {
-  border-color: var(--rd-plum);
-  background: #ffffff;
-}
-.radar-range-row.is-selected,
-.radar-traffic-item.is-selected {
-  border-color: var(--rd-plum);
-  background: #faf5ff;
-}
-
-.radar-range-top,
-.radar-traffic-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.76rem;
-  margin-bottom: 4px;
-}
-.radar-range-top strong,
-.radar-traffic-top strong { color: var(--rd-text); font-weight: 800; }
-
-.radar-range-stats {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: #3f3f46;
-}
-.radar-range-pct {
-  background: #e4e4e7;
-  padding: 1px 6px;
-  border-radius: 999px;
-  font-size: 0.64rem;
-}
-
-.radar-stacked-bar {
-  height: 7px;
+.sku-bar-bg {
+  height: 4px;
   background: #e4e4e7;
   border-radius: 999px;
   overflow: hidden;
-  display: flex;
+  margin: 3px 0;
 }
-.radar-stacked-seg { height: 100%; }
+.radar-panel--dark .sku-bar-bg { background: rgba(0, 0, 0, 0.35); }
+.sku-bar-fill { height: 100%; background: var(--rd-plum); }
+.radar-panel--dark .sku-bar-fill { background: #f59e0b; }
 
-.radar-range-ch-detail,
-.radar-traffic-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: 4px;
-  font-size: 0.64rem;
-  font-weight: 600;
-  color: var(--rd-muted);
-}
-
-.traffic-level {
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 0.62rem;
-  font-weight: 800;
-}
+.traffic-level { padding: 2px 7px; border-radius: 999px; font-size: 0.6rem; font-weight: 800; }
 .lvl-critico { background: #fee2e2; color: #b91c1c; }
 .lvl-alto    { background: #ffedd5; color: #c2410c; }
 .lvl-medio   { background: #fef3c7; color: #b45309; }
 
 @media (max-width: 1150px) {
-  .radar-viewport {
-    height: auto !important;
-    max-height: none !important;
-    overflow-y: auto !important;
-  }
+  .radar-viewport { height: auto !important; max-height: none !important; overflow-y: auto !important; }
   .radar-topbar { flex-direction: column; align-items: flex-start; }
-  .radar-kpi-strip--4 { grid-template-columns: repeat(2, 1fr); }
-  .radar-split-2col,
-  .radar-split-2col--ranges { grid-template-columns: 1fr; }
+  .radar-kpi-strip--5, .radar-kpi-strip--4 { grid-template-columns: repeat(2, 1fr); }
+  .radar-split-2col, .radar-split-2col--quality, .radar-split-3col { grid-template-columns: 1fr; }
 }
