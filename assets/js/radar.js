@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - radar.js (Inteligencia de Ruteo, Distancias, Rangos Kg y Tráfico)
+   RoadMap - radar.js (Radar de Distribución Multi-Pestaña • Productos, Flota, Rangos, Tráfico)
    ========================================================================== */
 
 (() => {
@@ -79,12 +79,12 @@
 
   // Tramos de Peso (Drop Size por Cliente)
   const WEIGHT_RANGES = [
-    { id: "0-1",     label: "0 a 1 kg",      min: 0,   max: 1 },
-    { id: "1-5",     label: "1 a 5 kg",      min: 1,   max: 5 },
-    { id: "5-10",    label: "5 a 10 kg",     min: 5,   max: 10 },
-    { id: "10-50",   label: "10 a 50 kg",    min: 10,  max: 50 },
-    { id: "50-100",  label: "50 a 100 kg",   min: 50,  max: 100 },
-    { id: "100-200", label: "100 a 200 kg",  min: 100, max: 200 },
+    { id: "0-1",     label: "0 a 1 kg",         min: 0,   max: 1 },
+    { id: "1-5",     label: "1 a 5 kg",         min: 1,   max: 5 },
+    { id: "5-10",    label: "5 a 10 kg",        min: 5,   max: 10 },
+    { id: "10-50",   label: "10 a 50 kg",       min: 10,  max: 50 },
+    { id: "50-100",  label: "50 a 100 kg",      min: 50,  max: 100 },
+    { id: "100-200", label: "100 a 200 kg",     min: 100, max: 200 },
     { id: "200+",    label: "Mayores a 200 kg", min: 200, max: Infinity }
   ];
 
@@ -104,7 +104,6 @@
     return "OTRO";
   }
 
-  // Fórmula de Haversine para distancia real en Km entre dos coordenadas
   function haversineKm(lat1, lon1, lat2, lon2) {
     const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -139,8 +138,8 @@
 
   function parseCSV(text) {
     const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
-    if (!lines.length) return [];
-    return lines.slice(1).map(line => {
+    if (!lines.length) return { header: [], rows: [] };
+    const parseLine = line => {
       const out = []; let cur = ""; let q = false;
       for (let i = 0; i < line.length; i++) {
         const c = line[i];
@@ -152,13 +151,31 @@
       }
       out.push(cur);
       return out;
-    });
+    };
+    return {
+      header: parseLine(lines[0]),
+      rows: lines.slice(1).map(parseLine)
+    };
   }
 
-  const IDX = {
+  // Índices base + detección automática de columnas de SKU/Producto
+  let IDX = {
     CENTRO: 1, PLACA: 2, CLIENTE: 3, NOMBRE: 4, RUTA: 6, PEDIDO: 7,
-    KG: 10, SOLES: 11, DIRECCION: 15, LAT: 16, LNG: 17, CANAL: 19
+    SKU_COD: 8, SKU_DESC: 9, KG: 10, SOLES: 11, DIRECCION: 15, LAT: 16, LNG: 17, CANAL: 19
   };
+
+  function detectProductColumns(header) {
+    if (!header || !header.length) return;
+    header.forEach((h, i) => {
+      const u = String(h).trim().toUpperCase();
+      if (u.includes("MATERIAL") || u.includes("COD_PROD") || u === "SKU" || u === "CODIGO") {
+        IDX.SKU_COD = i;
+      }
+      if (u.includes("DESCRIP") || u.includes("PRODUCTO") || u.includes("MATERIAL_DESC") || u === "ARTICULO") {
+        IDX.SKU_DESC = i;
+      }
+    });
+  }
 
   const EXCLUDE_FRT = "FRT-001";
   const TRUCKS_EXCLUDED = new Set(["FRT-001", "RES-CLI"]);
@@ -171,12 +188,15 @@
     const p = upperStr(r[IDX.PLACA]);
     return !p || TRUCKS_EXCLUDED.has(p);
   };
+  const unique = arr => Array.from(new Set(arr.filter(v => v !== "" && v != null)));
 
   let allRows = [];
   let state = {
+    activeTab: "tab-flota",
     selectedCenter: "Todos",
+    fleetSort: "dist",
     selectedRangeId: null,
-    fleetSort: "dist" // dist | kg | cli | low
+    selectedTrafficId: null
   };
 
   function getFilteredRows() {
@@ -188,10 +208,10 @@
   }
 
   /* ==========================================================================
-     MOTOR ANALÍTICO DEL RADAR
+     PROCESAMIENTO DE DATOS POR SEGMENTO
      ========================================================================== */
-  function analyzeOperation(rows) {
-    // 1. Consolidar por Cliente Único (sumando sus Kg y Soles del día)
+  function computeAnalytics(rows) {
+    // 1. Clientes Únicos
     const clientsMap = new Map();
     rows.forEach(r => {
       const cli = cleanStr(r[IDX.CLIENTE]);
@@ -224,10 +244,42 @@
       cObj.kg += kg;
       cObj.soles += soles;
     });
-
     const clients = Array.from(clientsMap.values());
 
-    // 2. Clasificar Clientes en los 7 Rangos de Peso (Kg)
+    // 2. Mix de Productos (SKUs)
+    const productsMap = new Map();
+    rows.forEach(r => {
+      const cod = cleanStr(r[IDX.SKU_COD]);
+      const desc = cleanStr(r[IDX.SKU_DESC]);
+      const key = desc || cod;
+      if (!key) return;
+
+      if (!productsMap.has(key)) {
+        productsMap.set(key, {
+          cod,
+          nombre: desc || cod,
+          clientesSet: new Set(),
+          pedidosSet: new Set(),
+          kg: 0,
+          soles: 0
+        });
+      }
+      const p = productsMap.get(key);
+      const cli = cleanStr(r[IDX.CLIENTE]);
+      const ped = cleanStr(r[IDX.PEDIDO]);
+      if (cli) p.clientesSet.add(cli);
+      if (ped) p.pedidosSet.add(ped);
+      p.kg += toNum(r[IDX.KG]);
+      p.soles += toNum(r[IDX.SOLES]);
+    });
+
+    const products = Array.from(productsMap.values()).map(p => ({
+      ...p,
+      clientCount: p.clientesSet.size,
+      orderCount: p.pedidosSet.size
+    }));
+
+    // 3. Rangos de Peso (Kg)
     const rangeStats = WEIGHT_RANGES.map(rng => {
       const matching = clients.filter(c => {
         if (rng.min === 0) return c.kg >= 0 && c.kg <= rng.max;
@@ -246,8 +298,7 @@
       };
     });
 
-    // 3. Auditoría de Flota por Unidad (Llave compuesta CENTRO|PLACA)
-    // Estimamos recorrido secuencial desde el CD pasando por sus paradas (Nearest Neighbor + Factor vial 1.28x)
+    // 4. Flota por Unidad (Llave compuesta CENTRO|PLACA)
     const fleetMap = new Map();
     rows.filter(r => !isTruckExcluded(r)).forEach(r => {
       const centro = cleanStr(r[IDX.CENTRO]);
@@ -260,18 +311,21 @@
           centro,
           kg: 0,
           soles: 0,
+          pedidosSet: new Set(),
           stopsMap: new Map()
         });
       }
-      const unit = fleetMap.get(key);
-      unit.kg += toNum(r[IDX.KG]);
-      unit.soles += toNum(r[IDX.SOLES]);
+      const u = fleetMap.get(key);
+      u.kg += toNum(r[IDX.KG]);
+      u.soles += toNum(r[IDX.SOLES]);
+      const ped = cleanStr(r[IDX.PEDIDO]);
+      if (ped) u.pedidosSet.add(ped);
 
       const cli = cleanStr(r[IDX.CLIENTE]);
       const lat = parseFloat(String(r[IDX.LAT] ?? "").replace(",", "."));
       const lng = parseFloat(String(r[IDX.LNG] ?? "").replace(",", "."));
-      if (cli && !isNaN(lat) && !isNaN(lng) && !unit.stopsMap.has(cli)) {
-        unit.stopsMap.set(cli, { lat, lng });
+      if (cli && !isNaN(lat) && !isNaN(lng) && !u.stopsMap.has(cli)) {
+        u.stopsMap.set(cli, { lat, lng });
       }
     });
 
@@ -282,7 +336,6 @@
       let maxRadiusKm = 0;
 
       if (cdPos && stops.length > 0) {
-        // Calcular radio máximo desde el CD y ruta encadenada (Nearest Neighbor)
         const unvisited = [...stops];
         let curLat = cdPos.lat;
         let curLng = cdPos.lng;
@@ -305,156 +358,254 @@
           curLng = unvisited[bestIdx].lng;
           unvisited.splice(bestIdx, 1);
         }
-        // Retorno al CD + factor de sinuosidad vial urbana (1.28)
         estRouteKm = (estRouteKm + haversineKm(curLat, curLng, cdPos.lat, cdPos.lng)) * 1.28;
       }
 
+      const clientCount = u.stopsMap.size || unique(rows.filter(r => cleanStr(r[IDX.CENTRO]) === u.centro && upperStr(r[IDX.PLACA]) === u.placa).map(r => r[IDX.CLIENTE])).length;
+      const densityKgKm = estRouteKm > 0 ? (u.kg / estRouteKm) : 0;
+
       return {
         ...u,
-        clientCount: u.stopsMap.size || unique(rows.filter(r => cleanStr(r[IDX.CENTRO]) === u.centro && upperStr(r[IDX.PLACA]) === u.placa).map(r => r[IDX.CLIENTE])).length,
+        clientCount,
+        orderCount: u.pedidosSet.size,
         estRouteKm,
-        maxRadiusKm
+        maxRadiusKm,
+        densityKgKm
       };
     });
 
-    // 4. Detección de Zonas de Complejidad Vial / Tráfico
+    // 5. Zonas Críticas de Tráfico
     const trafficStats = TRAFFIC_CORRIDORS.map(zone => {
       const zoneClients = clients.filter(c => !isNaN(c.lat) && !isNaN(c.lng) && zone.check(c.lat, c.lng));
       return {
         ...zone,
         clientCount: zoneClients.length,
         totalKg: zoneClients.reduce((s, c) => s + c.kg, 0),
-        platesCount: new Set(zoneClients.map(c => c.placa)).size
+        platesCount: new Set(zoneClients.map(c => c.placa)).size,
+        clients: zoneClients
       };
     }).filter(z => z.clientCount > 0).sort((a, b) => b.clientCount - a.clientCount);
 
-    return { clients, rangeStats, fleetList, trafficStats };
-  }
-
-  function unique(arr) {
-    return Array.from(new Set(arr.filter(v => v !== "" && v != null)));
+    return { clients, products, rangeStats, fleetList, trafficStats };
   }
 
   /* ==========================================================================
-     RENDERIZADO DE COMPONENTES
+     RENDERIZADO POR PESTAÑA
      ========================================================================== */
-  function renderRadar() {
+  function renderAll() {
     const rows = getFilteredRows();
-    const { clients, rangeStats, fleetList, trafficStats } = analyzeOperation(rows);
+    const data = computeAnalytics(rows);
 
-    // 1. Hallazgos Destacados (Tarjetas Superiores)
+    renderTabFlota(data);
+    renderTabProductos(data);
+    renderTabRangos(data);
+    renderTabTrafico(data);
+  }
+
+  // PESTAÑA 1: FLOTA & RECORRIDOS
+  function renderTabFlota({ fleetList }) {
     const byDist = [...fleetList].sort((a, b) => b.estRouteKm - a.estRouteKm);
     const byKg   = [...fleetList].sort((a, b) => b.kg - a.kg);
     const byCli  = [...fleetList].sort((a, b) => b.clientCount - a.clientCount);
-    const topRng = [...rangeStats].sort((a, b) => b.count - a.count)[0];
-    const topTrf = trafficStats[0];
+    const lowUnits = fleetList.filter(u => u.kg < 450);
 
-    if (byDist[0]) {
-      document.getElementById("hlMaxDistPlaca").textContent = `${byDist[0].placa} (${byDist[0].estRouteKm.toFixed(1)} km)`;
-      document.getElementById("hlMaxDistSub").textContent   = `${byDist[0].centro} • Radio máx: ${byDist[0].maxRadiusKm.toFixed(1)} km`;
-    } else {
-      document.getElementById("hlMaxDistPlaca").textContent = "–";
+    document.getElementById("flotaMaxDistVal").textContent = byDist[0] ? `${byDist[0].placa} • ${byDist[0].estRouteKm.toFixed(1)} km` : "–";
+    document.getElementById("flotaMaxDistSub").textContent = byDist[0] ? `${byDist[0].centro} • Radio máx: ${byDist[0].maxRadiusKm.toFixed(1)} km` : "";
+
+    document.getElementById("flotaMaxKgVal").textContent   = byKg[0] ? `${byKg[0].placa} • ${(byKg[0].kg / 1000).toFixed(2)} T` : "–";
+    document.getElementById("flotaMaxKgSub").textContent   = byKg[0] ? `${byKg[0].centro} • ${byKg[0].clientCount} clientes` : "";
+
+    document.getElementById("flotaMaxCliVal").textContent  = byCli[0] ? `${byCli[0].placa} • ${byCli[0].clientCount} cli.` : "–";
+    document.getElementById("flotaMaxCliSub").textContent  = byCli[0] ? `${byCli[0].centro} • ${byCli[0].kg.toLocaleString("es-PE", { maximumFractionDigits: 0 })} kg` : "";
+
+    document.getElementById("flotaLowCountVal").textContent = `${lowUnits.length} unidades`;
+    document.getElementById("flotaLowCountSub").textContent = lowUnits.length ? `Ej: ${lowUnits.slice(0, 3).map(u => u.placa).join(", ")}` : "Toda la flota con carga óptima";
+
+    let sorted = [...fleetList];
+    if (state.fleetSort === "dist") sorted.sort((a, b) => b.estRouteKm - a.estRouteKm);
+    else if (state.fleetSort === "kg") sorted.sort((a, b) => b.kg - a.kg);
+    else if (state.fleetSort === "cli") sorted.sort((a, b) => b.clientCount - a.clientCount);
+    else if (state.fleetSort === "dens") sorted.sort((a, b) => b.densityKgKm - a.densityKgKm);
+    else if (state.fleetSort === "low") sorted.sort((a, b) => a.kg - b.kg);
+
+    const tbody = document.getElementById("fleetRadarBody");
+    tbody.innerHTML = sorted.map((u, idx) => {
+      const isLow = u.kg < 450;
+      return `
+        <tr>
+          <td>#${idx + 1}</td>
+          <td>${u.placa}</td>
+          <td style="text-align:left; color:#e1bee7; font-weight:600;">${u.centro}</td>
+          <td>${u.clientCount}</td>
+          <td>${u.orderCount}</td>
+          <td>${isLow ? `<span class="badge-warn-low">${u.kg.toFixed(0)} kg</span>` : `${u.kg.toLocaleString("es-PE", { maximumFractionDigits: 0 })} kg`}</td>
+          <td>S/ ${u.soles.toLocaleString("es-PE", { maximumFractionDigits: 0 })}</td>
+          <td><strong>${u.estRouteKm.toFixed(1)} km</strong></td>
+          <td>${u.maxRadiusKm.toFixed(1)} km</td>
+          <td>${u.densityKgKm.toFixed(1)} kg/km</td>
+        </tr>
+      `;
+    }).join("");
+  }
+
+  // PESTAÑA 2: MIX DE PRODUCTOS (SKUs)
+  function renderTabProductos({ clients, products }) {
+    const totalCli = Math.max(1, clients.length);
+    const byClients = [...products].sort((a, b) => b.clientCount - a.clientCount || b.kg - a.kg);
+    const byKg      = [...products].sort((a, b) => b.kg - a.kg);
+    const leastSold = [...products].filter(p => p.clientCount > 0).sort((a, b) => a.clientCount - b.clientCount || a.kg - b.kg);
+
+    document.getElementById("prodTotalSkus").textContent = `${products.length} SKUs`;
+
+    if (byClients[0]) {
+      const cov = Math.round((byClients[0].clientCount / totalCli) * 100);
+      document.getElementById("prodTopCliName").textContent = byClients[0].nombre;
+      document.getElementById("prodTopCliSub").textContent  = `En ${byClients[0].clientCount} clientes (${cov}% cobertura) • ${byClients[0].kg.toFixed(0)} kg`;
     }
 
     if (byKg[0]) {
-      document.getElementById("hlMaxKgPlaca").textContent = `${byKg[0].placa} (${(byKg[0].kg / 1000).toFixed(2)} T)`;
-      document.getElementById("hlMaxKgSub").textContent   = `${byKg[0].centro} • ${byKg[0].clientCount} clientes`;
+      document.getElementById("prodTopKgName").textContent = byKg[0].nombre;
+      document.getElementById("prodTopKgSub").textContent  = `${(byKg[0].kg / 1000).toFixed(2)} T • ${byKg[0].clientCount} clientes`;
     }
 
-    if (byCli[0]) {
-      document.getElementById("hlMaxCliPlaca").textContent = `${byCli[0].placa} (${byCli[0].clientCount} cli.)`;
-      document.getElementById("hlMaxCliSub").textContent   = `${byCli[0].centro} • ${byCli[0].kg.toLocaleString("es-PE", { maximumFractionDigits: 0 })} kg`;
+    if (leastSold[0]) {
+      document.getElementById("prodLowCliName").textContent = leastSold[0].nombre;
+      document.getElementById("prodLowCliSub").textContent  = `Solo en ${leastSold[0].clientCount} cliente(s) • ${leastSold[0].kg.toFixed(1)} kg`;
     }
 
-    if (topRng && clients.length > 0) {
-      const pct = Math.round((topRng.count / clients.length) * 100);
-      document.getElementById("hlTopRange").textContent    = `${topRng.label} (${pct}%)`;
-      document.getElementById("hlTopRangeSub").textContent = `${topRng.count} clientes • ${(topRng.totalKg / 1000).toFixed(1)} T acumuladas`;
-    }
+    const maxCliCount = Math.max(1, byClients[0]?.clientCount || 1);
 
-    if (topTrf) {
-      document.getElementById("hlTopTrafficZone").textContent = `${topTrf.clientCount} cli. en zona ${topTrf.level}`;
-      document.getElementById("hlTopTrafficSub").textContent  = `${topTrf.name} (${topTrf.platesCount} unid.)`;
-    } else {
-      document.getElementById("hlTopTrafficZone").textContent = "Sin congestión crítica";
-      document.getElementById("hlTopTrafficSub").textContent  = "Flujo normal en corredores";
-    }
+    // Top 15 más vendidos (por cobertura de clientes)
+    document.getElementById("topProductsList").innerHTML = byClients.slice(0, 15).map((p, i) => {
+      const covPct = Math.round((p.clientCount / totalCli) * 100);
+      const barW = Math.round((p.clientCount / maxCliCount) * 100);
+      return `
+        <div class="sku-row-card">
+          <div class="sku-row-top">
+            <span class="sku-row-name">#${i + 1} ${p.nombre}</span>
+            <span class="sku-row-metrics">${p.clientCount} cli. (${covPct}%)</span>
+          </div>
+          <div class="sku-bar-bg"><div class="sku-bar-fill" style="width:${barW}%"></div></div>
+          <div class="sku-row-sub">
+            <span>Cód: ${p.cod || "-"} • ${p.orderCount} pedidos</span>
+            <span>${p.kg.toLocaleString("es-PE", { maximumFractionDigits: 1 })} kg • S/ ${p.soles.toLocaleString("es-PE", { maximumFractionDigits: 0 })}</span>
+          </div>
+        </div>
+      `;
+    }).join("");
 
-    // 2. Renderizar Rangos de Peso (Kg) con Barra Apilada por Canal
-    const rangesContainer = document.getElementById("kgRangesContainer");
-    const btnResetRange   = document.getElementById("btnResetRangeFilter");
-    rangesContainer.innerHTML = "";
-    btnResetRange.classList.toggle("is-hidden", !state.selectedRangeId);
+    // Top 15 menos vendidos (oportunidades de impulsar venta)
+    document.getElementById("lowProductsList").innerHTML = leastSold.slice(0, 15).map((p, i) => {
+      const covPct = ((p.clientCount / totalCli) * 100).toFixed(1);
+      return `
+        <div class="sku-row-card">
+          <div class="sku-row-top">
+            <span class="sku-row-name">#${i + 1} ${p.nombre}</span>
+            <span class="sku-row-metrics">${p.clientCount} cli. (${covPct}%)</span>
+          </div>
+          <div class="sku-bar-bg"><div class="sku-bar-fill" style="width:${Math.max(5, Math.round((p.clientCount / maxCliCount) * 100))}%"></div></div>
+          <div class="sku-row-sub">
+            <span>Cód: ${p.cod || "-"} • ${p.orderCount} pedido(s)</span>
+            <span>${p.kg.toLocaleString("es-PE", { maximumFractionDigits: 1 })} kg • S/ ${p.soles.toLocaleString("es-PE", { maximumFractionDigits: 0 })}</span>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
 
-    const totalClientsCount = Math.max(1, clients.length);
+  // PESTAÑA 3: RANGOS DE PESO & CLIENTES
+  function renderTabRangos({ clients, rangeStats }) {
+    const container = document.getElementById("kgRangesContainer");
+    const btnReset  = document.getElementById("btnResetRangeFilter");
+    btnReset.classList.toggle("is-hidden", !state.selectedRangeId);
 
+    const totalCli = Math.max(1, clients.length);
+
+    container.innerHTML = "";
     rangeStats.forEach(rng => {
-      const pct = Math.round((rng.count / totalClientsCount) * 100);
-      const isSelected = state.selectedRangeId === rng.id;
+      const pct = Math.round((rng.count / totalCli) * 100);
+      const isSel = state.selectedRangeId === rng.id;
 
       const segsHtml = ["DET", "FSE", "MES", "MOD"].map(ch => {
         const w = rng.count > 0 ? (rng.byChannel[ch] / rng.count) * 100 : 0;
-        return `<div class="radar-stacked-seg" style="width:${w}%; background:${CHANNEL_COLORS[ch]};" title="${ch}: ${rng.byChannel[ch]}"></div>`;
+        return `<div class="radar-stacked-seg" style="width:${w}%; background:${CHANNEL_COLORS[ch]};"></div>`;
       }).join("");
 
       const row = document.createElement("div");
-      row.className = `radar-range-row ${isSelected ? "is-selected" : ""}`;
+      row.className = `radar-range-row ${isSel ? "is-selected" : ""}`;
       row.innerHTML = `
         <div class="radar-range-top">
           <strong>${rng.label}</strong>
           <div class="radar-range-stats">
-            <span>${rng.count} cli.</span>
+            <span>${rng.count} clientes</span>
             <span>${(rng.totalKg / 1000).toFixed(1)} T</span>
             <span class="radar-range-pct">${pct}%</span>
           </div>
         </div>
         <div class="radar-stacked-bar">${segsHtml}</div>
         <div class="radar-range-ch-detail">
-          <span>DET: <b>${rng.byChannel.DET}</b></span>
-          <span>FSE: <b>${rng.byChannel.FSE}</b></span>
-          <span>MES: <b>${rng.byChannel.MES}</b></span>
-          <span>MOD: <b>${rng.byChannel.MOD}</b></span>
+          <span>DET: <b>${rng.byChannel.DET}</b> • FSE: <b>${rng.byChannel.FSE}</b> • MES: <b>${rng.byChannel.MES}</b> • MOD: <b>${rng.byChannel.MOD}</b></span>
+          <span>Prom: ${rng.count ? (rng.totalKg / rng.count).toFixed(1) : 0} kg/cli</span>
         </div>
       `;
-
       row.addEventListener("click", () => {
         state.selectedRangeId = (state.selectedRangeId === rng.id) ? null : rng.id;
-        renderRadar();
+        renderTabRangos({ clients, rangeStats });
       });
-
-      rangesContainer.appendChild(row);
+      container.appendChild(row);
     });
 
-    // 3. Renderizar Tabla de Auditoría de Flota
-    const tbody = document.getElementById("fleetRadarBody");
-    tbody.innerHTML = "";
+    // Tabla derecha de clientes del rango seleccionado (o todos)
+    let listClients = [...clients];
+    const titleEl = document.getElementById("rangeDetailTitle");
+    const subEl   = document.getElementById("rangeDetailSub");
 
-    let sortedFleet = [...fleetList];
-    if (state.fleetSort === "dist") sortedFleet.sort((a, b) => b.estRouteKm - a.estRouteKm);
-    else if (state.fleetSort === "kg") sortedFleet.sort((a, b) => b.kg - a.kg);
-    else if (state.fleetSort === "cli") sortedFleet.sort((a, b) => b.clientCount - a.clientCount);
-    else if (state.fleetSort === "low") sortedFleet.sort((a, b) => a.kg - b.kg); // Menor carga primero
+    if (state.selectedRangeId) {
+      const found = rangeStats.find(r => r.id === state.selectedRangeId);
+      listClients = found ? [...found.clients] : [];
+      titleEl.textContent = `Clientes en Rango: ${found?.label || ""}`;
+      subEl.textContent   = `${listClients.length} puntos de venta en este tramo`;
+    } else {
+      titleEl.textContent = "Todos los Clientes (Top por Peso)";
+      subEl.textContent   = "Haz clic en un rango a la izquierda para filtrar";
+    }
 
-    sortedFleet.forEach(u => {
-      const isLowLoad = u.kg < 450;
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${u.placa}</td>
-        <td>${u.centro.replace(/^\d+-/, "")}</td>
-        <td>${u.clientCount}</td>
-        <td>${isLowLoad ? `<span class="badge-warn-low">${u.kg.toFixed(0)} kg</span>` : `${u.kg.toLocaleString("es-PE", { maximumFractionDigits: 0 })} kg`}</td>
-        <td><strong>${u.estRouteKm.toFixed(1)} km</strong></td>
-        <td>${u.maxRadiusKm.toFixed(1)} km</td>
+    listClients.sort((a, b) => b.kg - a.kg);
+    document.getElementById("rangeClientsBody").innerHTML = listClients.slice(0, 60).map(c => {
+      const chColor = CHANNEL_COLORS[c.canal] || "#a1a1aa";
+      return `
+        <tr>
+          <td style="color:#fff; font-weight:700; max-width:170px; overflow:hidden; text-overflow:ellipsis;">${c.nombre}</td>
+          <td style="text-align:left;"><span style="color:${chColor}; font-weight:800;">● ${c.canal}</span></td>
+          <td>${c.placa}</td>
+          <td>${c.distFromCd.toFixed(1)} km</td>
+          <td><strong>${c.kg.toLocaleString("es-PE", { maximumFractionDigits: 1 })} kg</strong></td>
+          <td>S/ ${c.soles.toLocaleString("es-PE", { maximumFractionDigits: 0 })}</td>
+        </tr>
       `;
-      tbody.appendChild(tr);
-    });
+    }).join("");
+  }
 
-    // 4. Renderizar Zonas de Complejidad Vial
-    const trafficContainer = document.getElementById("trafficZonesList");
-    trafficContainer.innerHTML = "";
+  // PESTAÑA 4: ZONAS CRÍTICAS & TRÁFICO VIAL
+  function renderTabTrafico({ trafficStats }) {
+    const listEl = document.getElementById("trafficZonesList");
+    listEl.innerHTML = "";
+
+    if (!trafficStats.length) {
+      listEl.innerHTML = `<div style="padding:14px; color:#71717a; font-size:0.78rem;">No se detectaron entregas en corredores críticos para este filtro.</div>`;
+      document.getElementById("trafficClientsBody").innerHTML = "";
+      return;
+    }
+
+    // Si no hay zona seleccionada o ya no existe en el filtro actual, seleccionar la primera
+    if (!state.selectedTrafficId || !trafficStats.some(z => z.id === state.selectedTrafficId)) {
+      state.selectedTrafficId = trafficStats[0].id;
+    }
+
     trafficStats.forEach(z => {
+      const isSel = z.id === state.selectedTrafficId;
       const div = document.createElement("div");
-      div.className = "radar-traffic-item";
+      div.className = `radar-traffic-item ${isSel ? "is-selected" : ""}`;
       div.innerHTML = `
         <div class="radar-traffic-top">
           <strong>${z.name}</strong>
@@ -462,80 +613,90 @@
         </div>
         <div class="radar-traffic-meta">
           <span>${z.reason}</span>
-          <span><b>${z.clientCount}</b> cli. • <b>${(z.totalKg / 1000).toFixed(1)} T</b></span>
+          <span><b>${z.clientCount}</b> cli. • <b>${(z.totalKg / 1000).toFixed(1)} T</b> • <b>${z.platesCount}</b> u.</span>
         </div>
       `;
-      trafficContainer.appendChild(div);
+      div.addEventListener("click", () => {
+        state.selectedTrafficId = z.id;
+        renderTabTrafico({ trafficStats });
+      });
+      listEl.appendChild(div);
     });
 
-    // 5. Renderizar Top Clientes por Volumen (Filtrado por rango si hay uno seleccionado)
-    const clientsContainer = document.getElementById("topClientsList");
-    const topClientsTitle  = document.getElementById("topClientsTitle");
-    const topClientsHint   = document.getElementById("topClientsHint");
-    clientsContainer.innerHTML = "";
+    const activeZone = trafficStats.find(z => z.id === state.selectedTrafficId) || trafficStats[0];
+    document.getElementById("trafficDetailTitle").textContent = activeZone.name;
+    document.getElementById("trafficDetailSub").textContent   = `${activeZone.clientCount} entregas programadas • ${activeZone.platesCount} unidades involucradas`;
+    document.getElementById("trafficZoneBadge").textContent   = activeZone.level;
 
-    let displayClients = [...clients];
-    if (state.selectedRangeId) {
-      const foundRng = rangeStats.find(r => r.id === state.selectedRangeId);
-      displayClients = foundRng ? [...foundRng.clients] : displayClients;
-      topClientsTitle.textContent = `Clientes en Rango: ${foundRng?.label || ""}`;
-      topClientsHint.textContent  = `${displayClients.length} clientes encontrados en este tramo`;
-    } else {
-      topClientsTitle.textContent = "Top Clientes de Mayor Volumen";
-      topClientsHint.textContent  = "Principales receptores por tonelaje asignado";
-    }
-
-    displayClients.sort((a, b) => b.kg - a.kg).slice(0, 15).forEach(c => {
-      const chColor = CHANNEL_COLORS[c.canal] || "#71717a";
-      const item = document.createElement("div");
-      item.className = "radar-client-item";
-      item.innerHTML = `
-        <div class="radar-client-info">
-          <div class="radar-client-name">${c.nombre}</div>
-          <div class="radar-client-sub">
-            <span style="color:${chColor}; font-weight:800;">● ${c.canal}</span> • ${c.placa} • ${c.distFromCd.toFixed(1)} km del CD
-          </div>
-        </div>
-        <div class="radar-client-val">
-          <strong>${c.kg.toLocaleString("es-PE", { maximumFractionDigits: 1 })} kg</strong>
-          <span>S/ ${c.soles.toLocaleString("es-PE", { maximumFractionDigits: 0 })}</span>
-        </div>
+    const zClients = [...activeZone.clients].sort((a, b) => b.kg - a.kg);
+    document.getElementById("trafficClientsBody").innerHTML = zClients.slice(0, 60).map(c => {
+      const chColor = CHANNEL_COLORS[c.canal] || "#a1a1aa";
+      return `
+        <tr>
+          <td style="color:#fff; font-weight:700; max-width:180px; overflow:hidden; text-overflow:ellipsis;">${c.nombre}</td>
+          <td style="text-align:left;"><span style="color:${chColor}; font-weight:800;">● ${c.canal}</span></td>
+          <td style="text-align:left; color:#e1bee7;">${c.centro}</td>
+          <td>${c.placa}</td>
+          <td><strong>${c.kg.toLocaleString("es-PE", { maximumFractionDigits: 1 })} kg</strong></td>
+        </tr>
       `;
-      clientsContainer.appendChild(item);
-    });
+    }).join("");
   }
 
+  /* ==========================================================================
+     EVENTOS DE NAVEGACIÓN POR PESTAÑAS Y FILTROS
+     ========================================================================== */
   function bindEvents() {
+    // Cambio de pestaña
+    document.querySelectorAll(".radar-tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".radar-tab-btn").forEach(b => b.classList.remove("is-active"));
+        btn.classList.add("is-active");
+
+        const targetId = btn.getAttribute("data-tab");
+        state.activeTab = targetId;
+
+        document.querySelectorAll(".radar-pane").forEach(pane => pane.classList.remove("is-active"));
+        const targetPane = document.getElementById(targetId);
+        if (targetPane) targetPane.classList.add("is-active");
+      });
+    });
+
+    // Filtro por Centro
     document.querySelectorAll(".radar-pill").forEach(pill => {
       pill.addEventListener("click", () => {
         document.querySelectorAll(".radar-pill").forEach(p => p.classList.remove("is-active"));
         pill.classList.add("is-active");
         state.selectedCenter = pill.getAttribute("data-center");
-        renderRadar();
+        renderAll();
       });
     });
 
+    // Ordenamiento de flota
     document.querySelectorAll(".radar-sort-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         document.querySelectorAll(".radar-sort-btn").forEach(b => b.classList.remove("is-active"));
         btn.classList.add("is-active");
         state.fleetSort = btn.getAttribute("data-sort");
-        renderRadar();
+        renderAll();
       });
     });
 
+    // Limpiar filtro de rango
     document.getElementById("btnResetRangeFilter").addEventListener("click", () => {
       state.selectedRangeId = null;
-      renderRadar();
+      renderAll();
     });
   }
 
   async function init() {
     try {
       const text = await loadCSVWithFallback();
-      allRows = parseCSV(text);
+      const { header, rows } = parseCSV(text);
+      detectProductColumns(header);
+      allRows = rows;
       bindEvents();
-      renderRadar();
+      renderAll();
     } catch (err) {
       console.error("Error inicializando Radar de Distribución:", err);
     }
