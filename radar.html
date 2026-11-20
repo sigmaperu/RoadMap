@@ -12,12 +12,12 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
   <!-- Estilos globales y específicos de Radar -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=1.0">
-  <link rel="stylesheet" href="assets/css/radar.css?v=1.0">
+  <link rel="stylesheet" href="assets/css/styles.css?v=2.0">
+  <link rel="stylesheet" href="assets/css/radar.css?v=2.0">
 
   <!-- Scripts -->
   <script defer src="assets/js/main.js"></script>
-  <script defer src="assets/js/radar.js?v=1.0"></script>
+  <script defer src="assets/js/radar.js?v=2.0"></script>
 </head>
 
 <body data-title="Radar de Distribución">
@@ -31,20 +31,32 @@
       <main class="content radar-viewport">
         
         <!-- ========================================================== -->
-        <!-- 1. BARRA SUPERIOR: SELECTOR DE CENTRO Y HALLAZGOS CLAVE    -->
+        <!-- 1. BARRA SUPERIOR: PESTAÑAS DE SEGMENTO + CENTROS          -->
         <!-- ========================================================== -->
         <header class="radar-topbar">
-          <div class="radar-title-group">
-            <span class="radar-badge-live"><span class="pulse-dot"></span> INTELIGENCIA DE RUTEO</span>
-            <div>
-              <h2>Radar de Distribución Operativa</h2>
-              <p id="radarContextSub">Analizando distancia geoespacial, tramos de peso, flota y zonas críticas de tráfico</p>
-            </div>
-          </div>
+          <!-- Pestañas Principales del Radar -->
+          <nav class="radar-tabs-nav" role="tablist" aria-label="Segmentos de Análisis">
+            <button type="button" class="radar-tab-btn is-active" data-tab="tab-flota" role="tab">
+              <span class="material-icons">local_shipping</span>
+              <span>Flota & Recorridos</span>
+            </button>
+            <button type="button" class="radar-tab-btn" data-tab="tab-productos" role="tab">
+              <span class="material-icons">inventory_2</span>
+              <span>Mix de Productos</span>
+            </button>
+            <button type="button" class="radar-tab-btn" data-tab="tab-rangos" role="tab">
+              <span class="material-icons">scale</span>
+              <span>Rangos Kg & Clientes</span>
+            </button>
+            <button type="button" class="radar-tab-btn" data-tab="tab-trafico" role="tab">
+              <span class="material-icons">traffic</span>
+              <span>Zonas & Tráfico</span>
+            </button>
+          </nav>
 
-          <!-- Píldoras Interactivas por Centro (0 dropdowns) -->
+          <!-- Píldoras Interactivas por Centro (Filtro Cruzado Global) -->
           <div id="radarCenterPills" class="radar-center-pills" role="tablist">
-            <button type="button" class="radar-pill is-active" data-center="Todos">● Región Lima (Global)</button>
+            <button type="button" class="radar-pill is-active" data-center="Todos">● Global Lima</button>
             <button type="button" class="radar-pill" data-center="0374-ATE">0374-ATE</button>
             <button type="button" class="radar-pill" data-center="0780-ATE2">0780-ATE2</button>
             <button type="button" class="radar-pill" data-center="0754-CHANCAY">0754-CHANCAY</button>
@@ -52,144 +64,229 @@
         </header>
 
         <!-- ========================================================== -->
-        <!-- 2. TARJETAS DE HALLAZGOS DESTACADOS (INSIGHTS AUTOMÁTICOS) -->
+        <!-- 2. CONTENEDOR DE VISTAS POR PESTAÑA                        -->
         <!-- ========================================================== -->
-        <section class="radar-highlights-grid">
-          
-          <article class="radar-hl-card">
-            <div class="radar-hl-top">
-              <span class="radar-hl-label">Mayor Recorrido Est.</span>
-              <span class="radar-hl-icon ic-plum"><span class="material-icons">route</span></span>
-            </div>
-            <div id="hlMaxDistPlaca" class="radar-hl-main">–</div>
-            <div id="hlMaxDistSub" class="radar-hl-sub">Calculando distancia desde CD...</div>
-          </article>
+        <div class="radar-tabs-body">
 
-          <article class="radar-hl-card">
-            <div class="radar-hl-top">
-              <span class="radar-hl-label">Mayor Carga (Tonelaje)</span>
-              <span class="radar-hl-icon ic-green"><span class="material-icons">local_shipping</span></span>
-            </div>
-            <div id="hlMaxKgPlaca" class="radar-hl-main">–</div>
-            <div id="hlMaxKgSub" class="radar-hl-sub">–</div>
-          </article>
-
-          <article class="radar-hl-card">
-            <div class="radar-hl-top">
-              <span class="radar-hl-label">Mayor Capilaridad (Clientes)</span>
-              <span class="radar-hl-icon ic-amber"><span class="material-icons">storefront</span></span>
-            </div>
-            <div id="hlMaxCliPlaca" class="radar-hl-main">–</div>
-            <div id="hlMaxCliSub" class="radar-hl-sub">–</div>
-          </article>
-
-          <article class="radar-hl-card">
-            <div class="radar-hl-top">
-              <span class="radar-hl-label">Tramo de Peso Predominante</span>
-              <span class="radar-hl-icon ic-slate"><span class="material-icons">scale</span></span>
-            </div>
-            <div id="hlTopRange" class="radar-hl-main">–</div>
-            <div id="hlTopRangeSub" class="radar-hl-sub">–</div>
-          </article>
-
-          <article class="radar-hl-card radar-hl-card--alert">
-            <div class="radar-hl-top">
-              <span class="radar-hl-label">Foco de Congestión Vial</span>
-              <span class="radar-hl-icon ic-red"><span class="material-icons">traffic</span></span>
-            </div>
-            <div id="hlTopTrafficZone" class="radar-hl-main">–</div>
-            <div id="hlTopTrafficSub" class="radar-hl-sub">–</div>
-          </article>
-
-        </section>
-
-        <!-- ========================================================== -->
-        <!-- 3. CUERPO ANALÍTICO (RANGOS KG + DISTANCIA FLOTA + ZONAS)  -->
-        <!-- ========================================================== -->
-        <section class="radar-main-grid">
-          
-          <!-- COLUMNA 1: DISTRIBUCIÓN DE CLIENTES POR RANGOS DE KG Y CANAL -->
-          <article class="radar-panel">
-            <div class="radar-panel__head">
-              <div>
-                <h3>Clientes por Rango de Peso (Kg) y Canal</h3>
-                <span class="radar-panel__hint">Haz clic en un rango para filtrar el ranking de clientes a la derecha</span>
+          <!-- ======================================================== -->
+          <!-- PESTAÑA 1: FLOTA & RECORRIDOS                            -->
+          <!-- ======================================================== -->
+          <section class="radar-pane is-active" id="tab-flota">
+            <div class="radar-kpi-strip radar-kpi-strip--4">
+              <div class="r-stat-card">
+                <span class="r-stat-lbl">Mayor Recorrido Est.</span>
+                <strong id="flotaMaxDistVal" class="r-stat-val">–</strong>
+                <span id="flotaMaxDistSub" class="r-stat-sub">–</span>
               </div>
-              <button type="button" id="btnResetRangeFilter" class="radar-mini-btn is-hidden">Ver todos los rangos</button>
-            </div>
-
-            <!-- Leyenda de colores oficial de canales -->
-            <div class="radar-channel-legend">
-              <span><i style="background:#ef4444;"></i> DET</span>
-              <span><i style="background:#2563eb;"></i> FSE</span>
-              <span><i style="background:#f97316;"></i> MES</span>
-              <span><i style="background:#eab308;"></i> MOD</span>
-            </div>
-
-            <div id="kgRangesContainer" class="radar-ranges-list"></div>
-          </article>
-
-          <!-- COLUMNA 2: RANKING DE FLOTA (DISTANCIA, CARGA Y EFICIENCIA) -->
-          <article class="radar-panel radar-panel--dark">
-            <div class="radar-panel__head">
-              <div>
-                <h3>Auditoría de Flota por Unidad</h3>
-                <span class="radar-panel__hint">Distancia geodésica desde su CD, radio máximo y densidad</span>
+              <div class="r-stat-card">
+                <span class="r-stat-lbl">Mayor Tonelaje Asignado</span>
+                <strong id="flotaMaxKgVal" class="r-stat-val">–</strong>
+                <span id="flotaMaxKgSub" class="r-stat-sub">–</span>
               </div>
-              <div class="radar-sort-pills">
-                <button type="button" class="radar-sort-btn is-active" data-sort="dist">Km</button>
-                <button type="button" class="radar-sort-btn" data-sort="kg">Kg</button>
-                <button type="button" class="radar-sort-btn" data-sort="cli">Clientes</button>
-                <button type="button" class="radar-sort-btn" data-sort="low">Subutilizadas</button>
+              <div class="r-stat-card">
+                <span class="r-stat-lbl">Mayor Capilaridad (Clientes)</span>
+                <strong id="flotaMaxCliVal" class="r-stat-val">–</strong>
+                <span id="flotaMaxCliSub" class="r-stat-sub">–</span>
+              </div>
+              <div class="r-stat-card r-stat-card--warn">
+                <span class="r-stat-lbl">Alertas Subutilización (&lt;450 kg)</span>
+                <strong id="flotaLowCountVal" class="r-stat-val">–</strong>
+                <span id="flotaLowCountSub" class="r-stat-sub">Unidades candidatas a consolidar</span>
               </div>
             </div>
 
-            <div class="radar-table-wrap">
-              <table class="radar-table">
-                <thead>
-                  <tr>
-                    <th>Placa</th>
-                    <th>CD</th>
-                    <th>Clientes</th>
-                    <th>Peso (Kg)</th>
-                    <th>Recorrido</th>
-                    <th>Radio Max</th>
-                  </tr>
-                </thead>
-                <tbody id="fleetRadarBody"></tbody>
-              </table>
-            </div>
-          </article>
-
-          <!-- COLUMNA 3: ZONAS DE COMPLEJIDAD VIAL + TOP CLIENTES VOLUMEN -->
-          <div class="radar-right-stack">
-            
-            <!-- Bloque Superior: Zonas Complejas por Tráfico en Lima -->
-            <article class="radar-panel">
+            <div class="radar-card-full radar-card-full--dark">
               <div class="radar-panel__head">
                 <div>
-                  <h3>Zonas Complejas por Tráfico Vial</h3>
-                  <span class="radar-panel__hint">Corredores de alta fricción detectados por geoposición</span>
+                  <h3>Auditoría Detallada de Flota por Unidad</h3>
+                  <span class="radar-panel__hint">Distancia geodésica estimada desde su CD, radio máximo de dispersión y densidad de carga</span>
                 </div>
-                <span class="radar-tag-amber">Lima & Norte</span>
-              </div>
-              <div id="trafficZonesList" class="radar-traffic-list"></div>
-            </article>
-
-            <!-- Bloque Inferior: Top Clientes por Volumen (Pareto) -->
-            <article class="radar-panel">
-              <div class="radar-panel__head">
-                <div>
-                  <h3 id="topClientsTitle">Top Clientes de Mayor Volumen</h3>
-                  <span id="topClientsHint" class="radar-panel__hint">Principales receptores por tonelaje asignado</span>
+                <div class="radar-sort-pills">
+                  <button type="button" class="radar-sort-btn is-active" data-sort="dist">Mayor Km</button>
+                  <button type="button" class="radar-sort-btn" data-sort="kg">Mayor Kg</button>
+                  <button type="button" class="radar-sort-btn" data-sort="cli">Más Clientes</button>
+                  <button type="button" class="radar-sort-btn" data-sort="dens">Mejor Kg/Km</button>
+                  <button type="button" class="radar-sort-btn" data-sort="low">Subutilizadas</button>
                 </div>
               </div>
-              <div id="topClientsList" class="radar-clients-list"></div>
-            </article>
 
-          </div>
+              <div class="radar-table-wrap">
+                <table class="radar-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Placa</th>
+                      <th>Centro</th>
+                      <th>Clientes</th>
+                      <th>Pedidos</th>
+                      <th>Peso Total</th>
+                      <th>Valorización</th>
+                      <th>Recorrido Est.</th>
+                      <th>Radio Máx.</th>
+                      <th>Densidad (Kg/Km)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="fleetRadarBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
 
-        </section>
+          <!-- ======================================================== -->
+          <!-- PESTAÑA 2: MIX DE PRODUCTOS (SKUs)                       -->
+          <!-- ======================================================== -->
+          <section class="radar-pane" id="tab-productos">
+            <div class="radar-kpi-strip radar-kpi-strip--4">
+              <div class="r-stat-card">
+                <span class="r-stat-lbl">Total SKUs Activos</span>
+                <strong id="prodTotalSkus" class="r-stat-val">–</strong>
+                <span id="prodTotalSkusSub" class="r-stat-sub">En la planificación actual</span>
+              </div>
+              <div class="r-stat-card">
+                <span class="r-stat-lbl">Líder en Cobertura (Más Clientes)</span>
+                <strong id="prodTopCliName" class="r-stat-val">–</strong>
+                <span id="prodTopCliSub" class="r-stat-sub">–</span>
+              </div>
+              <div class="r-stat-card">
+                <span class="r-stat-lbl">Líder en Volumen (Más Kg)</span>
+                <strong id="prodTopKgName" class="r-stat-val">–</strong>
+                <span id="prodTopKgSub" class="r-stat-sub">–</span>
+              </div>
+              <div class="r-stat-card r-stat-card--plum">
+                <span class="r-stat-lbl">Oportunidad (Menor Cobertura)</span>
+                <strong id="prodLowCliName" class="r-stat-val">–</strong>
+                <span id="prodLowCliSub" class="r-stat-sub">–</span>
+              </div>
+            </div>
+
+            <div class="radar-split-2col">
+              <!-- Izquierda: Top Productos por Penetración de Clientes y Volumen -->
+              <article class="radar-panel">
+                <div class="radar-panel__head">
+                  <div>
+                    <h3>Top Productos por Cobertura de Clientes</h3>
+                    <span class="radar-panel__hint">SKUs presentes en mayor cantidad de puntos de venta</span>
+                  </div>
+                  <span class="radar-tag-plum">Mayor Rotación</span>
+                </div>
+                <div id="topProductsList" class="radar-sku-list"></div>
+              </article>
+
+              <!-- Derecha: Productos Menos Vendidos / Oportunidades de Cross-Selling -->
+              <article class="radar-panel radar-panel--dark">
+                <div class="radar-panel__head">
+                  <div>
+                    <h3>Productos con Menor Penetración (Oportunidades)</h3>
+                    <span class="radar-panel__hint">SKUs con menor cantidad de clientes atendidos hoy</span>
+                  </div>
+                  <span class="radar-tag-amber">Cola Larga</span>
+                </div>
+                <div id="lowProductsList" class="radar-sku-list"></div>
+              </article>
+            </div>
+          </section>
+
+          <!-- ======================================================== -->
+          <!-- PESTAÑA 3: RANGOS DE PESO (KG) & CLIENTES                -->
+          <!-- ======================================================== -->
+          <section class="radar-pane" id="tab-rangos">
+            <div class="radar-split-2col radar-split-2col--ranges">
+              
+              <!-- Izquierda: Los 7 Rangos de Peso con Desglose por Canal -->
+              <article class="radar-panel">
+                <div class="radar-panel__head">
+                  <div>
+                    <h3>Segmentación de Clientes por Rango de Peso</h3>
+                    <span class="radar-panel__hint">Selecciona un tramo para auditar los clientes y canales que lo componen</span>
+                  </div>
+                  <div class="radar-channel-legend">
+                    <span><i style="background:#ef4444;"></i> DET</span>
+                    <span><i style="background:#2563eb;"></i> FSE</span>
+                    <span><i style="background:#f97316;"></i> MES</span>
+                    <span><i style="background:#eab308;"></i> MOD</span>
+                  </div>
+                </div>
+                <div id="kgRangesContainer" class="radar-ranges-list"></div>
+              </article>
+
+              <!-- Derecha: Tabla de Clientes del Rango Seleccionado -->
+              <article class="radar-panel radar-panel--dark">
+                <div class="radar-panel__head">
+                  <div>
+                    <h3 id="rangeDetailTitle">Clientes en Rango Seleccionado</h3>
+                    <span id="rangeDetailSub" class="radar-panel__hint">Ordenados de mayor a menor tonelaje</span>
+                  </div>
+                  <button type="button" id="btnResetRangeFilter" class="radar-mini-btn is-hidden">Ver todos</button>
+                </div>
+
+                <div class="radar-table-wrap">
+                  <table class="radar-table">
+                    <thead>
+                      <tr>
+                        <th>Cliente</th>
+                        <th>Canal</th>
+                        <th>Placa</th>
+                        <th>Dist. CD</th>
+                        <th>Peso (Kg)</th>
+                        <th>Soles</th>
+                      </tr>
+                    </thead>
+                    <tbody id="rangeClientsBody"></tbody>
+                  </table>
+                </div>
+              </article>
+
+            </div>
+          </section>
+
+          <!-- ======================================================== -->
+          <!-- PESTAÑA 4: ZONAS COMPLEJAS & TRÁFICO VIAL                -->
+          <!-- ======================================================== -->
+          <section class="radar-pane" id="tab-trafico">
+            <div class="radar-split-2col">
+              
+              <!-- Izquierda: Corredores Viales de Lima y Norte Chico -->
+              <article class="radar-panel">
+                <div class="radar-panel__head">
+                  <div>
+                    <h3>Corredores Viales por Nivel de Complejidad</h3>
+                    <span class="radar-panel__hint">Haz clic en un corredor para inspeccionar los clientes y unidades en esa zona</span>
+                  </div>
+                  <span class="radar-tag-amber">Historial Vial</span>
+                </div>
+                <div id="trafficZonesList" class="radar-traffic-list"></div>
+              </article>
+
+              <!-- Derecha: Detalle de Entregas en la Zona Crítica Seleccionada -->
+              <article class="radar-panel radar-panel--dark">
+                <div class="radar-panel__head">
+                  <div>
+                    <h3 id="trafficDetailTitle">Entregas en Zona Crítica</h3>
+                    <span id="trafficDetailSub" class="radar-panel__hint">Clientes y placas asignadas al corredor seleccionado</span>
+                  </div>
+                  <span id="trafficZoneBadge" class="radar-tag-plum">–</span>
+                </div>
+
+                <div class="radar-table-wrap">
+                  <table class="radar-table">
+                    <thead>
+                      <tr>
+                        <th>Cliente</th>
+                        <th>Canal</th>
+                        <th>CD</th>
+                        <th>Placa</th>
+                        <th>Peso (Kg)</th>
+                      </tr>
+                    </thead>
+                    <tbody id="trafficClientsBody"></tbody>
+                  </table>
+                </div>
+              </article>
+
+            </div>
+          </section>
+
+        </div>
 
       </main>
     </div>
