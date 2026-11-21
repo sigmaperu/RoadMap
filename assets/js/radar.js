@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - radar.js (Semáforo Coherente con Risk Score + Exportador CSV VH)
+   RoadMap - radar.js (Detección de Dispersión + Mapa Interactivo en Drawer)
    ========================================================================== */
 
 (() => {
@@ -103,7 +103,6 @@
     return "OTRO";
   }
 
-  // Parser de Ventana Horaria con soporte completo AM / PM y reloj 24h
   function parseTimeWindow(rawWin) {
     const raw = String(rawWin ?? "").trim();
     if (!raw) return { raw, status: "MISSING", startMin: null, endMin: null, durationMin: 0 };
@@ -150,8 +149,8 @@
     }
 
     const durationMin  = endObj.mins - startObj.mins;
-    const isNarrow     = durationMin <= 120;      // <= 2 horas
-    const isEarlyClose = endObj.mins <= 11 * 60;  // Cierra <= 11:00 AM
+    const isNarrow     = durationMin <= 120;
+    const isEarlyClose = endObj.mins <= 11 * 60;
 
     return {
       raw,
@@ -268,6 +267,9 @@
   let allRows = [];
   let currentUnitAuditsMap = new Map();
   let lastAnalyzedClients = [];
+  let dispersionMap = null;
+  let dispersionLayer = null;
+
   let state = {
     activeTab: "tab-riesgo",
     selectedCenter: "Todos",
@@ -392,7 +394,7 @@
   }
 
   /* ==========================================================================
-     2. MOTOR ANALÍTICO POR PLACA CON COHERENCIA ESTRICTA SCORE <-> SEMÁFORO
+     2. MOTOR ANALÍTICO DE DISPERSIÓN GEOGRÁFICA POR PLACA (HAVERSINE + IQR)
      ========================================================================== */
   function analyzeOperation(filteredRows) {
     const clientsMap = new Map();
@@ -496,38 +498,58 @@
       const criticalWinStops = stops.filter(s => s.win.status === "VALID" && (s.win.isNarrow || s.win.isEarlyClose));
       const invalidWinStops  = stops.filter(s => s.win.status === "REVERSED" || s.win.status === "INVALID_FORMAT" || s.win.status === "INVALID_TIME");
 
-      // Centroide e IQR geográfico
+      // Centroide de la nube de clientes de la placa
       let centLat = 0, centLng = 0;
       if (validStops.length > 0) {
         centLat = validStops.reduce((s, p) => s + p.lat, 0) / validStops.length;
         centLng = validStops.reduce((s, p) => s + p.lng, 0) / validStops.length;
       }
 
-      const distsToCentroid = validStops.map(s => ({
+      // Diámetro máximo de dispersión (distancia en línea recta entre los 2 puntos más alejados de la placa)
+      let maxDiameterKm = 0;
+      for (let i = 0; i < validStops.length; i++) {
+        for (let j = i + 1; j < validStops.length; j++) {
+          const d = haversineKm(validStops[i].lat, validStops[i].lng, validStops[j].lat, validStops[j].lng);
+          if (d > maxDiameterKm) maxDiameterKm = d;
+        }
+      }
+
+      // Distancia de cada cliente al centroide de su placa + detección IQR
+      const stopsWithDist = stops.map(s => ({
         ...s,
-        distToCentroid: haversineKm(centLat, centLng, s.lat, s.lng)
+        distToCentroid: s.hasValidCoord ? haversineKm(centLat, centLng, s.lat, s.lng) : 0
       }));
-      const sortedDists = distsToCentroid.map(d => d.distToCentroid).sort((a, b) => a - b);
-      const q1 = getQuantile(sortedDists, 0.25);
-      const q3 = getQuantile(sortedDists, 0.75);
+
+      const validDists = stopsWithDist.filter(s => s.hasValidCoord).map(d => d.distToCentroid).sort((a, b) => a - b);
+      const q1 = getQuantile(validDists, 0.25);
+      const q3 = getQuantile(validDists, 0.75);
       const iqr = q3 - q1;
       const outlierThreshold = Math.max(4.5, q3 + 1.5 * iqr);
 
-      const unitOutliers = distsToCentroid.filter(d => validStops.length >= 4 && d.distToCentroid > outlierThreshold);
+      const unitOutliers = stopsWithDist.filter(d => d.hasValidCoord && validStops.length >= 4 && d.distToCentroid > outlierThreshold);
       const outlierSet = new Set(unitOutliers.map(o => o.cod));
+
+      const enrichedStops = stopsWithDist.map(s => ({
+        ...s,
+        isOutlier: outlierSet.has(s.cod)
+      }));
 
       unitOutliers.forEach(o => {
         allOutliers.push({
           ...o,
+          unitKey: unit.key,
           centro: unit.centro,
           placa: unit.placa,
           thresholdKm: outlierThreshold
         });
       });
 
+      // Una placa se considera "Altamente Dispersa" si tiene >= 1 atípico IQR o diámetro extremo > 16 km
+      const isHighlyDispersed = validStops.length > 0 && (unitOutliers.length > 0 || maxDiameterKm > 16);
+
       // Defectos detallados por cliente
       const clientDefects = [];
-      stops.forEach(s => {
+      enrichedStops.forEach(s => {
         if (!s.hasValidCoord) {
           clientDefects.push({
             cod: s.cod,
@@ -537,6 +559,17 @@
             sev: "crit",
             badge: "SIN COORDENADA",
             detail: `Lat/Lng vacía, en 0 o fuera de Lima (${isNaN(s.lat) ? "vacío" : s.lat}, ${isNaN(s.lng) ? "vacío" : s.lng}).`
+          });
+        }
+        if (s.isOutlier) {
+          clientDefects.push({
+            cod: s.cod,
+            nombre: s.nombre,
+            canal: s.canal,
+            kg: s.kg,
+            sev: "crit",
+            badge: "GENERA DISPERSIÓN",
+            detail: `Alejado +${s.distToCentroid.toFixed(1)} km del centroide de la placa (umbral IQR: ${outlierThreshold.toFixed(1)} km).`
           });
         }
         if (s.win.status === "REVERSED" || s.win.status === "INVALID_FORMAT" || s.win.status === "INVALID_TIME") {
@@ -560,46 +593,13 @@
             detail: `Horario estrecho o cierre temprano (${s.win.startStr} - ${s.win.endStr}). Priorizar en secuencia.`
           });
         }
-        if (outlierSet.has(s.cod)) {
-          const outObj = unitOutliers.find(o => o.cod === s.cod);
-          clientDefects.push({
-            cod: s.cod,
-            nombre: s.nombre,
-            canal: s.canal,
-            kg: s.kg,
-            sev: "warn",
-            badge: "ATÍPICO GEO",
-            detail: `Alejado +${outObj.distToCentroid.toFixed(1)} km del centroide de la placa (umbral ${outlierThreshold.toFixed(1)} km).`
-          });
-        }
       });
-
-      // Distancia lineal acumulada desde CD
-      const cdPos = CD_COORDS[unit.centro];
-      let linearRouteKm = 0;
-      if (cdPos && validStops.length > 0) {
-        const unvisited = [...validStops];
-        let curLat = cdPos.lat;
-        let curLng = cdPos.lng;
-        while (unvisited.length > 0) {
-          let bestIdx = 0, bestD = Infinity;
-          for (let i = 0; i < unvisited.length; i++) {
-            const d = haversineKm(curLat, curLng, unvisited[i].lat, unvisited[i].lng);
-            if (d < bestD) { bestD = d; bestIdx = i; }
-          }
-          linearRouteKm += bestD;
-          curLat = unvisited[bestIdx].lat;
-          curLng = unvisited[bestIdx].lng;
-          unvisited.splice(bestIdx, 1);
-        }
-        linearRouteKm += haversineKm(curLat, curLng, cdPos.lat, cdPos.lng);
-      }
 
       const maxClientKg = stops.reduce((m, s) => Math.max(m, s.kg), 0);
       const maxClientShare = unit.kg > 0 ? (maxClientKg / unit.kg) * 100 : 0;
 
       // Puntajes por Dimensión Evaluable (0-100)
-      const geoScore  = Math.min(100, (unitOutliers.length * 34) + (linearRouteKm > 65 ? 25 : 0));
+      const geoScore  = Math.min(100, (unitOutliers.length * 34) + (maxDiameterKm > 16 ? 25 : 0));
       const winScore  = Math.min(100, (criticalWinStops.length * 18) + (invalidWinStops.length * 35));
       const compScore = Math.min(100, (stops.length > 35 ? 45 : stops.length > 25 ? 25 : 10) + (unit.channelsSet.size >= 3 ? 25 : 0));
       const balScore  = Math.min(100, (unit.kg < 400 ? 65 : 0) + (maxClientShare > 50 ? 35 : 0));
@@ -613,19 +613,10 @@
         (dqScore   * 0.08)
       );
 
-      // Si hay condiciones críticas múltiples (ej. >= 2 atípicos geo o >= 5 ventanas críticas),
-      // aseguramos piso de riesgo Alto (>= 61) para mantener coherencia total entre Score y Color.
       if (unitOutliers.length >= 2 || criticalWinStops.length >= 5) {
         riskScore = Math.max(riskScore, 62);
       }
 
-      // ======================================================================
-      // SEMÁFORO 100% COHERENTE CON EL PLANNING RISK SCORE:
-      // - NEGRO: 100% sin coordenadas válidas (no evaluable)
-      // - ROJO: Score >= 61
-      // - AMARILLO: Score 31 a 60
-      // - VERDE: Score <= 30
-      // ======================================================================
       let semaphore = "VERDE";
       let semClass = "sem-verde";
       if (validStops.length === 0) {
@@ -641,29 +632,32 @@
 
       const dataDefectsCount = missingCoordStops.length + invalidWinStops.length;
 
-      let finding = "Operación estable sin alertas relevantes.";
+      let finding = "Nube compacta sin alertas relevantes.";
       if (validStops.length === 0) {
         finding = `100% de clientes (${stops.length}) sin coordenada válida → Corregir Lat/Lng.`;
+      } else if (unitOutliers.length > 0) {
+        finding = `${unitOutliers.length} cliente(s) disperso(s) > ${outlierThreshold.toFixed(1)} km del centroide → Clic para ver en mapa.`;
+      } else if (maxDiameterKm > 16) {
+        finding = `Ruta extendida (${maxDiameterKm.toFixed(1)} km de extremo a extremo) → Clic para revisar cobertura.`;
       } else if (dataDefectsCount > 0) {
         finding = `${dataDefectsCount} defecto(s) de dato (VH o Lat/Lng) → Clic para ver cliente exacto.`;
-      } else if (unitOutliers.length > 0 && criticalWinStops.length > 0) {
-        finding = `${unitOutliers.length} atípico(s) geo + ${criticalWinStops.length} ventana(s) restrictiva(s) → Clic para auditar.`;
       } else if (criticalWinStops.length >= 2) {
         finding = `${criticalWinStops.length} clientes con cierre temprano/ventana estrecha → Priorizar salida.`;
-      } else if (unitOutliers.length > 0) {
-        finding = `${unitOutliers.length} cliente(s) alejado(s) > ${outlierThreshold.toFixed(1)} km del centroide → Evaluar traslado.`;
       } else if (unit.kg < 400) {
         finding = `Carga baja (${unit.kg.toFixed(0)} kg) → Evaluar consolidación con unidad cercana.`;
       }
 
       return {
         ...unit,
-        stops,
+        stops: enrichedStops,
+        centroid: { lat: centLat, lng: centLng },
+        outlierThreshold,
+        maxDiameterKm,
+        isHighlyDispersed,
         clientDefects,
         dataDefectsCount,
         clientCount: stops.length,
         orderCount: unit.pedidosSet.size,
-        linearRouteKm,
         outliersCount: unitOutliers.length,
         criticalWinCount: criticalWinStops.length,
         invalidWinCount: invalidWinStops.length,
@@ -799,8 +793,111 @@
   }
 
   /* ==========================================================================
-     4. DRAWER DE DETALLE AL HACER CLIC EN UNA PLACA
+     4. DRAWER CON MAPA INTERACTIVO DE DISPERSIÓN POR PLACA
      ========================================================================== */
+  function renderDispersionMapForUnit(unit) {
+    const mapContainer = document.getElementById("plateDispersionMap");
+    if (!mapContainer || typeof L === "undefined") return;
+
+    if (!dispersionMap) {
+      dispersionMap = L.map("plateDispersionMap", {
+        zoomControl: true,
+        attributionControl: false
+      }).setView([-12.04, -77.02], 11);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19
+      }).addTo(dispersionMap);
+
+      dispersionLayer = L.layerGroup().addTo(dispersionMap);
+    }
+
+    dispersionLayer.clearLayers();
+    const validStops = unit.stops.filter(s => s.hasValidCoord);
+    const bounds = [];
+
+    // 1. Marcador del Centro de Distribución de origen
+    const cdPos = CD_COORDS[unit.centro];
+    if (cdPos) {
+      const cdIcon = L.divIcon({
+        className: "",
+        html: `<div style="background:#16141c; color:#fff; border:2px solid #8e24aa; padding:2px 7px; border-radius:8px; font-size:10px; font-weight:800; white-space:nowrap; transform:translate(-50%,-50%); box-shadow:0 3px 8px rgba(0,0,0,0.4);">CD ${unit.centro.replace(/^\d+-/, "")}</div>`,
+        iconSize: [0, 0]
+      });
+      L.marker([cdPos.lat, cdPos.lng], { icon: cdIcon }).addTo(dispersionLayer);
+      bounds.push([cdPos.lat, cdPos.lng]);
+    }
+
+    if (!validStops.length) {
+      setTimeout(() => {
+        dispersionMap.invalidateSize();
+        if (bounds.length) dispersionMap.setView(bounds[0], 11);
+      }, 250);
+      return;
+    }
+
+    // 2. Círculo de umbral IQR alrededor del centroide de la ruta
+    L.circle([unit.centroid.lat, unit.centroid.lng], {
+      radius: unit.outlierThreshold * 1000,
+      color: "#8e24aa",
+      weight: 1.5,
+      dashArray: "4, 4",
+      fillColor: "#8e24aa",
+      fillOpacity: 0.08
+    }).addTo(dispersionLayer);
+
+    // 3. Marcador del Centroide
+    const centIcon = L.divIcon({
+      className: "",
+      html: `<div style="width:12px; height:12px; border-radius:50%; background:#8e24aa; border:2px solid #fff; transform:translate(-50%,-50%); box-shadow:0 0 0 3px rgba(142,36,170,0.35);" title="Centroide de la placa"></div>`,
+      iconSize: [0, 0]
+    });
+    L.marker([unit.centroid.lat, unit.centroid.lng], { icon: centIcon })
+      .bindPopup(`<strong>Centroide Placa ${unit.placa}</strong><br>Umbral IQR: ${unit.outlierThreshold.toFixed(1)} km`)
+      .addTo(dispersionLayer);
+
+    // 4. Puntos de clientes: Núcleo en Esmeralda (#10b981) vs Clientes Dispersos en Rojo (#ef4444) con línea al centroide
+    validStops.forEach(s => {
+      const isDisp = s.isOutlier;
+      const color = isDisp ? "#ef4444" : "#10b981";
+
+      if (isDisp) {
+        L.polyline(
+          [[unit.centroid.lat, unit.centroid.lng], [s.lat, s.lng]],
+          { color: "#ef4444", weight: 2, dashArray: "4, 4", opacity: 0.9 }
+        ).addTo(dispersionLayer);
+      }
+
+      const circle = L.circleMarker([s.lat, s.lng], {
+        radius: isDisp ? 8 : 5.5,
+        fillColor: color,
+        color: "#ffffff",
+        weight: isDisp ? 2 : 1.5,
+        opacity: 1,
+        fillOpacity: 0.95
+      });
+
+      circle.bindPopup(`
+        <div style="font-family:'Inter',sans-serif; font-size:11px; line-height:1.4;">
+          <strong>${s.cod} • ${s.nombre}</strong><br>
+          <span style="color:${color}; font-weight:800;">${isDisp ? "⚠ CLIENTE DISPERSO (ATÍPICO)" : "● DENTRO DEL NÚCLEO"}</span><br>
+          <strong>Dist. al centroide:</strong> ${s.distToCentroid.toFixed(1)} km<br>
+          <strong>Peso:</strong> ${s.kg.toFixed(1)} kg • <strong>Canal:</strong> ${s.canal}
+        </div>
+      `);
+
+      circle.addTo(dispersionLayer);
+      bounds.push([s.lat, s.lng]);
+    });
+
+    setTimeout(() => {
+      dispersionMap.invalidateSize();
+      if (bounds.length > 1) {
+        dispersionMap.fitBounds(bounds, { padding: [30, 30], maxZoom: 13 });
+      }
+    }, 260);
+  }
+
   function openPlateDetailDrawer(unitKey) {
     const unit = currentUnitAuditsMap.get(unitKey);
     if (!unit) return;
@@ -816,7 +913,7 @@
 
     document.getElementById("drawerPlateTitle").textContent = `Placa ${unit.placa}`;
     document.getElementById("drawerPlateSub").textContent =
-      `${unit.clientCount} clientes • ${unit.orderCount} pedidos • ${unit.kg.toLocaleString("es-PE", { maximumFractionDigits: 1 })} kg • Recorrido est: ${unit.linearRouteKm.toFixed(1)} km`;
+      `${unit.clientCount} clientes • ${unit.kg.toLocaleString("es-PE", { maximumFractionDigits: 1 })} kg • Diámetro dispersión: ${unit.maxDiameterKm.toFixed(1)} km`;
 
     document.getElementById("drawerScoreGrid").innerHTML = `
       <div class="d-score-box"><span>Geografía (33%)</span><strong>${unit.dimScores.geoScore}/100</strong></div>
@@ -842,22 +939,22 @@
       : `<div style="padding:10px; font-size:0.72rem; color:#15803d; background:#f0fdf4; border-radius:9px; font-weight:600;">Esta unidad no presenta defectos de VH, coordenadas faltantes ni atípicos geográficos.</div>`;
 
     document.getElementById("drawerAllClientsCount").textContent = `${unit.stops.length} clientes`;
-    const sortedStops = [...unit.stops].sort((a, b) => b.kg - a.kg);
+    const sortedStops = [...unit.stops].sort((a, b) => Number(b.isOutlier) - Number(a.isOutlier) || b.distToCentroid - a.distToCentroid);
     document.getElementById("drawerClientsBody").innerHTML = sortedStops.map(s => {
       const vhBad = s.win.status === "REVERSED" || s.win.status === "INVALID_FORMAT" || s.win.status === "INVALID_TIME";
       const vhText = s.win.status === "VALID"
         ? `${s.win.startStr}-${s.win.endStr}`
-        : (s.win.raw ? `<span style="color:#dc2626; font-weight:800;">${s.win.raw} (Inválida)</span>` : `<span style="color:#71717a;">Sin VH</span>`);
-      const coordText = s.hasValidCoord
-        ? `${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}`
-        : `<span style="color:#dc2626; font-weight:800;">Falta Lat/Lng</span>`;
+        : (s.win.raw ? `<span style="color:#dc2626; font-weight:800;">${s.win.raw}</span>` : `<span style="color:#71717a;">Sin VH</span>`);
+      const distText = s.hasValidCoord
+        ? (s.isOutlier ? `<span style="color:#dc2626; font-weight:800;">+${s.distToCentroid.toFixed(1)} km ⚠</span>` : `${s.distToCentroid.toFixed(1)} km`)
+        : `<span style="color:#dc2626; font-weight:800;">Sin Lat/Lng</span>`;
 
       return `
-        <tr>
+        <tr style="${s.isOutlier ? "background:#fef2f2;" : ""}">
           <td><strong>${s.cod}</strong><br><span style="color:#52525b;">${s.nombre}</span></td>
           <td>${s.canal}</td>
+          <td>${distText}</td>
           <td style="${vhBad ? "background:#fef2f2;" : ""}">${vhText}</td>
-          <td style="${!s.hasValidCoord ? "background:#fef2f2;" : ""}">${coordText}</td>
           <td style="font-weight:700;">${s.kg.toFixed(1)} kg</td>
         </tr>
       `;
@@ -865,6 +962,8 @@
 
     document.getElementById("plateDrawerBackdrop").classList.add("is-open");
     document.getElementById("plateDetailDrawer").classList.add("is-open");
+
+    renderDispersionMapForUnit(unit);
   }
 
   function closePlateDetailDrawer() {
@@ -901,6 +1000,7 @@
     const verdes    = unitAudits.filter(u => u.semaphore === "VERDE");
     const negros    = unitAudits.filter(u => u.semaphore === "NEGRO");
 
+    const dispersedUnits = unitAudits.filter(u => u.isHighlyDispersed);
     const criticalUnits = [...rojos, ...amarillos, ...negros];
     const exposedKg = criticalUnits.reduce((s, u) => s + u.kg, 0);
     const exposedCli = criticalUnits.reduce((s, u) => s + u.clientCount, 0);
@@ -908,11 +1008,11 @@
     document.getElementById("execRutasVal").textContent = `${unitAudits.length} placas`;
     document.getElementById("execRutasSub").textContent = `Centro: ${state.selectedCenter}`;
 
-    document.getElementById("execIncVal").textContent = `${criticalUnits.length} placas observadas`;
-    document.getElementById("execIncSub").textContent = `${allOutliers.length} atípicos IQR • ${unitAudits.reduce((s, u) => s + u.dataDefectsCount, 0)} defectos dato`;
+    document.getElementById("execIncVal").textContent = `${dispersedUnits.length} placas dispersas`;
+    document.getElementById("execIncSub").textContent = `${allOutliers.length} clientes atípicos IQR detectados`;
 
     document.getElementById("execExpVal").textContent = `${(exposedKg / 1000).toFixed(1)} T`;
-    document.getElementById("execExpSub").textContent = `${exposedCli} clientes comprometidos`;
+    document.getElementById("execExpSub").textContent = `${exposedCli} clientes en placas observadas`;
 
     document.getElementById("execSemaphoreCounts").innerHTML = `
       <span class="sem-dot sem-rojo" title="Rojo: Score >= 61">${rojos.length}</span>
@@ -923,26 +1023,29 @@
 
     let sorted = [...unitAudits];
     if (state.riskSort === "risk") sorted.sort((a, b) => b.riskScore - a.riskScore || b.kg - a.kg);
+    else if (state.riskSort === "disp") sorted.sort((a, b) => b.maxDiameterKm - a.maxDiameterKm || b.outliersCount - a.outliersCount);
+    else if (state.riskSort === "outliers") sorted.sort((a, b) => b.outliersCount - a.outliersCount || b.maxDiameterKm - a.maxDiameterKm);
     else if (state.riskSort === "win") sorted.sort((a, b) => b.criticalWinCount - a.criticalWinCount || b.riskScore - a.riskScore);
-    else if (state.riskSort === "outliers") sorted.sort((a, b) => b.outliersCount - a.outliersCount || b.riskScore - a.riskScore);
-    else if (state.riskSort === "dq") sorted.sort((a, b) => b.dataDefectsCount - a.dataDefectsCount || b.riskScore - a.riskScore);
     else if (state.riskSort === "kg") sorted.sort((a, b) => b.kg - a.kg);
 
     const tbody = document.getElementById("riskRadarBody");
     tbody.innerHTML = sorted.map((u, idx) => {
       const riskCls = u.riskScore >= 61 ? "risk-high" : u.riskScore >= 31 ? "risk-med" : "risk-low";
+      const dispBadge = u.isHighlyDispersed
+        ? `<strong style="color:#fca5a5;">${u.maxDiameterKm.toFixed(1)} km</strong>`
+        : `${u.maxDiameterKm.toFixed(1)} km`;
+
       return `
         <tr data-unit-key="${u.key}">
           <td>#${idx + 1}</td>
           <td>${u.centro}</td>
           <td style="text-align:left; font-weight:800; color:#fff;">${u.placa}</td>
           <td>${u.clientCount}</td>
-          <td>${u.orderCount}</td>
           <td>${u.kg.toLocaleString("es-PE", { maximumFractionDigits: 0 })} kg</td>
           <td><span class="badge-na">Pend. raw</span></td>
-          <td>${u.linearRouteKm.toFixed(1)} km</td>
-          <td>${u.criticalWinCount > 0 ? `<strong style="color:#fde047;">${u.criticalWinCount}</strong>` : "0"}</td>
+          <td>${dispBadge}</td>
           <td>${u.outliersCount > 0 ? `<strong style="color:#fca5a5;">${u.outliersCount}</strong>` : "0"}</td>
+          <td>${u.criticalWinCount > 0 ? `<strong style="color:#fde047;">${u.criticalWinCount}</strong>` : "0"}</td>
           <td><span class="risk-pill ${riskCls}">${u.riskScore}/100</span></td>
           <td><span class="sem-dot ${u.semClass}">${u.semaphore}</span></td>
           <td>${u.finding}</td>
@@ -962,6 +1065,8 @@
     const narrowWin = validWin.filter(c => c.win.isNarrow);
     const earlyWin  = validWin.filter(c => c.win.isEarlyClose);
     const badOrMiss = clients.filter(c => c.win.status !== "VALID");
+    const noChannelCount = clients.filter(c => c.canal === "OTRO").length;
+    const totalExportable = clients.filter(c => c.win.status !== "VALID" || c.canal === "OTRO").length;
 
     document.getElementById("winValidVal").textContent  = `${validWin.length} / ${clients.length} cli.`;
     document.getElementById("winValidSub").textContent  = `${clients.length ? Math.round((validWin.length / clients.length) * 100) : 0}% con horario estructurado`;
@@ -972,8 +1077,8 @@
     document.getElementById("winEarlyVal").textContent  = `${earlyWin.length} clientes`;
     document.getElementById("winEarlySub").textContent  = `${(earlyWin.reduce((s, c) => s + c.kg, 0) / 1000).toFixed(1)} T con cierre <= 11:00 AM`;
 
-    document.getElementById("winBadVal").textContent    = `${badOrMiss.length} clientes`;
-    document.getElementById("winBadSub").textContent    = `Sin VH o formato inválido (Descargable en CSV)`;
+    document.getElementById("winBadVal").textContent    = `${badOrMiss.length} sin VH / ${noChannelCount} Otros`;
+    document.getElementById("winBadSub").textContent    = `${totalExportable} registros consolidados en CSV`;
 
     const bracketMap = new Map();
     clients.forEach(c => {
@@ -1069,8 +1174,8 @@
     `;
 
     document.getElementById("coverageLimitationsList").innerHTML = `
+      <li><strong>Dispersión Geográfica:</strong> Evaluada mediante diámetro máximo y detección relativa IQR respecto al centroide de cada placa, con vista en mapa al hacer clic.</li>
       <li><strong>Regla de Semáforo:</strong> Rojo (&ge;61), Amarillo (31–60), Verde (&le;30) y Negro solo si 100% de clientes no tienen geoposición.</li>
-      <li><strong>Dimensiones Evaluadas (5/6):</strong> Calidad de datos, Geografía (Haversine + IQR), Ventanas Horarias (AM/PM y 24h), Complejidad/Canal y Balance de carga.</li>
       <li><strong>Bloqueado por dato faltante (1/6):</strong> Capacidad vehicular máxima por placa (pendiente raw) y hora de salida/secuencia.</li>
     `;
   }
@@ -1079,20 +1184,27 @@
     document.getElementById("outliersCountTag").textContent = `${allOutliers.length} detectados`;
 
     const sortedOutliers = [...allOutliers].sort((a, b) => b.distToCentroid - a.distToCentroid);
-    document.getElementById("geoOutliersList").innerHTML = sortedOutliers.length
+    const outListEl = document.getElementById("geoOutliersList");
+    outListEl.innerHTML = sortedOutliers.length
       ? sortedOutliers.map(o => `
-          <div class="outlier-card">
+          <div class="outlier-card" data-unit-key="${o.unitKey}" style="cursor:pointer;" title="Clic para abrir mapa de dispersión de la placa ${o.placa}">
             <div class="outlier-top">
               <strong>${o.nombre}</strong>
               <span class="traffic-level lvl-alto">+${o.distToCentroid.toFixed(1)} km</span>
             </div>
             <div class="outlier-sub">
-              <span>${o.centro} • ${o.placa}</span>
+              <span>${o.centro} • <b>${o.placa}</b> (Ver mapa)</span>
               <span>Umbral IQR: ${o.thresholdKm.toFixed(1)} km • ${o.kg.toFixed(1)} kg</span>
             </div>
           </div>
         `).join("")
       : `<div style="padding:12px; color:#71717a; font-size:0.75rem;">Ningún cliente supera el umbral relativo Q3 + 1.5×IQR en su unidad.</div>`;
+
+    outListEl.querySelectorAll(".outlier-card[data-unit-key]").forEach(card => {
+      card.addEventListener("click", () => {
+        openPlateDetailDrawer(card.getAttribute("data-unit-key"));
+      });
+    });
 
     const totalCli = Math.max(1, clients.length);
     document.getElementById("kgRangesContainer").innerHTML = rangeStats.map(rng => {
