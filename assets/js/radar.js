@@ -726,12 +726,15 @@
   }
 
   /* ==========================================================================
-     3. EXPORTADOR CSV DE INCIDENCIAS DE VENTANAS HORARIAS
+     3. EXPORTADOR CSV DE INCIDENCIAS (VENTANAS HORARIAS Y CANAL "OTROS")
      ========================================================================== */
   function exportWindowIssuesCSV() {
-    const issues = lastAnalyzedClients.filter(c => c.win.status !== "VALID");
+    const issues = lastAnalyzedClients.filter(
+      c => c.win.status !== "VALID" || c.canal === "OTRO"
+    );
+
     if (!issues.length) {
-      alert("No hay clientes sin ventana horaria o con ventana inválida en el filtro actual.");
+      alert("No hay clientes con incidencias de ventana horaria ni sin canal asignado en el filtro actual.");
       return;
     }
 
@@ -749,16 +752,24 @@
       "Ciudad_Distrito",
       "Direccion",
       "Ventana_Original",
-      "Tipo_Incidencia_VH"
+      "Observacion_Detectada"
     ];
 
     const lines = [headers.join(",")];
     issues.forEach(c => {
-      const tipo = c.win.status === "MISSING"
-        ? "SIN VENTANA HORARIA"
-        : c.win.status === "REVERSED"
-          ? "VENTANA INVERTIDA (INICIO >= FIN)"
-          : "FORMATO DE HORA INVALIDO";
+      const obsList = [];
+
+      if (c.win.status === "MISSING") {
+        obsList.push("SIN VENTANA HORARIA");
+      } else if (c.win.status === "REVERSED") {
+        obsList.push("VENTANA INVERTIDA (INICIO >= FIN)");
+      } else if (c.win.status === "INVALID_FORMAT" || c.win.status === "INVALID_TIME") {
+        obsList.push("FORMATO DE HORA INVALIDO");
+      }
+
+      if (c.canal === "OTRO") {
+        obsList.push("SIN CANAL ASIGNADO (OTROS)");
+      }
 
       lines.push([
         esc(c.fecha),
@@ -767,12 +778,12 @@
         esc(c.placa),
         esc(c.cod),
         esc(c.nombre),
-        esc(c.canal),
+        esc(c.canal === "OTRO" ? "Otros" : c.canal),
         c.kg.toFixed(2),
         esc(c.ciudad),
         esc(c.direccion),
         esc(c.win.raw || "VACIO"),
-        esc(tipo)
+        esc(obsList.join(" + "))
       ].join(","));
     });
 
@@ -782,7 +793,7 @@
     const a = document.createElement("a");
     const centerTag = state.selectedCenter === "Todos" ? "Global_Lima" : state.selectedCenter;
     a.href = url;
-    a.download = `Incidencias_Ventanas_Horarias_${centerTag}_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `Incidencias_VH_y_Canal_${centerTag}_${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   }
