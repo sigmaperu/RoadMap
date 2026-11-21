@@ -667,24 +667,31 @@
   .radar-split-2col, .radar-split-2col--quality, .radar-split-3col { grid-template-columns: 1fr; }
 }
 
-/* Botón compacto de descarga CSV en KPI de Ventanas Inválidas */
+/* Botón estilizado de descarga CSV en KPI de Ventanas e Incidencias */
 .radar-export-btn {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  background: var(--rd-plum);
+  gap: 5px;
+  background: linear-gradient(135deg, #9c27b0 0%, #6a1b9a 100%);
   color: #ffffff;
-  border: none;
+  border: 1px solid rgba(225, 190, 231, 0.35);
   border-radius: 999px;
-  padding: 2px 9px;
-  font-size: 0.62rem;
+  padding: 4px 11px;
+  font-size: 0.64rem;
   font-weight: 800;
+  letter-spacing: 0.02em;
   cursor: pointer;
-  transition: background-color 0.15s ease;
+  box-shadow: 0 3px 10px rgba(142, 36, 170, 0.25);
+  transition: transform 0.14s ease, box-shadow 0.16s ease, filter 0.16s ease;
 }
 .radar-export-btn:hover {
-  background: var(--rd-plum-deep);
+  filter: brightness(1.08);
+  box-shadow: 0 5px 14px rgba(142, 36, 170, 0.38);
+  transform: translateY(-1px);
+}
+.radar-export-btn:active {
+  transform: translateY(0);
 }
 .radar-export-btn .material-icons {
-  font-size: 13px;
+  font-size: 14px;
 }
