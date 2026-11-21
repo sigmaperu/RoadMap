@@ -11,13 +11,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
+  <!-- Leaflet CSS para Mapa de Dispersión por Placa -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
+
   <!-- Estilos globales y específicos de Radar -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=7.0">
-  <link rel="stylesheet" href="assets/css/radar.css?v=7.0">
+  <link rel="stylesheet" href="assets/css/styles.css?v=8.0">
+  <link rel="stylesheet" href="assets/css/radar.css?v=8.0">
 
   <!-- Scripts -->
   <script defer src="assets/js/main.js"></script>
-  <script defer src="assets/js/radar.js?v=7.0"></script>
+  <script defer src="assets/js/radar.js?v=8.0"></script>
 </head>
 
 <body data-title="Radar de Distribución">
@@ -72,7 +75,7 @@
         <div class="radar-tabs-body">
 
           <!-- ======================================================== -->
-          <!-- PESTAÑA 1: RADAR DE RIESGO & SEMÁFORO POR PLACA          -->
+          <!-- PESTAÑA 1: RADAR DE RIESGO, DISPERSIÓN & SEMÁFORO        -->
           <!-- ======================================================== -->
           <section class="radar-pane is-active" id="tab-riesgo">
             
@@ -83,12 +86,12 @@
                 <span class="r-stat-sub">Ventanas Activa • Falta Capacidad</span>
               </div>
               <div class="r-stat-card">
-                <span class="r-stat-lbl">Unidades / Placas Auditadas</span>
+                <span class="r-stat-lbl">Placas Auditadas</span>
                 <strong id="execRutasVal" class="r-stat-val">–</strong>
                 <span id="execRutasSub" class="r-stat-sub">–</span>
               </div>
               <div class="r-stat-card r-stat-card--warn">
-                <span class="r-stat-lbl">Placas con Riesgo Alto / Medio</span>
+                <span class="r-stat-lbl">Placas con Alta Dispersión</span>
                 <strong id="execIncVal" class="r-stat-val">–</strong>
                 <span id="execIncSub" class="r-stat-sub">–</span>
               </div>
@@ -112,14 +115,14 @@
             <div class="radar-card-full radar-card-full--dark">
               <div class="radar-panel__head">
                 <div>
-                  <h3>Radar General por Placa & Planning Risk Score (0–100)</h3>
-                  <span class="radar-panel__hint">Semáforo estrictamente alineado al puntaje: Rojo (&ge;61) • Amarillo (31–60) • Verde (&le;30) | Clic en placa para detalle</span>
+                  <h3>Radar General por Placa, Dispersión Geográfica & Planning Risk Score (0–100)</h3>
+                  <span class="radar-panel__hint">Haz clic en cualquier placa para abrir su mapa de dispersión y auditar qué clientes generan desvío</span>
                 </div>
                 <div class="radar-sort-pills">
                   <button type="button" class="radar-sort-btn is-active" data-sort="risk">Mayor Riesgo</button>
-                  <button type="button" class="radar-sort-btn" data-sort="win">Ventanas Críticas</button>
+                  <button type="button" class="radar-sort-btn" data-sort="disp">Mayor Dispersión</button>
                   <button type="button" class="radar-sort-btn" data-sort="outliers">Atípicos Geo</button>
-                  <button type="button" class="radar-sort-btn" data-sort="dq">Defectos Dato</button>
+                  <button type="button" class="radar-sort-btn" data-sort="win">Ventanas Críticas</button>
                   <button type="button" class="radar-sort-btn" data-sort="kg">Mayor Kg</button>
                 </div>
               </div>
@@ -132,12 +135,11 @@
                       <th>Centro</th>
                       <th>Placa</th>
                       <th>Cli.</th>
-                      <th>Ped.</th>
                       <th>Peso (Kg)</th>
                       <th>Capacidad</th>
-                      <th>Recorrido Lineal</th>
-                      <th>Vent. Crít.</th>
+                      <th>Dispersión (Diám.)</th>
                       <th>Atípicos</th>
+                      <th>Vent. Crít.</th>
                       <th>Risk Score</th>
                       <th>Semáforo</th>
                       <th>Principal Hallazgo & Acción Recomendada</th>
@@ -171,8 +173,8 @@
               </div>
               <div class="r-stat-card">
                 <div style="display:flex; align-items:center; justify-content:space-between; gap:6px;">
-                  <span class="r-stat-lbl">Ventanas Inválidas / Sin Dato</span>
-                  <button type="button" id="btnExportWinIssues" class="radar-export-btn" title="Descargar CSV con clientes sin VH o con VH inválida">
+                  <span class="r-stat-lbl">Incidencias VH / Sin Canal</span>
+                  <button type="button" id="btnExportWinIssues" class="radar-export-btn" title="Descargar CSV con clientes sin VH, VH inválida o canal Otros">
                     <span class="material-icons">download</span> CSV
                   </button>
                 </div>
@@ -267,7 +269,7 @@
                 <div class="radar-panel__head">
                   <div>
                     <h3>Atípicos Geográficos por Placa (IQR)</h3>
-                    <span class="radar-panel__hint">Clientes alejados &gt; Q3 + 1.5×IQR respecto al centroide de su unidad</span>
+                    <span class="radar-panel__hint">Haz clic en un cliente para abrir el mapa de dispersión de su placa</span>
                   </div>
                   <span id="outliersCountTag" class="radar-tag-amber">0 detectados</span>
                 </div>
@@ -362,7 +364,7 @@
   </div>
 
   <!-- ======================================================================== -->
-  <!-- DRAWER LATERAL DE AUDITORÍA DETALLADA POR PLACA (AL HACER CLIC EN FILA)  -->
+  <!-- DRAWER LATERAL CON MAPA DE DISPERSIÓN Y DETALLE DE DEFECTOS POR PLACA    -->
   <!-- ======================================================================== -->
   <div id="plateDrawerBackdrop" class="plate-drawer-backdrop"></div>
   <aside id="plateDetailDrawer" class="plate-detail-drawer" aria-hidden="true">
@@ -382,19 +384,35 @@
     </header>
 
     <div class="drawer-body">
+      <!-- Mapa Interactivo de Dispersión de la Placa -->
+      <section class="drawer-section drawer-map-section">
+        <div class="drawer-sec-head">
+          <h4>Mapa de Dispersión Geográfica de la Placa</h4>
+          <div class="drawer-map-legend">
+            <span><i style="background:#ef4444;"></i> Disperso / Atípico</span>
+            <span><i style="background:#10b981;"></i> Núcleo Ruta</span>
+            <span><i style="background:#8e24aa;"></i> CD / Centroide</span>
+          </div>
+        </div>
+        <div id="plateDispersionMap" class="plate-dispersion-map"></div>
+      </section>
+
+      <!-- Desglose del Risk Score por Dimensión -->
       <section class="drawer-section">
         <h4>Desglose de Riesgo por Dimensión Evaluable</h4>
         <div id="drawerScoreGrid" class="drawer-score-grid"></div>
       </section>
 
+      <!-- Defectos y Alertas Específicas por Cliente -->
       <section class="drawer-section">
         <div class="drawer-sec-head">
-          <h4>Defectos y Alertas por Cliente</h4>
+          <h4>Defectos y Clientes que Generan Dispersión</h4>
           <span id="drawerDefectsCount" class="radar-tag-amber">0 observados</span>
         </div>
         <div id="drawerDefectsList" class="drawer-defects-list"></div>
       </section>
 
+      <!-- Listado Completo de Clientes de la Placa -->
       <section class="drawer-section">
         <div class="drawer-sec-head">
           <h4>Cartera Asignada a la Placa</h4>
@@ -406,8 +424,8 @@
               <tr>
                 <th>Cliente</th>
                 <th>Canal</th>
+                <th>Dist. Centroide</th>
                 <th>Ventana (VH)</th>
-                <th>Lat / Lng</th>
                 <th>Peso</th>
               </tr>
             </thead>
@@ -418,5 +436,7 @@
     </div>
   </aside>
 
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
 </body>
 </html>
