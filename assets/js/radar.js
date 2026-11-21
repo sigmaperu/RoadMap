@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - radar.js (Detección de Dispersión + Mapa Interactivo en Drawer)
+   RoadMap - radar.js (Dispersión por Placa + Mapa Interactivo de Zonas Viales)
    ========================================================================== */
 
 (() => {
@@ -17,14 +17,23 @@
     "0754-CHANCAY": { lat: -11.551110366002629, lng: -77.27641679959045 }
   };
 
-  // Corredores Viales Críticos (Lima Metropolitana & Norte Chico)
+  // Paleta distintiva de colores para diferenciar placas en el mapa vial
+  const PLATE_PALETTE = [
+    "#8e24aa", "#2563eb", "#10b981", "#f97316", "#ec4899",
+    "#06b6d4", "#eab308", "#6366f1", "#14b8a6", "#f43f5e",
+    "#84cc16", "#a855f7", "#0ea5e9", "#d97706"
+  ];
+
+  // Corredores Viales Críticos con sus Bounding Boxes para dibujar el polígono en el mapa
   const TRAFFIC_CORRIDORS = [
     {
       id: "CARRETERA_CENTRAL",
       name: "Eje Carretera Central / Ate - Sta. Anita",
       level: "CRÍTICO",
       cls: "lvl-critico",
+      zoneColor: "#ef4444",
       reason: "Obras Línea 2 + transporte pesado",
+      bounds: [[-12.085, -76.985], [-12.005, -76.820]],
       check: (lat, lng) => lat >= -12.085 && lat <= -12.005 && lng >= -76.985 && lng <= -76.820
     },
     {
@@ -32,7 +41,9 @@
       name: "Centro Histórico / Abancay - Grau - La Victoria",
       level: "CRÍTICO",
       cls: "lvl-critico",
+      zoneColor: "#ef4444",
       reason: "Congestión comercial y restricción horaria",
+      bounds: [[-12.085, -77.055], [-12.035, -77.005]],
       check: (lat, lng) => lat >= -12.085 && lat <= -12.035 && lng >= -77.055 && lng <= -77.005
     },
     {
@@ -40,7 +51,9 @@
       name: "Panamericana Norte / Puente Piedra - Ancón",
       level: "ALTO",
       cls: "lvl-alto",
+      zoneColor: "#f97316",
       reason: "Cuellos de botella en óvalos y peajes",
+      bounds: [[-11.980, -77.180], [-11.720, -77.030]],
       check: (lat, lng) => lat >= -11.980 && lat <= -11.720 && lng >= -77.180 && lng <= -77.030
     },
     {
@@ -48,7 +61,9 @@
       name: "Eje Javier Prado / San Isidro - Surquillo",
       level: "ALTO",
       cls: "lvl-alto",
+      zoneColor: "#f97316",
       reason: "Alta densidad vehicular en hora punta",
+      bounds: [[-12.125, -77.055], [-12.080, -76.985]],
       check: (lat, lng) => lat >= -12.125 && lat <= -12.080 && lng >= -77.055 && lng <= -76.985
     },
     {
@@ -56,7 +71,9 @@
       name: "Eje Av. Argentina / Faucett - Callao",
       level: "ALTO",
       cls: "lvl-alto",
+      zoneColor: "#f97316",
       reason: "Flujo de contenedores y carga portuaria",
+      bounds: [[-12.075, -77.150], [-11.990, -77.075]],
       check: (lat, lng) => lat >= -12.075 && lat <= -11.990 && lng >= -77.150 && lng <= -77.075
     },
     {
@@ -64,7 +81,9 @@
       name: "Panamericana Sur / SJM - VMT - VES",
       level: "MEDIO",
       cls: "lvl-medio",
+      zoneColor: "#eab308",
       reason: "Tráfico interdistrital y mercados zonales",
+      bounds: [[-12.260, -77.020], [-12.130, -76.900]],
       check: (lat, lng) => lat >= -12.260 && lat <= -12.130 && lng >= -77.020 && lng <= -76.900
     },
     {
@@ -72,7 +91,9 @@
       name: "Corredor Chancay - Huaral - Huacho",
       level: "MEDIO",
       cls: "lvl-medio",
+      zoneColor: "#eab308",
       reason: "Tramos interurbanos y desvíos portuarios",
+      bounds: [[-11.650, -77.650], [-11.050, -77.150]],
       check: (lat, lng) => lat < -11.050 && lat >= -11.650
     }
   ];
@@ -266,9 +287,13 @@
 
   let allRows = [];
   let currentUnitAuditsMap = new Map();
+  let currentTrafficStatsMap = new Map();
   let lastAnalyzedClients = [];
+
   let dispersionMap = null;
   let dispersionLayer = null;
+  let trafficZoneMap = null;
+  let trafficZoneLayer = null;
 
   let state = {
     activeTab: "tab-riesgo",
@@ -394,7 +419,7 @@
   }
 
   /* ==========================================================================
-     2. MOTOR ANALÍTICO DE DISPERSIÓN GEOGRÁFICA POR PLACA (HAVERSINE + IQR)
+     2. MOTOR ANALÍTICO DE DISPERSIÓN, ZONAS VIALES Y PRODUCTOS
      ========================================================================== */
   function analyzeOperation(filteredRows) {
     const clientsMap = new Map();
@@ -498,14 +523,12 @@
       const criticalWinStops = stops.filter(s => s.win.status === "VALID" && (s.win.isNarrow || s.win.isEarlyClose));
       const invalidWinStops  = stops.filter(s => s.win.status === "REVERSED" || s.win.status === "INVALID_FORMAT" || s.win.status === "INVALID_TIME");
 
-      // Centroide de la nube de clientes de la placa
       let centLat = 0, centLng = 0;
       if (validStops.length > 0) {
         centLat = validStops.reduce((s, p) => s + p.lat, 0) / validStops.length;
         centLng = validStops.reduce((s, p) => s + p.lng, 0) / validStops.length;
       }
 
-      // Diámetro máximo de dispersión (distancia en línea recta entre los 2 puntos más alejados de la placa)
       let maxDiameterKm = 0;
       for (let i = 0; i < validStops.length; i++) {
         for (let j = i + 1; j < validStops.length; j++) {
@@ -514,7 +537,6 @@
         }
       }
 
-      // Distancia de cada cliente al centroide de su placa + detección IQR
       const stopsWithDist = stops.map(s => ({
         ...s,
         distToCentroid: s.hasValidCoord ? haversineKm(centLat, centLng, s.lat, s.lng) : 0
@@ -544,10 +566,8 @@
         });
       });
 
-      // Una placa se considera "Altamente Dispersa" si tiene >= 1 atípico IQR o diámetro extremo > 16 km
       const isHighlyDispersed = validStops.length > 0 && (unitOutliers.length > 0 || maxDiameterKm > 16);
 
-      // Defectos detallados por cliente
       const clientDefects = [];
       enrichedStops.forEach(s => {
         if (!s.hasValidCoord) {
@@ -598,7 +618,6 @@
       const maxClientKg = stops.reduce((m, s) => Math.max(m, s.kg), 0);
       const maxClientShare = unit.kg > 0 ? (maxClientKg / unit.kg) * 100 : 0;
 
-      // Puntajes por Dimensión Evaluable (0-100)
       const geoScore  = Math.min(100, (unitOutliers.length * 34) + (maxDiameterKm > 16 ? 25 : 0));
       const winScore  = Math.min(100, (criticalWinStops.length * 18) + (invalidWinStops.length * 35));
       const compScore = Math.min(100, (stops.length > 35 ? 45 : stops.length > 25 ? 25 : 10) + (unit.channelsSet.size >= 3 ? 25 : 0));
@@ -705,14 +724,41 @@
       };
     });
 
-    // Tráfico vial
+    // Tráfico vial con detalle de clientes y placas involucradas
     const trafficStats = TRAFFIC_CORRIDORS.map(zone => {
       const zClients = clients.filter(c => c.hasValidCoord && zone.check(c.lat, c.lng));
+      const platesMap = new Map();
+      zClients.forEach(c => {
+        if (!c.placa || TRUCKS_EXCLUDED.has(c.placa)) return;
+        const pKey = `${c.centro}|${c.placa}`;
+        if (!platesMap.has(pKey)) {
+          platesMap.set(pKey, {
+            unitKey: pKey,
+            placa: c.placa,
+            centro: c.centro,
+            clientCount: 0,
+            kg: 0
+          });
+        }
+        const pObj = platesMap.get(pKey);
+        pObj.clientCount++;
+        pObj.kg += c.kg;
+      });
+
+      const platesList = Array.from(platesMap.values())
+        .sort((a, b) => b.clientCount - a.clientCount || b.kg - a.kg)
+        .map((p, idx) => ({
+          ...p,
+          color: PLATE_PALETTE[idx % PLATE_PALETTE.length]
+        }));
+
       return {
         ...zone,
         clientCount: zClients.length,
         totalKg: zClients.reduce((s, c) => s + c.kg, 0),
-        platesCount: new Set(zClients.map(c => c.placa)).size
+        platesCount: platesList.length,
+        platesList,
+        clients: zClients
       };
     }).filter(z => z.clientCount > 0).sort((a, b) => b.clientCount - a.clientCount);
 
@@ -793,7 +839,7 @@
   }
 
   /* ==========================================================================
-     4. DRAWER CON MAPA INTERACTIVO DE DISPERSIÓN POR PLACA
+     4A. DRAWER 1: MAPA DE DISPERSIÓN Y AUDITORÍA POR PLACA
      ========================================================================== */
   function renderDispersionMapForUnit(unit) {
     const mapContainer = document.getElementById("plateDispersionMap");
@@ -816,7 +862,6 @@
     const validStops = unit.stops.filter(s => s.hasValidCoord);
     const bounds = [];
 
-    // 1. Marcador del Centro de Distribución de origen
     const cdPos = CD_COORDS[unit.centro];
     if (cdPos) {
       const cdIcon = L.divIcon({
@@ -836,7 +881,6 @@
       return;
     }
 
-    // 2. Círculo de umbral IQR alrededor del centroide de la ruta
     L.circle([unit.centroid.lat, unit.centroid.lng], {
       radius: unit.outlierThreshold * 1000,
       color: "#8e24aa",
@@ -846,7 +890,6 @@
       fillOpacity: 0.08
     }).addTo(dispersionLayer);
 
-    // 3. Marcador del Centroide
     const centIcon = L.divIcon({
       className: "",
       html: `<div style="width:12px; height:12px; border-radius:50%; background:#8e24aa; border:2px solid #fff; transform:translate(-50%,-50%); box-shadow:0 0 0 3px rgba(142,36,170,0.35);" title="Centroide de la placa"></div>`,
@@ -856,7 +899,6 @@
       .bindPopup(`<strong>Centroide Placa ${unit.placa}</strong><br>Umbral IQR: ${unit.outlierThreshold.toFixed(1)} km`)
       .addTo(dispersionLayer);
 
-    // 4. Puntos de clientes: Núcleo en Esmeralda (#10b981) vs Clientes Dispersos en Rojo (#ef4444) con línea al centroide
     validStops.forEach(s => {
       const isDisp = s.isOutlier;
       const color = isDisp ? "#ef4444" : "#10b981";
@@ -899,6 +941,7 @@
   }
 
   function openPlateDetailDrawer(unitKey) {
+    closeAllDrawers();
     const unit = currentUnitAuditsMap.get(unitKey);
     if (!unit) return;
 
@@ -966,9 +1009,155 @@
     renderDispersionMapForUnit(unit);
   }
 
-  function closePlateDetailDrawer() {
+  /* ==========================================================================
+     4B. DRAWER 2: MAPA DE COMPLEJIDAD VIAL Y PLACAS INVOLUCRADAS
+     ========================================================================== */
+  function renderTrafficZoneMap(zone, filterPlate = null) {
+    const mapContainer = document.getElementById("trafficZoneMap");
+    if (!mapContainer || typeof L === "undefined") return;
+
+    if (!trafficZoneMap) {
+      trafficZoneMap = L.map("trafficZoneMap", {
+        zoomControl: true,
+        attributionControl: false
+      }).setView([-12.05, -77.02], 12);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19
+      }).addTo(trafficZoneMap);
+
+      trafficZoneLayer = L.layerGroup().addTo(trafficZoneMap);
+    }
+
+    trafficZoneLayer.clearLayers();
+
+    // 1. Dibujar el polígono del corredor vial con complejidad marcada
+    const zoneRect = L.rectangle(zone.bounds, {
+      color: zone.zoneColor,
+      weight: 2.5,
+      dashArray: "6, 5",
+      fillColor: zone.zoneColor,
+      fillOpacity: 0.14
+    }).addTo(trafficZoneLayer);
+
+    zoneRect.bindPopup(`<strong>${zone.name}</strong><br>Nivel: ${zone.level}<br>${zone.reason}`);
+
+    // Mapa rápido de color por placa
+    const plateColorMap = new Map();
+    zone.platesList.forEach(p => plateColorMap.set(p.placa, p.color));
+
+    // 2. Pintar los clientes dentro de la zona coloreados según su Placa
+    const visibleClients = filterPlate
+      ? zone.clients.filter(c => c.placa === filterPlate)
+      : zone.clients;
+
+    const bounds = L.latLngBounds(zone.bounds);
+
+    visibleClients.forEach(c => {
+      const pColor = plateColorMap.get(c.placa) || "#8e24aa";
+      const marker = L.circleMarker([c.lat, c.lng], {
+        radius: 6.5,
+        fillColor: pColor,
+        color: "#ffffff",
+        weight: 1.5,
+        opacity: 1,
+        fillOpacity: 0.95
+      });
+
+      marker.bindPopup(`
+        <div style="font-family:'Inter',sans-serif; font-size:11px; line-height:1.4;">
+          <strong>${c.cod} • ${c.nombre}</strong><br>
+          <span style="display:inline-block; background:${pColor}; color:#fff; padding:1px 7px; border-radius:999px; font-size:10px; font-weight:800; margin:2px 0;">Placa: ${c.placa}</span><br>
+          <strong>Peso:</strong> ${c.kg.toFixed(1)} kg • <strong>Canal:</strong> ${c.canal}<br>
+          <strong>Dir:</strong> ${c.direccion}
+        </div>
+      `);
+
+      marker.addTo(trafficZoneLayer);
+      bounds.extend([c.lat, c.lng]);
+    });
+
+    setTimeout(() => {
+      trafficZoneMap.invalidateSize();
+      trafficZoneMap.fitBounds(bounds, { padding: [25, 25], maxZoom: 14 });
+    }, 260);
+  }
+
+  function openTrafficZoneDrawer(zoneId) {
+    closeAllDrawers();
+    const zone = currentTrafficStatsMap.get(zoneId);
+    if (!zone) return;
+
+    const lvlEl = document.getElementById("trfLevelBadge");
+    lvlEl.textContent = `NIVEL ${zone.level}`;
+    lvlEl.className = `traffic-level ${zone.cls}`;
+
+    document.getElementById("trfPlatesCountBadge").textContent = `${zone.platesCount} placas involucradas`;
+    document.getElementById("trfZoneTitle").textContent = zone.name;
+    document.getElementById("trfZoneSub").textContent =
+      `${zone.reason} • ${zone.clientCount} clientes (${(zone.totalKg / 1000).toFixed(2)} T)`;
+
+    // Píldoras interactivas para filtrar por Placa en el mapa
+    const pillsWrap = document.getElementById("trfPlateFilterPills");
+    pillsWrap.innerHTML = `
+      <button type="button" class="trf-plate-pill is-active" data-trf-plate="ALL">
+        Todas (${zone.platesCount})
+      </button>
+      ${zone.platesList.map(p => `
+        <button type="button" class="trf-plate-pill" data-trf-plate="${p.placa}">
+          <i class="trf-plate-dot" style="background:${p.color};"></i>
+          ${p.placa} (${p.clientCount})
+        </button>
+      `).join("")}
+    `;
+
+    pillsWrap.querySelectorAll(".trf-plate-pill").forEach(btn => {
+      btn.addEventListener("click", () => {
+        pillsWrap.querySelectorAll(".trf-plate-pill").forEach(b => b.classList.remove("is-active"));
+        btn.classList.add("is-active");
+        const selPlate = btn.getAttribute("data-trf-plate");
+        renderTrafficZoneMap(zone, selPlate === "ALL" ? null : selPlate);
+      });
+    });
+
+    // Tabla de placas involucradas en esta zona vial
+    document.getElementById("trfSummaryTag").textContent = `${zone.clientCount} entregas en zona`;
+    const tbody = document.getElementById("trfPlatesTableBody");
+    tbody.innerHTML = zone.platesList.map(p => `
+      <tr>
+        <td>
+          <span style="display:inline-flex; align-items:center; gap:6px; font-weight:800;">
+            <i class="trf-plate-dot" style="background:${p.color};"></i>
+            ${p.placa}
+          </span>
+        </td>
+        <td>${p.centro}</td>
+        <td><strong>${p.clientCount}</strong> cli.</td>
+        <td>${p.kg.toFixed(1)} kg</td>
+        <td>
+          <button type="button" class="radar-export-btn" data-open-unit="${p.unitKey}" style="padding:2px 8px; font-size:0.6rem;">
+            Auditar placa
+          </button>
+        </td>
+      </tr>
+    `).join("");
+
+    tbody.querySelectorAll("button[data-open-unit]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        openPlateDetailDrawer(btn.getAttribute("data-open-unit"));
+      });
+    });
+
+    document.getElementById("plateDrawerBackdrop").classList.add("is-open");
+    document.getElementById("trafficDetailDrawer").classList.add("is-open");
+
+    renderTrafficZoneMap(zone, null);
+  }
+
+  function closeAllDrawers() {
     document.getElementById("plateDrawerBackdrop").classList.remove("is-open");
     document.getElementById("plateDetailDrawer").classList.remove("is-open");
+    document.getElementById("trafficDetailDrawer").classList.remove("is-open");
   }
 
   /* ==========================================================================
@@ -986,6 +1175,9 @@
     lastAnalyzedClients = op.clients;
     currentUnitAuditsMap.clear();
     op.unitAudits.forEach(u => currentUnitAuditsMap.set(u.key, u));
+
+    currentTrafficStatsMap.clear();
+    op.trafficStats.forEach(z => currentTrafficStatsMap.set(z.id, z));
 
     renderTabRiesgo(op);
     renderTabVentanas(op);
@@ -1174,7 +1366,7 @@
     `;
 
     document.getElementById("coverageLimitationsList").innerHTML = `
-      <li><strong>Dispersión Geográfica:</strong> Evaluada mediante diámetro máximo y detección relativa IQR respecto al centroide de cada placa, con vista en mapa al hacer clic.</li>
+      <li><strong>Dispersión y Zonas Viales:</strong> Ambas vistas permiten abrir el mapa interactivo con los puntos exactos y polígonos críticos.</li>
       <li><strong>Regla de Semáforo:</strong> Rojo (&ge;61), Amarillo (31–60), Verde (&le;30) y Negro solo si 100% de clientes no tienen geoposición.</li>
       <li><strong>Bloqueado por dato faltante (1/6):</strong> Capacidad vehicular máxima por placa (pendiente raw) y hora de salida/secuencia.</li>
     `;
@@ -1227,8 +1419,10 @@
       `;
     }).join("");
 
-    document.getElementById("trafficZonesList").innerHTML = trafficStats.map(z => `
-      <div class="radar-traffic-item">
+    // Renderizar tarjetas interactivas de Zonas de Complejidad Vial
+    const trafficListEl = document.getElementById("trafficZonesList");
+    trafficListEl.innerHTML = trafficStats.map(z => `
+      <div class="radar-traffic-item" data-zone-id="${z.id}" title="Clic para abrir mapa de la zona y placas involucradas">
         <div class="radar-traffic-top">
           <strong>${z.name}</strong>
           <span class="traffic-level ${z.cls}">${z.level}</span>
@@ -1239,6 +1433,12 @@
         </div>
       </div>
     `).join("");
+
+    trafficListEl.querySelectorAll(".radar-traffic-item[data-zone-id]").forEach(card => {
+      card.addEventListener("click", () => {
+        openTrafficZoneDrawer(card.getAttribute("data-zone-id"));
+      });
+    });
   }
 
   function renderTabProductos({ clients, products }) {
@@ -1333,10 +1533,11 @@
 
     document.getElementById("btnExportWinIssues").addEventListener("click", exportWindowIssuesCSV);
 
-    document.getElementById("btnClosePlateDrawer").addEventListener("click", closePlateDetailDrawer);
-    document.getElementById("plateDrawerBackdrop").addEventListener("click", closePlateDetailDrawer);
+    document.getElementById("btnClosePlateDrawer").addEventListener("click", closeAllDrawers);
+    document.getElementById("btnCloseTrafficDrawer").addEventListener("click", closeAllDrawers);
+    document.getElementById("plateDrawerBackdrop").addEventListener("click", closeAllDrawers);
     document.addEventListener("keydown", e => {
-      if (e.key === "Escape") closePlateDetailDrawer();
+      if (e.key === "Escape") closeAllDrawers();
     });
   }
 
