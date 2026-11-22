@@ -761,3 +761,49 @@
 .radar-export-btn .material-icons {
   font-size: 14px;
 }
+
+/* Tarjetas de Zonas de Complejidad Vial interactivas */
+.radar-panel--dark .radar-traffic-item {
+  cursor: pointer;
+  transition: background-color 0.16s ease, border-color 0.16s ease;
+}
+.radar-panel--dark .radar-traffic-item:hover {
+  background: rgba(142, 36, 170, 0.25);
+  border-color: rgba(225, 190, 231, 0.45);
+}
+
+/* Píldoras de Placas dentro del Drawer de Tráfico */
+.trf-plate-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 4px;
+}
+.trf-plate-pill {
+  border: 1px solid var(--rd-border);
+  background: #f4f4f5;
+  color: #27272a;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.14s ease;
+}
+.trf-plate-pill:hover {
+  border-color: var(--rd-plum);
+}
+.trf-plate-pill.is-active {
+  background: var(--rd-dark);
+  color: #ffffff;
+  border-color: var(--rd-dark);
+}
+.trf-plate-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
