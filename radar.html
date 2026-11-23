@@ -15,12 +15,12 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
 
   <!-- Estilos globales y específicos de Radar -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=10.0">
-  <link rel="stylesheet" href="assets/css/radar.css?v=10.0">
+  <link rel="stylesheet" href="assets/css/styles.css?v=11.0">
+  <link rel="stylesheet" href="assets/css/radar.css?v=11.0">
 
   <!-- Scripts -->
   <script defer src="assets/js/main.js"></script>
-  <script defer src="assets/js/radar.js?v=10.0"></script>
+  <script defer src="assets/js/radar.js?v=11.0"></script>
 </head>
 
 <body data-title="Radar de Distribución">
@@ -171,13 +171,10 @@
                 <strong id="winEarlyVal" class="r-stat-val">–</strong>
                 <span id="winEarlySub" class="r-stat-sub">Requieren prioridad de salida</span>
               </div>
-             <div class="r-stat-card">
+              <div class="r-stat-card">
                 <span class="r-stat-lbl">Incidencias VH / Sin Canal</span>
                 <strong id="winBadVal" class="r-stat-val">–</strong>
                 <span id="winBadSub" class="r-stat-sub">Detalle completo en Calidad & Reconciliación</span>
-              </div>
-                <strong id="winBadVal" class="r-stat-val">–</strong>
-                <span id="winBadSub" class="r-stat-sub">Clic en CSV para descargar incidencias</span>
               </div>
             </div>
 
@@ -386,7 +383,6 @@
     </header>
 
     <div class="modal-split-body">
-      <!-- Izquierda: Mapa de Dispersión a altura completa -->
       <section class="drawer-section modal-map-col">
         <div class="drawer-sec-head">
           <h4>Mapa de Dispersión Geográfica</h4>
@@ -399,7 +395,6 @@
         <div id="plateDispersionMap" class="modal-map-canvas"></div>
       </section>
 
-      <!-- Derecha: Desglose, Defectos y Cartera -->
       <div class="modal-info-col">
         <section class="drawer-section">
           <h4>Desglose de Riesgo por Dimensión Evaluable</h4>
@@ -510,7 +505,6 @@
     </header>
 
     <div class="modal-split-body">
-      <!-- Izquierda: Mapa Interactivo + Filtros Rápidos -->
       <section class="drawer-section modal-map-col">
         <div class="drawer-sec-head">
           <h4 id="genMapTitle">Ubicación Geográfica</h4>
@@ -520,7 +514,6 @@
         <div id="genericModalMap" class="modal-map-canvas"></div>
       </section>
 
-      <!-- Derecha: Tabla Detallada de Clientes / Incidencias -->
       <div class="modal-info-col">
         <section class="drawer-section" style="flex:1; min-height:0;">
           <div class="drawer-sec-head">
