@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - radar.js (Popups Amplios con Mapa: Placas, Tráfico, Rangos Kg y Calidad)
+   RoadMap - radar.js (Popups Amplios con Mapa + Calidad Unificada VH/Canal/Ruta)
    ========================================================================== */
 
 (() => {
@@ -290,7 +290,6 @@
   let currentTrafficStatsMap = new Map();
   let currentRangeStatsMap = new Map();
   let currentDqChecksMap = new Map();
-  let lastAnalyzedClients = [];
 
   let dispersionMap = null;
   let dispersionLayer = null;
@@ -321,11 +320,28 @@
       return !isValidCoord(lat, lng);
     });
 
-    const badWindows = validRows.filter(r => {
+    const isMissingRoute = (r) => {
+      const rt = cleanStr(r[IDX.RUTA]).toUpperCase();
+      return !rt || rt === "-" || rt === "NONE" || rt === "NULL" || rt === "N/A";
+    };
+
+    const vhCanalRutaRows = validRows.filter(r => {
       const w = parseTimeWindow(r[IDX.VENTANA]);
-      return w.status === "REVERSED" || w.status === "INVALID_FORMAT" || w.status === "INVALID_TIME";
+      const badWin = w.status !== "VALID";
+      const noCanal = normalizeChannelCode(r[IDX.CANAL]) === "OTRO";
+      const noRuta = isMissingRoute(r);
+      return badWin || noCanal || noRuta;
     });
-    const missingWindows = validRows.filter(r => parseTimeWindow(r[IDX.VENTANA]).status === "MISSING");
+
+    const buildVhCanalRutaObs = (r) => {
+      const obs = [];
+      const w = parseTimeWindow(r[IDX.VENTANA]);
+      if (w.status === "MISSING") obs.push("Sin VH");
+      else if (w.status !== "VALID") obs.push(`VH inválida ("${cleanStr(r[IDX.VENTANA])}")`);
+      if (normalizeChannelCode(r[IDX.CANAL]) === "OTRO") obs.push("Sin Canal (Otros)");
+      if (isMissingRoute(r)) obs.push("Sin Ruta Venta");
+      return obs.join(" • ");
+    };
 
     const plateCenters = new Map();
     validRows.filter(r => !isTruckExcluded(r)).forEach(r => {
@@ -380,14 +396,14 @@
     const checks = [
       {
         id: "DQ_BAD_WIN",
-        title: "Ventanas Horarias Inválidas o Invertidas",
-        count: badWindows.length,
-        pct: validRows.length ? ((badWindows.length / validRows.length) * 100).toFixed(2) : "0.00",
-        sev: badWindows.length > 0 ? "crit" : "ok",
-        desc: badWindows.length > 0
-          ? `Ej: Cliente ${cleanStr(badWindows[0][IDX.CLIENTE])} tiene ventana "${cleanStr(badWindows[0][IDX.VENTANA])}".`
-          : `Sin ventanas invertidas. (${missingWindows.length} líneas sin ventana informada).`,
-        items: dedupItems(badWindows.map(r => mapRowToDqItem(r, `VH: "${cleanStr(r[IDX.VENTANA])}"`)))
+        title: "Ventanas Inválidas, Sin Canal o Sin Ruta Venta",
+        count: vhCanalRutaRows.length,
+        pct: validRows.length ? ((vhCanalRutaRows.length / validRows.length) * 100).toFixed(2) : "0.00",
+        sev: vhCanalRutaRows.length > 0 ? "crit" : "ok",
+        desc: vhCanalRutaRows.length > 0
+          ? `Ej: Cliente ${cleanStr(vhCanalRutaRows[0][IDX.CLIENTE])} (${buildVhCanalRutaObs(vhCanalRutaRows[0])}).`
+          : "Todas las entregas tienen ventana válida, canal y ruta de venta asignados.",
+        items: dedupItems(vhCanalRutaRows.map(r => mapRowToDqItem(r, buildVhCanalRutaObs(r))))
       },
       {
         id: "DQ_BAD_COORDS",
@@ -455,7 +471,7 @@
       }
     ];
 
-    const issueRowsCount = badCoords.length + badWindows.length + zeroOrNegKg.length + emptyPlate.length;
+    const issueRowsCount = badCoords.length + vhCanalRutaRows.length + zeroOrNegKg.length + emptyPlate.length;
     const integrityPct = validRows.length
       ? Math.max(0, 100 - ((issueRowsCount / validRows.length) * 100)).toFixed(1)
       : "100.0";
@@ -765,7 +781,7 @@
       orderCount: p.pedidosSet.size
     }));
 
-    // Rangos de Peso (con arreglo completo de clientes para el Popup)
+    // Rangos de Peso
     const rangeStats = WEIGHT_RANGES.map(rng => {
       const matching = clients.filter(c => rng.min === 0 ? (c.kg >= 0 && c.kg <= rng.max) : (c.kg > rng.min && c.kg <= rng.max));
       const byChannel = { DET: 0, FSE: 0, MES: 0, MOD: 0 };
@@ -821,80 +837,7 @@
   }
 
   /* ==========================================================================
-     3. EXPORTADOR CSV DE INCIDENCIAS (VENTANAS HORARIAS Y CANAL "OTROS")
-     ========================================================================== */
-  function exportWindowIssuesCSV() {
-    const issues = lastAnalyzedClients.filter(
-      c => c.win.status !== "VALID" || c.canal === "OTRO"
-    );
-
-    if (!issues.length) {
-      alert("No hay clientes con incidencias de ventana horaria ni sin canal asignado en el filtro actual.");
-      return;
-    }
-
-    const esc = val => `"${String(val ?? "").replace(/"/g, '""')}"`;
-
-    const headers = [
-      "Fecha",
-      "Centro",
-      "Ruta",
-      "Placa",
-      "Codigo_Cliente",
-      "Nombre_Cliente",
-      "Canal",
-      "Kg_Totales",
-      "Ciudad_Distrito",
-      "Direccion",
-      "Ventana_Original",
-      "Observacion_Detectada"
-    ];
-
-    const lines = [headers.join(",")];
-    issues.forEach(c => {
-      const obsList = [];
-
-      if (c.win.status === "MISSING") {
-        obsList.push("SIN VENTANA HORARIA");
-      } else if (c.win.status === "REVERSED") {
-        obsList.push("VENTANA INVERTIDA (INICIO >= FIN)");
-      } else if (c.win.status === "INVALID_FORMAT" || c.win.status === "INVALID_TIME") {
-        obsList.push("FORMATO DE HORA INVALIDO");
-      }
-
-      if (c.canal === "OTRO") {
-        obsList.push("SIN CANAL ASIGNADO (OTROS)");
-      }
-
-      lines.push([
-        esc(c.fecha),
-        esc(c.centro),
-        esc(c.ruta),
-        esc(c.placa),
-        esc(c.cod),
-        esc(c.nombre),
-        esc(c.canal === "OTRO" ? "Otros" : c.canal),
-        c.kg.toFixed(2),
-        esc(c.ciudad),
-        esc(c.direccion),
-        esc(c.win.raw || "VACIO"),
-        esc(obsList.join(" + "))
-      ].join(","));
-    });
-
-    const csvContent = "\uFEFF" + lines.join("\r\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    const centerTag = state.selectedCenter === "Todos" ? "Global_Lima" : state.selectedCenter;
-    a.href = url;
-    a.download = `Incidencias_VH_y_Canal_${centerTag}_${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  /* ==========================================================================
-     4A. POPUP 1: MAPA DE DISPERSIÓN Y AUDITORÍA POR PLACA
+     3A. POPUP 1: MAPA DE DISPERSIÓN Y AUDITORÍA POR PLACA
      ========================================================================== */
   function renderDispersionMapForUnit(unit) {
     const mapContainer = document.getElementById("plateDispersionMap");
@@ -1065,7 +1008,7 @@
   }
 
   /* ==========================================================================
-     4B. POPUP 2: MAPA DE COMPLEJIDAD VIAL Y PLACAS INVOLUCRADAS
+     3B. POPUP 2: MAPA DE COMPLEJIDAD VIAL Y PLACAS INVOLUCRADAS
      ========================================================================== */
   function renderTrafficZoneMap(zone, filterPlate = null) {
     const mapContainer = document.getElementById("trafficZoneMap");
@@ -1205,7 +1148,7 @@
   }
 
   /* ==========================================================================
-     4C. POPUP 3: DETALLE + MAPA PARA RANGOS DE PESO Y CALIDAD DE DATOS
+     3C. POPUP 3: DETALLE + MAPA PARA RANGOS DE PESO Y CALIDAD DE DATOS
      ========================================================================== */
   function renderGenericMapPoints(points, colorResolver) {
     const mapContainer = document.getElementById("genericModalMap");
@@ -1391,7 +1334,7 @@
   }
 
   /* ==========================================================================
-     5. RENDERIZADO DE LAS 5 PESTAÑAS
+     4. RENDERIZADO DE LAS 5 PESTAÑAS
      ========================================================================== */
   function renderAll() {
     const dq = auditDataQuality(allRows);
@@ -1401,8 +1344,6 @@
       return true;
     });
     const op = analyzeOperation(filteredRows);
-
-    lastAnalyzedClients = op.clients;
 
     currentUnitAuditsMap.clear();
     op.unitAudits.forEach(u => currentUnitAuditsMap.set(u.key, u));
@@ -1495,7 +1436,7 @@
     const earlyWin  = validWin.filter(c => c.win.isEarlyClose);
     const badOrMiss = clients.filter(c => c.win.status !== "VALID");
     const noChannelCount = clients.filter(c => c.canal === "OTRO").length;
-    const totalExportable = clients.filter(c => c.win.status !== "VALID" || c.canal === "OTRO").length;
+    const totalObs = clients.filter(c => c.win.status !== "VALID" || c.canal === "OTRO").length;
 
     document.getElementById("winValidVal").textContent  = `${validWin.length} / ${clients.length} cli.`;
     document.getElementById("winValidSub").textContent  = `${clients.length ? Math.round((validWin.length / clients.length) * 100) : 0}% con horario estructurado`;
@@ -1507,7 +1448,7 @@
     document.getElementById("winEarlySub").textContent  = `${(earlyWin.reduce((s, c) => s + c.kg, 0) / 1000).toFixed(1)} T con cierre <= 11:00 AM`;
 
     document.getElementById("winBadVal").textContent    = `${badOrMiss.length} sin VH / ${noChannelCount} Otros`;
-    document.getElementById("winBadSub").textContent    = `${totalExportable} registros consolidados en CSV`;
+    document.getElementById("winBadSub").textContent    = `${totalObs} clientes observables en Calidad de Datos`;
 
     const bracketMap = new Map();
     clients.forEach(c => {
@@ -1780,8 +1721,6 @@
         renderAll();
       });
     });
-
-    document.getElementById("btnExportWinIssues").addEventListener("click", exportWindowIssuesCSV);
 
     document.getElementById("btnClosePlateDrawer").addEventListener("click", closeAllDrawers);
     document.getElementById("btnCloseTrafficDrawer").addEventListener("click", closeAllDrawers);
