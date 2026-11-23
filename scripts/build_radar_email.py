@@ -161,37 +161,9 @@ def generate_map_image(red_units, out_path):
     image.save(out_path)
 
 
-def main():
-    os.makedirs(OUT_DIR, exist_ok=True)
-    with open(CSV_PATH, "r", encoding="utf-8-sig", errors="replace") as f:
-        rows = list(csv.reader(f))
-
-    header, data = rows[0], [r for r in rows[1:] if any(c.strip() for c in r)]
-
-    # Índices estándar de RoadMap.csv
-    IDX = {
-        "FECHA": 0, "CENTRO": 1, "PLACA": 2, "CLIENTE": 3, "NOMBRE": 4,
-        "RUTA": 6, "PEDIDO": 7, "KG": 10, "SOLES": 11, "CIUDAD": 14,
-        "DIR": 15, "LAT": 16, "LNG": 17, "VENTANA": 18, "CANAL": 19,
-    }
-    for i, h in enumerate(header):
-        u = clean_str(h).upper()
-        if "VENTANA" in u or "HORARIO" in u:
-            IDX["VENTANA"] = i
-        if "DISTRITO" in u or "CIUDAD" in u:
-            IDX["CIUDAD"] = i
-
-    fecha_op = clean_str(data[0][IDX["FECHA"]]).split(" ")[0] if data else datetime.now().strftime("%Y-%m-%d")
-
-    frt_rows = [r for r in data if clean_str(r[IDX["PLACA"]]).upper() == "FRT-001"]
-    valid_rows = [r for r in data if clean_str(r[IDX["PLACA"]]).upper() != "FRT-001"]
-
-    frt_kg = sum(to_num(r[IDX["KG"]]) for r in frt_rows)
-    total_kg = sum(to_num(r[IDX["KG"]]) for r in valid_rows)
-
-    # Consolidación por cliente
+def consolidate_clients(rows, IDX):
     clients_map = {}
-    for r in valid_rows:
+    for r in rows:
         cli = clean_str(r[IDX["CLIENTE"]])
         if not cli:
             continue
@@ -212,8 +184,39 @@ def main():
             }
         clients_map[cli]["kg"] += to_num(r[IDX["KG"]])
         clients_map[cli]["soles"] += to_num(r[IDX["SOLES"]])
+    return list(clients_map.values())
 
-    clients = list(clients_map.values())
+
+def main():
+    os.makedirs(OUT_DIR, exist_ok=True)
+    with open(CSV_PATH, "r", encoding="utf-8-sig", errors="replace") as f:
+        rows = list(csv.reader(f))
+
+    header, data = rows[0], [r for r in rows[1:] if any(c.strip() for c in r)]
+
+    IDX = {
+        "FECHA": 0, "CENTRO": 1, "PLACA": 2, "CLIENTE": 3, "NOMBRE": 4,
+        "RUTA": 6, "PEDIDO": 7, "KG": 10, "SOLES": 11, "CIUDAD": 14,
+        "DIR": 15, "LAT": 16, "LNG": 17, "VENTANA": 18, "CANAL": 19,
+    }
+    for i, h in enumerate(header):
+        u = clean_str(h).upper()
+        if "VENTANA" in u or "HORARIO" in u:
+            IDX["VENTANA"] = i
+        if "DISTRITO" in u or "CIUDAD" in u:
+            IDX["CIUDAD"] = i
+
+    fecha_op = clean_str(data[0][IDX["FECHA"]]).split(" ")[0] if data else datetime.now().strftime("%Y-%m-%d")
+
+    frt_rows = [r for r in data if clean_str(r[IDX["PLACA"]]).upper() == "FRT-001"]
+    valid_rows = [r for r in data if clean_str(r[IDX["PLACA"]]).upper() != "FRT-001"]
+
+    frt_kg = sum(to_num(r[IDX["KG"]]) for r in frt_rows)
+    total_kg = sum(to_num(r[IDX["KG"]]) for r in valid_rows)
+
+    # Consolidación por cliente (válidos y excluidos FRT-001)
+    clients = consolidate_clients(valid_rows, IDX)
+    frt_clients = sorted(consolidate_clients(frt_rows, IDX), key=lambda x: -x["kg"])
 
     # 1. Rangos de peso
     range_rows_html = []
@@ -250,7 +253,7 @@ def main():
     # 2. Clientes con <= 1 kg facturado
     clients_1kg = sorted([c for c in clients if c["kg"] <= 1.0], key=lambda x: x["kg"])
 
-    # 3. Calidad de datos (VH inválida/vacía, sin canal, sin ruta, sin coords, FRT-001)
+    # 3. Calidad de datos (VH inválida/vacía, sin canal, sin ruta, sin coords)
     bad_vh_canal_ruta = []
     for c in clients:
         obs = []
@@ -367,15 +370,17 @@ def main():
     generate_map_image(red_units, map_png_path)
     map_url = f"{PAGES_BASE_URL}/reports/mapa_riesgo.png?v={datetime.now().strftime('%Y%m%d%H%M')}"
 
-    # Exportar CSV adjuntable de incidencias
+    # Exportar CSV adjuntable de incidencias (incluyendo EXCLUIDO FRT-001)
     csv_out_path = os.path.join(OUT_DIR, "incidencias_radar.csv")
     with open(csv_out_path, "w", encoding="utf-8-sig", newline="") as f:
         w = csv.writer(f)
-        w.writerow(["Tipo", "Centro", "Ruta", "Placa", "Codigo", "Cliente", "Canal", "Kg", "Ventana", "Observacion"])
+        w.writerow(["Tipo", "Centro", "Ruta", "Placa", "Codigo", "Cliente", "Canal", "Kg", "Soles", "Ventana", "Observacion"])
         for c, obs in bad_vh_canal_ruta:
-            w.writerow(["CALIDAD", c["centro"], c["ruta"], c["placa"], c["cod"], c["nombre"], c["canal"], f"{c['kg']:.2f}", c["win"]["raw"], obs])
+            w.writerow(["CALIDAD", c["centro"], c["ruta"], c["placa"], c["cod"], c["nombre"], c["canal"], f"{c['kg']:.2f}", f"{c['soles']:.2f}", c["win"]["raw"], obs])
         for c in clients_1kg:
-            w.writerow(["CARGA <=1KG", c["centro"], c["ruta"], c["placa"], c["cod"], c["nombre"], c["canal"], f"{c['kg']:.2f}", c["win"]["raw"], "Pedido de 1 kg o menos"])
+            w.writerow(["CARGA <=1KG", c["centro"], c["ruta"], c["placa"], c["cod"], c["nombre"], c["canal"], f"{c['kg']:.2f}", f"{c['soles']:.2f}", c["win"]["raw"], "Pedido de 1 kg o menos"])
+        for c in frt_clients:
+            w.writerow(["EXCLUIDO FRT-001", c["centro"], c["ruta"], c["placa"], c["cod"], c["nombre"], c["canal"], f"{c['kg']:.2f}", f"{c['soles']:.2f}", c["win"]["raw"], "Cliente excluido por Fuera de Ruta (FRT-001)"])
 
     # Filas HTML de Placas en Rojo
     red_rows_html = "".join(
@@ -421,6 +426,20 @@ def main():
         </tr>
         """ for c in prio_win[:15]
     ) or '<tr><td colspan="5" style="padding:10px; text-align:center; color:#71717a;">Sin ventanas restrictivas detectadas.</td></tr>'
+
+    # Filas HTML de Clientes Excluidos FRT-001 (Top 15)
+    frt_rows_html = "".join(
+        f"""
+        <tr>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;"><b>{c['cod']}</b> &ndash; {c['nombre']}</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">{c['centro']}</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">{c['ruta']}</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">{c['canal']}</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right; font-weight:700; color:#6a1b9a;">{c['kg']:.1f} kg</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right;">S/ {c['soles']:,.0f}</td>
+        </tr>
+        """ for c in frt_clients[:15]
+    ) or '<tr><td colspan="6" style="padding:10px; text-align:center; color:#10b981; font-weight:700;">Sin clientes excluidos en FRT-001.</td></tr>'
 
     # HTML Ejecutivo 100% compatible con Outlook Desktop
     html = f"""<!DOCTYPE html>
@@ -475,8 +494,8 @@ def main():
                   <td width="2%"></td>
                   <td width="24%" style="background:#faf5ff; border:1px solid #e9d5ff; border-top:3px solid #8e24aa; border-radius:8px; padding:10px;">
                     <div style="font-size:11px; color:#6b21a8; font-weight:700;">EXCLUIDOS FRT-001</div>
-                    <div style="font-size:18px; font-weight:800; color:#6a1b9a;">{len(frt_rows)} filas</div>
-                    <div style="font-size:11px; color:#581c87;">{frt_kg:.1f} kg excluidos</div>
+                    <div style="font-size:18px; font-weight:800; color:#6a1b9a;">{len(frt_clients)} cli.</div>
+                    <div style="font-size:11px; color:#581c87;">{frt_kg:.1f} kg ({len(frt_rows)} filas)</div>
                   </td>
                 </tr>
               </table>
@@ -544,7 +563,7 @@ def main():
 
           <!-- SECCIÓN 4: CLIENTES PRIORITARIOS POR VH RESTRICTIVA -->
           <tr>
-            <td style="padding:8px 24px 18px;">
+            <td style="padding:8px 24px 14px;">
               <h2 style="margin:0 0 8px; font-size:15px; color:#28174E; border-bottom:2px solid #f3e5f5; padding-bottom:4px;">4. Clientes Prioritarios por Ventana Horaria Restrictiva ({len(prio_win)} en total &ndash; Top 15)</h2>
               <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse; font-size:11.5px;">
                 <tr style="background:#f4f4f5; color:#3f3f46;">
@@ -559,10 +578,28 @@ def main():
             </td>
           </tr>
 
+          <!-- SECCIÓN 5: CLIENTES EXCLUIDOS POR FUERA DE RUTA (FRT-001) -->
+          <tr>
+            <td style="padding:8px 24px 18px;">
+              <h2 style="margin:0 0 8px; font-size:15px; color:#6a1b9a; border-bottom:2px solid #f3e5f5; padding-bottom:4px;">5. Clientes Excluidos por Fuera de Ruta &ndash; FRT-001 ({len(frt_clients)} clientes &bull; {frt_kg:.1f} kg)</h2>
+              <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse; font-size:11.5px;">
+                <tr style="background:#faf5ff; color:#6a1b9a;">
+                  <th style="padding:6px 8px; text-align:left;">Cliente</th>
+                  <th style="padding:6px 8px; text-align:left;">Centro</th>
+                  <th style="padding:6px 8px; text-align:left;">Ruta</th>
+                  <th style="padding:6px 8px; text-align:left;">Canal</th>
+                  <th style="padding:6px 8px; text-align:right;">Peso</th>
+                  <th style="padding:6px 8px; text-align:right;">Soles</th>
+                </tr>
+                {frt_rows_html}
+              </table>
+            </td>
+          </tr>
+
           <!-- PIE DE CORREO -->
           <tr>
             <td style="background:#faf9fc; padding:14px 24px; border-top:1px solid #e4e4e7; font-size:11px; color:#71717a; text-align:center;">
-              Reporte generado automáticamente desde <b>RoadMap Radar de Distribución</b> &bull; Se adjunta CSV con el detalle completo de incidencias (VH, sin canal/ruta y pedidos &le;1 kg).
+              Reporte generado automáticamente desde <b>RoadMap Radar de Distribución</b> &bull; Se adjunta CSV con el detalle completo de incidencias (VH, sin canal/ruta, pedidos &le;1 kg y excluidos FRT-001).
             </td>
           </tr>
 
