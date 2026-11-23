@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - radar.js (Popups Amplios con Mapa + Calidad Unificada VH/Canal/Ruta)
+   RoadMap - radar.js (Popups Amplios con Mapa + Columna Ruta en Tablas)
    ========================================================================== */
 
 (() => {
@@ -373,6 +373,7 @@
         cod: cleanStr(r[IDX.CLIENTE]) || "-",
         nombre: cleanStr(r[IDX.NOMBRE]) || "-",
         centro: cleanStr(r[IDX.CENTRO]) || "-",
+        ruta: cleanStr(r[IDX.RUTA]) || "-",
         placa: upperStr(r[IDX.PLACA]) || "SIN PLACA",
         canal: normalizeChannelCode(r[IDX.CANAL]),
         kg: toNum(r[IDX.KG]),
@@ -568,6 +569,7 @@
           unit.stopsMap.set(cli, {
             cod: cli,
             nombre: cleanStr(r[IDX.NOMBRE]) || cli,
+            ruta: cleanStr(r[IDX.RUTA]) || "-",
             direccion: cleanStr(r[IDX.DIRECCION]) || "-",
             canal: normalizeChannelCode(r[IDX.CANAL]),
             win: parseTimeWindow(r[IDX.VENTANA]),
@@ -921,7 +923,7 @@
         <div style="font-family:'Inter',sans-serif; font-size:11px; line-height:1.4;">
           <strong>${s.cod} • ${s.nombre}</strong><br>
           <span style="color:${color}; font-weight:800;">${isDisp ? "⚠ CLIENTE DISPERSO (ATÍPICO)" : "● DENTRO DEL NÚCLEO"}</span><br>
-          <strong>Dist. al centroide:</strong> ${s.distToCentroid.toFixed(1)} km<br>
+          <strong>Ruta:</strong> ${s.ruta} • <strong>Dist. al centroide:</strong> ${s.distToCentroid.toFixed(1)} km<br>
           <strong>Peso:</strong> ${s.kg.toFixed(1)} kg • <strong>Canal:</strong> ${s.canal}
         </div>
       `);
@@ -1063,7 +1065,7 @@
         <div style="font-family:'Inter',sans-serif; font-size:11px; line-height:1.4;">
           <strong>${c.cod} • ${c.nombre}</strong><br>
           <span style="display:inline-block; background:${pColor}; color:#fff; padding:1px 7px; border-radius:999px; font-size:10px; font-weight:800; margin:2px 0;">Placa: ${c.placa}</span><br>
-          <strong>Peso:</strong> ${c.kg.toFixed(1)} kg • <strong>Canal:</strong> ${c.canal}<br>
+          <strong>Ruta:</strong> ${c.ruta} • <strong>Peso:</strong> ${c.kg.toFixed(1)} kg • <strong>Canal:</strong> ${c.canal}<br>
           <strong>Dir:</strong> ${c.direccion}
         </div>
       `);
@@ -1185,7 +1187,7 @@
       marker.bindPopup(`
         <div style="font-family:'Inter',sans-serif; font-size:11px; line-height:1.4;">
           <strong>${p.cod} • ${p.nombre}</strong><br>
-          <strong>Centro:</strong> ${p.centro} • <strong>Placa:</strong> ${p.placa}<br>
+          <strong>Ruta:</strong> ${p.ruta || "-"} • <strong>Centro:</strong> ${p.centro} • <strong>Placa:</strong> ${p.placa}<br>
           <strong>Peso:</strong> ${p.kg.toFixed(1)} kg • <strong>Canal:</strong> ${p.canal}
           ${p.obs ? `<br><span style="color:#dc2626; font-weight:800;">${p.obs}</span>` : ""}
         </div>
@@ -1224,6 +1226,7 @@
       <tr>
         <th>Cliente</th>
         <th>Canal</th>
+        <th>Ruta</th>
         <th>Centro / Placa</th>
         <th>Ventana</th>
         <th>Peso</th>
@@ -1245,6 +1248,7 @@
           <tr>
             <td><strong>${c.cod}</strong><br><span style="color:#52525b;">${c.nombre}</span></td>
             <td><span style="color:${chCol}; font-weight:800;">● ${c.canal}</span></td>
+            <td style="font-weight:700; color:#3f3f46;">${c.ruta || "-"}</td>
             <td>${c.centro}<br><strong>${c.placa}</strong></td>
             <td>${vhTxt}</td>
             <td style="font-weight:800;">${c.kg.toFixed(1)} kg</td>
@@ -1301,8 +1305,8 @@
     document.getElementById("genTableHead").innerHTML = `
       <tr>
         <th>Cliente</th>
-        <th>Centro</th>
-        <th>Placa</th>
+        <th>Ruta</th>
+        <th>Centro / Placa</th>
         <th>Peso</th>
         <th>Observación Detectada</th>
       </tr>
@@ -1313,8 +1317,8 @@
       ? items.map(it => `
           <tr>
             <td><strong>${it.cod}</strong><br><span style="color:#52525b;">${it.nombre}</span></td>
-            <td>${it.centro}</td>
-            <td><strong>${it.placa}</strong></td>
+            <td style="font-weight:700; color:#3f3f46;">${it.ruta || "-"}</td>
+            <td>${it.centro}<br><strong>${it.placa}</strong></td>
             <td>${it.kg.toFixed(1)} kg</td>
             <td style="color:#dc2626; font-weight:700;">${it.obs}</td>
           </tr>
