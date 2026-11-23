@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RoadMap - radar.js (Dispersión por Placa + Mapa Interactivo de Zonas Viales)
+   RoadMap - radar.js (Popups Amplios con Mapa: Placas, Tráfico, Rangos Kg y Calidad)
    ========================================================================== */
 
 (() => {
@@ -288,12 +288,16 @@
   let allRows = [];
   let currentUnitAuditsMap = new Map();
   let currentTrafficStatsMap = new Map();
+  let currentRangeStatsMap = new Map();
+  let currentDqChecksMap = new Map();
   let lastAnalyzedClients = [];
 
   let dispersionMap = null;
   let dispersionLayer = null;
   let trafficZoneMap = null;
   let trafficZoneLayer = null;
+  let genericModalMap = null;
+  let genericModalLayer = null;
 
   let state = {
     activeTab: "tab-riesgo",
@@ -346,58 +350,108 @@
     const totalKgValid = validRows.reduce((s, r) => s + toNum(r[IDX.KG]), 0);
     const totalKgExcluded = frtRows.reduce((s, r) => s + toNum(r[IDX.KG]), 0);
 
+    const mapRowToDqItem = (r, obsText) => {
+      const lat = parseFloat(String(r[IDX.LAT] ?? "").replace(",", "."));
+      const lng = parseFloat(String(r[IDX.LNG] ?? "").replace(",", "."));
+      return {
+        cod: cleanStr(r[IDX.CLIENTE]) || "-",
+        nombre: cleanStr(r[IDX.NOMBRE]) || "-",
+        centro: cleanStr(r[IDX.CENTRO]) || "-",
+        placa: upperStr(r[IDX.PLACA]) || "SIN PLACA",
+        canal: normalizeChannelCode(r[IDX.CANAL]),
+        kg: toNum(r[IDX.KG]),
+        lat,
+        lng,
+        hasValidCoord: isValidCoord(lat, lng),
+        obs: obsText
+      };
+    };
+
+    const dedupItems = (arr) => {
+      const m = new Map();
+      arr.forEach(it => {
+        const k = `${it.cod}|${it.placa}|${it.obs}`;
+        if (!m.has(k)) m.set(k, { ...it });
+        else m.get(k).kg += it.kg;
+      });
+      return Array.from(m.values());
+    };
+
     const checks = [
       {
+        id: "DQ_BAD_WIN",
         title: "Ventanas Horarias Inválidas o Invertidas",
         count: badWindows.length,
         pct: validRows.length ? ((badWindows.length / validRows.length) * 100).toFixed(2) : "0.00",
         sev: badWindows.length > 0 ? "crit" : "ok",
         desc: badWindows.length > 0
           ? `Ej: Cliente ${cleanStr(badWindows[0][IDX.CLIENTE])} tiene ventana "${cleanStr(badWindows[0][IDX.VENTANA])}".`
-          : `Sin ventanas invertidas. (${missingWindows.length} líneas sin ventana informada).`
+          : `Sin ventanas invertidas. (${missingWindows.length} líneas sin ventana informada).`,
+        items: dedupItems(badWindows.map(r => mapRowToDqItem(r, `VH: "${cleanStr(r[IDX.VENTANA])}"`)))
       },
       {
+        id: "DQ_BAD_COORDS",
         title: "Coordenadas Vacías, Cero o Fuera de Lima",
         count: badCoords.length,
         pct: validRows.length ? ((badCoords.length / validRows.length) * 100).toFixed(2) : "0.00",
         sev: badCoords.length > 0 ? "crit" : "ok",
         desc: badCoords.length > 0
           ? `Ej: Cliente ${cleanStr(badCoords[0][IDX.CLIENTE])} (${cleanStr(badCoords[0][IDX.NOMBRE])}) con Lat/Lng inválida.`
-          : "Todas las entregas válidas tienen geoposición dentro de Región Lima."
+          : "Todas las entregas válidas tienen geoposición dentro de Región Lima.",
+        items: dedupItems(badCoords.map(r => mapRowToDqItem(r, `Lat/Lng: ${cleanStr(r[IDX.LAT]) || "vacío"}, ${cleanStr(r[IDX.LNG]) || "vacío"}`)))
       },
       {
+        id: "DQ_FRT",
         title: "Registros Ficticios / Excluidos (FRT-001)",
         count: frtRows.length,
         pct: total ? ((frtRows.length / total) * 100).toFixed(2) : "0.00",
         sev: frtRows.length > 0 ? "warn" : "ok",
-        desc: `Se excluyen ${frtRows.length} filas (${totalKgExcluded.toFixed(1)} kg) de FRT-001 según regla operativa.`
+        desc: `Se excluyen ${frtRows.length} filas (${totalKgExcluded.toFixed(1)} kg) de FRT-001 según regla operativa.`,
+        items: dedupItems(frtRows.map(r => mapRowToDqItem(r, "Placa excluida FRT-001")))
       },
       {
+        id: "DQ_ZERO_KG",
         title: "Líneas con Peso Cero o Negativo (<= 0 kg)",
         count: zeroOrNegKg.length,
         pct: validRows.length ? ((zeroOrNegKg.length / validRows.length) * 100).toFixed(2) : "0.00",
         sev: zeroOrNegKg.length > 0 ? "warn" : "ok",
         desc: zeroOrNegKg.length > 0
           ? `Ej: Pedido ${cleanStr(zeroOrNegKg[0][IDX.PEDIDO])} registra ${zeroOrNegKg[0][IDX.KG]} kg.`
-          : "Sin líneas con peso nulo o negativo."
+          : "Sin líneas con peso nulo o negativo.",
+        items: dedupItems(zeroOrNegKg.map(r => mapRowToDqItem(r, `Peso: ${r[IDX.KG]} kg (Ped. ${cleanStr(r[IDX.PEDIDO])})`)))
       },
       {
+        id: "DQ_SPLIT_ORD",
         title: "Pedidos Divididos en Múltiples Placas",
         count: splitOrders.length,
         pct: orderPlates.size ? ((splitOrders.length / orderPlates.size) * 100).toFixed(2) : "0.00",
         sev: splitOrders.length > 0 ? "warn" : "ok",
         desc: splitOrders.length > 0
           ? `Pedido ${splitOrders[0][0]} asignado a placas: ${Array.from(splitOrders[0][1]).join(", ")}.`
-          : "Cada pedido está asignado íntegro a una sola placa."
+          : "Cada pedido está asignado íntegro a una sola placa.",
+        items: splitOrders.map(([ped, pSet]) => {
+          const sample = validRows.find(r => cleanStr(r[IDX.PEDIDO]) === ped) || [];
+          return mapRowToDqItem(sample, `Ped. ${ped} en placas: ${Array.from(pSet).join(", ")}`);
+        })
       },
       {
+        id: "DQ_MULTI_CD",
         title: "Placas Asignadas a Múltiples Centros",
         count: multiCenterPlates.length,
         pct: plateCenters.size ? ((multiCenterPlates.length / plateCenters.size) * 100).toFixed(2) : "0.00",
         sev: multiCenterPlates.length > 0 ? "crit" : "ok",
         desc: multiCenterPlates.length > 0
           ? `Placa ${multiCenterPlates[0][0]} figura en centros: ${Array.from(multiCenterPlates[0][1]).join(" y ")}.`
-          : "Ninguna placa física opera simultáneamente en dos centros."
+          : "Ninguna placa física opera simultáneamente en dos centros.",
+        items: dedupItems(
+          validRows
+            .filter(r => multiCenterPlates.some(([p]) => p === upperStr(r[IDX.PLACA])))
+            .map(r => {
+              const p = upperStr(r[IDX.PLACA]);
+              const cds = Array.from(plateCenters.get(p) || []).join(" + ");
+              return mapRowToDqItem(r, `Placa en centros: ${cds}`);
+            })
+        )
       }
     ];
 
@@ -419,7 +473,7 @@
   }
 
   /* ==========================================================================
-     2. MOTOR ANALÍTICO DE DISPERSIÓN, ZONAS VIALES Y PRODUCTOS
+     2. MOTOR ANALÍTICO DE DISPERSIÓN, ZONAS VIALES, RANGOS Y PRODUCTOS
      ========================================================================== */
   function analyzeOperation(filteredRows) {
     const clientsMap = new Map();
@@ -711,7 +765,7 @@
       orderCount: p.pedidosSet.size
     }));
 
-    // Rangos de Peso
+    // Rangos de Peso (con arreglo completo de clientes para el Popup)
     const rangeStats = WEIGHT_RANGES.map(rng => {
       const matching = clients.filter(c => rng.min === 0 ? (c.kg >= 0 && c.kg <= rng.max) : (c.kg > rng.min && c.kg <= rng.max));
       const byChannel = { DET: 0, FSE: 0, MES: 0, MOD: 0 };
@@ -720,7 +774,8 @@
         ...rng,
         count: matching.length,
         totalKg: matching.reduce((s, c) => s + c.kg, 0),
-        byChannel
+        byChannel,
+        clients: matching
       };
     });
 
@@ -839,7 +894,7 @@
   }
 
   /* ==========================================================================
-     4A. DRAWER 1: MAPA DE DISPERSIÓN Y AUDITORÍA POR PLACA
+     4A. POPUP 1: MAPA DE DISPERSIÓN Y AUDITORÍA POR PLACA
      ========================================================================== */
   function renderDispersionMapForUnit(unit) {
     const mapContainer = document.getElementById("plateDispersionMap");
@@ -1010,7 +1065,7 @@
   }
 
   /* ==========================================================================
-     4B. DRAWER 2: MAPA DE COMPLEJIDAD VIAL Y PLACAS INVOLUCRADAS
+     4B. POPUP 2: MAPA DE COMPLEJIDAD VIAL Y PLACAS INVOLUCRADAS
      ========================================================================== */
   function renderTrafficZoneMap(zone, filterPlate = null) {
     const mapContainer = document.getElementById("trafficZoneMap");
@@ -1031,7 +1086,6 @@
 
     trafficZoneLayer.clearLayers();
 
-    // 1. Dibujar el polígono del corredor vial con complejidad marcada
     const zoneRect = L.rectangle(zone.bounds, {
       color: zone.zoneColor,
       weight: 2.5,
@@ -1042,11 +1096,9 @@
 
     zoneRect.bindPopup(`<strong>${zone.name}</strong><br>Nivel: ${zone.level}<br>${zone.reason}`);
 
-    // Mapa rápido de color por placa
     const plateColorMap = new Map();
     zone.platesList.forEach(p => plateColorMap.set(p.placa, p.color));
 
-    // 2. Pintar los clientes dentro de la zona coloreados según su Placa
     const visibleClients = filterPlate
       ? zone.clients.filter(c => c.placa === filterPlate)
       : zone.clients;
@@ -1097,7 +1149,6 @@
     document.getElementById("trfZoneSub").textContent =
       `${zone.reason} • ${zone.clientCount} clientes (${(zone.totalKg / 1000).toFixed(2)} T)`;
 
-    // Píldoras interactivas para filtrar por Placa en el mapa
     const pillsWrap = document.getElementById("trfPlateFilterPills");
     pillsWrap.innerHTML = `
       <button type="button" class="trf-plate-pill is-active" data-trf-plate="ALL">
@@ -1120,7 +1171,6 @@
       });
     });
 
-    // Tabla de placas involucradas en esta zona vial
     document.getElementById("trfSummaryTag").textContent = `${zone.clientCount} entregas en zona`;
     const tbody = document.getElementById("trfPlatesTableBody");
     tbody.innerHTML = zone.platesList.map(p => `
@@ -1154,10 +1204,190 @@
     renderTrafficZoneMap(zone, null);
   }
 
+  /* ==========================================================================
+     4C. POPUP 3: DETALLE + MAPA PARA RANGOS DE PESO Y CALIDAD DE DATOS
+     ========================================================================== */
+  function renderGenericMapPoints(points, colorResolver) {
+    const mapContainer = document.getElementById("genericModalMap");
+    if (!mapContainer || typeof L === "undefined") return;
+
+    if (!genericModalMap) {
+      genericModalMap = L.map("genericModalMap", {
+        zoomControl: true,
+        attributionControl: false
+      }).setView([-12.04, -77.02], 11);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19
+      }).addTo(genericModalMap);
+
+      genericModalLayer = L.layerGroup().addTo(genericModalMap);
+    }
+
+    genericModalLayer.clearLayers();
+    const validPts = points.filter(p => p.hasValidCoord);
+    const bounds = [];
+
+    validPts.forEach(p => {
+      const col = colorResolver(p);
+      const marker = L.circleMarker([p.lat, p.lng], {
+        radius: 6.5,
+        fillColor: col,
+        color: "#ffffff",
+        weight: 1.5,
+        opacity: 1,
+        fillOpacity: 0.94
+      });
+
+      marker.bindPopup(`
+        <div style="font-family:'Inter',sans-serif; font-size:11px; line-height:1.4;">
+          <strong>${p.cod} • ${p.nombre}</strong><br>
+          <strong>Centro:</strong> ${p.centro} • <strong>Placa:</strong> ${p.placa}<br>
+          <strong>Peso:</strong> ${p.kg.toFixed(1)} kg • <strong>Canal:</strong> ${p.canal}
+          ${p.obs ? `<br><span style="color:#dc2626; font-weight:800;">${p.obs}</span>` : ""}
+        </div>
+      `);
+
+      marker.addTo(genericModalLayer);
+      bounds.push([p.lat, p.lng]);
+    });
+
+    setTimeout(() => {
+      genericModalMap.invalidateSize();
+      if (bounds.length > 1) {
+        genericModalMap.fitBounds(bounds, { padding: [28, 28], maxZoom: 13 });
+      } else if (bounds.length === 1) {
+        genericModalMap.setView(bounds[0], 13);
+      } else {
+        genericModalMap.setView([-12.04, -77.02], 10);
+      }
+    }, 240);
+  }
+
+  function openWeightRangeModal(rangeId) {
+    closeAllDrawers();
+    const rng = currentRangeStatsMap.get(rangeId);
+    if (!rng) return;
+
+    document.getElementById("genBadgePrimary").textContent = "RANGO DE PESO";
+    document.getElementById("genBadgeSecondary").textContent = `${rng.count} clientes • ${(rng.totalKg / 1000).toFixed(2)} T`;
+    document.getElementById("genModalTitle").textContent = `Clientes en tramo: ${rng.label}`;
+    document.getElementById("genModalSub").textContent = `Centro: ${state.selectedCenter} • Distribución geográfica por canal`;
+    document.getElementById("genMapTitle").textContent = `Mapa de Clientes (${rng.label})`;
+    document.getElementById("genMapHint").textContent = "Coloreados por Canal (DET, FSE, MES, MOD)";
+    document.getElementById("genTableTitle").textContent = `Clientes en ${rng.label}`;
+
+    document.getElementById("genTableHead").innerHTML = `
+      <tr>
+        <th>Cliente</th>
+        <th>Canal</th>
+        <th>Centro / Placa</th>
+        <th>Ventana</th>
+        <th>Peso</th>
+        <th>Soles</th>
+      </tr>
+    `;
+
+    const renderRangeFiltered = (channelFilter) => {
+      const list = (channelFilter === "ALL"
+        ? [...rng.clients]
+        : rng.clients.filter(c => c.canal === channelFilter)
+      ).sort((a, b) => b.kg - a.kg);
+
+      document.getElementById("genTableCount").textContent = `${list.length} clientes`;
+      document.getElementById("genTableBody").innerHTML = list.map(c => {
+        const chCol = CHANNEL_COLORS[c.canal] || "#71717a";
+        const vhTxt = c.win.status === "VALID" ? `${c.win.startStr}-${c.win.endStr}` : (c.win.raw || "Sin VH");
+        return `
+          <tr>
+            <td><strong>${c.cod}</strong><br><span style="color:#52525b;">${c.nombre}</span></td>
+            <td><span style="color:${chCol}; font-weight:800;">● ${c.canal}</span></td>
+            <td>${c.centro}<br><strong>${c.placa}</strong></td>
+            <td>${vhTxt}</td>
+            <td style="font-weight:800;">${c.kg.toFixed(1)} kg</td>
+            <td>S/ ${c.soles.toLocaleString("es-PE", { maximumFractionDigits: 0 })}</td>
+          </tr>
+        `;
+      }).join("");
+
+      renderGenericMapPoints(list, c => CHANNEL_COLORS[c.canal] || "#8e24aa");
+    };
+
+    const pillsWrap = document.getElementById("genFilterPills");
+    pillsWrap.innerHTML = `
+      <button type="button" class="trf-plate-pill is-active" data-ch="ALL">Todos (${rng.count})</button>
+      ${["DET", "FSE", "MES", "MOD"].map(ch => `
+        <button type="button" class="trf-plate-pill" data-ch="${ch}">
+          <i class="trf-plate-dot" style="background:${CHANNEL_COLORS[ch]};"></i> ${ch} (${rng.byChannel[ch]})
+        </button>
+      `).join("")}
+    `;
+
+    pillsWrap.querySelectorAll(".trf-plate-pill").forEach(btn => {
+      btn.addEventListener("click", () => {
+        pillsWrap.querySelectorAll(".trf-plate-pill").forEach(b => b.classList.remove("is-active"));
+        btn.classList.add("is-active");
+        renderRangeFiltered(btn.getAttribute("data-ch"));
+      });
+    });
+
+    document.getElementById("plateDrawerBackdrop").classList.add("is-open");
+    document.getElementById("genericDetailModal").classList.add("is-open");
+    renderRangeFiltered("ALL");
+  }
+
+  function openDataQualityModal(checkId) {
+    closeAllDrawers();
+    const chk = currentDqChecksMap.get(checkId);
+    if (!chk) return;
+
+    const items = chk.items || [];
+    const withCoords = items.filter(it => it.hasValidCoord).length;
+
+    document.getElementById("genBadgePrimary").textContent = "CALIDAD DE DATOS";
+    document.getElementById("genBadgeSecondary").textContent = `${chk.count} reg. (${chk.pct}%)`;
+    document.getElementById("genModalTitle").textContent = chk.title;
+    document.getElementById("genModalSub").textContent = chk.desc;
+    document.getElementById("genMapTitle").textContent = "Mapa de Registros Observados";
+    document.getElementById("genMapHint").textContent = withCoords > 0
+      ? `${withCoords} de ${items.length} clientes con geoposición válida`
+      : "Sin coordenadas válidas en Lima para graficar";
+    document.getElementById("genTableTitle").textContent = "Detalle de Clientes / Registros Afectados";
+    document.getElementById("genFilterPills").innerHTML = "";
+
+    document.getElementById("genTableHead").innerHTML = `
+      <tr>
+        <th>Cliente</th>
+        <th>Centro</th>
+        <th>Placa</th>
+        <th>Peso</th>
+        <th>Observación Detectada</th>
+      </tr>
+    `;
+
+    document.getElementById("genTableCount").textContent = `${items.length} clientes`;
+    document.getElementById("genTableBody").innerHTML = items.length
+      ? items.map(it => `
+          <tr>
+            <td><strong>${it.cod}</strong><br><span style="color:#52525b;">${it.nombre}</span></td>
+            <td>${it.centro}</td>
+            <td><strong>${it.placa}</strong></td>
+            <td>${it.kg.toFixed(1)} kg</td>
+            <td style="color:#dc2626; font-weight:700;">${it.obs}</td>
+          </tr>
+        `).join("")
+      : `<tr><td colspan="5" style="text-align:center; color:#15803d; padding:16px; font-weight:700;">Sin incidencias detectadas en esta validación.</td></tr>`;
+
+    document.getElementById("plateDrawerBackdrop").classList.add("is-open");
+    document.getElementById("genericDetailModal").classList.add("is-open");
+    renderGenericMapPoints(items, () => "#ef4444");
+  }
+
   function closeAllDrawers() {
     document.getElementById("plateDrawerBackdrop").classList.remove("is-open");
     document.getElementById("plateDetailDrawer").classList.remove("is-open");
     document.getElementById("trafficDetailDrawer").classList.remove("is-open");
+    document.getElementById("genericDetailModal").classList.remove("is-open");
   }
 
   /* ==========================================================================
@@ -1173,11 +1403,18 @@
     const op = analyzeOperation(filteredRows);
 
     lastAnalyzedClients = op.clients;
+
     currentUnitAuditsMap.clear();
     op.unitAudits.forEach(u => currentUnitAuditsMap.set(u.key, u));
 
     currentTrafficStatsMap.clear();
     op.trafficStats.forEach(z => currentTrafficStatsMap.set(z.id, z));
+
+    currentRangeStatsMap.clear();
+    op.rangeStats.forEach(r => currentRangeStatsMap.set(r.id, r));
+
+    currentDqChecksMap.clear();
+    dq.checks.forEach(c => currentDqChecksMap.set(c.id, c));
 
     renderTabRiesgo(op);
     renderTabVentanas(op);
@@ -1343,8 +1580,9 @@
   function renderTabCalidad(dq, { unitAudits }) {
     document.getElementById("dqScoreBadge").textContent = `Integridad: ${dq.integrityPct}%`;
 
-    document.getElementById("dataQualityList").innerHTML = dq.checks.map(chk => `
-      <div class="dq-item dq-item--${chk.sev}">
+    const dqListEl = document.getElementById("dataQualityList");
+    dqListEl.innerHTML = dq.checks.map(chk => `
+      <div class="dq-item dq-item--${chk.sev}" data-dq-id="${chk.id}" title="Clic para ver detalle y mapa">
         <div class="dq-top">
           <strong>${chk.title}</strong>
           <span class="dq-count">${chk.count} reg. (${chk.pct}%)</span>
@@ -1352,6 +1590,12 @@
         <div class="dq-desc">${chk.desc}</div>
       </div>
     `).join("");
+
+    dqListEl.querySelectorAll(".dq-item[data-dq-id]").forEach(el => {
+      el.addEventListener("click", () => {
+        openDataQualityModal(el.getAttribute("data-dq-id"));
+      });
+    });
 
     const diffKg = Math.abs(dq.totalKgRaw - (dq.totalKgValid + dq.totalKgExcluded));
     document.getElementById("reconcilStatusBadge").textContent = diffKg < 0.01 ? "CONCILIACIÓN APROBADA" : "OBSERVADA";
@@ -1366,7 +1610,7 @@
     `;
 
     document.getElementById("coverageLimitationsList").innerHTML = `
-      <li><strong>Dispersión y Zonas Viales:</strong> Ambas vistas permiten abrir el mapa interactivo con los puntos exactos y polígonos críticos.</li>
+      <li><strong>Dispersión, Zonas Viales, Rangos y Calidad:</strong> Todas las vistas abren un popup amplio con mapa interactivo y tabla detallada.</li>
       <li><strong>Regla de Semáforo:</strong> Rojo (&ge;61), Amarillo (31–60), Verde (&le;30) y Negro solo si 100% de clientes no tienen geoposición.</li>
       <li><strong>Bloqueado por dato faltante (1/6):</strong> Capacidad vehicular máxima por placa (pendiente raw) y hora de salida/secuencia.</li>
     `;
@@ -1399,14 +1643,15 @@
     });
 
     const totalCli = Math.max(1, clients.length);
-    document.getElementById("kgRangesContainer").innerHTML = rangeStats.map(rng => {
+    const rangesEl = document.getElementById("kgRangesContainer");
+    rangesEl.innerHTML = rangeStats.map(rng => {
       const pct = Math.round((rng.count / totalCli) * 100);
       const segsHtml = ["DET", "FSE", "MES", "MOD"].map(ch => {
         const w = rng.count > 0 ? (rng.byChannel[ch] / rng.count) * 100 : 0;
         return `<div class="radar-stacked-seg" style="width:${w}%; background:${CHANNEL_COLORS[ch]};"></div>`;
       }).join("");
       return `
-        <div class="radar-range-row">
+        <div class="radar-range-row" data-range-id="${rng.id}" title="Clic para ver clientes y mapa de este rango">
           <div class="radar-range-top">
             <strong>${rng.label}</strong>
             <span style="font-size:0.68rem; font-weight:700;">${rng.count} cli. (${pct}%) • ${(rng.totalKg / 1000).toFixed(1)} T</span>
@@ -1419,7 +1664,12 @@
       `;
     }).join("");
 
-    // Renderizar tarjetas interactivas de Zonas de Complejidad Vial
+    rangesEl.querySelectorAll(".radar-range-row[data-range-id]").forEach(el => {
+      el.addEventListener("click", () => {
+        openWeightRangeModal(el.getAttribute("data-range-id"));
+      });
+    });
+
     const trafficListEl = document.getElementById("trafficZonesList");
     trafficListEl.innerHTML = trafficStats.map(z => `
       <div class="radar-traffic-item" data-zone-id="${z.id}" title="Clic para abrir mapa de la zona y placas involucradas">
@@ -1535,6 +1785,7 @@
 
     document.getElementById("btnClosePlateDrawer").addEventListener("click", closeAllDrawers);
     document.getElementById("btnCloseTrafficDrawer").addEventListener("click", closeAllDrawers);
+    document.getElementById("btnCloseGenericModal").addEventListener("click", closeAllDrawers);
     document.getElementById("plateDrawerBackdrop").addEventListener("click", closeAllDrawers);
     document.addEventListener("keydown", e => {
       if (e.key === "Escape") closeAllDrawers();
