@@ -1,0 +1,36 @@
+name: Generar Reporte HTML Dashboard Operativo
+
+on:
+  push:
+    paths:
+      - 'RoadMap.csv'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-dashboard-email:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar librerías de mapa estático
+        run: pip install staticmap pillow
+
+      - name: Generar HTML y Mapas por Centro
+        run: python scripts/build_dashboard_email.py
+
+      - name: Publicar archivos en /reports
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add reports/dashboard_email.html reports/map_*.png
+          git diff --staged --quiet || git commit -m "chore: actualizar reporte HTML y mapas del Dashboard"
+          git push
