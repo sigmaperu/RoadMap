@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"></head>
+<body style="margin:0; padding:0; background-color:#f4f3f8; font-family:'Segoe UI', Arial, sans-serif; color:#18181b;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f3f8; padding:20px 0;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="760" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius:12px; overflow:hidden; border:1px solid #e4e4e7;">
+          
+          <!-- CABECERA CORPORATIVA -->
+          <tr>
+            <td style="background-color:#28174E; padding:22px 26px; color:#ffffff;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td>
+                    <div style="font-size:11px; letter-spacing:1px; text-transform:uppercase; color:#f89b22; font-weight:700;">RoadMap &bull; Radar de Distribución</div>
+                    <h1 style="margin:4px 0 2px; font-size:22px; color:#ffffff;">Resumen Ejecutivo de Planificación</h1>
+                    <div style="font-size:12px; color:#d4d4d8;">Fecha operativa: <b>23/11/2026</b> &bull; Región Lima (ATE, ATE2, CHANCAY)</div>
+                  </td>
+                  <td align="right" valign="middle">
+                    <a href="https://sigmaperu.github.io/RoadMap/radar.html" style="background-color:#c61c27; color:#ffffff; text-decoration:none; padding:10px 16px; border-radius:8px; font-size:12px; font-weight:700; display:inline-block;">Abrir Radar Web</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- KPI CARDS -->
+          <tr>
+            <td style="padding:18px 24px 8px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td width="24%" style="background:#faf9fc; border:1px solid #e4e4e7; border-top:3px solid #28174E; border-radius:8px; padding:10px;">
+                    <div style="font-size:11px; color:#71717a; font-weight:700;">CARGA PLANIFICADA</div>
+                    <div style="font-size:18px; font-weight:800; color:#18181b;">68.0 T</div>
+                    <div style="font-size:11px; color:#52525b;">1050 clientes / 58 placas</div>
+                  </td>
+                  <td width="2%"></td>
+                  <td width="24%" style="background:#fef2f2; border:1px solid #fecaca; border-top:3px solid #c61c27; border-radius:8px; padding:10px;">
+                    <div style="font-size:11px; color:#991b1b; font-weight:700;">PLACAS EN ROJO</div>
+                    <div style="font-size:18px; font-weight:800; color:#c61c27;">4 placas</div>
+                    <div style="font-size:11px; color:#7f1d1d;">+1 en Semáforo Negro</div>
+                  </td>
+                  <td width="2%"></td>
+                  <td width="24%" style="background:#fffbeb; border:1px solid #fde68a; border-top:3px solid #f89b22; border-radius:8px; padding:10px;">
+                    <div style="font-size:11px; color:#92400e; font-weight:700;">VH / CANAL / RUTA</div>
+                    <div style="font-size:18px; font-weight:800; color:#b45309;">7 cli.</div>
+                    <div style="font-size:11px; color:#78350f;">5 sin coordenadas</div>
+                  </td>
+                  <td width="2%"></td>
+                  <td width="24%" style="background:#faf5ff; border:1px solid #e9d5ff; border-top:3px solid #8e24aa; border-radius:8px; padding:10px;">
+                    <div style="font-size:11px; color:#6b21a8; font-weight:700;">EXCLUIDOS FRT-001</div>
+                    <div style="font-size:18px; font-weight:800; color:#6a1b9a;">16 filas</div>
+                    <div style="font-size:11px; color:#581c87;">91.7 kg excluidos</div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- SECCIÓN 1: MAPA + PLACAS EN ROJO -->
+          <tr>
+            <td style="padding:14px 24px;">
+              <h2 style="margin:0 0 8px; font-size:15px; color:#28174E; border-bottom:2px solid #f3e5f5; padding-bottom:4px;">1. Radar de Riesgo: Placas en Semáforo Rojo y Mapa de Dispersión</h2>
+              <p style="margin:0 0 10px; font-size:12px; color:#52525b;">
+                Puntos en <b style="color:#c61c27;">Rojo</b> indican clientes atípicos que generan dispersión en las placas críticas; <b style="color:#10b981;">Verde</b> indica el núcleo de la ruta; <b style="color:#28174E;">Morado</b> indica los CDs.
+              </p>
+              <img src="https://sigmaperu.github.io/RoadMap/reports/mapa_riesgo.png?v=202611230227" width="712" alt="Mapa de Dispersión de Placas en Rojo" style="display:block; width:100%; border-radius:8px; border:1px solid #e4e4e7; margin-bottom:12px;" />
+              <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse; font-size:12px;">
+                <tr style="background:#28174E; color:#ffffff;">
+                  <th style="padding:7px 8px; text-align:left;">Centro</th>
+                  <th style="padding:7px 8px; text-align:left;">Placa</th>
+                  <th style="padding:7px 8px; text-align:right;">Cli.</th>
+                  <th style="padding:7px 8px; text-align:right;">Peso</th>
+                  <th style="padding:7px 8px; text-align:right;">Dispersión</th>
+                  <th style="padding:7px 8px; text-align:right;">Atíp.</th>
+                  <th style="padding:7px 8px; text-align:right;">VH Crít.</th>
+                  <th style="padding:7px 8px; text-align:center;">Estado</th>
+                </tr>
+                
+        <tr>
+          <td style="padding:7px 8px; border-bottom:1px solid #eceaf2; font-weight:700; color:#28174E;">0374-ATE</td>
+          <td style="padding:7px 8px; border-bottom:1px solid #eceaf2; font-weight:800; color:#18181b;">CBH-821</td>
+          <td style="padding:7px 8px; border-bottom:1px solid #eceaf2; text-align:right;">47</td>
+          <td style="padding:7px 8px; border-bottom:1px solid #eceaf2; text-align:right;">414 kg</td>
+          <td style="padding:7px 8px; border-bottom:1px solid #eceaf2; text-align:right;">44.4 km</td>
+          <td style="padding:7px 8px; border-bottom:1px solid #eceaf2; text-align:right; color:#c61c27; font-weight:700;">5</td>
+          <td style="padding:7px 8px; border-bottom:1px solid #eceaf2; text-align:right; color:#d97706; font-weight:700;">0</td>
+          <td style="padding:7px 8px; border-bottom:1px solid #eceaf2; text-align:center;">
+            <span style="background:#fee2e2; color:#c61c27; padding:2px 8px; border-radius:10px; font-weight:800; font-size:11px;">62/100 ROJO</span>
+          </td>
+        </tr>
+        
+        <tr>
+          <td style="padding:7px 8px; border-bottom:1px solid #eceaf2; font-weight:700; color:#28174E;">0754-CHANCAY</td>
+          <td style="padding:7px 8px; border-bottom:1px solid #eceaf2; font-weight:800; color:#18181b;">CEV-877</td>
+          <td style="padding:7px 8px; border-bottom:1px solid #eceaf2; text-align:right;">28</td>
+          <td style="padding:7px 8px; border-bottom:1px solid #eceaf2; text-align:right;">510 kg</td>
+          <td style="padding:7px 8px; border-bottom:1px solid #eceaf2; text-align:right;">16.8 km</td>
+          <td style="padding:7px 8px; border-bottom:1px solid #eceaf2; text-align:right; color:#c61c27; font-weight:700;">3</td>
+          <td style="padding:7px 8px; border-bottom:1px solid #eceaf2; text-align:right; color:#d97706; font-weight:700;">1</td>
+          <td style="padding:7px 8px; border-bottom:1px solid #eceaf2; text-align:center;">
+            <span style="background:#fee2e2; color:#c61c27; padding:2px 8px; border-radius:10px; font-weight:800; font-size:11px;">62/100 ROJO</span>
+          </td>
+        </tr>
+        
+        <tr>
+          <td style="padding:7px 8px; border-bottom:1px solid #eceaf2; font-weight:700; color:#28174E;">0780-ATE2</td>
+          <td style="padding:7px 8px; border-bottom:1px solid #eceaf2; font-weight:800; color:#18181b;">ALE-907</td>
+          <td style="padding:7px 8px; border-bottom:1px solid #eceaf2; text-align:right;">46</td>
+          <td style="padding:7px 8px; border-bottom:1px solid #eceaf2; text-align:right;">334 kg</td>
+          <td style="padding:7px 8px; border-bottom:1px solid #eceaf2; text-align:right;">2.8 km</td>
+          <td style="padding:7px 8px; border-bottom:1px solid #eceaf2; text-align:right; color:#c61c27; font-weight:700;">0</td>
+          <td style="padding:7px 8px; border-bottom:1px solid #eceaf2; text-align:right; color:#d97706; font-weight:700;">5</td>
+          <td style="padding:7px 8px; border-bottom:1px solid #eceaf2; text-align:center;">
+            <span style="background:#fee2e2; color:#c61c27; padding:2px 8px; border-radius:10px; font-weight:800; font-size:11px;">62/100 ROJO</span>
+          </td>
+        </tr>
+        
+        <tr>
+          <td style="padding:7px 8px; border-bottom:1px solid #eceaf2; font-weight:700; color:#28174E;">0780-ATE2</td>
+          <td style="padding:7px 8px; border-bottom:1px solid #eceaf2; font-weight:800; color:#18181b;">BPG-854</td>
+          <td style="padding:7px 8px; border-bottom:1px solid #eceaf2; text-align:right;">22</td>
+          <td style="padding:7px 8px; border-bottom:1px solid #eceaf2; text-align:right;">954 kg</td>
+          <td style="padding:7px 8px; border-bottom:1px solid #eceaf2; text-align:right;">8.8 km</td>
+          <td style="padding:7px 8px; border-bottom:1px solid #eceaf2; text-align:right; color:#c61c27; font-weight:700;">2</td>
+          <td style="padding:7px 8px; border-bottom:1px solid #eceaf2; text-align:right; color:#d97706; font-weight:700;">1</td>
+          <td style="padding:7px 8px; border-bottom:1px solid #eceaf2; text-align:center;">
+            <span style="background:#fee2e2; color:#c61c27; padding:2px 8px; border-radius:10px; font-weight:800; font-size:11px;">62/100 ROJO</span>
+          </td>
+        </tr>
+        
+              </table>
+            </td>
+          </tr>
+
+          <!-- SECCIÓN 2: RANGOS DE PESO -->
+          <tr>
+            <td style="padding:8px 24px 14px;">
+              <h2 style="margin:0 0 8px; font-size:15px; color:#28174E; border-bottom:2px solid #f3e5f5; padding-bottom:4px;">2. Distribución por Rangos de Peso (Kg) y Canal</h2>
+              <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse; font-size:12px;">
+                <tr style="background:#f4f4f5; color:#3f3f46;">
+                  <th style="padding:7px 10px; text-align:left;">Tramo de Peso</th>
+                  <th style="padding:7px 10px; text-align:right;">Clientes</th>
+                  <th style="padding:7px 10px; text-align:right;">Tonelaje</th>
+                  <th style="padding:7px 10px; text-align:left;">Desglose Canal</th>
+                  <th style="padding:7px 10px; text-align:left;">Peso Visual</th>
+                </tr>
+                
+          <tr>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; font-weight:700; color:#18181b;">0 a 1 kg</td>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; text-align:right; font-weight:700;">25 (2.4%)</td>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; text-align:right;">0.02 T</td>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; font-size:11px; color:#52525b;">
+              DET:<b>11</b> &bull; FSE:<b>12</b> &bull; MES:<b>2</b> &bull; MOD:<b>0</b>
+            </td>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; width:110px;">
+              <div style="background:#eceaf2; height:8px; border-radius:4px; width:100%;">
+                <div style="background:#8e24aa; height:8px; border-radius:4px; width:6%;"></div>
+              </div>
+            </td>
+          </tr>
+        
+          <tr>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; font-weight:700; color:#18181b;">1 a 5 kg</td>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; text-align:right; font-weight:700;">393 (37.4%)</td>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; text-align:right;">1.15 T</td>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; font-size:11px; color:#52525b;">
+              DET:<b>281</b> &bull; FSE:<b>76</b> &bull; MES:<b>16</b> &bull; MOD:<b>20</b>
+            </td>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; width:110px;">
+              <div style="background:#eceaf2; height:8px; border-radius:4px; width:100%;">
+                <div style="background:#8e24aa; height:8px; border-radius:4px; width:100%;"></div>
+              </div>
+            </td>
+          </tr>
+        
+          <tr>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; font-weight:700; color:#18181b;">5 a 10 kg</td>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; text-align:right; font-weight:700;">173 (16.5%)</td>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; text-align:right;">1.31 T</td>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; font-size:11px; color:#52525b;">
+              DET:<b>92</b> &bull; FSE:<b>65</b> &bull; MES:<b>6</b> &bull; MOD:<b>10</b>
+            </td>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; width:110px;">
+              <div style="background:#eceaf2; height:8px; border-radius:4px; width:100%;">
+                <div style="background:#8e24aa; height:8px; border-radius:4px; width:44%;"></div>
+              </div>
+            </td>
+          </tr>
+        
+          <tr>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; font-weight:700; color:#18181b;">10 a 50 kg</td>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; text-align:right; font-weight:700;">342 (32.6%)</td>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; text-align:right;">7.69 T</td>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; font-size:11px; color:#52525b;">
+              DET:<b>120</b> &bull; FSE:<b>165</b> &bull; MES:<b>34</b> &bull; MOD:<b>22</b>
+            </td>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; width:110px;">
+              <div style="background:#eceaf2; height:8px; border-radius:4px; width:100%;">
+                <div style="background:#8e24aa; height:8px; border-radius:4px; width:87%;"></div>
+              </div>
+            </td>
+          </tr>
+        
+          <tr>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; font-weight:700; color:#18181b;">50 a 100 kg</td>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; text-align:right; font-weight:700;">57 (5.4%)</td>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; text-align:right;">4.16 T</td>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; font-size:11px; color:#52525b;">
+              DET:<b>3</b> &bull; FSE:<b>34</b> &bull; MES:<b>15</b> &bull; MOD:<b>4</b>
+            </td>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; width:110px;">
+              <div style="background:#eceaf2; height:8px; border-radius:4px; width:100%;">
+                <div style="background:#8e24aa; height:8px; border-radius:4px; width:14%;"></div>
+              </div>
+            </td>
+          </tr>
+        
+          <tr>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; font-weight:700; color:#18181b;">100 a 200 kg</td>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; text-align:right; font-weight:700;">22 (2.1%)</td>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; text-align:right;">2.88 T</td>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; font-size:11px; color:#52525b;">
+              DET:<b>2</b> &bull; FSE:<b>9</b> &bull; MES:<b>9</b> &bull; MOD:<b>2</b>
+            </td>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; width:110px;">
+              <div style="background:#eceaf2; height:8px; border-radius:4px; width:100%;">
+                <div style="background:#8e24aa; height:8px; border-radius:4px; width:5%;"></div>
+              </div>
+            </td>
+          </tr>
+        
+          <tr>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; font-weight:700; color:#18181b;">Mayores a 200 kg</td>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; text-align:right; font-weight:700;">38 (3.6%)</td>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; text-align:right;">50.83 T</td>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; font-size:11px; color:#52525b;">
+              DET:<b>4</b> &bull; FSE:<b>12</b> &bull; MES:<b>6</b> &bull; MOD:<b>14</b>
+            </td>
+            <td style="padding:7px 10px; border-bottom:1px solid #eceaf2; width:110px;">
+              <div style="background:#eceaf2; height:8px; border-radius:4px; width:100%;">
+                <div style="background:#8e24aa; height:8px; border-radius:4px; width:9%;"></div>
+              </div>
+            </td>
+          </tr>
+        
+              </table>
+            </td>
+          </tr>
+
+          <!-- SECCIÓN 3: CLIENTES QUE SOLO LLEVAN <= 1 KG -->
+          <tr>
+            <td style="padding:8px 24px 14px;">
+              <h2 style="margin:0 0 8px; font-size:15px; color:#28174E; border-bottom:2px solid #f3e5f5; padding-bottom:4px;">3. Clientes con 1 kg o menos Facturado (25 detectados &ndash; Top 15)</h2>
+              <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse; font-size:11.5px;">
+                <tr style="background:#f4f4f5; color:#3f3f46;">
+                  <th style="padding:6px 8px; text-align:left;">Cliente</th>
+                  <th style="padding:6px 8px; text-align:left;">Canal</th>
+                  <th style="padding:6px 8px; text-align:left;">Ruta</th>
+                  <th style="padding:6px 8px; text-align:left;">Centro / Placa</th>
+                  <th style="padding:6px 8px; text-align:right;">Peso</th>
+                  <th style="padding:6px 8px; text-align:right;">Soles</th>
+                </tr>
+                
+        <tr>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;"><b>11774898</b> &ndash; MAMBRINO SAC</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">FSE</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">B6E</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">0780-ATE2 / <b>C7K-709</b></td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right; font-weight:700;">0.50 kg</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right;">S/ 14</td>
+        </tr>
+        
+        <tr>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;"><b>11767179</b> &ndash; WU LAU'S SAC</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">FSE</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">B6D</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">0780-ATE2 / <b>CFO-873</b></td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right; font-weight:700;">0.50 kg</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right;">S/ 21</td>
+        </tr>
+        
+        <tr>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;"><b>11774841</b> &ndash; PUERTO MADERO SAC</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">FSE</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">B6E</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">0780-ATE2 / <b>CKH-809</b></td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right; font-weight:700;">0.50 kg</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right;">S/ 14</td>
+        </tr>
+        
+        <tr>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;"><b>11774904</b> &ndash; MAMBRINO SAC</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">FSE</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">B6E</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">0780-ATE2 / <b>CKJ-738</b></td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right; font-weight:700;">0.50 kg</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right;">S/ 14</td>
+        </tr>
+        
+        <tr>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;"><b>11767708</b> &ndash; MARCA FERNANDEZ ANTHONY ERICK</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">DET</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">B4C</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">0780-ATE2 / <b>BHM-855</b></td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right; font-weight:700;">0.60 kg</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right;">S/ 38</td>
+        </tr>
+        
+        <tr>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;"><b>11771180</b> &ndash; CLAVO BARRENO JOSE LUIS</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">DET</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">B4R</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">0780-ATE2 / <b>C7K-709</b></td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right; font-weight:700;">0.60 kg</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right;">S/ 38</td>
+        </tr>
+        
+        <tr>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;"><b>11771207</b> &ndash; ESPICHAN ANICAMA DORA MARIETTA</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">DET</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">B4S</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">0780-ATE2 / <b>CKH-809</b></td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right; font-weight:700;">0.60 kg</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right;">S/ 38</td>
+        </tr>
+        
+        <tr>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;"><b>11771076</b> &ndash; VEGA HUAMANI FANNY YESENIA</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">DET</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">B4R</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">0780-ATE2 / <b>D1M-791</b></td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right; font-weight:700;">0.60 kg</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right;">S/ 37</td>
+        </tr>
+        
+        <tr>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;"><b>11777139</b> &ndash; PERU FOOD SERVICES SAC</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">FSE</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">B6I</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">0780-ATE2 / <b>CFO-873</b></td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right; font-weight:700;">0.70 kg</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right;">S/ 34</td>
+        </tr>
+        
+        <tr>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;"><b>11771334</b> &ndash; CAUNALLA CARTA NICOLASA</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">DET</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">B4S</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">0780-ATE2 / <b>CKH-809</b></td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right; font-weight:700;">0.75 kg</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right;">S/ 44</td>
+        </tr>
+        
+        <tr>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;"><b>11773110</b> &ndash; TKH CORP SAC</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">FSE</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">B6B</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">0780-ATE2 / <b>BMO-778</b></td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right; font-weight:700;">0.80 kg</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right;">S/ 28</td>
+        </tr>
+        
+        <tr>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;"><b>11771484</b> &ndash; TICLE ONOFRE VIOLETA TERESA</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">DET</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">B4N</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">0780-ATE2 / <b>CFO-873</b></td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right; font-weight:700;">0.80 kg</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right;">S/ 51</td>
+        </tr>
+        
+        <tr>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;"><b>11771112</b> &ndash; CASTRO AMEZ ISABEL CRISTINA</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">DET</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">B4R</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">0780-ATE2 / <b>D1M-791</b></td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right; font-weight:700;">0.80 kg</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right;">S/ 38</td>
+        </tr>
+        
+        <tr>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;"><b>11771033</b> &ndash; SUSANA GLADYS FARFAN CISNEROS</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">DET</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">B4R</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">0780-ATE2 / <b>C7K-709</b></td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right; font-weight:700;">0.90 kg</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right;">S/ 57</td>
+        </tr>
+        
+        <tr>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;"><b>11771212</b> &ndash; LOPEZ ORTEGA ISABEL FLOR</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">DET</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">B4S</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">0780-ATE2 / <b>CKH-809</b></td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right; font-weight:700;">0.90 kg</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right;">S/ 53</td>
+        </tr>
+        
+              </table>
+            </td>
+          </tr>
+
+          <!-- SECCIÓN 4: CLIENTES PRIORITARIOS POR VH RESTRICTIVA -->
+          <tr>
+            <td style="padding:8px 24px 18px;">
+              <h2 style="margin:0 0 8px; font-size:15px; color:#28174E; border-bottom:2px solid #f3e5f5; padding-bottom:4px;">4. Clientes Prioritarios por Ventana Horaria Restrictiva (62 en total &ndash; Top 15)</h2>
+              <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse; font-size:11.5px;">
+                <tr style="background:#f4f4f5; color:#3f3f46;">
+                  <th style="padding:6px 8px; text-align:left;">Cliente</th>
+                  <th style="padding:6px 8px; text-align:left;">Centro</th>
+                  <th style="padding:6px 8px; text-align:left;">Placa</th>
+                  <th style="padding:6px 8px; text-align:left;">Ventana (24h)</th>
+                  <th style="padding:6px 8px; text-align:right;">Peso</th>
+                </tr>
+                
+        <tr>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;"><b>11772912</b> &ndash; PARRILLADAS PERUANAS SA</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">0780-ATE2</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; font-weight:700;">CFO-873</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; color:#c61c27; font-weight:800;">06:45 - 07:00</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right;">45.1 kg</td>
+        </tr>
+        
+        <tr>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;"><b>11768909</b> &ndash; PARRILLADAS PERUANAS SA</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">0780-ATE2</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; font-weight:700;">CHQ-902</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; color:#c61c27; font-weight:800;">06:45 - 07:00</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right;">46.1 kg</td>
+        </tr>
+        
+        <tr>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;"><b>11773046</b> &ndash; LH SAN JUAN SAC</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">0780-ATE2</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; font-weight:700;">CHQ-902</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; color:#c61c27; font-weight:800;">06:30 - 07:00</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right;">8.0 kg</td>
+        </tr>
+        
+        <tr>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;"><b>11768938</b> &ndash; HUATAY SANCHEZ ANITA JUDIT</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">0780-ATE2</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; font-weight:700;">CKJ-738</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; color:#c61c27; font-weight:800;">06:00 - 08:30</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right;">405.8 kg</td>
+        </tr>
+        
+        <tr>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;"><b>11772424</b> &ndash; CORPORACION PERUANA DE RESTAUR</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">0780-ATE2</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; font-weight:700;">AKL-733</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; color:#c61c27; font-weight:800;">08:30 - 09:00</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right;">725.8 kg</td>
+        </tr>
+        
+        <tr>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;"><b>11766350</b> &ndash; EMBUTIDOS M & M EIRL</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">0780-ATE2</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; font-weight:700;">ABE-738</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; color:#c61c27; font-weight:800;">08:00 - 09:00</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right;">3.5 kg</td>
+        </tr>
+        
+        <tr>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;"><b>11774912</b> &ndash; SANGUCHISIMO SAC</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">0780-ATE2</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; font-weight:700;">BMO-778</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; color:#c61c27; font-weight:800;">07:00 - 09:00</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right;">2.4 kg</td>
+        </tr>
+        
+        <tr>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;"><b>11770810</b> &ndash; PARI SOTO PETRONILA JENNY</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">0780-ATE2</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; font-weight:700;">BNY-776</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; color:#c61c27; font-weight:800;">07:00 - 09:00</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right;">4.4 kg</td>
+        </tr>
+        
+        <tr>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;"><b>11774091</b> &ndash; MAMBRINO SAC</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">0780-ATE2</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; font-weight:700;">CKQ-748</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; color:#c61c27; font-weight:800;">08:00 - 09:30</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right;">30.0 kg</td>
+        </tr>
+        
+        <tr>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;"><b>11775427</b> &ndash; MAGUIÑA OLORTEGUI LIVIA ROCIO</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">0780-ATE2</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; font-weight:700;">D9A-853</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; color:#c61c27; font-weight:800;">06:00 - 09:30</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right;">19.4 kg</td>
+        </tr>
+        
+        <tr>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;"><b>11774660</b> &ndash; CINEPLEX SA</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">0780-ATE2</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; font-weight:700;">D1M-791</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; color:#c61c27; font-weight:800;">09:00 - 10:00</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right;">54.0 kg</td>
+        </tr>
+        
+        <tr>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;"><b>11774418</b> &ndash; PARRILLADAS PERUANAS SA</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">0780-ATE2</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; font-weight:700;">AZX-935</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; color:#c61c27; font-weight:800;">08:30 - 10:00</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right;">88.0 kg</td>
+        </tr>
+        
+        <tr>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;"><b>11774082</b> &ndash; PARRILLADAS PERUANAS SA</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">0780-ATE2</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; font-weight:700;">CKQ-748</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; color:#c61c27; font-weight:800;">08:30 - 10:00</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right;">32.8 kg</td>
+        </tr>
+        
+        <tr>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;"><b>11774035</b> &ndash; GASTROBIZ SAC</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">0780-ATE2</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; font-weight:700;">CKQ-748</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; color:#c61c27; font-weight:800;">08:30 - 10:00</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right;">35.0 kg</td>
+        </tr>
+        
+        <tr>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;"><b>11760805</b> &ndash; BALDEON LUIS JESSICA MARLENE</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2;">0754-CHANCAY</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; font-weight:700;">CHB-777</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; color:#c61c27; font-weight:800;">08:00 - 10:00</td>
+          <td style="padding:6px 8px; border-bottom:1px solid #eceaf2; text-align:right;">62.2 kg</td>
+        </tr>
+        
+              </table>
+            </td>
+          </tr>
+
+          <!-- PIE DE CORREO -->
+          <tr>
+            <td style="background:#faf9fc; padding:14px 24px; border-top:1px solid #e4e4e7; font-size:11px; color:#71717a; text-align:center;">
+              Reporte generado automáticamente desde <b>RoadMap Radar de Distribución</b> &bull; Se adjunta CSV con el detalle completo de incidencias (VH, sin canal/ruta y pedidos &le;1 kg).
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
