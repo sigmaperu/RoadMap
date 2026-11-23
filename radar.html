@@ -15,12 +15,12 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
 
   <!-- Estilos globales y específicos de Radar -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=9.0">
-  <link rel="stylesheet" href="assets/css/radar.css?v=9.0">
+  <link rel="stylesheet" href="assets/css/styles.css?v=10.0">
+  <link rel="stylesheet" href="assets/css/radar.css?v=10.0">
 
   <!-- Scripts -->
   <script defer src="assets/js/main.js"></script>
-  <script defer src="assets/js/radar.js?v=9.0"></script>
+  <script defer src="assets/js/radar.js?v=10.0"></script>
 </head>
 
 <body data-title="Radar de Distribución">
@@ -116,7 +116,7 @@
               <div class="radar-panel__head">
                 <div>
                   <h3>Radar General por Placa, Dispersión Geográfica & Planning Risk Score (0–100)</h3>
-                  <span class="radar-panel__hint">Haz clic en cualquier placa para abrir su mapa de dispersión y auditar qué clientes generan desvío</span>
+                  <span class="radar-panel__hint">Haz clic en cualquier placa para abrir el popup con su mapa de dispersión y detalle cliente por cliente</span>
                 </div>
                 <div class="radar-sort-pills">
                   <button type="button" class="radar-sort-btn is-active" data-sort="risk">Mayor Riesgo</button>
@@ -232,7 +232,7 @@
                 <div class="radar-panel__head">
                   <div>
                     <h3>Auditoría de Calidad de Datos (RoadMap.csv)</h3>
-                    <span class="radar-panel__hint">Validación de geoposiciones, ventanas horarias, pesos, placas y duplicidades</span>
+                    <span class="radar-panel__hint">Haz clic en cualquier indicador para ver el detalle de clientes/registros afectados y su mapa</span>
                   </div>
                   <span id="dqScoreBadge" class="radar-tag-plum">Integridad: –%</span>
                 </div>
@@ -269,7 +269,7 @@
                 <div class="radar-panel__head">
                   <div>
                     <h3>Atípicos Geográficos por Placa (IQR)</h3>
-                    <span class="radar-panel__hint">Haz clic en un cliente para abrir el mapa de dispersión de su placa</span>
+                    <span class="radar-panel__hint">Haz clic en un cliente para abrir el popup con el mapa de dispersión de su placa</span>
                   </div>
                   <span id="outliersCountTag" class="radar-tag-amber">0 detectados</span>
                 </div>
@@ -280,7 +280,7 @@
                 <div class="radar-panel__head">
                   <div>
                     <h3>Rangos de Peso por Cliente y Canal</h3>
-                    <span class="radar-panel__hint">Distribución de carga (0–1 kg hasta &gt; 200 kg)</span>
+                    <span class="radar-panel__hint">Haz clic en un rango para ver los clientes, filtrar por canal y ubicarlos en el mapa</span>
                   </div>
                 </div>
                 <div class="radar-channel-legend">
@@ -364,10 +364,14 @@
   </div>
 
   <!-- ======================================================================== -->
-  <!-- DRAWER 1: AUDITORÍA DE PLACA Y MAPA DE DISPERSIÓN                        -->
+  <!-- BACKDROP GLOBAL PARA POPUPS                                              -->
   <!-- ======================================================================== -->
   <div id="plateDrawerBackdrop" class="plate-drawer-backdrop"></div>
-  <aside id="plateDetailDrawer" class="plate-detail-drawer" aria-hidden="true">
+
+  <!-- ======================================================================== -->
+  <!-- POPUP 1: AUDITORÍA DE PLACA Y MAPA DE DISPERSIÓN                         -->
+  <!-- ======================================================================== -->
+  <aside id="plateDetailDrawer" class="radar-modal" aria-hidden="true">
     <header class="drawer-head">
       <div>
         <div class="drawer-badges">
@@ -378,64 +382,68 @@
         <h2 id="drawerPlateTitle">Placa –</h2>
         <p id="drawerPlateSub">–</p>
       </div>
-      <button type="button" id="btnClosePlateDrawer" class="drawer-close-btn" title="Cerrar detalle">
+      <button type="button" id="btnClosePlateDrawer" class="drawer-close-btn" title="Cerrar popup">
         <span class="material-icons">close</span>
       </button>
     </header>
 
-    <div class="drawer-body">
-      <section class="drawer-section drawer-map-section">
+    <div class="modal-split-body">
+      <!-- Izquierda: Mapa de Dispersión a altura completa -->
+      <section class="drawer-section modal-map-col">
         <div class="drawer-sec-head">
-          <h4>Mapa de Dispersión Geográfica de la Placa</h4>
+          <h4>Mapa de Dispersión Geográfica</h4>
           <div class="drawer-map-legend">
-            <span><i style="background:#ef4444;"></i> Disperso / Atípico</span>
-            <span><i style="background:#10b981;"></i> Núcleo Ruta</span>
+            <span><i style="background:#ef4444;"></i> Disperso</span>
+            <span><i style="background:#10b981;"></i> Núcleo</span>
             <span><i style="background:#8e24aa;"></i> CD / Centroide</span>
           </div>
         </div>
-        <div id="plateDispersionMap" class="plate-dispersion-map"></div>
+        <div id="plateDispersionMap" class="modal-map-canvas"></div>
       </section>
 
-      <section class="drawer-section">
-        <h4>Desglose de Riesgo por Dimensión Evaluable</h4>
-        <div id="drawerScoreGrid" class="drawer-score-grid"></div>
-      </section>
+      <!-- Derecha: Desglose, Defectos y Cartera -->
+      <div class="modal-info-col">
+        <section class="drawer-section">
+          <h4>Desglose de Riesgo por Dimensión Evaluable</h4>
+          <div id="drawerScoreGrid" class="drawer-score-grid"></div>
+        </section>
 
-      <section class="drawer-section">
-        <div class="drawer-sec-head">
-          <h4>Defectos y Clientes que Generan Dispersión</h4>
-          <span id="drawerDefectsCount" class="radar-tag-amber">0 observados</span>
-        </div>
-        <div id="drawerDefectsList" class="drawer-defects-list"></div>
-      </section>
+        <section class="drawer-section">
+          <div class="drawer-sec-head">
+            <h4>Defectos y Clientes que Generan Dispersión</h4>
+            <span id="drawerDefectsCount" class="radar-tag-amber">0 observados</span>
+          </div>
+          <div id="drawerDefectsList" class="drawer-defects-list"></div>
+        </section>
 
-      <section class="drawer-section">
-        <div class="drawer-sec-head">
-          <h4>Cartera Asignada a la Placa</h4>
-          <span id="drawerAllClientsCount" class="radar-tag-plum">0 clientes</span>
-        </div>
-        <div class="drawer-mini-table-wrap">
-          <table class="drawer-mini-table">
-            <thead>
-              <tr>
-                <th>Cliente</th>
-                <th>Canal</th>
-                <th>Dist. Centroide</th>
-                <th>Ventana (VH)</th>
-                <th>Peso</th>
-              </tr>
-            </thead>
-            <tbody id="drawerClientsBody"></tbody>
-          </table>
-        </div>
-      </section>
+        <section class="drawer-section" style="flex:1; min-height:0;">
+          <div class="drawer-sec-head">
+            <h4>Cartera Asignada a la Placa</h4>
+            <span id="drawerAllClientsCount" class="radar-tag-plum">0 clientes</span>
+          </div>
+          <div class="drawer-mini-table-wrap" style="max-height:none; flex:1;">
+            <table class="drawer-mini-table">
+              <thead>
+                <tr>
+                  <th>Cliente</th>
+                  <th>Canal</th>
+                  <th>Dist. Centroide</th>
+                  <th>Ventana (VH)</th>
+                  <th>Peso</th>
+                </tr>
+              </thead>
+              <tbody id="drawerClientsBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
     </div>
   </aside>
 
   <!-- ======================================================================== -->
-  <!-- DRAWER 2: MAPA DE ZONA VIAL CRÍTICA Y PLACAS INVOLUCRADAS                -->
+  <!-- POPUP 2: MAPA DE ZONA VIAL CRÍTICA Y PLACAS INVOLUCRADAS                 -->
   <!-- ======================================================================== -->
-  <aside id="trafficDetailDrawer" class="plate-detail-drawer" aria-hidden="true">
+  <aside id="trafficDetailDrawer" class="radar-modal" aria-hidden="true">
     <header class="drawer-head">
       <div>
         <div class="drawer-badges">
@@ -445,42 +453,90 @@
         <h2 id="trfZoneTitle">Corredor Vial</h2>
         <p id="trfZoneSub">–</p>
       </div>
-      <button type="button" id="btnCloseTrafficDrawer" class="drawer-close-btn" title="Cerrar mapa vial">
+      <button type="button" id="btnCloseTrafficDrawer" class="drawer-close-btn" title="Cerrar popup">
         <span class="material-icons">close</span>
       </button>
     </header>
 
-    <div class="drawer-body">
-      <section class="drawer-section drawer-map-section">
+    <div class="modal-split-body">
+      <section class="drawer-section modal-map-col">
         <div class="drawer-sec-head">
           <h4>Polígono de Complejidad Vial y Entregas Expuestas</h4>
-          <span style="font-size:0.62rem; color:#71717a; font-weight:700;">Toca una placa abajo para aislarla</span>
+          <span style="font-size:0.62rem; color:#71717a; font-weight:700;">Filtra por placa</span>
         </div>
-        <!-- Filtro rápido por Placa dentro de la zona -->
         <div id="trfPlateFilterPills" class="trf-plate-pills"></div>
-        <div id="trafficZoneMap" class="plate-dispersion-map" style="height:280px;"></div>
+        <div id="trafficZoneMap" class="modal-map-canvas"></div>
       </section>
 
-      <section class="drawer-section">
+      <div class="modal-info-col">
+        <section class="drawer-section" style="flex:1; min-height:0;">
+          <div class="drawer-sec-head">
+            <h4>Placas Comprometidas en este Corredor</h4>
+            <span id="trfSummaryTag" class="radar-tag-amber">–</span>
+          </div>
+          <div class="drawer-mini-table-wrap" style="max-height:none; flex:1;">
+            <table class="drawer-mini-table">
+              <thead>
+                <tr>
+                  <th>Placa</th>
+                  <th>Centro</th>
+                  <th>Cli. en Zona</th>
+                  <th>Kg en Zona</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody id="trfPlatesTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ======================================================================== -->
+  <!-- POPUP 3: DETALLE + MAPA PARA RANGOS DE PESO Y CALIDAD DE DATOS           -->
+  <!-- ======================================================================== -->
+  <aside id="genericDetailModal" class="radar-modal" aria-hidden="true">
+    <header class="drawer-head">
+      <div>
+        <div class="drawer-badges">
+          <span id="genBadgePrimary" class="drawer-cd-tag">–</span>
+          <span id="genBadgeSecondary" class="radar-tag-amber">–</span>
+        </div>
+        <h2 id="genModalTitle">Detalle</h2>
+        <p id="genModalSub">–</p>
+      </div>
+      <button type="button" id="btnCloseGenericModal" class="drawer-close-btn" title="Cerrar popup">
+        <span class="material-icons">close</span>
+      </button>
+    </header>
+
+    <div class="modal-split-body">
+      <!-- Izquierda: Mapa Interactivo + Filtros Rápidos -->
+      <section class="drawer-section modal-map-col">
         <div class="drawer-sec-head">
-          <h4>Placas Comprometidas en este Corredor</h4>
-          <span id="trfSummaryTag" class="radar-tag-amber">–</span>
+          <h4 id="genMapTitle">Ubicación Geográfica</h4>
+          <span id="genMapHint" style="font-size:0.62rem; color:#71717a; font-weight:700;">–</span>
         </div>
-        <div class="drawer-mini-table-wrap">
-          <table class="drawer-mini-table">
-            <thead>
-              <tr>
-                <th>Placa</th>
-                <th>Centro</th>
-                <th>Cli. en Zona</th>
-                <th>Kg en Zona</th>
-                <th>Acción</th>
-              </tr>
-            </thead>
-            <tbody id="trfPlatesTableBody"></tbody>
-          </table>
-        </div>
+        <div id="genFilterPills" class="trf-plate-pills"></div>
+        <div id="genericModalMap" class="modal-map-canvas"></div>
       </section>
+
+      <!-- Derecha: Tabla Detallada de Clientes / Incidencias -->
+      <div class="modal-info-col">
+        <section class="drawer-section" style="flex:1; min-height:0;">
+          <div class="drawer-sec-head">
+            <h4 id="genTableTitle">Listado Detallado</h4>
+            <span id="genTableCount" class="radar-tag-plum">0 registros</span>
+          </div>
+          <div class="drawer-mini-table-wrap" style="max-height:none; flex:1;">
+            <table class="drawer-mini-table">
+              <thead id="genTableHead"></thead>
+              <tbody id="genTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
     </div>
   </aside>
 
@@ -488,4 +544,3 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
 </body>
 </html>
-<!--->
