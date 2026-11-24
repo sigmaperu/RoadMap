@@ -1,0 +1,43 @@
+name: Generar Correo de Cambios de Flota
+
+on:
+  workflow_dispatch:
+    inputs:
+      cambios_raw:
+        description: 'Lista de cambios (PLACA_ORIG -> PLACA_NUEVA)'
+        required: true
+        type: string
+      motivo:
+        description: 'Motivo operativo del cambio'
+        required: false
+        default: 'Ajuste por volumetría / apilamiento de cajas'
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build-cambios:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Generar HTML de cambios
+        env:
+          CAMBIOS_RAW: ${{ github.event.inputs.cambios_raw }}
+          MOTIVO: ${{ github.event.inputs.motivo }}
+        run: python scripts/build_cambios_email.py
+
+      - name: Guardar HTML e historial en /reports
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add reports/cambios_email.html reports/historial_cambios.csv
+          git diff --staged --quiet || git commit -m "chore: registrar cambios de flota del día"
+          git push
