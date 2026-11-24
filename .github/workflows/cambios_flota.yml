@@ -3,6 +3,11 @@ name: Generar Correo de Cambios de Flota
 on:
   workflow_dispatch:
     inputs:
+      centro:
+        description: 'Centro de Distribución (0374-ATE, 0780-ATE2, 0754-CHANCAY o Todos)'
+        required: false
+        default: 'Todos'
+        type: string
       cambios_raw:
         description: 'Lista de cambios (PLACA_ORIG -> PLACA_NUEVA)'
         required: true
@@ -30,6 +35,7 @@ jobs:
 
       - name: Generar HTML de cambios
         env:
+          CENTRO: ${{ github.event.inputs.centro }}
           CAMBIOS_RAW: ${{ github.event.inputs.cambios_raw }}
           MOTIVO: ${{ github.event.inputs.motivo }}
         run: python scripts/build_cambios_email.py
