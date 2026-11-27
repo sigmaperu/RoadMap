@@ -19,10 +19,10 @@ LIMA_TZ = timezone(timedelta(hours=-5))
 
 # Configura aquí los correos por CD (separados por ";")
 DESTINATARIOS_POR_CENTRO = {
-    "ATE": "tu_correo@sigma-alimentos.com",
-    "ATE2": "tu_correo@sigma-alimentos.com",
-    "CHANCAY": "tu_correo@sigma-alimentos.com",
-    "DEFAULT": "tu_correo@sigma-alimentos.com",
+    "ATE": "mdavilab@sigma-alimentos.com",
+    "ATE2": "mdavilab@sigma-alimentos.com",
+    "CHANCAY": "mdavilab@sigma-alimentos.com",
+    "DEFAULT": "mdavilab@sigma-alimentos.com",
 }
 
 
@@ -111,6 +111,7 @@ def load_roadmap(path):
     idx_canal = find_col(headers_norm, ["canal"])
     idx_ruta = find_col(headers_norm, ["rutaventa", "ruta", "rutadeventa"])
     idx_pedido = find_col(headers_norm, ["shipmentcustom", "doccomer", "pedido", "shipment", "entrega", "nropedido", "numpedido", "documento"])
+    idx_cli_nom = find_col(headers_norm, ["customername", "nombrecliente", "cliente"])
     idx_mat = find_col(headers_norm, ["itemid", "material", "sku", "codmaterial", "codproducto"])
     idx_desc = find_col(headers_norm, ["itemdescription", "descripcion", "descmaterial", "producto", "nombreproducto", "denominacion"])
 
@@ -131,6 +132,7 @@ def load_roadmap(path):
         centro = clean_id(r[idx_centro]).upper() if idx_centro is not None and idx_centro < len(r) else "SIN-CENTRO"
         canal = clean_id(r[idx_canal]) if idx_canal is not None and idx_canal < len(r) else "-"
         ruta = clean_id(r[idx_ruta]) if idx_ruta is not None and idx_ruta < len(r) else "-"
+        cli_nom_rm = clean_id(r[idx_cli_nom]) if idx_cli_nom is not None and idx_cli_nom < len(r) else ""
 
         if ped not in pedido_map:
             pedido_map[ped] = {
@@ -138,6 +140,7 @@ def load_roadmap(path):
                 "placa": placa,
                 "canal": canal,
                 "ruta": ruta,
+                "cliente_nom_rm": cli_nom_rm,
             }
 
         if idx_mat is not None and idx_desc is not None and max(idx_mat, idx_desc) < len(r):
@@ -220,37 +223,52 @@ def parse_sap_txt(path):
     return records
 
 
-def build_html_centro(centro, top_placas, total_placas_cd, total_rej_cd, fecha_display, hora_corte):
-    total_rej_top = sum(p["rechazo_kg"] for p in top_placas)
-    total_sur_top = sum(p["surtido_kg"] for p in top_placas)
+def build_html_centro(centro, top_clientes, total_clientes_cd, total_rej_cd, fecha_display, hora_corte):
+    total_rej_top = sum(c["rechazo_kg"] for c in top_clientes)
+    total_sur_top = sum(c["surtido_kg"] for c in top_clientes)
     pct_top = (total_rej_top / total_sur_top * 100.0) if total_sur_top > 0 else 0.0
     share_cd = (total_rej_top / total_rej_cd * 100.0) if total_rej_cd > 0 else 0.0
 
     resumen_rows = ""
     detalle_rows = ""
 
-    for rank, p in enumerate(top_placas, 1):
-        pct_p = (p["rechazo_kg"] / p["surtido_kg"] * 100.0) if p["surtido_kg"] > 0 else 0.0
-        mot_top = max(p["motivos_kg"].items(), key=lambda kv: kv[1])[0] if p["motivos_kg"] else "-"
+    for rank, c in enumerate(top_clientes, 1):
+        pct_c = (c["rechazo_kg"] / c["surtido_kg"] * 100.0) if c["surtido_kg"] > 0 else 0.0
+        mot_top = max(c["motivos_kg"].items(), key=lambda kv: kv[1])[0] if c["motivos_kg"] else "-"
+        placas_txt = ", ".join(sorted(c["placas_rechazo"])) or "-"
+        canales_txt = ", ".join(sorted(c["canales_rechazo"])) or "-"
+        rutas_txt = ", ".join(sorted(c["rutas_rechazo"])) or "-"
+        n_peds = len(c["pedidos_rechazo"])
+        ped_lbl = "1 pedido" if n_peds == 1 else f"{n_peds} pedidos"
+
         resumen_rows += f"""
           <tr>
             <td style="padding:8px; border-bottom:1px solid #e4e4e7; font-weight:800; color:#6a1b9a; text-align:center; white-space:nowrap;">#{rank}</td>
-            <td style="padding:8px; border-bottom:1px solid #e4e4e7; font-weight:800; color:#28174E; white-space:nowrap;">{p['placa']}</td>
-            <td style="padding:8px; border-bottom:1px solid #e4e4e7; font-size:11.5px;">{', '.join(sorted(p['canales'])) or '-'}</td>
-            <td style="padding:8px; border-bottom:1px solid #e4e4e7; font-size:11.5px;">{', '.join(sorted(p['rutas'])) or '-'}</td>
-            <td style="padding:8px; border-bottom:1px solid #e4e4e7; text-align:right; white-space:nowrap;">{p['surtido_kg']:,.2f}</td>
-            <td style="padding:8px; border-bottom:1px solid #e4e4e7; text-align:right; font-weight:800; color:#c61c27; white-space:nowrap;">{p['rechazo_kg']:,.2f}</td>
-            <td style="padding:8px; border-bottom:1px solid #e4e4e7; text-align:right; font-weight:700; color:#991b1b; white-space:nowrap;">{pct_p:.1f}%</td>
-            <td style="padding:8px; border-bottom:1px solid #e4e4e7; font-size:11.5px; color:#52525b;">{mot_top}</td>
+            <td style="padding:8px; border-bottom:1px solid #e4e4e7; font-size:11.5px;">
+              <b style="color:#28174E;">{c['cliente_nom']}</b><br>
+              <span style="color:#71717a; font-size:10.5px;">Cód: {c['cliente_cod']} &bull; {ped_lbl} con rechazo</span>
+            </td>
+            <td style="padding:8px; border-bottom:1px solid #e4e4e7; font-weight:700; color:#18181b; font-size:11.5px; white-space:nowrap;">{placas_txt}</td>
+            <td style="padding:8px; border-bottom:1px solid #e4e4e7; font-size:11px;">
+              <b>{canales_txt}</b><br>
+              <span style="color:#71717a;">{rutas_txt}</span>
+            </td>
+            <td style="padding:8px; border-bottom:1px solid #e4e4e7; text-align:right; white-space:nowrap;">{c['surtido_kg']:,.2f}</td>
+            <td style="padding:8px; border-bottom:1px solid #e4e4e7; text-align:right; font-weight:800; color:#c61c27; white-space:nowrap;">{c['rechazo_kg']:,.2f}</td>
+            <td style="padding:8px; border-bottom:1px solid #e4e4e7; text-align:right; font-weight:700; color:#991b1b; white-space:nowrap;">{pct_c:.1f}%</td>
+            <td style="padding:8px; border-bottom:1px solid #e4e4e7; font-size:11px; color:#52525b;">{mot_top}</td>
           </tr>
         """
 
-        for d in sorted(p["detalles_rechazo"], key=lambda x: x["rechazo_kg"], reverse=True):
+        for d in sorted(c["detalles_rechazo"], key=lambda x: x["rechazo_kg"], reverse=True):
             sku_label = f"<b>{d['material']}</b>" + (f" – {d['sku_desc']}" if d["sku_desc"] else "")
             detalle_rows += f"""
               <tr>
-                <td style="padding:7px 8px; border-bottom:1px solid #e4e4e7; font-weight:700; color:#28174E; white-space:nowrap;">{d['placa']}</td>
-                <td style="padding:7px 8px; border-bottom:1px solid #e4e4e7; font-size:11px;">{d['cliente_nom']}<br><span style="color:#71717a;">Ped: {d['doc_comer']} &bull; {d['canal']} / {d['ruta']}</span></td>
+                <td style="padding:7px 8px; border-bottom:1px solid #e4e4e7; font-size:11px;">
+                  <b style="color:#28174E;">#{rank} {d['cliente_nom']}</b><br>
+                  <span style="color:#71717a;">Ped: {d['doc_comer']} &bull; Placa: <b>{d['placa']}</b></span>
+                </td>
+                <td style="padding:7px 8px; border-bottom:1px solid #e4e4e7; font-size:11px;">{d['canal']}<br><span style="color:#71717a;">{d['ruta']}</span></td>
                 <td style="padding:7px 8px; border-bottom:1px solid #e4e4e7; font-size:11.5px;">{sku_label}</td>
                 <td style="padding:7px 8px; border-bottom:1px solid #e4e4e7; font-size:11px; color:#78350f;">{d['motivo_txt']}</td>
                 <td style="padding:7px 8px; border-bottom:1px solid #e4e4e7; text-align:right; white-space:nowrap;">{d['surtido_kg']:,.2f}</td>
@@ -265,11 +283,11 @@ def build_html_centro(centro, top_placas, total_placas_cd, total_rej_cd, fecha_d
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f3f8; padding:20px 0;">
     <tr>
       <td align="center">
-        <table role="presentation" width="860" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius:12px; overflow:hidden; border:1px solid #e4e4e7;">
+        <table role="presentation" width="880" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius:12px; overflow:hidden; border:1px solid #e4e4e7;">
           <tr>
             <td style="background-color:#28174E; padding:20px 24px; color:#ffffff;">
               <div style="font-size:11px; letter-spacing:1px; text-transform:uppercase; color:#f89b22; font-weight:700;">Distribución Lima &bull; Centro {centro}</div>
-              <h1 style="margin:4px 0 4px; font-size:20px; color:#ffffff;">Top {TOP_N} Placas con Mayor Rechazo</h1>
+              <h1 style="margin:4px 0 4px; font-size:20px; color:#ffffff;">Top {TOP_N} Clientes con Mayor Rechazo</h1>
               <div style="font-size:12px; color:#d4d4d8;">
                 Fecha operativa: <b>{fecha_display}</b> &bull; Hora de corte: <b style="color:#f89b22;">{hora_corte} hrs</b> &bull; Fuente: <b>{ARCHIVO_ORIGEN}</b>
               </div>
@@ -285,15 +303,15 @@ def build_html_centro(centro, top_placas, total_placas_cd, total_rej_cd, fecha_d
               <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;">
                 <tr>
                   <td width="32%" style="background:#fef2f2; border:1px solid #fecaca; border-top:3px solid #c61c27; border-radius:8px; padding:10px;">
-                    <div style="font-size:10px; color:#991b1b; font-weight:700;">KG RECHAZO (TOP {len(top_placas)})</div>
+                    <div style="font-size:10px; color:#991b1b; font-weight:700;">KG RECHAZO (TOP {len(top_clientes)} CLIENTES)</div>
                     <div style="font-size:20px; font-weight:800; color:#c61c27;">{total_rej_top:,.2f} kg</div>
                     <div style="font-size:10.5px; color:#71717a; margin-top:2px;">{share_cd:.1f}% del total rechazado del CD ({total_rej_cd:,.2f} kg)</div>
                   </td>
                   <td width="2%"></td>
                   <td width="32%" style="background:#faf5ff; border:1px solid #e9d5ff; border-top:3px solid #6a1b9a; border-radius:8px; padding:10px;">
-                    <div style="font-size:10px; color:#6b21a8; font-weight:700;">PLACAS CON RECHAZO EN EL CD</div>
-                    <div style="font-size:20px; font-weight:800; color:#6a1b9a;">{total_placas_cd} placas</div>
-                    <div style="font-size:10.5px; color:#71717a; margin-top:2px;">Mostrando las {len(top_placas)} de mayor impacto</div>
+                    <div style="font-size:10px; color:#6b21a8; font-weight:700;">CLIENTES CON RECHAZO EN EL CD</div>
+                    <div style="font-size:20px; font-weight:800; color:#6a1b9a;">{total_clientes_cd} clientes</div>
+                    <div style="font-size:10.5px; color:#71717a; margin-top:2px;">Mostrando los {len(top_clientes)} de mayor impacto</div>
                   </td>
                   <td width="2%"></td>
                   <td width="32%" style="background:#faf9fc; border:1px solid #e4e4e7; border-top:3px solid #28174E; border-radius:8px; padding:10px;">
@@ -304,13 +322,13 @@ def build_html_centro(centro, top_placas, total_placas_cd, total_rej_cd, fecha_d
                 </tr>
               </table>
 
-              <h3 style="margin:0 0 8px; font-size:14px; color:#28174E;">1. Top {len(top_placas)} Placas con Mayor Rechazo – {centro}</h3>
+              <h3 style="margin:0 0 8px; font-size:14px; color:#28174E;">1. Top {len(top_clientes)} Clientes con Mayor Impacto – {centro}</h3>
               <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse; font-size:12px; margin-bottom:18px;">
                 <tr style="background:#16365c; color:#ffffff;">
                   <th style="padding:8px; text-align:center;">#</th>
-                  <th style="padding:8px; text-align:left;">Placa</th>
-                  <th style="padding:8px; text-align:left;">Canal</th>
-                  <th style="padding:8px; text-align:left;">Ruta Venta</th>
+                  <th style="padding:8px; text-align:left;">Cliente</th>
+                  <th style="padding:8px; text-align:left;">Placa(s)</th>
+                  <th style="padding:8px; text-align:left;">Canal / Ruta</th>
                   <th style="padding:8px; text-align:right;">Kg Surtido</th>
                   <th style="padding:8px; text-align:right;">Kg Rechazo</th>
                   <th style="padding:8px; text-align:right;">% Rech.</th>
@@ -319,11 +337,11 @@ def build_html_centro(centro, top_placas, total_placas_cd, total_rej_cd, fecha_d
                 {resumen_rows}
               </table>
 
-              <h3 style="margin:0 0 8px; font-size:14px; color:#28174E;">2. Detalle por SKU / Producto (Placas del Top {len(top_placas)})</h3>
+              <h3 style="margin:0 0 8px; font-size:14px; color:#28174E;">2. Detalle por SKU / Producto (Clientes del Top {len(top_clientes)})</h3>
               <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse; font-size:12px;">
                 <tr style="background:#28174E; color:#ffffff;">
-                  <th style="padding:8px; text-align:left;">Placa</th>
-                  <th style="padding:8px; text-align:left;">Cliente / Pedido / Canal</th>
+                  <th style="padding:8px; text-align:left;">Cliente / Pedido / Placa</th>
+                  <th style="padding:8px; text-align:left;">Canal / Ruta</th>
                   <th style="padding:8px; text-align:left;">SKU / Material</th>
                   <th style="padding:8px; text-align:left;">Motivo</th>
                   <th style="padding:8px; text-align:right;">Kg Surtido</th>
@@ -336,7 +354,7 @@ def build_html_centro(centro, top_placas, total_placas_cd, total_rej_cd, fecha_d
 
           <tr>
             <td style="background:#faf9fc; padding:12px 24px; border-top:1px solid #e4e4e7; font-size:11px; color:#71717a; text-align:center;">
-              Cruce automático <b>SAP (ZY10/ZY35) + RoadMap.csv</b> &bull; Corte {hora_corte} hrs &bull; Se adjunta CSV con el detalle de SKUs del Top {len(top_placas)} de <b>{centro}</b>.
+              Cruce automático <b>SAP (ZY10/ZY35) + RoadMap.csv</b> &bull; Corte {hora_corte} hrs &bull; Se adjunta CSV con el detalle de SKUs del Top {len(top_clientes)} clientes de <b>{centro}</b>.
             </td>
           </tr>
         </table>
@@ -404,6 +422,7 @@ def main():
         kg_rej = rej["rechazo_kg"] if rej else 0.0
         motivos = set(rej["motivos"]) if rej else set()
         rm = pedido_map[doc_comer]
+        cli_nom = item["cliente_nom"] or rm["cliente_nom_rm"] or f"Cliente {item['cliente']}"
 
         ckey = (doc_comer, material)
         if ckey not in consolidado:
@@ -415,7 +434,7 @@ def main():
                 "ruta": rm["ruta"],
                 "doc_comer": doc_comer,
                 "cliente_cod": item["cliente"],
-                "cliente_nom": item["cliente_nom"],
+                "cliente_nom": cli_nom,
                 "material": material,
                 "sku_desc": sku_desc.get(material, ""),
                 "facturas": set(),
@@ -429,39 +448,46 @@ def main():
         consolidado[ckey]["rechazo_kg"] += kg_rej
         consolidado[ckey]["motivos"].update(motivos)
 
-    # 4. Agrupar por (Centro, Placa)
-    placas = {}
+    # 4. Agrupar por (Centro, Cliente)
+    clientes = {}
     for row in consolidado.values():
-        pkey = (row["centro"], row["placa"])
-        if pkey not in placas:
-            placas[pkey] = {
+        cli_id = row["cliente_cod"] or row["cliente_nom"]
+        ckey = (row["centro"], cli_id)
+        if ckey not in clientes:
+            clientes[ckey] = {
                 "centro": row["centro"],
-                "placa": row["placa"],
-                "canales": set(),
-                "rutas": set(),
+                "cliente_cod": row["cliente_cod"] or "-",
+                "cliente_nom": row["cliente_nom"],
+                "placas_rechazo": set(),
+                "canales_rechazo": set(),
+                "rutas_rechazo": set(),
+                "pedidos_rechazo": set(),
                 "surtido_kg": 0.0,
                 "rechazo_kg": 0.0,
                 "motivos_kg": defaultdict(float),
                 "detalles_rechazo": [],
             }
-        p = placas[pkey]
-        if row["canal"] and row["canal"] != "-":
-            p["canales"].add(row["canal"])
-        if row["ruta"] and row["ruta"] != "-":
-            p["rutas"].add(row["ruta"])
-        p["surtido_kg"] += row["surtido_kg"]
-        p["rechazo_kg"] += row["rechazo_kg"]
+        c = clientes[ckey]
+        c["surtido_kg"] += row["surtido_kg"]
+        c["rechazo_kg"] += row["rechazo_kg"]
 
         if row["rechazo_kg"] > 0:
-            mot_txt = " / ".join(sorted(row["motivos"])) or "Sin motivo registrado"
-            p["motivos_kg"][mot_txt] += row["rechazo_kg"]
-            p["detalles_rechazo"].append({**row, "motivo_txt": mot_txt})
+            c["placas_rechazo"].add(row["placa"])
+            if row["canal"] and row["canal"] != "-":
+                c["canales_rechazo"].add(row["canal"])
+            if row["ruta"] and row["ruta"] != "-":
+                c["rutas_rechazo"].add(row["ruta"])
+            c["pedidos_rechazo"].add(row["doc_comer"])
 
-    # 5. Seleccionar Top N placas con rechazo > 0 por cada Centro
+            mot_txt = " / ".join(sorted(row["motivos"])) or "Sin motivo registrado"
+            c["motivos_kg"][mot_txt] += row["rechazo_kg"]
+            c["detalles_rechazo"].append({**row, "motivo_txt": mot_txt})
+
+    # 5. Seleccionar Top N clientes con rechazo > 0 por cada Centro
     rechazos_por_centro = defaultdict(list)
-    for p in placas.values():
-        if p["rechazo_kg"] > 0:
-            rechazos_por_centro[p["centro"]].append(p)
+    for c in clientes.values():
+        if c["rechazo_kg"] > 0:
+            rechazos_por_centro[c["centro"]].append(c)
 
     now_lima = datetime.now(LIMA_TZ)
     hora_corte = now_lima.strftime("%H:%M")
@@ -469,13 +495,13 @@ def main():
     alertas = []
 
     for centro in sorted(rechazos_por_centro.keys()):
-        todas_con_rechazo = sorted(
+        todos_con_rechazo = sorted(
             rechazos_por_centro[centro], key=lambda x: x["rechazo_kg"], reverse=True
         )
-        top_placas = todas_con_rechazo[:TOP_N]
-        total_placas_cd = len(todas_con_rechazo)
-        total_rej_cd = sum(p["rechazo_kg"] for p in todas_con_rechazo)
-        total_rej_top = sum(p["rechazo_kg"] for p in top_placas)
+        top_clientes = todos_con_rechazo[:TOP_N]
+        total_clientes_cd = len(todos_con_rechazo)
+        total_rej_cd = sum(c["rechazo_kg"] for c in todos_con_rechazo)
+        total_rej_top = sum(c["rechazo_kg"] for c in top_clientes)
 
         slug = safe_slug(centro)
         html_name = f"alerta_rechazos_{slug}.html"
@@ -484,33 +510,34 @@ def main():
         with open(os.path.join(OUT_DIR, html_name), "w", encoding="utf-8") as f:
             f.write(
                 build_html_centro(
-                    centro, top_placas, total_placas_cd, total_rej_cd, fecha_display, hora_corte
+                    centro, top_clientes, total_clientes_cd, total_rej_cd, fecha_display, hora_corte
                 )
             )
 
         with open(os.path.join(OUT_DIR, csv_name), "w", encoding="utf-8-sig", newline="") as f:
             w = csv.writer(f)
             w.writerow([
-                "Ranking_CD", "Hora_Corte", "Fecha", "Centro", "Placa", "Canal",
-                "Ruta_Venta", "Pedido", "Facturas", "Cod_Cliente", "Cliente",
+                "Ranking_Cliente", "Hora_Corte", "Fecha", "Centro", "Cod_Cliente",
+                "Cliente", "Placa", "Canal", "Ruta_Venta", "Pedido", "Facturas",
                 "Material", "Descripcion_SKU", "Kg_Surtido", "Kg_Rechazo", "Motivo"
             ])
-            for rank, p in enumerate(top_placas, 1):
-                for d in sorted(p["detalles_rechazo"], key=lambda x: x["rechazo_kg"], reverse=True):
+            for rank, c in enumerate(top_clientes, 1):
+                for d in sorted(c["detalles_rechazo"], key=lambda x: x["rechazo_kg"], reverse=True):
                     w.writerow([
-                        rank, hora_corte, d["fecha"], d["centro"], d["placa"], d["canal"],
-                        d["ruta"], d["doc_comer"], " | ".join(sorted(d["facturas"])),
-                        d["cliente_cod"], d["cliente_nom"], d["material"], d["sku_desc"],
+                        rank, hora_corte, d["fecha"], d["centro"], d["cliente_cod"],
+                        d["cliente_nom"], d["placa"], d["canal"], d["ruta"],
+                        d["doc_comer"], " | ".join(sorted(d["facturas"])),
+                        d["material"], d["sku_desc"],
                         f"{d['surtido_kg']:.3f}", f"{d['rechazo_kg']:.3f}", d["motivo_txt"]
                     ])
 
         alertas.append({
             "centro": centro,
             "para": get_destinatarios(centro),
-            "asunto": f"📊 Top {len(top_placas)} Rechazos [{centro}] ({total_rej_top:,.1f} kg) – Corte {hora_corte} | {fecha_display}",
+            "asunto": f"📊 Top {len(top_clientes)} Clientes con Rechazo [{centro}] ({total_rej_top:,.1f} kg) – Corte {hora_corte} | {fecha_display}",
             "hora_corte": hora_corte,
-            "placas_en_top": len(top_placas),
-            "total_placas_con_rechazo": total_placas_cd,
+            "clientes_en_top": len(top_clientes),
+            "total_clientes_con_rechazo": total_clientes_cd,
             "kg_rechazo_top": round(total_rej_top, 2),
             "kg_rechazo_cd": round(total_rej_cd, 2),
             "html_file": html_name,
@@ -530,7 +557,7 @@ def main():
 
     print(
         f"OK [{hora_corte} Lima]: RoadMap={len(pedido_map)} pedidos | SAP ZY10={zy10_total} "
-        f"(cruzados={zy10_matched}) | ZY35={zy35_total} | Placas={len(placas)} | "
+        f"(cruzados={zy10_matched}) | ZY35={zy35_total} | Clientes={len(clientes)} | "
         f"Centros con rechazo={[a['centro'] for a in alertas]}"
     )
 
