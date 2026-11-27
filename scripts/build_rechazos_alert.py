@@ -1,4 +1,5 @@
 import csv
+import glob
 import json
 import os
 import re
@@ -12,11 +13,16 @@ UMBRAL_KG = float(os.environ.get("UMBRAL_KG", "100"))
 ARCHIVO_ORIGEN = os.environ.get("ARCHIVO_ORIGEN", os.path.basename(SAP_TXT_PATH))
 
 OUT_DIR = "reports"
-HTML_PATH = os.path.join(OUT_DIR, "alerta_rechazos_email.html")
-CSV_OUT_PATH = os.path.join(OUT_DIR, "alerta_rechazos_detalle.csv")
 STATE_PATH = os.path.join(OUT_DIR, "alerta_rechazos_estado.json")
-
 EXCLUDED_PLATES = {"FRT-001", "RES-CLI"}
+
+# Configura aquí los correos por CD (separados por ";")
+DESTINATARIOS_POR_CENTRO = {
+    "ATE": "mdavilab@sigma-alimentos.com",
+    "ATE2": "mdavilab@sigma-alimentos.com",
+    "CHANCAY": "mdavilab@sigma-alimentos.com",
+    "DEFAULT": "mdavilab@sigma-alimentos.com",
+}
 
 
 def norm_key(text):
@@ -30,6 +36,30 @@ def clean_id(val):
     if s.endswith(".0"):
         s = s[:-2]
     return s
+
+
+def clean_num_id(val):
+    s = clean_id(val)
+    if s.isdigit():
+        return s.lstrip("0") or "0"
+    return s
+
+
+def safe_slug(val):
+    return re.sub(r"[^A-Za-z0-9_-]+", "_", str(val or "CD")).strip("_")
+
+
+def get_destinatarios(centro):
+    c = str(centro or "").upper()
+    if c in DESTINATARIOS_POR_CENTRO:
+        return DESTINATARIOS_POR_CENTRO[c]
+    if "780" in c or "ATE2" in c or "ATE 2" in c or "ATE 02" in c:
+        return DESTINATARIOS_POR_CENTRO.get("ATE2", DESTINATARIOS_POR_CENTRO["DEFAULT"])
+    if "754" in c or "CHANCAY" in c:
+        return DESTINATARIOS_POR_CENTRO.get("CHANCAY", DESTINATARIOS_POR_CENTRO["DEFAULT"])
+    if "374" in c or "ATE" in c:
+        return DESTINATARIOS_POR_CENTRO.get("ATE", DESTINATARIOS_POR_CENTRO["DEFAULT"])
+    return DESTINATARIOS_POR_CENTRO["DEFAULT"]
 
 
 def to_kg(val):
@@ -67,7 +97,6 @@ def find_col(headers_norm, candidates):
 
 
 def load_roadmap(path):
-    """Carga RoadMap.csv mapeando Doc.comer./Pedido -> Centro, Placa, Canal, Ruta, y SKU -> Descripción."""
     text = read_text_auto(path)
     sample = text[:4096]
     delim = ";" if sample.count(";") > sample.count(",") else ","
@@ -76,18 +105,16 @@ def load_roadmap(path):
         return {}, {}
 
     headers_norm = [norm_key(h) for h in rows[0]]
-    idx_centro = find_col(headers_norm, ["centro", "cd", "sede", "ce"])
-    idx_placa = find_col(headers_norm, ["placa", "vehiculo", "unidad"])
+    idx_centro = find_col(headers_norm, ["location", "centro", "cd", "sede", "ce"])
+    idx_placa = find_col(headers_norm, ["vehiclekey", "placa", "vehiculo", "unidad"])
     idx_canal = find_col(headers_norm, ["canal"])
     idx_ruta = find_col(headers_norm, ["rutaventa", "ruta", "rutadeventa"])
-    idx_pedido = find_col(headers_norm, ["doccomer", "pedido", "shipment", "entrega", "nropedido", "numpedido", "documento"])
-    idx_mat = find_col(headers_norm, ["material", "sku", "codmaterial", "codproducto"])
-    idx_desc = find_col(headers_norm, ["descripcion", "descmaterial", "producto", "nombreproducto", "denominacion"])
+    idx_pedido = find_col(headers_norm, ["shipmentcustom", "doccomer", "pedido", "shipment", "entrega", "nropedido", "numpedido", "documento"])
+    idx_mat = find_col(headers_norm, ["itemid", "material", "sku", "codmaterial", "codproducto"])
+    idx_desc = find_col(headers_norm, ["itemdescription", "descripcion", "descmaterial", "producto", "nombreproducto", "denominacion"])
 
     if idx_pedido is None or idx_placa is None:
-        raise RuntimeError(
-            f"No se encontraron columnas clave en RoadMap.csv. Cabeceras detectadas: {rows[0]}"
-        )
+        raise RuntimeError(f"Columnas clave no encontradas en RoadMap.csv. Cabeceras: {rows[0]}")
 
     pedido_map = {}
     sku_desc = {}
@@ -95,12 +122,12 @@ def load_roadmap(path):
     for r in rows[1:]:
         if len(r) <= max(idx_pedido, idx_placa):
             continue
-        ped = clean_id(r[idx_pedido])
+        ped = clean_num_id(r[idx_pedido])
         placa = clean_id(r[idx_placa]).upper()
         if not ped or not placa or placa in EXCLUDED_PLATES:
             continue
 
-        centro = clean_id(r[idx_centro]) if idx_centro is not None and idx_centro < len(r) else "-"
+        centro = clean_id(r[idx_centro]).upper() if idx_centro is not None and idx_centro < len(r) else "SIN-CENTRO"
         canal = clean_id(r[idx_canal]) if idx_canal is not None and idx_canal < len(r) else "-"
         ruta = clean_id(r[idx_ruta]) if idx_ruta is not None and idx_ruta < len(r) else "-"
 
@@ -113,7 +140,7 @@ def load_roadmap(path):
             }
 
         if idx_mat is not None and idx_desc is not None and max(idx_mat, idx_desc) < len(r):
-            m_cod = clean_id(r[idx_mat])
+            m_cod = clean_num_id(r[idx_mat])
             m_desc = clean_id(r[idx_desc])
             if m_cod and m_desc and m_cod not in sku_desc:
                 sku_desc[m_cod] = m_desc
@@ -122,7 +149,6 @@ def load_roadmap(path):
 
 
 def parse_sap_txt(path):
-    """Lee el TXT tabulado de SAP ignorando filas vacías y columna A vacía."""
     lines = read_text_auto(path).splitlines()
     header_idx = None
     col_map = {}
@@ -162,13 +188,11 @@ def parse_sap_txt(path):
             break
 
     if header_idx is None:
-        raise RuntimeError("No se encontró la fila de cabecera de SAP ('Doc.comer.' y 'Cl Pedido').")
+        raise RuntimeError("No se encontró la cabecera SAP ('Doc.comer.' y 'Cl Pedido').")
 
     def get_val(parts, key):
         idx = col_map.get(key)
-        if idx is None or idx >= len(parts):
-            return ""
-        return parts[idx].strip()
+        return parts[idx].strip() if idx is not None and idx < len(parts) else ""
 
     records = []
     for line in lines[header_idx + 1 :]:
@@ -180,181 +204,26 @@ def parse_sap_txt(path):
             continue
         records.append({
             "ce": get_val(parts, "ce"),
-            "cliente": clean_id(get_val(parts, "cliente")),
+            "cliente": clean_num_id(get_val(parts, "cliente")),
             "cliente_nom": get_val(parts, "cliente_nom"),
-            "material": clean_id(get_val(parts, "material")),
-            "doc_comer": clean_id(get_val(parts, "doc_comer")),
+            "material": clean_num_id(get_val(parts, "material")),
+            "doc_comer": clean_num_id(get_val(parts, "doc_comer")),
             "fe_entrega": get_val(parts, "fe_entrega"),
-            "pedido_kg": to_kg(get_val(parts, "pedido_kg")),
             "surtido_kg": to_kg(get_val(parts, "surtido_kg")),
-            "factura": clean_id(get_val(parts, "factura")),
+            "factura": clean_num_id(get_val(parts, "factura")),
             "cl_pedido": cl,
-            "referencia": clean_id(get_val(parts, "referencia")),
+            "referencia": clean_num_id(get_val(parts, "referencia")),
             "util": get_val(parts, "util"),
             "motivo": get_val(parts, "motivo"),
         })
     return records
 
 
-def main():
-    os.makedirs(OUT_DIR, exist_ok=True)
-    pedido_map, sku_desc = load_roadmap(ROADMAP_PATH)
-    sap_rows = parse_sap_txt(SAP_TXT_PATH)
+def build_html_centro(centro, criticas, fecha_display):
+    total_rej = sum(p["rechazo_kg"] for p in criticas)
+    total_sur = sum(p["surtido_kg"] for p in criticas)
+    pct_crit = (total_rej / total_sur * 100.0) if total_sur > 0 else 0.0
 
-    # 1. Agrupar ZY10 filtrando solo pedidos presentes en RoadMap.csv
-    # Clave intermedia: (doc_comer, factura, material) para evitar duplicados antes de cruzar con ZY35
-    zy10_grouped = {}
-    fecha_op = ""
-    centros_txt = set()
-
-    for r in sap_rows:
-        if r["cl_pedido"] != "ZY10":
-            continue
-        if r["doc_comer"] not in pedido_map:
-            continue
-        if not fecha_op and r["fe_entrega"]:
-            fecha_op = r["fe_entrega"]
-        if r["ce"]:
-            centros_txt.add(r["ce"])
-
-        key = (r["doc_comer"], r["factura"], r["material"])
-        if key not in zy10_grouped:
-            zy10_grouped[key] = {
-                "doc_comer": r["doc_comer"],
-                "factura": r["factura"],
-                "material": r["material"],
-                "ce": r["ce"],
-                "cliente": r["cliente"],
-                "cliente_nom": r["cliente_nom"],
-                "fe_entrega": r["fe_entrega"],
-                "surtido_kg": 0.0,
-            }
-        zy10_grouped[key]["surtido_kg"] += r["surtido_kg"]
-
-    # 2. Agrupar ZY35 por (referencia, material)
-    zy35_grouped = {}
-    for r in sap_rows:
-        if r["cl_pedido"] != "ZY35" or not r["referencia"]:
-            continue
-        kg_rej = abs(r["surtido_kg"])
-        key = (r["referencia"], r["material"])
-        if key not in zy35_grouped:
-            zy35_grouped[key] = {"rechazo_kg": 0.0, "motivos": set()}
-        zy35_grouped[key]["rechazo_kg"] += kg_rej
-        mot = r["motivo"] or (f"Cod. {r['util']}" if r["util"] else "")
-        if mot and kg_rej > 0:
-            zy35_grouped[key]["motivos"].add(mot)
-
-    # 3. Cruzar ZY10 <-> ZY35 y consolidar en 1 sola fila por (doc_comer, material)
-    consolidado = {}
-    for (doc_comer, factura, material), item in zy10_grouped.items():
-        rej = zy35_grouped.get((factura, material)) if factura else None
-        kg_rej = rej["rechazo_kg"] if rej else 0.0
-        motivos = set(rej["motivos"]) if rej else set()
-
-        rm = pedido_map[doc_comer]
-        ckey = (doc_comer, material)
-        if ckey not in consolidado:
-            consolidado[ckey] = {
-                "fecha": item["fe_entrega"] or fecha_op,
-                "centro": rm["centro"],
-                "placa": rm["placa"],
-                "canal": rm["canal"],
-                "ruta": rm["ruta"],
-                "doc_comer": doc_comer,
-                "cliente_cod": item["cliente"],
-                "cliente_nom": item["cliente_nom"],
-                "material": material,
-                "sku_desc": sku_desc.get(material, ""),
-                "facturas": set(),
-                "surtido_kg": 0.0,
-                "rechazo_kg": 0.0,
-                "motivos": set(),
-            }
-        if factura:
-            consolidado[ckey]["facturas"].add(factura)
-        consolidado[ckey]["surtido_kg"] += item["surtido_kg"]
-        consolidado[ckey]["rechazo_kg"] += kg_rej
-        consolidado[ckey]["motivos"].update(motivos)
-
-    # 4. Agrupar por (Centro, Placa) y detectar placas > UMBRAL_KG
-    placas = {}
-    for row in consolidado.values():
-        pkey = (row["centro"], row["placa"])
-        if pkey not in placas:
-            placas[pkey] = {
-                "centro": row["centro"],
-                "placa": row["placa"],
-                "canales": set(),
-                "rutas": set(),
-                "surtido_kg": 0.0,
-                "rechazo_kg": 0.0,
-                "motivos_kg": defaultdict(float),
-                "detalles_rechazo": [],
-            }
-        p = placas[pkey]
-        if row["canal"] and row["canal"] != "-":
-            p["canales"].add(row["canal"])
-        if row["ruta"] and row["ruta"] != "-":
-            p["rutas"].add(row["ruta"])
-        p["surtido_kg"] += row["surtido_kg"]
-        p["rechazo_kg"] += row["rechazo_kg"]
-
-        if row["rechazo_kg"] > 0:
-            mot_txt = " / ".join(sorted(row["motivos"])) or "Sin motivo registrado"
-            p["motivos_kg"][mot_txt] += row["rechazo_kg"]
-            p["detalles_rechazo"].append({**row, "motivo_txt": mot_txt})
-
-    criticas = sorted(
-        [p for p in placas.values() if p["rechazo_kg"] > UMBRAL_KG],
-        key=lambda x: x["rechazo_kg"],
-        reverse=True,
-    )
-
-    fecha_display = fecha_op or datetime.now().strftime("%d.%m.%Y")
-    hora_corte = datetime.now().strftime("%H:%M")
-    enviar = len(criticas) > 0
-    total_rej_crit = sum(p["rechazo_kg"] for p in criticas)
-    total_sur_crit = sum(p["surtido_kg"] for p in criticas)
-    pct_crit = (total_rej_crit / total_sur_crit * 100.0) if total_sur_crit > 0 else 0.0
-
-    # 5. Guardar JSON de estado para Power Automate
-    state = {
-        "enviar": enviar,
-        "fecha": fecha_display,
-        "hora_corte": hora_corte,
-        "archivo": ARCHIVO_ORIGEN,
-        "centros": sorted(centros_txt),
-        "umbral_kg": UMBRAL_KG,
-        "placas_criticas": len(criticas),
-        "kg_rechazo_critico": round(total_rej_crit, 2),
-        "asunto": f"🚨 Alerta de Rechazos > {int(UMBRAL_KG)} kg ({len(criticas)} placas • {total_rej_crit:,.1f} kg) – {fecha_display}",
-    }
-    with open(STATE_PATH, "w", encoding="utf-8") as f:
-        json.dump(state, f, ensure_ascii=False, indent=2)
-
-    # 6. Guardar CSV adjunto con detalle SKU de placas críticas
-    with open(CSV_OUT_PATH, "w", encoding="utf-8-sig", newline="") as f:
-        w = csv.writer(f)
-        w.writerow([
-            "Fecha", "Centro", "Placa", "Canal", "Ruta_Venta", "Pedido",
-            "Facturas", "Cod_Cliente", "Cliente", "Material", "Descripcion_SKU",
-            "Kg_Surtido", "Kg_Rechazo", "Motivo"
-        ])
-        for p in criticas:
-            for d in sorted(p["detalles_rechazo"], key=lambda x: x["rechazo_kg"], reverse=True):
-                w.writerow([
-                    d["fecha"], d["centro"], d["placa"], d["canal"], d["ruta"],
-                    d["doc_comer"], " | ".join(sorted(d["facturas"])),
-                    d["cliente_cod"], d["cliente_nom"], d["material"], d["sku_desc"],
-                    f"{d['surtido_kg']:.3f}", f"{d['rechazo_kg']:.3f}", d["motivo_txt"]
-                ])
-
-    if not enviar:
-        print(f"OK: Ninguna placa superó los {UMBRAL_KG} kg de rechazo. No se enviará correo.")
-        return
-
-    # 7. Construir HTML ejecutivo compatible con Outlook
     resumen_rows = ""
     detalle_rows = ""
 
@@ -363,8 +232,7 @@ def main():
         mot_top = max(p["motivos_kg"].items(), key=lambda kv: kv[1])[0] if p["motivos_kg"] else "-"
         resumen_rows += f"""
           <tr>
-            <td style="padding:8px; border-bottom:1px solid #e4e4e7; font-weight:700; color:#28174E; white-space:nowrap;">{p['centro']}</td>
-            <td style="padding:8px; border-bottom:1px solid #e4e4e7; font-weight:800; color:#18181b; white-space:nowrap;">{p['placa']}</td>
+            <td style="padding:8px; border-bottom:1px solid #e4e4e7; font-weight:800; color:#28174E; white-space:nowrap;">{p['placa']}</td>
             <td style="padding:8px; border-bottom:1px solid #e4e4e7; font-size:11.5px;">{', '.join(sorted(p['canales'])) or '-'}</td>
             <td style="padding:8px; border-bottom:1px solid #e4e4e7; font-size:11.5px;">{', '.join(sorted(p['rutas'])) or '-'}</td>
             <td style="padding:8px; border-bottom:1px solid #e4e4e7; text-align:right; white-space:nowrap;">{p['surtido_kg']:,.2f}</td>
@@ -387,7 +255,7 @@ def main():
               </tr>
             """
 
-    html = f"""<!DOCTYPE html>
+    return f"""<!DOCTYPE html>
 <html lang="es">
 <head><meta charset="UTF-8"></head>
 <body style="margin:0; padding:0; background-color:#f4f3f8; font-family:'Segoe UI', Arial, sans-serif; color:#18181b;">
@@ -397,28 +265,28 @@ def main():
         <table role="presentation" width="840" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius:12px; overflow:hidden; border:1px solid #e4e4e7;">
           <tr>
             <td style="background-color:#28174E; padding:20px 24px; color:#ffffff;">
-              <div style="font-size:11px; letter-spacing:1px; text-transform:uppercase; color:#f89b22; font-weight:700;">Distribución Lima &bull; Alerta Temprana de Rechazos (SAP + RoadMap)</div>
-              <h1 style="margin:4px 0 2px; font-size:20px; color:#ffffff;">Placas con Rechazo Superior a {int(UMBRAL_KG)} kg</h1>
-              <div style="font-size:12px; color:#d4d4d8;">Fecha operativa: <b>{fecha_display}</b> &bull; Archivo: <b>{ARCHIVO_ORIGEN}</b></div>
+              <div style="font-size:11px; letter-spacing:1px; text-transform:uppercase; color:#f89b22; font-weight:700;">Distribución Lima &bull; Centro {centro}</div>
+              <h1 style="margin:4px 0 2px; font-size:20px; color:#ffffff;">Alerta de Rechazos Relevantes (&gt; {int(UMBRAL_KG)} kg)</h1>
+              <div style="font-size:12px; color:#d4d4d8;">Fecha operativa: <b>{fecha_display}</b> &bull; Fuente: <b>{ARCHIVO_ORIGEN}</b></div>
             </td>
           </tr>
 
           <tr>
             <td style="padding:16px 24px 12px;">
               <div style="background:#fffbeb; border-left:4px solid #f89b22; padding:10px 12px; border-radius:6px; font-size:12px; color:#78350f; margin-bottom:14px;">
-                <b>Corte parcial informativo:</b> Corresponde a las devoluciones registradas en SAP al momento de la descarga; las unidades aún en ruta pueden actualizarse al cierre de la jornada.
+                <b>Corte parcial informativo:</b> Refleja las devoluciones registradas en SAP al momento de la descarga; las unidades que aún siguen en ruta pueden variar al cierre del día.
               </div>
 
               <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;">
                 <tr>
                   <td width="32%" style="background:#fef2f2; border:1px solid #fecaca; border-top:3px solid #c61c27; border-radius:8px; padding:10px;">
-                    <div style="font-size:10px; color:#991b1b; font-weight:700;">PLACAS SOBRE UMBRAL (&gt;{int(UMBRAL_KG)} KG)</div>
+                    <div style="font-size:10px; color:#991b1b; font-weight:700;">PLACAS CRÍTICAS (&gt;{int(UMBRAL_KG)} KG)</div>
                     <div style="font-size:20px; font-weight:800; color:#c61c27;">{len(criticas)} placas</div>
                   </td>
                   <td width="2%"></td>
                   <td width="32%" style="background:#faf5ff; border:1px solid #e9d5ff; border-top:3px solid #6a1b9a; border-radius:8px; padding:10px;">
-                    <div style="font-size:10px; color:#6b21a8; font-weight:700;">KG RECHAZADOS (PLACAS CRÍTICAS)</div>
-                    <div style="font-size:20px; font-weight:800; color:#6a1b9a;">{total_rej_crit:,.2f} kg</div>
+                    <div style="font-size:10px; color:#6b21a8; font-weight:700;">KG RECHAZADOS</div>
+                    <div style="font-size:20px; font-weight:800; color:#6a1b9a;">{total_rej:,.2f} kg</div>
                   </td>
                   <td width="2%"></td>
                   <td width="32%" style="background:#faf9fc; border:1px solid #e4e4e7; border-top:3px solid #28174E; border-radius:8px; padding:10px;">
@@ -428,10 +296,9 @@ def main():
                 </tr>
               </table>
 
-              <h3 style="margin:0 0 8px; font-size:14px; color:#28174E;">1. Resumen de Placas Críticas</h3>
+              <h3 style="margin:0 0 8px; font-size:14px; color:#28174E;">1. Resumen de Placas Críticas – {centro}</h3>
               <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse; font-size:12px; margin-bottom:18px;">
                 <tr style="background:#16365c; color:#ffffff;">
-                  <th style="padding:8px; text-align:left;">Centro</th>
                   <th style="padding:8px; text-align:left;">Placa</th>
                   <th style="padding:8px; text-align:left;">Canal</th>
                   <th style="padding:8px; text-align:left;">Ruta Venta</th>
@@ -460,7 +327,7 @@ def main():
 
           <tr>
             <td style="background:#faf9fc; padding:12px 24px; border-top:1px solid #e4e4e7; font-size:11px; color:#71717a; text-align:center;">
-              Cruce automático <b>SAP (ZY10/ZY35) + RoadMap.csv</b> &bull; Se adjunta CSV con el detalle completo por SKU.
+              Cruce automático <b>SAP (ZY10/ZY35) + RoadMap.csv</b> &bull; Se adjunta CSV con el detalle de SKUs de <b>{centro}</b>.
             </td>
           </tr>
         </table>
@@ -471,10 +338,175 @@ def main():
 </html>
 """
 
-    with open(HTML_PATH, "w", encoding="utf-8") as f:
-        f.write(html)
 
-    print(f"OK: Alerta generada ({len(criticas)} placas > {UMBRAL_KG} kg, {total_rej_crit:,.2f} kg totales).")
+def main():
+    os.makedirs(OUT_DIR, exist_ok=True)
+
+    for old_file in glob.glob(os.path.join(OUT_DIR, "alerta_rechazos_*.html")) + glob.glob(os.path.join(OUT_DIR, "alerta_rechazos_*.csv")):
+        os.remove(old_file)
+
+    pedido_map, sku_desc = load_roadmap(ROADMAP_PATH)
+    sap_rows = parse_sap_txt(SAP_TXT_PATH)
+
+    zy10_total = sum(1 for r in sap_rows if r["cl_pedido"] == "ZY10")
+    zy35_total = sum(1 for r in sap_rows if r["cl_pedido"] == "ZY35")
+
+    # 1. Agrupar ZY10 presentes en RoadMap por (doc_comer, factura, material)
+    zy10_grouped = {}
+    zy10_matched = 0
+    fecha_op = ""
+    for r in sap_rows:
+        if r["cl_pedido"] != "ZY10" or r["doc_comer"] not in pedido_map:
+            continue
+        zy10_matched += 1
+        if not fecha_op and r["fe_entrega"]:
+            fecha_op = r["fe_entrega"]
+        key = (r["doc_comer"], r["factura"], r["material"])
+        if key not in zy10_grouped:
+            zy10_grouped[key] = {
+                "doc_comer": r["doc_comer"],
+                "factura": r["factura"],
+                "material": r["material"],
+                "cliente": r["cliente"],
+                "cliente_nom": r["cliente_nom"],
+                "fe_entrega": r["fe_entrega"],
+                "surtido_kg": 0.0,
+            }
+        zy10_grouped[key]["surtido_kg"] += r["surtido_kg"]
+
+    # 2. Agrupar ZY35 por (referencia, material)
+    zy35_grouped = {}
+    for r in sap_rows:
+        if r["cl_pedido"] != "ZY35" or not r["referencia"]:
+            continue
+        kg_rej = abs(r["surtido_kg"])
+        key = (r["referencia"], r["material"])
+        if key not in zy35_grouped:
+            zy35_grouped[key] = {"rechazo_kg": 0.0, "motivos": set()}
+        zy35_grouped[key]["rechazo_kg"] += kg_rej
+        mot = r["motivo"] or (f"Cod. {r['util']}" if r["util"] else "")
+        if mot and kg_rej > 0:
+            zy35_grouped[key]["motivos"].add(mot)
+
+    # 3. Cruzar ZY10 <-> ZY35 y consolidar 1 fila por (doc_comer, material)
+    consolidado = {}
+    for (doc_comer, factura, material), item in zy10_grouped.items():
+        rej = zy35_grouped.get((factura, material)) if factura else None
+        kg_rej = rej["rechazo_kg"] if rej else 0.0
+        motivos = set(rej["motivos"]) if rej else set()
+        rm = pedido_map[doc_comer]
+
+        ckey = (doc_comer, material)
+        if ckey not in consolidado:
+            consolidado[ckey] = {
+                "fecha": item["fe_entrega"] or fecha_op,
+                "centro": rm["centro"],
+                "placa": rm["placa"],
+                "canal": rm["canal"],
+                "ruta": rm["ruta"],
+                "doc_comer": doc_comer,
+                "cliente_cod": item["cliente"],
+                "cliente_nom": item["cliente_nom"],
+                "material": material,
+                "sku_desc": sku_desc.get(material, ""),
+                "facturas": set(),
+                "surtido_kg": 0.0,
+                "rechazo_kg": 0.0,
+                "motivos": set(),
+            }
+        if factura:
+            consolidado[ckey]["facturas"].add(factura)
+        consolidado[ckey]["surtido_kg"] += item["surtido_kg"]
+        consolidado[ckey]["rechazo_kg"] += kg_rej
+        consolidado[ckey]["motivos"].update(motivos)
+
+    # 4. Agrupar por (Centro, Placa)
+    placas = {}
+    for row in consolidado.values():
+        pkey = (row["centro"], row["placa"])
+        if pkey not in placas:
+            placas[pkey] = {
+                "centro": row["centro"],
+                "placa": row["placa"],
+                "canales": set(),
+                "rutas": set(),
+                "surtido_kg": 0.0,
+                "rechazo_kg": 0.0,
+                "motivos_kg": defaultdict(float),
+                "detalles_rechazo": [],
+            }
+        p = placas[pkey]
+        if row["canal"] and row["canal"] != "-":
+            p["canales"].add(row["canal"])
+        if row["ruta"] and row["ruta"] != "-":
+            p["rutas"].add(row["ruta"])
+        p["surtido_kg"] += row["surtido_kg"]
+        p["rechazo_kg"] += row["rechazo_kg"]
+
+        if row["rechazo_kg"] > 0:
+            mot_txt = " / ".join(sorted(row["motivos"])) or "Sin motivo registrado"
+            p["motivos_kg"][mot_txt] += row["rechazo_kg"]
+            p["detalles_rechazo"].append({**row, "motivo_txt": mot_txt})
+
+    # 5. Separar placas críticas (> UMBRAL_KG) por Centro
+    criticas_por_centro = defaultdict(list)
+    for p in placas.values():
+        if p["rechazo_kg"] > UMBRAL_KG:
+            criticas_por_centro[p["centro"]].append(p)
+
+    fecha_display = fecha_op or datetime.now().strftime("%d.%m.%Y")
+    alertas = []
+
+    for centro in sorted(criticas_por_centro.keys()):
+        criticas = sorted(criticas_por_centro[centro], key=lambda x: x["rechazo_kg"], reverse=True)
+        slug = safe_slug(centro)
+        html_name = f"alerta_rechazos_{slug}.html"
+        csv_name = f"alerta_rechazos_{slug}.csv"
+
+        with open(os.path.join(OUT_DIR, html_name), "w", encoding="utf-8") as f:
+            f.write(build_html_centro(centro, criticas, fecha_display))
+
+        with open(os.path.join(OUT_DIR, csv_name), "w", encoding="utf-8-sig", newline="") as f:
+            w = csv.writer(f)
+            w.writerow([
+                "Fecha", "Centro", "Placa", "Canal", "Ruta_Venta", "Pedido",
+                "Facturas", "Cod_Cliente", "Cliente", "Material", "Descripcion_SKU",
+                "Kg_Surtido", "Kg_Rechazo", "Motivo"
+            ])
+            for p in criticas:
+                for d in sorted(p["detalles_rechazo"], key=lambda x: x["rechazo_kg"], reverse=True):
+                    w.writerow([
+                        d["fecha"], d["centro"], d["placa"], d["canal"], d["ruta"],
+                        d["doc_comer"], " | ".join(sorted(d["facturas"])),
+                        d["cliente_cod"], d["cliente_nom"], d["material"], d["sku_desc"],
+                        f"{d['surtido_kg']:.3f}", f"{d['rechazo_kg']:.3f}", d["motivo_txt"]
+                    ])
+
+        total_rej = sum(p["rechazo_kg"] for p in criticas)
+        alertas.append({
+            "centro": centro,
+            "para": get_destinatarios(centro),
+            "asunto": f"🚨 Rechazos [{centro}] > {int(UMBRAL_KG)} kg ({len(criticas)} placas • {total_rej:,.1f} kg) – {fecha_display}",
+            "placas_criticas": len(criticas),
+            "kg_rechazo": round(total_rej, 2),
+            "html_file": html_name,
+            "csv_file": csv_name,
+        })
+
+    state = {
+        "fecha": fecha_display,
+        "archivo": ARCHIVO_ORIGEN,
+        "umbral_kg": UMBRAL_KG,
+        "total_centros_alertados": len(alertas),
+        "alertas": alertas,
+    }
+    with open(STATE_PATH, "w", encoding="utf-8") as f:
+        json.dump(state, f, ensure_ascii=False, indent=2)
+
+    print(
+        f"OK: RoadMap={len(pedido_map)} pedidos | SAP ZY10={zy10_total} (cruzados={zy10_matched}) | "
+        f"ZY35={zy35_total} | Placas={len(placas)} | Centros alertados={[a['centro'] for a in alertas]}"
+    )
 
 
 if __name__ == "__main__":
