@@ -1,0 +1,7 @@
+{
+  "fecha": "27.11.2026",
+  "archivo": "sap_deb.txt",
+  "umbral_kg": 100.0,
+  "total_centros_alertados": 0,
+  "alertas": []
+}
