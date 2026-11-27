@@ -5,23 +5,24 @@ import os
 import re
 import unicodedata
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 SAP_TXT_PATH = os.environ.get("SAP_TXT_PATH", "data/sap_deb.txt")
 ROADMAP_PATH = os.environ.get("ROADMAP_PATH", "RoadMap.csv")
-UMBRAL_KG = float(os.environ.get("UMBRAL_KG", "100"))
+TOP_N = int(os.environ.get("TOP_N", "5"))
 ARCHIVO_ORIGEN = os.environ.get("ARCHIVO_ORIGEN", os.path.basename(SAP_TXT_PATH))
 
 OUT_DIR = "reports"
 STATE_PATH = os.path.join(OUT_DIR, "alerta_rechazos_estado.json")
 EXCLUDED_PLATES = {"FRT-001", "RES-CLI"}
+LIMA_TZ = timezone(timedelta(hours=-5))
 
 # Configura aquí los correos por CD (separados por ";")
 DESTINATARIOS_POR_CENTRO = {
-    "ATE": "mdavilab@sigma-alimentos.com",
-    "ATE2": "mdavilab@sigma-alimentos.com",
-    "CHANCAY": "mdavilab@sigma-alimentos.com",
-    "DEFAULT": "mdavilab@sigma-alimentos.com",
+    "ATE": "tu_correo@sigma-alimentos.com",
+    "ATE2": "tu_correo@sigma-alimentos.com",
+    "CHANCAY": "tu_correo@sigma-alimentos.com",
+    "DEFAULT": "tu_correo@sigma-alimentos.com",
 }
 
 
@@ -219,19 +220,21 @@ def parse_sap_txt(path):
     return records
 
 
-def build_html_centro(centro, criticas, fecha_display):
-    total_rej = sum(p["rechazo_kg"] for p in criticas)
-    total_sur = sum(p["surtido_kg"] for p in criticas)
-    pct_crit = (total_rej / total_sur * 100.0) if total_sur > 0 else 0.0
+def build_html_centro(centro, top_placas, total_placas_cd, total_rej_cd, fecha_display, hora_corte):
+    total_rej_top = sum(p["rechazo_kg"] for p in top_placas)
+    total_sur_top = sum(p["surtido_kg"] for p in top_placas)
+    pct_top = (total_rej_top / total_sur_top * 100.0) if total_sur_top > 0 else 0.0
+    share_cd = (total_rej_top / total_rej_cd * 100.0) if total_rej_cd > 0 else 0.0
 
     resumen_rows = ""
     detalle_rows = ""
 
-    for p in criticas:
+    for rank, p in enumerate(top_placas, 1):
         pct_p = (p["rechazo_kg"] / p["surtido_kg"] * 100.0) if p["surtido_kg"] > 0 else 0.0
         mot_top = max(p["motivos_kg"].items(), key=lambda kv: kv[1])[0] if p["motivos_kg"] else "-"
         resumen_rows += f"""
           <tr>
+            <td style="padding:8px; border-bottom:1px solid #e4e4e7; font-weight:800; color:#6a1b9a; text-align:center; white-space:nowrap;">#{rank}</td>
             <td style="padding:8px; border-bottom:1px solid #e4e4e7; font-weight:800; color:#28174E; white-space:nowrap;">{p['placa']}</td>
             <td style="padding:8px; border-bottom:1px solid #e4e4e7; font-size:11.5px;">{', '.join(sorted(p['canales'])) or '-'}</td>
             <td style="padding:8px; border-bottom:1px solid #e4e4e7; font-size:11.5px;">{', '.join(sorted(p['rutas'])) or '-'}</td>
@@ -262,43 +265,49 @@ def build_html_centro(centro, criticas, fecha_display):
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f3f8; padding:20px 0;">
     <tr>
       <td align="center">
-        <table role="presentation" width="840" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius:12px; overflow:hidden; border:1px solid #e4e4e7;">
+        <table role="presentation" width="860" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius:12px; overflow:hidden; border:1px solid #e4e4e7;">
           <tr>
             <td style="background-color:#28174E; padding:20px 24px; color:#ffffff;">
               <div style="font-size:11px; letter-spacing:1px; text-transform:uppercase; color:#f89b22; font-weight:700;">Distribución Lima &bull; Centro {centro}</div>
-              <h1 style="margin:4px 0 2px; font-size:20px; color:#ffffff;">Alerta de Rechazos Relevantes (&gt; {int(UMBRAL_KG)} kg)</h1>
-              <div style="font-size:12px; color:#d4d4d8;">Fecha operativa: <b>{fecha_display}</b> &bull; Fuente: <b>{ARCHIVO_ORIGEN}</b></div>
+              <h1 style="margin:4px 0 4px; font-size:20px; color:#ffffff;">Top {TOP_N} Placas con Mayor Rechazo</h1>
+              <div style="font-size:12px; color:#d4d4d8;">
+                Fecha operativa: <b>{fecha_display}</b> &bull; Hora de corte: <b style="color:#f89b22;">{hora_corte} hrs</b> &bull; Fuente: <b>{ARCHIVO_ORIGEN}</b>
+              </div>
             </td>
           </tr>
 
           <tr>
             <td style="padding:16px 24px 12px;">
               <div style="background:#fffbeb; border-left:4px solid #f89b22; padding:10px 12px; border-radius:6px; font-size:12px; color:#78350f; margin-bottom:14px;">
-                <b>Corte parcial informativo:</b> Refleja las devoluciones registradas en SAP al momento de la descarga; las unidades que aún siguen en ruta pueden variar al cierre del día.
+                <b>Corte informativo a las {hora_corte} hrs:</b> Refleja las devoluciones registradas en SAP hasta este horario; las unidades que aún continúan en ruta pueden actualizarse al cierre del día.
               </div>
 
               <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;">
                 <tr>
                   <td width="32%" style="background:#fef2f2; border:1px solid #fecaca; border-top:3px solid #c61c27; border-radius:8px; padding:10px;">
-                    <div style="font-size:10px; color:#991b1b; font-weight:700;">PLACAS CRÍTICAS (&gt;{int(UMBRAL_KG)} KG)</div>
-                    <div style="font-size:20px; font-weight:800; color:#c61c27;">{len(criticas)} placas</div>
+                    <div style="font-size:10px; color:#991b1b; font-weight:700;">KG RECHAZO (TOP {len(top_placas)})</div>
+                    <div style="font-size:20px; font-weight:800; color:#c61c27;">{total_rej_top:,.2f} kg</div>
+                    <div style="font-size:10.5px; color:#71717a; margin-top:2px;">{share_cd:.1f}% del total rechazado del CD ({total_rej_cd:,.2f} kg)</div>
                   </td>
                   <td width="2%"></td>
                   <td width="32%" style="background:#faf5ff; border:1px solid #e9d5ff; border-top:3px solid #6a1b9a; border-radius:8px; padding:10px;">
-                    <div style="font-size:10px; color:#6b21a8; font-weight:700;">KG RECHAZADOS</div>
-                    <div style="font-size:20px; font-weight:800; color:#6a1b9a;">{total_rej:,.2f} kg</div>
+                    <div style="font-size:10px; color:#6b21a8; font-weight:700;">PLACAS CON RECHAZO EN EL CD</div>
+                    <div style="font-size:20px; font-weight:800; color:#6a1b9a;">{total_placas_cd} placas</div>
+                    <div style="font-size:10.5px; color:#71717a; margin-top:2px;">Mostrando las {len(top_placas)} de mayor impacto</div>
                   </td>
                   <td width="2%"></td>
                   <td width="32%" style="background:#faf9fc; border:1px solid #e4e4e7; border-top:3px solid #28174E; border-radius:8px; padding:10px;">
-                    <div style="font-size:10px; color:#71717a; font-weight:700;">% RECHAZO SOBRE SURTIDO</div>
-                    <div style="font-size:20px; font-weight:800; color:#28174E;">{pct_crit:.1f}%</div>
+                    <div style="font-size:10px; color:#71717a; font-weight:700;">% RECHAZO SOBRE SURTIDO (TOP)</div>
+                    <div style="font-size:20px; font-weight:800; color:#28174E;">{pct_top:.1f}%</div>
+                    <div style="font-size:10.5px; color:#71717a; margin-top:2px;">Surtido del Top: {total_sur_top:,.2f} kg</div>
                   </td>
                 </tr>
               </table>
 
-              <h3 style="margin:0 0 8px; font-size:14px; color:#28174E;">1. Resumen de Placas Críticas – {centro}</h3>
+              <h3 style="margin:0 0 8px; font-size:14px; color:#28174E;">1. Top {len(top_placas)} Placas con Mayor Rechazo – {centro}</h3>
               <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse; font-size:12px; margin-bottom:18px;">
                 <tr style="background:#16365c; color:#ffffff;">
+                  <th style="padding:8px; text-align:center;">#</th>
                   <th style="padding:8px; text-align:left;">Placa</th>
                   <th style="padding:8px; text-align:left;">Canal</th>
                   <th style="padding:8px; text-align:left;">Ruta Venta</th>
@@ -310,7 +319,7 @@ def build_html_centro(centro, criticas, fecha_display):
                 {resumen_rows}
               </table>
 
-              <h3 style="margin:0 0 8px; font-size:14px; color:#28174E;">2. Detalle de Rechazos por SKU / Producto</h3>
+              <h3 style="margin:0 0 8px; font-size:14px; color:#28174E;">2. Detalle por SKU / Producto (Placas del Top {len(top_placas)})</h3>
               <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse; font-size:12px;">
                 <tr style="background:#28174E; color:#ffffff;">
                   <th style="padding:8px; text-align:left;">Placa</th>
@@ -327,7 +336,7 @@ def build_html_centro(centro, criticas, fecha_display):
 
           <tr>
             <td style="background:#faf9fc; padding:12px 24px; border-top:1px solid #e4e4e7; font-size:11px; color:#71717a; text-align:center;">
-              Cruce automático <b>SAP (ZY10/ZY35) + RoadMap.csv</b> &bull; Se adjunta CSV con el detalle de SKUs de <b>{centro}</b>.
+              Cruce automático <b>SAP (ZY10/ZY35) + RoadMap.csv</b> &bull; Corte {hora_corte} hrs &bull; Se adjunta CSV con el detalle de SKUs del Top {len(top_placas)} de <b>{centro}</b>.
             </td>
           </tr>
         </table>
@@ -448,55 +457,71 @@ def main():
             p["motivos_kg"][mot_txt] += row["rechazo_kg"]
             p["detalles_rechazo"].append({**row, "motivo_txt": mot_txt})
 
-    # 5. Separar placas críticas (> UMBRAL_KG) por Centro
-    criticas_por_centro = defaultdict(list)
+    # 5. Seleccionar Top N placas con rechazo > 0 por cada Centro
+    rechazos_por_centro = defaultdict(list)
     for p in placas.values():
-        if p["rechazo_kg"] > UMBRAL_KG:
-            criticas_por_centro[p["centro"]].append(p)
+        if p["rechazo_kg"] > 0:
+            rechazos_por_centro[p["centro"]].append(p)
 
-    fecha_display = fecha_op or datetime.now().strftime("%d.%m.%Y")
+    now_lima = datetime.now(LIMA_TZ)
+    hora_corte = now_lima.strftime("%H:%M")
+    fecha_display = fecha_op or now_lima.strftime("%d.%m.%Y")
     alertas = []
 
-    for centro in sorted(criticas_por_centro.keys()):
-        criticas = sorted(criticas_por_centro[centro], key=lambda x: x["rechazo_kg"], reverse=True)
+    for centro in sorted(rechazos_por_centro.keys()):
+        todas_con_rechazo = sorted(
+            rechazos_por_centro[centro], key=lambda x: x["rechazo_kg"], reverse=True
+        )
+        top_placas = todas_con_rechazo[:TOP_N]
+        total_placas_cd = len(todas_con_rechazo)
+        total_rej_cd = sum(p["rechazo_kg"] for p in todas_con_rechazo)
+        total_rej_top = sum(p["rechazo_kg"] for p in top_placas)
+
         slug = safe_slug(centro)
         html_name = f"alerta_rechazos_{slug}.html"
         csv_name = f"alerta_rechazos_{slug}.csv"
 
         with open(os.path.join(OUT_DIR, html_name), "w", encoding="utf-8") as f:
-            f.write(build_html_centro(centro, criticas, fecha_display))
+            f.write(
+                build_html_centro(
+                    centro, top_placas, total_placas_cd, total_rej_cd, fecha_display, hora_corte
+                )
+            )
 
         with open(os.path.join(OUT_DIR, csv_name), "w", encoding="utf-8-sig", newline="") as f:
             w = csv.writer(f)
             w.writerow([
-                "Fecha", "Centro", "Placa", "Canal", "Ruta_Venta", "Pedido",
-                "Facturas", "Cod_Cliente", "Cliente", "Material", "Descripcion_SKU",
-                "Kg_Surtido", "Kg_Rechazo", "Motivo"
+                "Ranking_CD", "Hora_Corte", "Fecha", "Centro", "Placa", "Canal",
+                "Ruta_Venta", "Pedido", "Facturas", "Cod_Cliente", "Cliente",
+                "Material", "Descripcion_SKU", "Kg_Surtido", "Kg_Rechazo", "Motivo"
             ])
-            for p in criticas:
+            for rank, p in enumerate(top_placas, 1):
                 for d in sorted(p["detalles_rechazo"], key=lambda x: x["rechazo_kg"], reverse=True):
                     w.writerow([
-                        d["fecha"], d["centro"], d["placa"], d["canal"], d["ruta"],
-                        d["doc_comer"], " | ".join(sorted(d["facturas"])),
+                        rank, hora_corte, d["fecha"], d["centro"], d["placa"], d["canal"],
+                        d["ruta"], d["doc_comer"], " | ".join(sorted(d["facturas"])),
                         d["cliente_cod"], d["cliente_nom"], d["material"], d["sku_desc"],
                         f"{d['surtido_kg']:.3f}", f"{d['rechazo_kg']:.3f}", d["motivo_txt"]
                     ])
 
-        total_rej = sum(p["rechazo_kg"] for p in criticas)
         alertas.append({
             "centro": centro,
             "para": get_destinatarios(centro),
-            "asunto": f"🚨 Rechazos [{centro}] > {int(UMBRAL_KG)} kg ({len(criticas)} placas • {total_rej:,.1f} kg) – {fecha_display}",
-            "placas_criticas": len(criticas),
-            "kg_rechazo": round(total_rej, 2),
+            "asunto": f"📊 Top {len(top_placas)} Rechazos [{centro}] ({total_rej_top:,.1f} kg) – Corte {hora_corte} | {fecha_display}",
+            "hora_corte": hora_corte,
+            "placas_en_top": len(top_placas),
+            "total_placas_con_rechazo": total_placas_cd,
+            "kg_rechazo_top": round(total_rej_top, 2),
+            "kg_rechazo_cd": round(total_rej_cd, 2),
             "html_file": html_name,
             "csv_file": csv_name,
         })
 
     state = {
         "fecha": fecha_display,
+        "hora_corte": hora_corte,
         "archivo": ARCHIVO_ORIGEN,
-        "umbral_kg": UMBRAL_KG,
+        "top_n": TOP_N,
         "total_centros_alertados": len(alertas),
         "alertas": alertas,
     }
@@ -504,8 +529,9 @@ def main():
         json.dump(state, f, ensure_ascii=False, indent=2)
 
     print(
-        f"OK: RoadMap={len(pedido_map)} pedidos | SAP ZY10={zy10_total} (cruzados={zy10_matched}) | "
-        f"ZY35={zy35_total} | Placas={len(placas)} | Centros alertados={[a['centro'] for a in alertas]}"
+        f"OK [{hora_corte} Lima]: RoadMap={len(pedido_map)} pedidos | SAP ZY10={zy10_total} "
+        f"(cruzados={zy10_matched}) | ZY35={zy35_total} | Placas={len(placas)} | "
+        f"Centros con rechazo={[a['centro'] for a in alertas]}"
     )
 
 
