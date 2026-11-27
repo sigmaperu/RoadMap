@@ -1,6 +1,6 @@
 {
   "fecha": "27.11.2026",
-  "hora_corte": "15:02",
+  "hora_corte": "15:08",
   "archivo": "sap_deb.txt.txt",
   "top_n": 5,
   "total_centros_alertados": 2,
@@ -8,8 +8,8 @@
     {
       "centro": "0374-ATE",
       "para": "tu_correo@sigma-alimentos.com",
-      "asunto": "📊 Top 3 Rechazos [0374-ATE] (40.7 kg) – Corte 15:02 | 27.11.2026",
-      "hora_corte": "15:02",
+      "asunto": "📊 Top 3 Rechazos [0374-ATE] (40.7 kg) – Corte 15:08 | 27.11.2026",
+      "hora_corte": "15:08",
       "placas_en_top": 3,
       "total_placas_con_rechazo": 3,
       "kg_rechazo_top": 40.7,
@@ -20,8 +20,8 @@
     {
       "centro": "0780-ATE2",
       "para": "tu_correo@sigma-alimentos.com",
-      "asunto": "📊 Top 5 Rechazos [0780-ATE2] (65.7 kg) – Corte 15:02 | 27.11.2026",
-      "hora_corte": "15:02",
+      "asunto": "📊 Top 5 Rechazos [0780-ATE2] (65.7 kg) – Corte 15:08 | 27.11.2026",
+      "hora_corte": "15:08",
       "placas_en_top": 5,
       "total_placas_con_rechazo": 5,
       "kg_rechazo_top": 65.75,
