@@ -1,0 +1,46 @@
+name: Alerta de Rechazos SAP por Placa y SKU
+
+on:
+  workflow_dispatch:
+    inputs:
+      archivo_origen:
+        description: 'Nombre del archivo TXT cargado desde SharePoint'
+        required: false
+        default: 'sap_deb.txt'
+        type: string
+      umbral_kg:
+        description: 'Umbral mínimo de rechazo por placa en kg'
+        required: false
+        default: '100'
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build-alerta-rechazos:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Procesar cruce SAP + RoadMap
+        env:
+          SAP_TXT_PATH: data/sap_deb.txt
+          ROADMAP_PATH: RoadMap.csv
+          ARCHIVO_ORIGEN: ${{ github.event.inputs.archivo_origen }}
+          UMBRAL_KG: ${{ github.event.inputs.umbral_kg }}
+        run: python scripts/build_rechazos_alert.py
+
+      - name: Publicar resultados en /reports
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add reports/alerta_rechazos_estado.json reports/alerta_rechazos_detalle.csv reports/alerta_rechazos_email.html 2>/dev/null || true
+          git diff --staged --quiet || git commit -m "chore: alerta rechazos SAP (${{ github.event.inputs.archivo_origen }})"
+          git push
