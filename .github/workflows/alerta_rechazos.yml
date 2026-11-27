@@ -37,11 +37,11 @@ jobs:
           UMBRAL_KG: ${{ github.event.inputs.umbral_kg }}
         run: python scripts/build_rechazos_alert.py
 
-     - name: Publicar resultados en /reports
+      - name: Publicar resultados en /reports
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A reports/alerta_rechazos_*
+          git add -A 'reports/alerta_rechazos_*'
           if ! git diff --staged --quiet; then
             git commit -m "chore: alertas rechazos SAP por CD"
             git pull --rebase origin main
