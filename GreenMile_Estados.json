@@ -17731,7 +17731,7 @@
     "LatitudActual": -12.06776,
     "LongitudActual": -77.05343,
     "FuenteCoordenada": "PARADA",
-    "DeliveryStatusRaw": "PENDING",
+    "DeliveryStatusRaw": "IN_PROGRESS",
     "MotivoNoEntrega": "",
     "MotivoCancelacion": "",
     "GreenMileRouteKey": "ALE-907",
