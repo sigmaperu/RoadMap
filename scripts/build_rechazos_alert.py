@@ -19,9 +19,9 @@ LIMA_TZ = timezone(timedelta(hours=-5))
 
 # Configura aquí los correos por CD (separados por ";")
 DESTINATARIOS_POR_CENTRO = {
-    "ATE": "mdavilab@sigma-alimentos.com",
-    "ATE2": "mdavilab@sigma-alimentos.com",
-    "CHANCAY": "mdavilab@sigma-alimentos.com",
+    "ATE": "juzambrano@sigma-alimentos.com; bbracamonte@sigma-alimentos.com; hjimenezv@sigma-alimentos.com; alortega@sigma-alimentos.com",
+    "ATE2": "juzambrano@sigma-alimentos.com; bbracamonte@sigma-alimentos.com; hjimenezv@sigma-alimentos.com; alortega@sigma-alimentos.com; rzavaleta@sigma-alimentos.com; yventura@sigma-alimentos.com",
+    "CHANCAY": "juzambrano@sigma-alimentos.com; bbracamonte@sigma-alimentos.com; hjimenezv@sigma-alimentos.com; alortega@sigma-alimentos.com; mvelasquez1@sigma-alimentos.com",
     "DEFAULT": "mdavilab@sigma-alimentos.com",
 }
 
